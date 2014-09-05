@@ -228,16 +228,20 @@ public class MongoServiceImpl implements MongoService {
   private JsonObject docToJsonObject(Document doc) {
     JsonObject json = new JsonObject();
     for (Map.Entry<String, Object> entry: doc.entrySet()) {
-      if (entry.getValue() instanceof Date) {
-        // Ignore
-      } else if (entry.getValue() instanceof ObjectId) {
-        //Ignore
-      } else if (entry.getValue() instanceof Document) {
-        json.putValue(entry.getKey(), docToJsonObject((Document) entry.getValue()));
-      } else if (entry.getValue() instanceof List) {
-        json.putValue(entry.getKey(), new JsonArray((List)entry.getValue()));
+      String key = entry.getKey();
+      Object value = entry.getValue();
+      if (value instanceof Date) {
+        // Convert to long
+        json.putNumber(key, ((Date)value).getTime());
+      } else if (value instanceof ObjectId) {
+        // Convert to String
+        json.getString(key, ((ObjectId)value).toHexString());
+      } else if (value instanceof Document) {
+        json.putValue(key, docToJsonObject((Document) value));
+      } else if (value instanceof List) {
+        json.putValue(key, new JsonArray((List)value));
       } else {
-        json.putValue(entry.getKey(), entry.getValue());
+        json.putValue(key, value);
       }
     }
     return json;
