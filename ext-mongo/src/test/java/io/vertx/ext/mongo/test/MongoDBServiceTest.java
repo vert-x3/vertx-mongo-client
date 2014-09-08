@@ -113,10 +113,14 @@ public class MongoDBServiceTest extends VertxTestBase {
     super.tearDown();
   }
 
+  private String randomCollection() {
+    return "ext-mongo" + TestUtils.randomAlphaString(20);
+  }
+
   private List<String> getOurCollections(List<String> colls) {
     List<String> ours = new ArrayList<>();
     for (String coll : colls) {
-      if (!coll.startsWith("system.")) {
+      if (coll.startsWith("ext-mongo")) {
         ours.add(coll);
       }
     }
@@ -125,13 +129,13 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testCreateAndGetCollection() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
       mongo.createCollection(collection, onSuccess(res -> {
       mongo.getCollections(onSuccess(list -> {
         List<String> ours = getOurCollections(list);
         assertEquals(1, ours.size());
         assertEquals(collection, ours.get(0));
-        String collection2 = TestUtils.randomAlphaString(100);
+        String collection2 = randomCollection();
         mongo.createCollection(collection2, onSuccess(res2 -> {
           mongo.getCollections(onSuccess(list2 -> {
             List<String> ours2 = getOurCollections(list2);
@@ -148,7 +152,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testCreateCollectionAlreadyExists() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       mongo.createCollection(collection, onFailure(ex -> {
         testComplete();
@@ -159,7 +163,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testDropCollection() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       mongo.dropCollection(collection, onSuccess(res2 -> {
         mongo.getCollections(onSuccess(list -> {
@@ -175,7 +179,7 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testRunCommand() throws Exception {
     JsonObject ping = new JsonObject().putNumber("isMaster", 1);
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       mongo.runCommand(collection, ping, onSuccess(reply -> {
         assertTrue(reply.getBoolean("ismaster"));
@@ -188,7 +192,7 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testRunInvalidCommand() throws Exception {
     JsonObject ping = new JsonObject().putNumber("iuhioqwdqhwd", 1);
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       mongo.runCommand(collection, ping, onFailure(ex -> {
         testComplete();
@@ -199,7 +203,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testInsertNoPreexistingID() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
@@ -212,7 +216,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testInsertPreexistingID() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       String genID  = TestUtils.randomAlphaString(100);
@@ -227,7 +231,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testInsertAlreadyExists() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
@@ -243,7 +247,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testSave() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       mongo.save(collection, doc, "NORMAL", onSuccess(id -> {
@@ -265,7 +269,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testFindOne() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
@@ -281,7 +285,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testFindOneWithKeys() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
@@ -299,7 +303,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testFindOneNotFound() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       mongo.findOne(collection, new JsonObject().putString("foo", "bar"), null, onSuccess(obj -> {
         assertNull(obj);
@@ -362,7 +366,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   private void doTestFind(int numDocs, JsonObject query, JsonObject fields, JsonObject sort, int skip, int limit,
                           Consumer<List<JsonObject>> resultConsumer) throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, numDocs, onSuccess(res2 -> {
         mongo.find(collection, query, fields, sort, limit, skip, onSuccess(res3 -> {
@@ -416,7 +420,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   private void doTestUpdate(int numDocs, JsonObject query, JsonObject update, boolean upsert, boolean multi,
                             Consumer<List<JsonObject>> resultConsumer) throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, numDocs, onSuccess(res2 -> {
         mongo.update(collection, query, update, "NORMAL", upsert, multi, onSuccess(res3 -> {
@@ -432,7 +436,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testDeleteOne() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
@@ -450,7 +454,7 @@ public class MongoDBServiceTest extends VertxTestBase {
 
   @Test
   public void testDeleteMultiple() throws Exception {
-    String collection = TestUtils.randomAlphaString(100);
+    String collection = randomCollection();
     mongo.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, 10, onSuccess(v -> {
         mongo.delete(collection, new JsonObject(), "NORMAL", onSuccess(v2 -> {
