@@ -33,7 +33,15 @@ public class MongoDBServiceTest extends VertxTestBase {
   private static MongodExecutable exe;
 
   private static String getConnectionString() {
-    String s = System.getProperty("connection_string");
+    return getProperty("connection_string");
+  }
+
+  private static String getDatabaseName() {
+    return getProperty("db_name");
+  }
+
+  private static String getProperty(String name) {
+    String s = System.getProperty(name);
     if (s != null) {
       s = s.trim();
       if (s.length() > 0) {
@@ -71,6 +79,10 @@ public class MongoDBServiceTest extends VertxTestBase {
     String connectionString = getConnectionString();
     if (connectionString != null) {
       config.putString("connection_string", connectionString);
+    }
+    String databaseName = getDatabaseName();
+    if (databaseName != null) {
+      config.putString("db_name", databaseName);
     }
     mongo = MongoService.create(vertx, config);
     mongo.start();
@@ -114,7 +126,7 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testCreateAndGetCollection() throws Exception {
     String collection = TestUtils.randomAlphaString(100);
-    mongo.createCollection(collection, onSuccess(res -> {
+      mongo.createCollection(collection, onSuccess(res -> {
       mongo.getCollections(onSuccess(list -> {
         List<String> ours = getOurCollections(list);
         assertEquals(1, ours.size());
