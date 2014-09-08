@@ -1,5 +1,12 @@
 package io.vertx.ext.mongo.test;
 
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.IMongodConfig;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.process.runtime.Network;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -8,6 +15,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.test.core.TestUtils;
 import io.vertx.test.core.VertxTestBase;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -21,6 +30,37 @@ import java.util.function.Consumer;
  */
 public class MongoDBServiceTest extends VertxTestBase {
 
+  private static MongodExecutable exe;
+
+  private static String getConnectionString() {
+    String s = System.getProperty("connection_string");
+    if (s != null) {
+      s = s.trim();
+      if (s.length() > 0) {
+        return s;
+      }
+    }
+    return null;
+  }
+
+  @BeforeClass
+  public static void startMongo() throws Exception {
+    if (getConnectionString() == null ) {
+      IMongodConfig config = new MongodConfigBuilder().
+          version(Version.Main.PRODUCTION).
+          net(new Net(27017, Network.localhostIsIPv6())).
+          build();
+      exe = MongodStarter.getDefaultInstance().prepare(config);
+      exe.start();
+    }
+  }
+
+  @AfterClass
+  public static void stopMongo() {
+    if (exe != null) {
+      exe.stop();
+    }
+  }
 
   MongoService mongo;
 
@@ -28,6 +68,10 @@ public class MongoDBServiceTest extends VertxTestBase {
   public void setUp() throws Exception {
     super.setUp();
     JsonObject config = new JsonObject();
+    String connectionString = getConnectionString();
+    if (connectionString != null) {
+      config.putString("connection_string", connectionString);
+    }
     mongo = MongoService.create(vertx, config);
     mongo.start();
     CountDownLatch latch = new CountDownLatch(1);
@@ -458,4 +502,4 @@ public class MongoDBServiceTest extends VertxTestBase {
 //    }));
 //    await();
 //  }
-  }
+}
