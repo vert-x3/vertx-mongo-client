@@ -12,6 +12,12 @@
 
   <artifactId>ext-mongo</artifactId>
 
+  <!--
+    Tests uses MongoDB, by default it uses Flapdoodle to manage a server for the tests, however it is possible to use
+    an existing MongoDB server by specifying the connection_string and db_name system properties, for instance:
+    % mvn test -Dconnection_string=mongodb://.... -Ddb_name=....
+  -->
+
   <dependencies>
     <dependency>
       <groupId>org.mongodb</groupId>
