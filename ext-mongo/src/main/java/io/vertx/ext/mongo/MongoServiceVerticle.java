@@ -13,7 +13,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
     // Create the service
-    JsonObject config = vertx.currentContext().config();
+    JsonObject config = vertx.context().config();
     service = MongoService.create(vertx, config);
     service.start();
     String address = config.getString("address", "vertx.mongodb");
