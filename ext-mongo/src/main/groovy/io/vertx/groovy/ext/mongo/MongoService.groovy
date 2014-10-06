@@ -31,15 +31,15 @@ public class MongoService {
   public MongoService(io.vertx.ext.mongo.MongoService delegate) {
     this.delegate = delegate;
   }
-  public io.vertx.ext.mongo.MongoService getDelegate() {
+  public Object getDelegate() {
     return delegate;
   }
   public static MongoService create(Vertx vertx, Map<String, Object> config) {
-    def ret= new MongoService(io.vertx.ext.mongo.MongoService.create(vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null));
+    def ret= MongoService.FACTORY.apply(io.vertx.ext.mongo.MongoService.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null));
     return ret;
   }
   public static MongoService createEventBusProxy(Vertx vertx, String address) {
-    def ret= new MongoService(io.vertx.ext.mongo.MongoService.createEventBusProxy(vertx.getDelegate(), address));
+    def ret= MongoService.FACTORY.apply(io.vertx.ext.mongo.MongoService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
     return ret;
   }
   public void save(String collection, Map<String, Object> document, String writeConcern, Handler<AsyncResult<String>> resultHandler) {
@@ -111,4 +111,8 @@ public class MongoService {
   public void stop() {
     this.delegate.stop();
   }
+
+  static final java.util.function.Function<io.vertx.ext.mongo.MongoService, MongoService> FACTORY = io.vertx.lang.groovy.Factories.createFactory() {
+    io.vertx.ext.mongo.MongoService arg -> new MongoService(arg);
+  };
 }
