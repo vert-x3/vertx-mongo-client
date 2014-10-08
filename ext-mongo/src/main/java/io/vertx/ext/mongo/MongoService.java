@@ -6,6 +6,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.spi.MongoServiceFactory;
 
 import java.util.List;
 

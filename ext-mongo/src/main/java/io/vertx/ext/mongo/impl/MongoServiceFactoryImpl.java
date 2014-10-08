@@ -3,7 +3,7 @@ package io.vertx.ext.mongo.impl;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoService;
-import io.vertx.ext.mongo.MongoServiceFactory;
+import io.vertx.ext.mongo.spi.MongoServiceFactory;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
