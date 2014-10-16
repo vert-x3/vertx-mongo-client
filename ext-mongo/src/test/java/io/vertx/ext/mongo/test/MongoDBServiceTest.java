@@ -48,6 +48,7 @@ public class MongoDBServiceTest extends VertxTestBase {
         return s;
       }
     }
+
     return null;
   }
 

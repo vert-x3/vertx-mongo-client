@@ -1,7 +1,0 @@
-{
-  "main": "io.vertx.ext.mongo.MongoServiceVerticle",
-  // Default config:
-  "config": {
-    "address": "vertx.mongo"
-  }
-}
