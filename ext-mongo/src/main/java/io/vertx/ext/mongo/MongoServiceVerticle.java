@@ -16,7 +16,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
     JsonObject config = vertx.context().config();
     service = MongoService.create(vertx, config);
     service.start();
-    String address = config.getString("address", "vertx.mongodb");
+    String address = config.getString("address");
     vertx.eventBus().registerService(service, address);
   }
 
