@@ -18,8 +18,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mongo.MongoService;
+import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.mongodb.Document;
 import org.mongodb.WriteResult;
 
 import java.net.UnknownHostException;
