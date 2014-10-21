@@ -2,6 +2,7 @@ package io.vertx.ext.mongo.impl;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.ServerAddress;
+import com.mongodb.WriteConcernResult;
 import com.mongodb.async.MongoFuture;
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;
@@ -20,8 +21,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mongo.MongoService;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.bson.Document;
-import org.mongodb.WriteResult;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -77,7 +76,7 @@ public class MongoServiceImpl implements MongoService {
     String genID = generateID(document);
     MongoCollection<Document> coll = getCollection(collection, writeConcern);
     Document mDoc = jsonToDoc(document);
-    MongoFuture<org.mongodb.WriteResult> future = coll.save(mDoc);
+    MongoFuture<WriteConcernResult> future = coll.save(mDoc);
     adaptFuture(future, resultHandler, wr -> genID);
   }
 
@@ -86,7 +85,7 @@ public class MongoServiceImpl implements MongoService {
     String genID = generateID(document);
     MongoCollection<Document> coll = getCollection(collection, writeConcern);
     Document mDoc = jsonToDoc(document);
-    MongoFuture<org.mongodb.WriteResult> future = coll.insert(mDoc);
+    MongoFuture<WriteConcernResult> future = coll.insert(mDoc);
     adaptFuture(future, resultHandler, wr -> genID);
   }
 
@@ -97,7 +96,7 @@ public class MongoServiceImpl implements MongoService {
     if (upsert) {
       view.upsert();
     }
-    MongoFuture<WriteResult> future;
+    MongoFuture<WriteConcernResult> future;
     if (multi) {
       future = view.update(mUpdate);
     } else {
@@ -126,7 +125,7 @@ public class MongoServiceImpl implements MongoService {
   @Override
   public void delete(String collection, JsonObject query, String writeConcern, Handler<AsyncResult<Void>> resultHandler) {
     MongoView<Document> view = getView(collection, query, null, null, -1, -1);
-    MongoFuture<WriteResult> future = view.remove();
+    MongoFuture<WriteConcernResult> future = view.remove();
     adaptFuture(future, resultHandler);
   }
 
@@ -158,7 +157,7 @@ public class MongoServiceImpl implements MongoService {
     });
   }
 
-  private void adaptFuture(MongoFuture<WriteResult> future, Handler<AsyncResult<Void>> resultHandler) {
+  private void adaptFuture(MongoFuture<WriteConcernResult> future, Handler<AsyncResult<Void>> resultHandler) {
     adaptFuture(future, resultHandler, wr -> null);
   }
 
