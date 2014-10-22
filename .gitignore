@@ -22,3 +22,4 @@ ScratchPad.java
 src/main/resources/ext-js/*.js
 src/main/java/io/vertx/java/**/*.java
 src/main/groovy/io/vertx/groovy/**/*.groovy
+*.swp
