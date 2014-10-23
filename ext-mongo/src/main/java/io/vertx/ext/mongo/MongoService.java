@@ -49,10 +49,6 @@ public interface MongoService {
 
   void dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
 
-  // Drop collection
-
-  // Run command
-
   void runCommand(String collection, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
 
   // Collection stats ????

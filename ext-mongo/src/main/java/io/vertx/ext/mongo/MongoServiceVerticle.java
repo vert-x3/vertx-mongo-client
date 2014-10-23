@@ -14,7 +14,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
   public void start() throws Exception {
 
     // Create the service object
-    service = MongoService.create(vertx, vertx.context().config());
+    service = MongoService.create(vertx, config());
 
     // And register it on the event bus against the configured address
     String address = vertx.context().config().getString("address");
