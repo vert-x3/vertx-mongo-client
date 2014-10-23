@@ -1,12 +1,22 @@
+/*
+ * Copyright 2014 Red Hat, Inc.
+ *
+ *  All rights reserved. This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License v1.0
+ *  and Apache License v2.0 which accompanies this distribution.
+ *
+ *  The Eclipse Public License is available at
+ *  http://www.eclipse.org/legal/epl-v10.html
+ *
+ *  The Apache License v2.0 is available at
+ *  http://www.opensource.org/licenses/apache2.0.php
+ *
+ *  You may elect to redistribute this code under either of these licenses.
+ */
+
 package io.vertx.ext.mongo.test;
 
 import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.IMongodConfig;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -15,8 +25,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.test.core.TestUtils;
 import io.vertx.test.core.VertxTestBase;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -28,19 +36,19 @@ import java.util.function.Consumer;
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
-public class MongoDBServiceTest extends VertxTestBase {
+public abstract class MongoServiceTestBase extends VertxTestBase {
 
   private static MongodExecutable exe;
 
-  private static String getConnectionString() {
+  protected static String getConnectionString() {
     return getProperty("connection_string");
   }
 
-  private static String getDatabaseName() {
+  protected static String getDatabaseName() {
     return getProperty("db_name");
   }
 
-  private static String getProperty(String name) {
+  protected static String getProperty(String name) {
     String s = System.getProperty(name);
     if (s != null) {
       s = s.trim();
@@ -52,30 +60,33 @@ public class MongoDBServiceTest extends VertxTestBase {
     return null;
   }
 
-  @BeforeClass
-  public static void startMongo() throws Exception {
-    if (getConnectionString() == null ) {
-      IMongodConfig config = new MongodConfigBuilder().
-          version(Version.Main.PRODUCTION).
-          net(new Net(27017, Network.localhostIsIPv6())).
-          build();
-      exe = MongodStarter.getDefaultInstance().prepare(config);
-      exe.start();
-    }
+//  @BeforeClass
+//  public static void startMongo() throws Exception {
+//    if (getConnectionString() == null ) {
+//      IMongodConfig config = new MongodConfigBuilder().
+//        version(Version.Main.PRODUCTION).
+//        net(new Net(27017, Network.localhostIsIPv6())).
+//        build();
+//      exe = MongodStarter.getDefaultInstance().prepare(config);
+//      exe.start();
+//    }
+//  }
+//
+//  @AfterClass
+//  public static void stopMongo() {
+//    if (exe != null) {
+//      exe.stop();
+//    }
+//  }
+
+
+  protected MongoService mongoService;
+
+  private String randomCollection() {
+    return "ext-mongo" + TestUtils.randomAlphaString(20);
   }
 
-  @AfterClass
-  public static void stopMongo() {
-    if (exe != null) {
-      exe.stop();
-    }
-  }
-
-  MongoService mongo;
-
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  protected JsonObject getConfig() {
     JsonObject config = new JsonObject();
     String connectionString = getConnectionString();
     if (connectionString != null) {
@@ -85,40 +96,10 @@ public class MongoDBServiceTest extends VertxTestBase {
     if (databaseName != null) {
       config.putString("db_name", databaseName);
     }
-    mongo = MongoService.create(vertx, config);
-    mongo.start();
-    CountDownLatch latch = new CountDownLatch(1);
-    // Drop all the collections in the db
-    mongo.getCollections(onSuccess(list -> {
-      AtomicInteger collCount = new AtomicInteger();
-      List<String> toDrop = getOurCollections(list);
-      int count = toDrop.size();
-      if (!toDrop.isEmpty()) {
-        for (String collection : toDrop) {
-          mongo.dropCollection(collection, onSuccess(v -> {
-            if (collCount.incrementAndGet() == count) {
-              latch.countDown();
-            }
-          }));
-        }
-      } else {
-        latch.countDown();
-      }
-    }));
-    awaitLatch(latch);
+    return config;
   }
 
-  @Override
-  public void tearDown() throws Exception {
-    mongo.stop();
-    super.tearDown();
-  }
-
-  private String randomCollection() {
-    return "ext-mongo" + TestUtils.randomAlphaString(20);
-  }
-
-  private List<String> getOurCollections(List<String> colls) {
+  protected List<String> getOurCollections(List<String> colls) {
     List<String> ours = new ArrayList<>();
     for (String coll : colls) {
       if (coll.startsWith("ext-mongo")) {
@@ -128,17 +109,37 @@ public class MongoDBServiceTest extends VertxTestBase {
     return ours;
   }
 
+  protected void dropCollections(CountDownLatch latch) {
+    // Drop all the collections in the db
+    mongoService.getCollections(onSuccess(list -> {
+      AtomicInteger collCount = new AtomicInteger();
+      List<String> toDrop = getOurCollections(list);
+      int count = toDrop.size();
+      if (!toDrop.isEmpty()) {
+        for (String collection : toDrop) {
+          mongoService.dropCollection(collection, onSuccess(v -> {
+            if (collCount.incrementAndGet() == count) {
+              latch.countDown();
+            }
+          }));
+        }
+      } else {
+        latch.countDown();
+      }
+    }));
+  }
+
   @Test
   public void testCreateAndGetCollection() throws Exception {
     String collection = randomCollection();
-      mongo.createCollection(collection, onSuccess(res -> {
-      mongo.getCollections(onSuccess(list -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
+      mongoService.getCollections(onSuccess(list -> {
         List<String> ours = getOurCollections(list);
         assertEquals(1, ours.size());
         assertEquals(collection, ours.get(0));
         String collection2 = randomCollection();
-        mongo.createCollection(collection2, onSuccess(res2 -> {
-          mongo.getCollections(onSuccess(list2 -> {
+        mongoService.createCollection(collection2, onSuccess(res2 -> {
+          mongoService.getCollections(onSuccess(list2 -> {
             List<String> ours2 = getOurCollections(list2);
             assertEquals(2, ours2.size());
             assertTrue(ours2.contains(collection));
@@ -154,8 +155,8 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testCreateCollectionAlreadyExists() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
-      mongo.createCollection(collection, onFailure(ex -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
+      mongoService.createCollection(collection, onFailure(ex -> {
         testComplete();
       }));
     }));
@@ -165,9 +166,9 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testDropCollection() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
-      mongo.dropCollection(collection, onSuccess(res2 -> {
-        mongo.getCollections(onSuccess(list -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
+      mongoService.dropCollection(collection, onSuccess(res2 -> {
+        mongoService.getCollections(onSuccess(list -> {
           List<String> ours = getOurCollections(list);
           assertTrue(ours.isEmpty());
           testComplete();
@@ -181,8 +182,8 @@ public class MongoDBServiceTest extends VertxTestBase {
   public void testRunCommand() throws Exception {
     JsonObject ping = new JsonObject().putNumber("isMaster", 1);
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
-      mongo.runCommand(collection, ping, onSuccess(reply -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
+      mongoService.runCommand(collection, ping, onSuccess(reply -> {
         assertTrue(reply.getBoolean("ismaster"));
         testComplete();
       }));
@@ -194,8 +195,8 @@ public class MongoDBServiceTest extends VertxTestBase {
   public void testRunInvalidCommand() throws Exception {
     JsonObject ping = new JsonObject().putNumber("iuhioqwdqhwd", 1);
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
-      mongo.runCommand(collection, ping, onFailure(ex -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
+      mongoService.runCommand(collection, ping, onFailure(ex -> {
         testComplete();
       }));
     }));
@@ -205,9 +206,9 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testInsertNoPreexistingID() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
         testComplete();
       }));
@@ -218,11 +219,11 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testInsertPreexistingID() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       String genID  = TestUtils.randomAlphaString(100);
       doc.putString("_id", genID);
-      mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNull(id);
         testComplete();
       }));
@@ -233,12 +234,12 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testInsertAlreadyExists() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
         doc.putString("_id", id);
-        mongo.insert(collection, doc, "NORMAL", onFailure(t -> {
+        mongoService.insert(collection, doc, "NORMAL", onFailure(t -> {
           testComplete();
         }));
       }));
@@ -249,16 +250,16 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testSave() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongo.save(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.save(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
         doc.putString("_id", id);
         doc.putString("newField", "sheep");
         // Save again - it should update
-        mongo.save(collection, doc, "NORMAL", onSuccess(id2 -> {
+        mongoService.save(collection, doc, "NORMAL", onSuccess(id2 -> {
           assertNull(id2);
-          mongo.findOne(collection, null, null, onSuccess(res2 -> {
+          mongoService.findOne(collection, null, null, onSuccess(res2 -> {
             assertEquals("sheep", res2.getString("newField"));
             testComplete();
           }));
@@ -271,12 +272,15 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testFindOne() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
-      JsonObject doc = createDoc();
-      mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
+      JsonObject orig = createDoc();
+      JsonObject doc = orig.copy();
+      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
-        mongo.findOne(collection, new JsonObject().putString("foo", "bar"), null, onSuccess(obj -> {
-          assertEquals(doc, obj);
+        mongoService.findOne(collection, new JsonObject().putString("foo", "bar"), null, onSuccess(obj -> {
+          assertTrue(obj.containsField("_id"));
+          obj.removeField("_id");
+          assertEquals(orig, obj);
           testComplete();
         }));
       }));
@@ -287,11 +291,11 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testFindOneWithKeys() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
-        mongo.findOne(collection, new JsonObject().putString("foo", "bar"), new JsonObject().putBoolean("num", true), onSuccess(obj -> {
+        mongoService.findOne(collection, new JsonObject().putString("foo", "bar"), new JsonObject().putBoolean("num", true), onSuccess(obj -> {
           assertEquals(2, obj.size());
           assertEquals(123, obj.getInteger("num").intValue());
           assertTrue(obj.containsField("_id"));
@@ -305,8 +309,8 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testFindOneNotFound() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
-      mongo.findOne(collection, new JsonObject().putString("foo", "bar"), null, onSuccess(obj -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
+      mongoService.findOne(collection, new JsonObject().putString("foo", "bar"), null, onSuccess(obj -> {
         assertNull(obj);
         testComplete();
       }));
@@ -368,9 +372,9 @@ public class MongoDBServiceTest extends VertxTestBase {
   private void doTestFind(int numDocs, JsonObject query, JsonObject fields, JsonObject sort, int skip, int limit,
                           Consumer<List<JsonObject>> resultConsumer) throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, numDocs, onSuccess(res2 -> {
-        mongo.find(collection, query, fields, sort, limit, skip, onSuccess(res3 -> {
+        mongoService.find(collection, query, fields, sort, limit, skip, onSuccess(res3 -> {
           resultConsumer.accept(res3);
           testComplete();
         }));
@@ -422,10 +426,10 @@ public class MongoDBServiceTest extends VertxTestBase {
   private void doTestUpdate(int numDocs, JsonObject query, JsonObject update, boolean upsert, boolean multi,
                             Consumer<List<JsonObject>> resultConsumer) throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, numDocs, onSuccess(res2 -> {
-        mongo.update(collection, query, update, "NORMAL", upsert, multi, onSuccess(res3 -> {
-          mongo.find(collection, null, null, null, -1, -1, onSuccess(res4 -> {
+        mongoService.update(collection, query, update, "NORMAL", upsert, multi, onSuccess(res3 -> {
+          mongoService.find(collection, null, null, null, -1, -1, onSuccess(res4 -> {
             resultConsumer.accept(res4);
             testComplete();
           }));
@@ -438,12 +442,12 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testDeleteOne() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongo.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
-        mongo.delete(collection, new JsonObject().putString("_id", id), "NORMAL", onSuccess(v -> {
-          mongo.findOne(collection, new JsonObject().putString("_id", id), null, onSuccess(res2 -> {
+        mongoService.delete(collection, new JsonObject().putString("_id", id), "NORMAL", onSuccess(v -> {
+          mongoService.findOne(collection, new JsonObject().putString("_id", id), null, onSuccess(res2 -> {
             assertNull(res2);
             testComplete();
           }));
@@ -456,10 +460,10 @@ public class MongoDBServiceTest extends VertxTestBase {
   @Test
   public void testDeleteMultiple() throws Exception {
     String collection = randomCollection();
-    mongo.createCollection(collection, onSuccess(res -> {
+    mongoService.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, 10, onSuccess(v -> {
-        mongo.delete(collection, new JsonObject(), "NORMAL", onSuccess(v2 -> {
-          mongo.find(collection, new JsonObject(), null, null, -1, -1, onSuccess(res2 -> {
+        mongoService.delete(collection, new JsonObject(), "NORMAL", onSuccess(v2 -> {
+          mongoService.find(collection, new JsonObject(), null, null, -1, -1, onSuccess(res2 -> {
             assertTrue(res2.isEmpty());
             testComplete();
           }));
@@ -487,7 +491,7 @@ public class MongoDBServiceTest extends VertxTestBase {
       AtomicInteger cnt = new AtomicInteger();
       for (int i = 0; i < num; i++) {
         JsonObject doc = createDoc(i);
-        mongo.insert(collection, doc, "NORMAL", ar -> {
+        mongoService.insert(collection, doc, "NORMAL", ar -> {
           if (ar.succeeded()) {
             if (cnt.incrementAndGet() == num) {
               resultHandler.handle(Future.completedFuture());

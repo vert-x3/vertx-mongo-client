@@ -1,12 +1,14 @@
 package io.vertx.ext.mongo;
 
+import io.vertx.codegen.annotations.ProxyGen;
+import io.vertx.codegen.annotations.ProxyIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.spi.MongoServiceFactory;
+import io.vertx.ext.mongo.impl.MongoServiceImpl;
+import io.vertx.proxygen.ProxyHelper;
 
 import java.util.List;
 
@@ -14,14 +16,15 @@ import java.util.List;
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 @VertxGen
+@ProxyGen
 public interface MongoService {
 
   static MongoService create(Vertx vertx, JsonObject config) {
-    return factory.create(vertx, config);
+    return new MongoServiceImpl(vertx, config);
   }
 
   static MongoService createEventBusProxy(Vertx vertx, String address) {
-    return factory.createEventBusProxy(vertx, address);
+    return ProxyHelper.createProxy(MongoService.class, vertx, address);
   }
 
   // Saves the object - returns the id
@@ -52,12 +55,12 @@ public interface MongoService {
 
   void runCommand(String collection, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
 
-  void start();
-
-  void stop();
-
   // Collection stats ????
 
-  // boilerplate
-  static final MongoServiceFactory factory = ServiceHelper.loadFactory(MongoServiceFactory.class);
+  @ProxyIgnore
+  void start();
+
+  @ProxyIgnore
+  void stop();
+
 }
