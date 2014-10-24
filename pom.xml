@@ -28,6 +28,7 @@
     <module>ext-mongo-embedded-db</module>
     <module>ext-metrics</module>
     <module>ext-rxjava</module>
+    <module>ext-jca</module>
   </modules>
 
   <parent>
@@ -105,7 +106,6 @@
       <scope>test</scope>
       <version>4.11</version>
     </dependency>
-
   </dependencies>
 
   <build>
