@@ -43,7 +43,7 @@ public class MongoServiceImpl implements MongoService {
   protected MongoClient mongo;
   protected MongoDatabase db;
 
-  MongoServiceImpl(Vertx vertx, JsonObject config) {
+  public MongoServiceImpl(Vertx vertx, JsonObject config) {
     this.vertx = vertx;
     this.config = config;
   }

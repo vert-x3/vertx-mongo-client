@@ -58,6 +58,12 @@
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
+      <artifactId>proxy-gen</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
       <artifactId>vertx-groovy</artifactId>
       <version>3.0.0-SNAPSHOT</version>
       <optional>true</optional>
@@ -76,7 +82,7 @@
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-java</artifactId>
+      <artifactId>proxy-gen</artifactId>
       <version>3.0.0-SNAPSHOT</version>
       <optional>true</optional>
     </dependency>
@@ -122,6 +128,7 @@
                 <annotationProcessors>
                   <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
                 </annotationProcessors>
+                <generatedSourcesDirectory>${project.basedir}/src/main/generated</generatedSourcesDirectory>
                 <compilerArgs>
                   <arg>-AoutputDirectory=${project.basedir}/src/main</arg>
                 </compilerArgs>
