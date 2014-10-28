@@ -177,9 +177,9 @@ public class MongoServiceImpl implements MongoService {
   private String generateID(JsonObject document) {
     // TODO - is it right that we generate the id here?
     String genID;
-    if (document.getField("_id") == null) {
+    if (document.getValue("_id") == null) {
       genID = UUID.randomUUID().toString();
-      document.putString("_id", genID);
+      document.put("_id", genID);
     } else {
       genID = null;
     }
@@ -232,16 +232,16 @@ public class MongoServiceImpl implements MongoService {
       Object value = entry.getValue();
       if (value instanceof Date) {
         // Convert to long
-        json.putNumber(key, ((Date)value).getTime());
+        json.put(key, ((Date) value).getTime());
       } else if (value instanceof ObjectId) {
         // Convert to String
         json.getString(key, ((ObjectId)value).toHexString());
       } else if (value instanceof Document) {
-        json.putValue(key, docToJsonObject((Document) value));
+        json.put(key, docToJsonObject((Document) value));
       } else if (value instanceof List) {
-        json.putValue(key, new JsonArray((List)value));
+        json.put(key, new JsonArray((List) value));
       } else {
-        json.putValue(key, value);
+        json.put(key, value);
       }
     }
     return json;
@@ -251,22 +251,34 @@ public class MongoServiceImpl implements MongoService {
     if (jsonObject == null) {
       return new Document();
     } else {
-      return jsonToDoc(jsonObject.toMap());
+      // FIXME there should be some way of specifying a codec for the mongo client to use, that way
+      // we wouldn't have to do this!!
+      return jsonToDoc(jsonObject.getMap());
     }
   }
 
+
   // FIXME - this is very slow - there should be a better way of converting Map to Document in Mongo API!
+  // FIXME - also it won't work with JsonArrays/Lists that contain JsonObjects/Maps
   private Document jsonToDoc(Map<String, Object> map) {
     Document doc = new Document();
     for (Map.Entry<String, Object> entry: map.entrySet()) {
       if (entry.getValue() instanceof Map) {
-        Map inner = (Map)entry.getValue();
+        Map inner = (Map) entry.getValue();
         doc.put(entry.getKey(), jsonToDoc(inner));
+      } else if (entry.getValue() instanceof JsonObject) {
+        Map inner = ((JsonObject) entry.getValue()).getMap();
+        doc.put(entry.getKey(), jsonToDoc(inner));
+      } else if (entry.getValue() instanceof JsonArray) {
+        List inner = ((JsonArray) entry.getValue()).getList();
+        doc.put(entry.getKey(), inner);
       } else {
         doc.put(entry.getKey(), entry.getValue());
       }
     }
     return doc;
   }
+
+
 
 }

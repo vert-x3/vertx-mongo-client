@@ -17,6 +17,12 @@
 package io.vertx.ext.mongo.test;
 
 import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.IMongodConfig;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.process.runtime.Network;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -25,6 +31,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.test.core.TestUtils;
 import io.vertx.test.core.VertxTestBase;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -60,24 +68,24 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     return null;
   }
 
-//  @BeforeClass
-//  public static void startMongo() throws Exception {
-//    if (getConnectionString() == null ) {
-//      IMongodConfig config = new MongodConfigBuilder().
-//        version(Version.Main.PRODUCTION).
-//        net(new Net(27017, Network.localhostIsIPv6())).
-//        build();
-//      exe = MongodStarter.getDefaultInstance().prepare(config);
-//      exe.start();
-//    }
-//  }
-//
-//  @AfterClass
-//  public static void stopMongo() {
-//    if (exe != null) {
-//      exe.stop();
-//    }
-//  }
+  @BeforeClass
+  public static void startMongo() throws Exception {
+    if (getConnectionString() == null ) {
+      IMongodConfig config = new MongodConfigBuilder().
+        version(Version.Main.PRODUCTION).
+        net(new Net(27017, Network.localhostIsIPv6())).
+        build();
+      exe = MongodStarter.getDefaultInstance().prepare(config);
+      exe.start();
+    }
+  }
+
+  @AfterClass
+  public static void stopMongo() {
+    if (exe != null) {
+      exe.stop();
+    }
+  }
 
 
   protected MongoService mongoService;
@@ -90,11 +98,11 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     JsonObject config = new JsonObject();
     String connectionString = getConnectionString();
     if (connectionString != null) {
-      config.putString("connection_string", connectionString);
+      config.put("connection_string", connectionString);
     }
     String databaseName = getDatabaseName();
     if (databaseName != null) {
-      config.putString("db_name", databaseName);
+      config.put("db_name", databaseName);
     }
     return config;
   }
@@ -180,7 +188,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
 
   @Test
   public void testRunCommand() throws Exception {
-    JsonObject ping = new JsonObject().putNumber("isMaster", 1);
+    JsonObject ping = new JsonObject().put("isMaster", 1);
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       mongoService.runCommand(collection, ping, onSuccess(reply -> {
@@ -193,7 +201,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
 
   @Test
   public void testRunInvalidCommand() throws Exception {
-    JsonObject ping = new JsonObject().putNumber("iuhioqwdqhwd", 1);
+    JsonObject ping = new JsonObject().put("iuhioqwdqhwd", 1);
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       mongoService.runCommand(collection, ping, onFailure(ex -> {
@@ -222,7 +230,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       String genID  = TestUtils.randomAlphaString(100);
-      doc.putString("_id", genID);
+      doc.put("_id", genID);
       mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNull(id);
         testComplete();
@@ -238,7 +246,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       JsonObject doc = createDoc();
       mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
-        doc.putString("_id", id);
+        doc.put("_id", id);
         mongoService.insert(collection, doc, "NORMAL", onFailure(t -> {
           testComplete();
         }));
@@ -254,8 +262,8 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       JsonObject doc = createDoc();
       mongoService.save(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
-        doc.putString("_id", id);
-        doc.putString("newField", "sheep");
+        doc.put("_id", id);
+        doc.put("newField", "sheep");
         // Save again - it should update
         mongoService.save(collection, doc, "NORMAL", onSuccess(id2 -> {
           assertNull(id2);
@@ -277,9 +285,9 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       JsonObject doc = orig.copy();
       mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
-        mongoService.findOne(collection, new JsonObject().putString("foo", "bar"), null, onSuccess(obj -> {
-          assertTrue(obj.containsField("_id"));
-          obj.removeField("_id");
+        mongoService.findOne(collection, new JsonObject().put("foo", "bar"), null, onSuccess(obj -> {
+          assertTrue(obj.containsKey("_id"));
+          obj.remove("_id");
           assertEquals(orig, obj);
           testComplete();
         }));
@@ -295,10 +303,10 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       JsonObject doc = createDoc();
       mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
-        mongoService.findOne(collection, new JsonObject().putString("foo", "bar"), new JsonObject().putBoolean("num", true), onSuccess(obj -> {
+        mongoService.findOne(collection, new JsonObject().put("foo", "bar"), new JsonObject().put("num", true), onSuccess(obj -> {
           assertEquals(2, obj.size());
           assertEquals(123, obj.getInteger("num").intValue());
-          assertTrue(obj.containsField("_id"));
+          assertTrue(obj.containsKey("_id"));
           testComplete();
         }));
       }));
@@ -310,7 +318,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   public void testFindOneNotFound() throws Exception {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
-      mongoService.findOne(collection, new JsonObject().putString("foo", "bar"), null, onSuccess(obj -> {
+      mongoService.findOne(collection, new JsonObject().put("foo", "bar"), null, onSuccess(obj -> {
         assertNull(obj);
         testComplete();
       }));
@@ -332,7 +340,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   @Test
   public void testFindWithFields() throws Exception {
     int num = 10;
-    doTestFind(num, new JsonObject(), new JsonObject().putBoolean("num", true), null, -1, -1, results -> {
+    doTestFind(num, new JsonObject(), new JsonObject().put("num", true), null, -1, -1, results -> {
       assertEquals(num, results.size());
       for (JsonObject doc: results) {
         assertEquals(2, doc.size()); // Contains _id too
@@ -343,7 +351,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   @Test
   public void testFindWithSort() throws Exception {
     int num = 11;
-    doTestFind(num, new JsonObject(), null, new JsonObject().putNumber("foo", 1), -1, -1, results -> {
+    doTestFind(num, new JsonObject(), null, new JsonObject().put("foo", 1), -1, -1, results -> {
       assertEquals(num, results.size());
       assertEquals("bar0", results.get(0).getString("foo"));
       assertEquals("bar1", results.get(1).getString("foo"));
@@ -386,7 +394,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   @Test
   public void testUpdateOne() throws Exception {
     int num = 1;
-    doTestUpdate(num, new JsonObject().putNumber("num", 123), new JsonObject().putObject("$set", new JsonObject().putString("foo", "fooed")), false, false, results -> {
+    doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), false, false, results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
         assertEquals(5, doc.size());
@@ -401,7 +409,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
 //  @Test
 //  public void testUpdateAll() throws Exception {
 //    int num = 10;
-//    doTestUpdate(num, new JsonObject().putNumber("num", 123), new JsonObject().putObject("$set", new JsonObject().putString("foo", "fooed")), false, true, results -> {
+//    doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), false, true, results -> {
 //      assertEquals(num, results.size());
 //      for (JsonObject doc : results) {
 //        assertEquals(5, doc.size());
@@ -413,7 +421,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
 
 //  @Test
 //  public void testUpsert() throws Exception {
-//    doTestUpdate(0, new JsonObject().putNumber("num", 123), new JsonObject().putString("_id", "someid").putString("foo", "bar"), true, false, results -> {
+//    doTestUpdate(0, new JsonObject().put("num", 123), new JsonObject().put("_id", "someid").put("foo", "bar"), true, false, results -> {
 //      assertEquals(1, results.size());
 //      for (JsonObject doc : results) {
 //        assertEquals(2, doc.size());
@@ -446,8 +454,8 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       JsonObject doc = createDoc();
       mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
         assertNotNull(id);
-        mongoService.delete(collection, new JsonObject().putString("_id", id), "NORMAL", onSuccess(v -> {
-          mongoService.findOne(collection, new JsonObject().putString("_id", id), null, onSuccess(res2 -> {
+        mongoService.delete(collection, new JsonObject().put("_id", id), "NORMAL", onSuccess(v -> {
+          mongoService.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(res2 -> {
             assertNull(res2);
             testComplete();
           }));
@@ -475,15 +483,15 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
 
 
   private JsonObject createDoc() {
-    return new JsonObject().putString("foo", "bar").putNumber("num", 123).putBoolean("big", true).
-      putObject("other", new JsonObject().putString("quux", "flib").putArray("myarr",
-        new JsonArray().addString("blah").addBoolean(true).addNumber(312)));
+    return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).
+      put("other", new JsonObject().put("quux", "flib").put("myarr",
+        new JsonArray().add("blah").add(true).add(312)));
   }
 
   private JsonObject createDoc(int num) {
-    return new JsonObject().putString("foo", "bar" + (num != -1 ? num: "")).putNumber("num", 123).putBoolean("big", true).
-      putObject("other", new JsonObject().putString("quux", "flib").putArray("myarr",
-        new JsonArray().addString("blah").addBoolean(true).addNumber(312)));
+    return new JsonObject().put("foo", "bar" + (num != -1 ? num: "")).put("num", 123).put("big", true).
+      put("other", new JsonObject().put("quux", "flib").put("myarr",
+        new JsonArray().add("blah").add(true).add(312)));
   }
 
   private void insertDocs(String collection, int num, Handler<AsyncResult<Void>> resultHandler) {
