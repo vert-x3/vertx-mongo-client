@@ -1,12 +1,14 @@
 package io.vertx.ext.mongo.impl;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.ServerAddress;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 import com.mongodb.WriteConcernResult;
 import com.mongodb.async.MongoFuture;
 import com.mongodb.async.client.MongoClient;
+import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
+import com.mongodb.async.client.MongoCollectionOptions;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.async.client.MongoView;
 import io.vertx.core.AsyncResult;
@@ -18,11 +20,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.mongo.InsertOptions;
 import io.vertx.ext.mongo.MongoService;
+import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.WriteOptions;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -51,53 +55,63 @@ public class MongoServiceImpl implements MongoService {
   public void start() {
     String connectionString = config.getString("connection_string", "mongodb://localhost:27017");
     String dbName = config.getString("db_name", "default_db");
-    mongo = MongoClients.create(new ConnectionString(connectionString));
+
+    MongoClientSettings.Builder settings = MongoClientSettings.builder();
+
+    //TODO: If https://jira.mongodb.org/browse/JAVA-1518 gets done we can go from Map -> MongoClientSettings
+
+    // Default write concern for client (this can be overridden for individual operations)
+    WriteConcern wc = Utils.writeConcern(config);
+    if (wc != null) {
+      settings.writeConcern(wc);
+    }
+    // Default read preference for client (this can be overridden for individual operations)
+    ReadPreference rp = Utils.readPreference(config);
+    if (rp != null) {
+      settings.readPreference(rp);
+    }
+    // Apply settings from connection string
+    Utils.applyConnectionString(settings, connectionString);
+
+    mongo = MongoClients.create(settings.build());
     db = mongo.getDatabase(dbName);
+
+    log.debug("mongoDB service started");
   }
 
   @Override
   public void stop() {
     mongo.close();
-  }
-
-  private List<ServerAddress> convertServers(JsonArray servers) throws UnknownHostException {
-    List<ServerAddress> seeds = new ArrayList<>();
-    for (Object elem : servers) {
-      JsonObject address = (JsonObject) elem;
-      String host = address.getString("host");
-      int port = address.getInteger("port");
-      seeds.add(new ServerAddress(host, port));
-    }
-    return seeds;
+    log.debug("mongoDB service stopped");
   }
 
   @Override
-  public void save(String collection, JsonObject document, String writeConcern, Handler<AsyncResult<String>> resultHandler) {
+  public void save(String collection, JsonObject document, WriteOptions options, Handler<AsyncResult<String>> resultHandler) {
     String genID = generateID(document);
-    MongoCollection<Document> coll = getCollection(collection, writeConcern);
+    MongoCollection<Document> coll = getCollection(collection, options.getWriteConcern());
     Document mDoc = jsonToDoc(document);
     MongoFuture<WriteConcernResult> future = coll.save(mDoc);
     adaptFuture(future, resultHandler, wr -> genID);
   }
 
   @Override
-  public void insert(String collection, JsonObject document, String writeConcern, Handler<AsyncResult<String>> resultHandler) {
+  public void insert(String collection, JsonObject document, InsertOptions options, Handler<AsyncResult<String>> resultHandler) {
     String genID = generateID(document);
-    MongoCollection<Document> coll = getCollection(collection, writeConcern);
+    MongoCollection<Document> coll = getCollection(collection, options.getWriteConcern());
     Document mDoc = jsonToDoc(document);
     MongoFuture<WriteConcernResult> future = coll.insert(mDoc);
     adaptFuture(future, resultHandler, wr -> genID);
   }
 
   @Override
-  public void update(String collection, JsonObject query, JsonObject update, String writeConcern, boolean upsert, boolean multi, Handler<AsyncResult<Void>> resultHandler) {
+  public void update(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
     Document mUpdate = jsonToDoc(update);
     MongoView<Document> view = getView(collection, query, null, null, -1, -1);
-    if (upsert) {
+    if (options.isUpsert()) {
       view.upsert();
     }
     MongoFuture<WriteConcernResult> future;
-    if (multi) {
+    if (options.isMulti()) {
       future = view.update(mUpdate);
     } else {
       future = view.updateOne(mUpdate);
@@ -152,9 +166,7 @@ public class MongoServiceImpl implements MongoService {
   public void runCommand(String collection, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     Document mCommand = jsonToDoc(command);
     MongoFuture<Document> future = db.executeCommand(mCommand);
-    adaptFuture(future, resultHandler, doc -> {
-      return docToJsonObject(doc);
-    });
+    adaptFuture(future, resultHandler, this::docToJsonObject);
   }
 
   private void adaptFuture(MongoFuture<WriteConcernResult> future, Handler<AsyncResult<Void>> resultHandler) {
@@ -209,19 +221,14 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private MongoCollection<Document> getCollection(String name, String writeConcern) {
-//    MongoCollectionOptions.Builder builder = MongoCollectionOptions.builder();
-//    builder.readPreference(ReadPreference.nearest()); // FIXME shouldn't this be defaulted automatically?
-//    if (writeConcern != null) {
-//      WriteConcern wc = WriteConcern.valueOf(writeConcern);
-//      if (wc == null) {
-//        throw new IllegalArgumentException("Invalid WriteConcern: " + writeConcern);
-//      }
-//      builder.writeConcern(wc);
-//    } else {
-//      builder.writeConcern(WriteConcern.SAFE); // FIXME - shouldn't this be defaulted automatically?
-//    }
-//    return db.getCollection(name, builder.build());
-    return db.getCollection(name);
+    // Apparently MongoCollectionOptions doesn't default to w/e is used when we call w/out
+    if (writeConcern == null) {
+      return db.getCollection(name);
+    }
+
+    MongoCollectionOptions.Builder options = MongoCollectionOptions.builder();
+    options.writeConcern(WriteConcern.valueOf(writeConcern));
+    return db.getCollection(name, options.build());
   }
 
   // TODO better conversion

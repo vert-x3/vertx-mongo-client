@@ -19,6 +19,9 @@ var utils = require('vertx-js/util/utils');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoService = io.vertx.ext.mongo.MongoService;
+var InsertOptions = io.vertx.ext.mongo.InsertOptions;
+var WriteOptions = io.vertx.ext.mongo.WriteOptions;
+var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 
 /**
 
@@ -29,10 +32,10 @@ var MongoService = function(j_val) {
   var j_mongoService = j_val;
   var that = this;
 
-  this.save = function(collection, document, writeConcern, resultHandler) {
+  this.save = function(collection, document, options, resultHandler) {
     var __args = arguments;
-    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService.save(collection, utils.convJSObjectToJsonObject(document), writeConcern, function(ar) {
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
+      j_mongoService.save(collection, utils.convJSObjectToJsonObject(document), options != null ? new WriteOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
       } else {
@@ -42,10 +45,10 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.insert = function(collection, document, writeConcern, resultHandler) {
+  this.insert = function(collection, document, options, resultHandler) {
     var __args = arguments;
-    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService.insert(collection, utils.convJSObjectToJsonObject(document), writeConcern, function(ar) {
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
+      j_mongoService.insert(collection, utils.convJSObjectToJsonObject(document), options != null ? new InsertOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
       } else {
@@ -55,10 +58,10 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.update = function(collection, query, update, writeConcern, upsert, multi, resultHandler) {
+  this.update = function(collection, query, update, options, resultHandler) {
     var __args = arguments;
-    if (__args.length === 7 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'string' && typeof __args[4] ==='boolean' && typeof __args[5] ==='boolean' && typeof __args[6] === 'function') {
-      j_mongoService.update(collection, utils.convJSObjectToJsonObject(query), utils.convJSObjectToJsonObject(update), writeConcern, upsert, multi, function(ar) {
+    if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'object' && typeof __args[4] === 'function') {
+      j_mongoService.update(collection, utils.convJSObjectToJsonObject(query), utils.convJSObjectToJsonObject(update), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {

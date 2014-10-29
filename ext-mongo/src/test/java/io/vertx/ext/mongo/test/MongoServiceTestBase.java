@@ -28,7 +28,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.InsertOptions;
 import io.vertx.ext.mongo.MongoService;
+import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.WriteOptions;
 import io.vertx.test.core.TestUtils;
 import io.vertx.test.core.VertxTestBase;
 import org.junit.AfterClass;
@@ -216,7 +219,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
         assertNotNull(id);
         testComplete();
       }));
@@ -231,7 +234,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       JsonObject doc = createDoc();
       String genID  = TestUtils.randomAlphaString(100);
       doc.put("_id", genID);
-      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
         assertNull(id);
         testComplete();
       }));
@@ -244,10 +247,10 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
         assertNotNull(id);
         doc.put("_id", id);
-        mongoService.insert(collection, doc, "NORMAL", onFailure(t -> {
+        mongoService.insert(collection, doc, new InsertOptions(), onFailure(t -> {
           testComplete();
         }));
       }));
@@ -260,12 +263,12 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongoService.save(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.save(collection, doc, new WriteOptions(), onSuccess(id -> {
         assertNotNull(id);
         doc.put("_id", id);
         doc.put("newField", "sheep");
         // Save again - it should update
-        mongoService.save(collection, doc, "NORMAL", onSuccess(id2 -> {
+        mongoService.save(collection, doc, new WriteOptions(), onSuccess(id2 -> {
           assertNull(id2);
           mongoService.findOne(collection, null, null, onSuccess(res2 -> {
             assertEquals("sheep", res2.getString("newField"));
@@ -283,7 +286,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject orig = createDoc();
       JsonObject doc = orig.copy();
-      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
         assertNotNull(id);
         mongoService.findOne(collection, new JsonObject().put("foo", "bar"), null, onSuccess(obj -> {
           assertTrue(obj.containsKey("_id"));
@@ -301,7 +304,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
         assertNotNull(id);
         mongoService.findOne(collection, new JsonObject().put("foo", "bar"), new JsonObject().put("num", true), onSuccess(obj -> {
           assertEquals(2, obj.size());
@@ -436,7 +439,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, numDocs, onSuccess(res2 -> {
-        mongoService.update(collection, query, update, "NORMAL", upsert, multi, onSuccess(res3 -> {
+        mongoService.update(collection, query, update, new UpdateOptions().setUpsert(upsert).setMulti(multi), onSuccess(res3 -> {
           mongoService.find(collection, null, null, null, -1, -1, onSuccess(res4 -> {
             resultConsumer.accept(res4);
             testComplete();
@@ -452,7 +455,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongoService.insert(collection, doc, "NORMAL", onSuccess(id -> {
+      mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
         assertNotNull(id);
         mongoService.delete(collection, new JsonObject().put("_id", id), "NORMAL", onSuccess(v -> {
           mongoService.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(res2 -> {
@@ -499,7 +502,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       AtomicInteger cnt = new AtomicInteger();
       for (int i = 0; i < num; i++) {
         JsonObject doc = createDoc(i);
-        mongoService.insert(collection, doc, "NORMAL", ar -> {
+        mongoService.insert(collection, doc, new InsertOptions(), ar -> {
           if (ar.succeeded()) {
             if (cnt.incrementAndGet() == num) {
               resultHandler.handle(Future.completedFuture());
