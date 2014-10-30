@@ -16,7 +16,7 @@ import java.util.function.Consumer;
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> implements CollectibleCodec<JsonObject> {
-  private static final String ID_FIELD = "_id";
+  public static final String ID_FIELD = "_id";
 
   @Override
   public void generateIdIfAbsentFromDocument(JsonObject json) {
@@ -100,5 +100,10 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected Object readObjectId(BsonReader reader, DecoderContext ctx) {
     return reader.readObjectId().toHexString();
+  }
+
+  @Override
+  protected Object readDateTime(BsonReader reader, DecoderContext ctx) {
+    return reader.readDateTime();
   }
 }

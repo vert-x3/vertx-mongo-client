@@ -23,7 +23,7 @@ public class InsertOptions extends WriteOptions {
     this.ordered = other.ordered;
   }
 
-  public boolean isOrdered() {
+  public Boolean isOrdered() {
     return ordered;
   }
 

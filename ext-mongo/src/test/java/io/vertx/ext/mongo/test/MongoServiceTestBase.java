@@ -76,7 +76,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     if (getConnectionString() == null ) {
       IMongodConfig config = new MongodConfigBuilder().
         version(Version.Main.PRODUCTION).
-        net(new Net(27017, Network.localhostIsIPv6())).
+        net(new Net(27018, Network.localhostIsIPv6())).
         build();
       exe = MongodStarter.getDefaultInstance().prepare(config);
       exe.start();
@@ -102,6 +102,8 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String connectionString = getConnectionString();
     if (connectionString != null) {
       config.put("connection_string", connectionString);
+    } else {
+      config.put("connection_string", "mongodb://localhost:27018");
     }
     String databaseName = getDatabaseName();
     if (databaseName != null) {
@@ -270,7 +272,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
         // Save again - it should update
         mongoService.save(collection, doc, new WriteOptions(), onSuccess(id2 -> {
           assertNull(id2);
-          mongoService.findOne(collection, null, null, onSuccess(res2 -> {
+          mongoService.findOne(collection, new JsonObject(), null, onSuccess(res2 -> {
             assertEquals("sheep", res2.getString("newField"));
             testComplete();
           }));
@@ -440,7 +442,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     mongoService.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, numDocs, onSuccess(res2 -> {
         mongoService.update(collection, query, update, new UpdateOptions().setUpsert(upsert).setMulti(multi), onSuccess(res3 -> {
-          mongoService.find(collection, null, null, null, -1, -1, onSuccess(res4 -> {
+          mongoService.find(collection, new JsonObject(), null, null, -1, -1, onSuccess(res4 -> {
             resultConsumer.accept(res4);
             testComplete();
           }));
@@ -457,7 +459,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       JsonObject doc = createDoc();
       mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
         assertNotNull(id);
-        mongoService.delete(collection, new JsonObject().put("_id", id), "NORMAL", onSuccess(v -> {
+        mongoService.delete(collection, new JsonObject().put("_id", id), new WriteOptions(), onSuccess(v -> {
           mongoService.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(res2 -> {
             assertNull(res2);
             testComplete();
@@ -473,7 +475,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, 10, onSuccess(v -> {
-        mongoService.delete(collection, new JsonObject(), "NORMAL", onSuccess(v2 -> {
+        mongoService.delete(collection, new JsonObject(), new WriteOptions(), onSuccess(v2 -> {
           mongoService.find(collection, new JsonObject(), null, null, -1, -1, onSuccess(res2 -> {
             assertTrue(res2.isEmpty());
             testComplete();

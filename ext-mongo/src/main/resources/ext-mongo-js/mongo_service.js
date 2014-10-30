@@ -97,10 +97,10 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.delete = function(collection, query, writeConcern, resultHandler) {
+  this.delete = function(collection, query, options, resultHandler) {
     var __args = arguments;
-    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService.delete(collection, utils.convJSObjectToJsonObject(query), writeConcern, function(ar) {
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
+      j_mongoService.delete(collection, utils.convJSObjectToJsonObject(query), options != null ? new WriteOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {

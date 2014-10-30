@@ -40,7 +40,7 @@ public interface MongoService {
 
   void findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler);
 
-  void delete(String collection, JsonObject query, String writeConcern, Handler<AsyncResult<Void>> resultHandler);
+  void delete(String collection, JsonObject query, WriteOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   void createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler);
 
@@ -49,8 +49,6 @@ public interface MongoService {
   void dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
 
   void runCommand(String collection, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
-
-  // Collection stats ????
 
   @ProxyIgnore
   void start();

@@ -8,7 +8,6 @@ import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
-import com.mongodb.async.client.MongoCollectionOptions;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.async.client.MongoView;
 import io.vertx.core.AsyncResult;
@@ -16,7 +15,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -24,15 +22,15 @@ import io.vertx.ext.mongo.InsertOptions;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOptions;
+import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.function.Function;
+
+import static io.vertx.ext.mongo.impl.Utils.*;
+import static java.util.Objects.*;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -46,6 +44,8 @@ public class MongoServiceImpl implements MongoService {
 
   protected MongoClient mongo;
   protected MongoDatabase db;
+  private MongoClientSettings mongoClientSettings;
+  private JsonObjectCodec codec;
 
   public MongoServiceImpl(Vertx vertx, JsonObject config) {
     this.vertx = vertx;
@@ -56,24 +56,27 @@ public class MongoServiceImpl implements MongoService {
     String connectionString = config.getString("connection_string", "mongodb://localhost:27017");
     String dbName = config.getString("db_name", "default_db");
 
-    MongoClientSettings.Builder settings = MongoClientSettings.builder();
+    codec = new JsonObjectCodec();
+
+    MongoClientSettings.Builder mcs = MongoClientSettings.builder();
 
     //TODO: If https://jira.mongodb.org/browse/JAVA-1518 gets done we can go from Map -> MongoClientSettings
 
     // Default write concern for client (this can be overridden for individual operations)
-    WriteConcern wc = Utils.writeConcern(config);
+    WriteConcern wc = writeConcern(config);
     if (wc != null) {
-      settings.writeConcern(wc);
+      mcs.writeConcern(wc);
     }
     // Default read preference for client (this can be overridden for individual operations)
-    ReadPreference rp = Utils.readPreference(config);
+    ReadPreference rp = readPreference(config);
     if (rp != null) {
-      settings.readPreference(rp);
+      mcs.readPreference(rp);
     }
     // Apply settings from connection string
-    Utils.applyConnectionString(settings, connectionString);
+    applyConnectionString(mcs, connectionString);
+    mongoClientSettings = mcs.build();
 
-    mongo = MongoClients.create(settings.build());
+    mongo = MongoClients.create(mongoClientSettings);
     db = mongo.getDatabase(dbName);
 
     log.debug("mongoDB service started");
@@ -87,86 +90,139 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   public void save(String collection, JsonObject document, WriteOptions options, Handler<AsyncResult<String>> resultHandler) {
-    String genID = generateID(document);
-    MongoCollection<Document> coll = getCollection(collection, options.getWriteConcern());
-    Document mDoc = jsonToDoc(document);
-    MongoFuture<WriteConcernResult> future = coll.save(mDoc);
-    adaptFuture(future, resultHandler, wr -> genID);
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(document, "document cannot be null");
+    requireNonNull(options, "options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    //FIXME: Use MongoCollection<JsonObject> when https://jira.mongodb.org/browse/JAVA-1325 is complete and no need for this genId malarkey
+    boolean insert = !codec.documentHasId(document);
+
+    codec.generateIdIfAbsentFromDocument(document);
+    MongoCollection<Document> coll = db.getCollection(collection, collectionOptions(options, mongoClientSettings));
+
+    //TODO: Consider returning WriteConcernResult as a JsonObject, instead of just the id mayhaps ?
+    MongoFuture<WriteConcernResult> future = coll.save(toDocument(document));
+    adaptFuture(future, resultHandler, wr -> {
+      if (insert) {
+        return idAsString(codec.getDocumentId(document));
+      } else {
+        return null;
+      }
+    });
   }
 
   @Override
   public void insert(String collection, JsonObject document, InsertOptions options, Handler<AsyncResult<String>> resultHandler) {
-    String genID = generateID(document);
-    MongoCollection<Document> coll = getCollection(collection, options.getWriteConcern());
-    Document mDoc = jsonToDoc(document);
-    MongoFuture<WriteConcernResult> future = coll.insert(mDoc);
-    adaptFuture(future, resultHandler, wr -> genID);
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(document, "document cannot be null");
+    requireNonNull(options, "options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    boolean insert = !codec.documentHasId(document);
+
+    MongoCollection<JsonObject> coll = getCollection(collection, options);
+    MongoFuture<WriteConcernResult> future = coll.insert(document);
+    adaptFuture(future, resultHandler, wr -> {
+      if (insert) {
+        return idAsString(codec.getDocumentId(document));
+      } else {
+        return null;
+      }
+    });
   }
 
   @Override
   public void update(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
-    Document mUpdate = jsonToDoc(update);
-    MongoView<Document> view = getView(collection, query, null, null, -1, -1);
-    if (options.isUpsert()) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(update, "update cannot be null");
+    requireNonNull(options, "options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoView<JsonObject> view = getView(collection, query, null, null, -1, -1);
+    if (isTrue(options.isUpsert())) {
       view.upsert();
     }
     MongoFuture<WriteConcernResult> future;
-    if (options.isMulti()) {
-      future = view.update(mUpdate);
+    if (isTrue(options.isMulti())) {
+      future = view.update(toDocument(update));
     } else {
-      future = view.updateOne(mUpdate);
+      future = view.updateOne(toDocument(update));
     }
     adaptFuture(future, resultHandler);
   }
 
   @Override
   public void find(String collection, JsonObject query, JsonObject fields, JsonObject sort, int limit, int skip, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-    MongoView<Document> view = getView(collection, query, fields, sort, limit, skip);
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoView<JsonObject> view = getView(collection, query, fields, sort, limit, skip);
     List<JsonObject> results = new ArrayList<>();
-    MongoFuture<Void> future = view.forEach(res -> results.add(docToJsonObject(res)));
-    adaptFuture(future, resultHandler, wr -> results);
+    MongoFuture<List<JsonObject>> future = view.into(results);
+    handleFuture(future, resultHandler);
   }
 
   @Override
   public void findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) {
-    MongoView<Document> view = getView(collection, query, fields, null, -1, -1);
-    MongoFuture<Document> future = view.one();
-    adaptFuture(future, resultHandler, (Document doc) -> {
-      return doc == null ? null : docToJsonObject(doc);
-    });
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoView<JsonObject> view = getView(collection, query, fields, null, -1, -1);
+    MongoFuture<JsonObject> future = view.one();
+    handleFuture(future, resultHandler);
   }
 
   @Override
-  public void delete(String collection, JsonObject query, String writeConcern, Handler<AsyncResult<Void>> resultHandler) {
-    MongoView<Document> view = getView(collection, query, null, null, -1, -1);
+  public void delete(String collection, JsonObject query, WriteOptions options, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(options, "options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoView<JsonObject> view = getView(collection, query, null, null, -1, -1);
     MongoFuture<WriteConcernResult> future = view.remove();
     adaptFuture(future, resultHandler);
   }
 
   @Override
-  public void createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler) {
-    MongoFuture<Void> future = db.tools().createCollection(collectionName);
+  public void createCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoFuture<Void> future = db.tools().createCollection(collection);
     adaptFuture(future, resultHandler, wr -> null);
   }
 
   @Override
   public void getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
     MongoFuture<List<String>> future = db.tools().getCollectionNames();
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
     adaptFuture(future, resultHandler, res -> res);
   }
 
   @Override
   public void dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
-    MongoCollection<Document> coll = getCollection(collection, null);
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection);
     MongoFuture<Void> future = coll.tools().drop();
-    adaptFuture(future, resultHandler, v -> null);
+    handleFuture(future, resultHandler);
   }
 
   @Override
   public void runCommand(String collection, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
-    Document mCommand = jsonToDoc(command);
-    MongoFuture<Document> future = db.executeCommand(mCommand);
-    adaptFuture(future, resultHandler, this::docToJsonObject);
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(command, "command cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoFuture<Document> future = db.executeCommand(toDocument(command));
+    adaptFuture(future, resultHandler, Utils::toJson);
   }
 
   private void adaptFuture(MongoFuture<WriteConcernResult> future, Handler<AsyncResult<Void>> resultHandler) {
@@ -186,106 +242,46 @@ public class MongoServiceImpl implements MongoService {
     });
   }
 
-  private String generateID(JsonObject document) {
-    // TODO - is it right that we generate the id here?
-    String genID;
-    if (document.getValue("_id") == null) {
-      genID = UUID.randomUUID().toString();
-      document.put("_id", genID);
-    } else {
-      genID = null;
-    }
-    return genID;
+  private <T> void handleFuture(MongoFuture<T> future, Handler<AsyncResult<T>> resultHandler) {
+    Context context = vertx.context();
+    future.register((result, e) -> {
+      context.runOnContext(v -> {
+        if (e != null) {
+          resultHandler.handle(Future.completedFuture(e));
+        } else {
+          resultHandler.handle(Future.completedFuture(result));
+        }
+      });
+    });
   }
 
-  private MongoView<Document> getView(String collection, JsonObject query, JsonObject fields, JsonObject sort,
-                                      int limit, int skip) {
-    MongoCollection<Document> coll = getCollection(collection, null);
-    Document mQuery = jsonToDoc(query);
-    Document mFields = jsonToDoc(fields);
-    Document mSort = jsonToDoc(sort);
-    MongoView<Document> view = coll.find(mQuery);
+  private MongoView<JsonObject> getView(String collection, JsonObject query, JsonObject fields, JsonObject sort, int limit, int skip) {
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    MongoView<JsonObject> view = coll.find(toDocument(query));
     if (limit != -1) {
       view.limit(limit);
     }
     if (skip != -1) {
       view.skip(skip);
     }
-    if (mSort != null) {
-      view.sort(mSort);
+    if (sort != null) {
+      view.sort(toDocument(sort));
     }
-    if (mFields != null) {
-      view.fields(mFields);
+    if (fields != null) {
+      view.fields(toDocument(fields));
     }
     return view;
   }
 
-  private MongoCollection<Document> getCollection(String name, String writeConcern) {
-    // Apparently MongoCollectionOptions doesn't default to w/e is used when we call w/out
-    if (writeConcern == null) {
-      return db.getCollection(name);
-    }
-
-    MongoCollectionOptions.Builder options = MongoCollectionOptions.builder();
-    options.writeConcern(WriteConcern.valueOf(writeConcern));
-    return db.getCollection(name, options.build());
+  private MongoCollection<JsonObject> getCollection(String name) {
+    return getCollection(name, new WriteOptions());
   }
 
-  // TODO better conversion
-  private JsonObject docToJsonObject(Document doc) {
-    JsonObject json = new JsonObject();
-    for (Map.Entry<String, Object> entry: doc.entrySet()) {
-      String key = entry.getKey();
-      Object value = entry.getValue();
-      if (value instanceof Date) {
-        // Convert to long
-        json.put(key, ((Date) value).getTime());
-      } else if (value instanceof ObjectId) {
-        // Convert to String
-        json.getString(key, ((ObjectId)value).toHexString());
-      } else if (value instanceof Document) {
-        json.put(key, docToJsonObject((Document) value));
-      } else if (value instanceof List) {
-        json.put(key, new JsonArray((List) value));
-      } else {
-        json.put(key, value);
-      }
-    }
-    return json;
+  private MongoCollection<JsonObject> getCollection(String name, WriteOptions options) {
+    return db.getCollection(name, codec, collectionOptions(options, mongoClientSettings));
   }
 
-  private Document jsonToDoc(JsonObject jsonObject) {
-    if (jsonObject == null) {
-      return new Document();
-    } else {
-      // FIXME there should be some way of specifying a codec for the mongo client to use, that way
-      // we wouldn't have to do this!!
-      return jsonToDoc(jsonObject.getMap());
-    }
+  private static boolean isTrue(Boolean bool) {
+    return bool != null && bool;
   }
-
-
-  // FIXME - this is very slow - there should be a better way of converting Map to Document in Mongo API!
-  // FIXME - also it won't work with JsonArrays/Lists that contain JsonObjects/Maps
-  private Document jsonToDoc(Map<String, Object> map) {
-    Document doc = new Document();
-    for (Map.Entry<String, Object> entry: map.entrySet()) {
-      if (entry.getValue() instanceof Map) {
-        Map inner = (Map) entry.getValue();
-        doc.put(entry.getKey(), jsonToDoc(inner));
-      } else if (entry.getValue() instanceof JsonObject) {
-        Map inner = ((JsonObject) entry.getValue()).getMap();
-        doc.put(entry.getKey(), jsonToDoc(inner));
-      } else if (entry.getValue() instanceof JsonArray) {
-        List inner = ((JsonArray) entry.getValue()).getList();
-        doc.put(entry.getKey(), inner);
-      } else {
-        doc.put(entry.getKey(), entry.getValue());
-      }
-    }
-    return doc;
-  }
-
-
-
 }

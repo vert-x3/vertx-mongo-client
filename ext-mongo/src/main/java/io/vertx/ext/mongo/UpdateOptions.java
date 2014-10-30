@@ -26,7 +26,7 @@ public class UpdateOptions extends WriteOptions {
     multi = json.getBoolean("multi");
   }
 
-  public boolean isUpsert() {
+  public Boolean isUpsert() {
     return upsert;
   }
 
@@ -35,7 +35,7 @@ public class UpdateOptions extends WriteOptions {
     return this;
   }
 
-  public boolean isMulti() {
+  public Boolean isMulti() {
     return multi;
   }
 
