@@ -283,6 +283,45 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   }
 
   @Test
+  public void testCount() throws Exception {
+    int num = 10;
+    String collection = randomCollection();
+    insertDocs(collection, num, onSuccess(res -> {
+      mongoService.count(collection, new JsonObject(), onSuccess(count -> {
+        assertNotNull(count);
+        assertEquals(num, count.intValue());
+        testComplete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testCountWithQuery() throws Exception {
+    int num = 10;
+    String collection = randomCollection();
+    CountDownLatch latch = new CountDownLatch(num);
+    for (int i = 0; i < num; i++) {
+      JsonObject doc = createDoc();
+      if (i % 2 == 0) {
+        doc.put("flag", true);
+      }
+      mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
+        assertNotNull(id);
+        latch.countDown();
+      }));
+    }
+
+    awaitLatch(latch);
+
+    JsonObject query = new JsonObject().put("flag", true);
+    mongoService.count(collection, query, onSuccess(count -> {
+      assertNotNull(count);
+      assertEquals(num / 2, count.intValue());
+      testComplete();
+    }));
+  }
+
+  @Test
   public void testFindOne() throws Exception {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
@@ -397,6 +436,79 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   }
 
   @Test
+  public void testReplace() {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+    mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
+      assertNotNull(id);
+      JsonObject replacement = createDoc();
+      replacement.put("replacement", true);
+      mongoService.replace(collection, new JsonObject().put("_id", id), replacement, new UpdateOptions(), onSuccess(v -> {
+        mongoService.find(collection, new JsonObject(), null, null, -1, -1, onSuccess(list -> {
+          assertNotNull(list);
+          assertEquals(1, list.size());
+          JsonObject result = list.get(0);
+          assertEquals(id, result.getString("_id"));
+          result.remove("_id");
+          replacement.remove("_id"); // id won't be there for event bus
+          assertEquals(replacement, result);
+          testComplete();
+        }));
+      }));
+    }));
+
+    await();
+  }
+
+  @Test
+  public void testReplaceUpsert() {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+    mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
+      assertNotNull(id);
+      JsonObject replacement = createDoc();
+      replacement.put("replacement", true);
+      mongoService.replace(collection, new JsonObject().put("_id", "foo"), replacement, new UpdateOptions().setUpsert(true), onSuccess(v -> {
+        mongoService.find(collection, new JsonObject(), null, null, -1, -1, onSuccess(list -> {
+          assertNotNull(list);
+          assertEquals(2, list.size());
+          JsonObject result = null;
+          for (JsonObject o : list) {
+            if (o.containsKey("replacement")) {
+              result = o;
+            }
+          }
+          assertNotNull(result);
+          testComplete();
+        }));
+      }));
+    }));
+
+    await();
+  }
+
+  @Test
+  public void testReplaceUpsert2() {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+    mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
+      assertNotNull(id);
+      JsonObject replacement = createDoc();
+      replacement.put("replacement", true);
+      mongoService.replace(collection, new JsonObject().put("_id", id), replacement, new UpdateOptions().setUpsert(true), onSuccess(v -> {
+        mongoService.find(collection, new JsonObject(), null, null, -1, -1, onSuccess(list -> {
+          assertNotNull(list);
+          assertEquals(1, list.size());
+          assertEquals(id, list.get(0).getString("_id"));
+          testComplete();
+        }));
+      }));
+    }));
+
+    await();
+  }
+
+  @Test
   public void testUpdateOne() throws Exception {
     int num = 1;
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), false, false, results -> {
@@ -459,7 +571,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       JsonObject doc = createDoc();
       mongoService.insert(collection, doc, new InsertOptions(), onSuccess(id -> {
         assertNotNull(id);
-        mongoService.delete(collection, new JsonObject().put("_id", id), new WriteOptions(), onSuccess(v -> {
+        mongoService.remove(collection, new JsonObject().put("_id", id), new WriteOptions(), onSuccess(v -> {
           mongoService.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(res2 -> {
             assertNull(res2);
             testComplete();
@@ -475,7 +587,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       insertDocs(collection, 10, onSuccess(v -> {
-        mongoService.delete(collection, new JsonObject(), new WriteOptions(), onSuccess(v2 -> {
+        mongoService.remove(collection, new JsonObject(), new WriteOptions(), onSuccess(v2 -> {
           mongoService.find(collection, new JsonObject(), null, null, -1, -1, onSuccess(res2 -> {
             assertTrue(res2.isEmpty());
             testComplete();

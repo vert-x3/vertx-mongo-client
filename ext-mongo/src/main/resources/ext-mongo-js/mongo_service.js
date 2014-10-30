@@ -71,6 +71,19 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  this.replace = function(collection, query, replace, options, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'object' && typeof __args[4] === 'function') {
+      j_mongoService.replace(collection, utils.convJSObjectToJsonObject(query), utils.convJSObjectToJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+    } else utils.invalidArgs();
+  };
+
   this.find = function(collection, query, fields, sort, limit, skip, resultHandler) {
     var __args = arguments;
     if (__args.length === 7 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'object' && typeof __args[4] ==='number' && typeof __args[5] ==='number' && typeof __args[6] === 'function') {
@@ -97,10 +110,36 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.delete = function(collection, query, options, resultHandler) {
+  this.count = function(collection, query, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'function') {
+      j_mongoService.count(collection, utils.convJSObjectToJsonObject(query), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(ar.result(), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+    } else utils.invalidArgs();
+  };
+
+  this.remove = function(collection, query, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
-      j_mongoService.delete(collection, utils.convJSObjectToJsonObject(query), options != null ? new WriteOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoService.remove(collection, utils.convJSObjectToJsonObject(query), options != null ? new WriteOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+    } else utils.invalidArgs();
+  };
+
+  this.removeOne = function(collection, query, options, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
+      j_mongoService.removeOne(collection, utils.convJSObjectToJsonObject(query), options != null ? new WriteOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {

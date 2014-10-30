@@ -154,6 +154,24 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
+  public void replace(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(replace, "update cannot be null");
+    requireNonNull(options, "options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    //FIXME: Use typed API when mongo driver is updated
+    MongoView view = getView(collection, query, null, null, -1, -1);
+    if (isTrue(options.isUpsert())) {
+      view.upsert();
+    }
+    @SuppressWarnings("unchecked")
+    MongoFuture<WriteConcernResult> future = view.replace(toDocument(replace));
+    adaptFuture(future, resultHandler);
+  }
+
+  @Override
   public void find(String collection, JsonObject query, JsonObject fields, JsonObject sort, int limit, int skip, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
@@ -177,7 +195,18 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void delete(String collection, JsonObject query, WriteOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public void count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoView<JsonObject> view = getView(collection, query, null, null, -1, -1);
+    MongoFuture<Long> future = view.count();
+    handleFuture(future, resultHandler);
+  }
+
+  @Override
+  public void remove(String collection, JsonObject query, WriteOptions options, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(options, "options cannot be null");
@@ -185,6 +214,18 @@ public class MongoServiceImpl implements MongoService {
 
     MongoView<JsonObject> view = getView(collection, query, null, null, -1, -1);
     MongoFuture<WriteConcernResult> future = view.remove();
+    adaptFuture(future, resultHandler);
+  }
+
+  @Override
+  public void removeOne(String collection, JsonObject query, WriteOptions options, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(options, "options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoView<JsonObject> view = getView(collection, query, null, null, -1, -1);
+    MongoFuture<WriteConcernResult> future = view.removeOne();
     adaptFuture(future, resultHandler);
   }
 
