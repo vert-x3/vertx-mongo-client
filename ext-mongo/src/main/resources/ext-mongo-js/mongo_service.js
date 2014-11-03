@@ -19,8 +19,8 @@ var utils = require('vertx-js/util/utils');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoService = io.vertx.ext.mongo.MongoService;
-var InsertOptions = io.vertx.ext.mongo.InsertOptions;
 var WriteOptions = io.vertx.ext.mongo.WriteOptions;
+var FindOptions = io.vertx.ext.mongo.FindOptions;
 var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 
 /**
@@ -48,7 +48,7 @@ var MongoService = function(j_val) {
   this.insert = function(collection, document, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
-      j_mongoService.insert(collection, utils.convJSObjectToJsonObject(document), options != null ? new InsertOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoService.insert(collection, utils.convJSObjectToJsonObject(document), options != null ? new WriteOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
       } else {
@@ -84,10 +84,10 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.find = function(collection, query, fields, sort, limit, skip, resultHandler) {
+  this.find = function(collection, query, options, resultHandler) {
     var __args = arguments;
-    if (__args.length === 7 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'object' && typeof __args[4] ==='number' && typeof __args[5] ==='number' && typeof __args[6] === 'function') {
-      j_mongoService.find(collection, utils.convJSObjectToJsonObject(query), utils.convJSObjectToJsonObject(fields), utils.convJSObjectToJsonObject(sort), limit, skip, function(ar) {
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
+      j_mongoService.find(collection, utils.convJSObjectToJsonObject(query), options != null ? new FindOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convListSetJson(ar.result()), null);
       } else {

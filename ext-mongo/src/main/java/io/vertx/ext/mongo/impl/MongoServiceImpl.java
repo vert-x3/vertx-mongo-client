@@ -18,7 +18,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mongo.InsertOptions;
+import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOptions;
@@ -113,7 +113,7 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void insert(String collection, JsonObject document, InsertOptions options, Handler<AsyncResult<String>> resultHandler) {
+  public void insert(String collection, JsonObject document, WriteOptions options, Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
     requireNonNull(options, "options cannot be null");
@@ -140,7 +140,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query, null, null, -1, -1);
+    MongoView<JsonObject> view = getView(collection, query);
     if (isTrue(options.isUpsert())) {
       view.upsert();
     }
@@ -162,7 +162,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     //FIXME: Use typed API when mongo driver is updated
-    MongoView view = getView(collection, query, null, null, -1, -1);
+    MongoView view = getView(collection, query);
     if (isTrue(options.isUpsert())) {
       view.upsert();
     }
@@ -172,12 +172,12 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void find(String collection, JsonObject query, JsonObject fields, JsonObject sort, int limit, int skip, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+  public void find(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query, fields, sort, limit, skip);
+    MongoView<JsonObject> view = getView(collection, query, options);
     List<JsonObject> results = new ArrayList<>();
     MongoFuture<List<JsonObject>> future = view.into(results);
     handleFuture(future, resultHandler);
@@ -189,7 +189,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query, fields, null, -1, -1);
+    MongoView<JsonObject> view = getView(collection, query, new FindOptions().setFields(fields));
     MongoFuture<JsonObject> future = view.one();
     handleFuture(future, resultHandler);
   }
@@ -200,7 +200,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query, null, null, -1, -1);
+    MongoView<JsonObject> view = getView(collection, query);
     MongoFuture<Long> future = view.count();
     handleFuture(future, resultHandler);
   }
@@ -212,7 +212,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query, null, null, -1, -1);
+    MongoView<JsonObject> view = getView(collection, query);
     MongoFuture<WriteConcernResult> future = view.remove();
     adaptFuture(future, resultHandler);
   }
@@ -224,7 +224,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query, null, null, -1, -1);
+    MongoView<JsonObject> view = getView(collection, query, new FindOptions());
     MongoFuture<WriteConcernResult> future = view.removeOne();
     adaptFuture(future, resultHandler);
   }
@@ -296,20 +296,24 @@ public class MongoServiceImpl implements MongoService {
     });
   }
 
-  private MongoView<JsonObject> getView(String collection, JsonObject query, JsonObject fields, JsonObject sort, int limit, int skip) {
+  private MongoView<JsonObject> getView(String collection, JsonObject query) {
+    return getView(collection, query, new FindOptions());
+  }
+
+  private MongoView<JsonObject> getView(String collection, JsonObject query, FindOptions options) {
     MongoCollection<JsonObject> coll = getCollection(collection);
     MongoView<JsonObject> view = coll.find(toDocument(query));
-    if (limit != -1) {
-      view.limit(limit);
+    if (options.getLimit() != -1) {
+      view.limit(options.getLimit());
     }
-    if (skip != -1) {
-      view.skip(skip);
+    if (options.getSkip() != -1) {
+      view.skip(options.getSkip());
     }
-    if (sort != null) {
-      view.sort(toDocument(sort));
+    if (options.getSort() != null) {
+      view.sort(toDocument(options.getSort()));
     }
-    if (fields != null) {
-      view.fields(toDocument(fields));
+    if (options.getFields() != null) {
+      view.fields(toDocument(options.getFields()));
     }
     return view;
   }
