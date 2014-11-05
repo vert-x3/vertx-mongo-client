@@ -3,7 +3,6 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.WriteConcernResult;
 import com.mongodb.async.MongoFuture;
 import com.mongodb.async.client.MongoClient;
-import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
@@ -21,6 +20,7 @@ import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOptions;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
+import io.vertx.ext.mongo.impl.config.MongoClientSettingsParser;
 import org.bson.Document;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class MongoServiceImpl implements MongoService {
 
   protected MongoClient mongo;
   protected MongoDatabase db;
-  private MongoClientSettings mongoClientSettings;
+  private MongoClientSettingsParser parser;
   private JsonObjectCodec codec;
 
   public MongoServiceImpl(Vertx vertx, JsonObject config) {
@@ -51,16 +51,8 @@ public class MongoServiceImpl implements MongoService {
   }
 
   public void start() {
-    String cs = config.getString("connection_string");
-    if (cs != null) {
-      mongoClientSettings = clientSettings(cs);
-      //TODO: Uncomment when we no longer need client settings for collection settings. See https://jira.mongodb.org/browse/JAVA-1524
-      //mongo = MongoClients.create(new ConnectionString(cs));
-    } else {
-      mongoClientSettings = clientSettings(config);
-    }
-
-    mongo = MongoClients.create(mongoClientSettings);
+    parser = new MongoClientSettingsParser(config);
+    mongo = MongoClients.create(parser.settings());
 
     String dbName = config.getString("db_name", "default_db");
     db = mongo.getDatabase(dbName);
@@ -72,7 +64,9 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   public void stop() {
-    mongo.close();
+    if (mongo != null) {
+      mongo.close();
+    }
     log.debug("mongoDB service stopped");
   }
 
@@ -87,7 +81,7 @@ public class MongoServiceImpl implements MongoService {
     boolean insert = !codec.documentHasId(document);
 
     codec.generateIdIfAbsentFromDocument(document);
-    MongoCollection<Document> coll = db.getCollection(collection, collectionOptions(options, mongoClientSettings));
+    MongoCollection<Document> coll = db.getCollection(collection, collectionOptions(options, parser.settings()));
 
     //TODO: Consider returning WriteConcernResult as a JsonObject, instead of just the id mayhaps ?
     MongoFuture<WriteConcernResult> future = coll.save(toDocument(document));
@@ -311,7 +305,7 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private MongoCollection<JsonObject> getCollection(String name, WriteOptions options) {
-    return db.getCollection(name, codec, collectionOptions(options, mongoClientSettings));
+    return db.getCollection(name, codec, collectionOptions(options, parser.settings()));
   }
 
   private static boolean isTrue(Boolean bool) {
