@@ -1,7 +1,5 @@
 package io.vertx.ext.mongo.impl;
 
-import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
 import com.mongodb.WriteConcernResult;
 import com.mongodb.async.MongoFuture;
 import com.mongodb.async.client.MongoClient;
@@ -53,31 +51,21 @@ public class MongoServiceImpl implements MongoService {
   }
 
   public void start() {
-    String connectionString = config.getString("connection_string", "mongodb://localhost:27017");
-    String dbName = config.getString("db_name", "default_db");
-
-    codec = new JsonObjectCodec();
-
-    MongoClientSettings.Builder mcs = MongoClientSettings.builder();
-
-    //TODO: If https://jira.mongodb.org/browse/JAVA-1518 gets done we can go from Map -> MongoClientSettings
-
-    // Default write concern for client (this can be overridden for individual operations)
-    WriteConcern wc = writeConcern(config);
-    if (wc != null) {
-      mcs.writeConcern(wc);
+    String cs = config.getString("connection_string");
+    if (cs != null) {
+      mongoClientSettings = clientSettings(cs);
+      //TODO: Uncomment when we no longer need client settings for collection settings. See https://jira.mongodb.org/browse/JAVA-1524
+      //mongo = MongoClients.create(new ConnectionString(cs));
+    } else {
+      mongoClientSettings = clientSettings(config);
     }
-    // Default read preference for client (this can be overridden for individual operations)
-    ReadPreference rp = readPreference(config);
-    if (rp != null) {
-      mcs.readPreference(rp);
-    }
-    // Apply settings from connection string
-    applyConnectionString(mcs, connectionString);
-    mongoClientSettings = mcs.build();
 
     mongo = MongoClients.create(mongoClientSettings);
+
+    String dbName = config.getString("db_name", "default_db");
     db = mongo.getDatabase(dbName);
+
+    codec = new JsonObjectCodec();
 
     log.debug("mongoDB service started");
   }
