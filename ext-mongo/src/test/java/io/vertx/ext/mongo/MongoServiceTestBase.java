@@ -194,12 +194,9 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   @Test
   public void testRunCommand() throws Exception {
     JsonObject ping = new JsonObject().put("isMaster", 1);
-    String collection = randomCollection();
-    mongoService.createCollection(collection, onSuccess(res -> {
-      mongoService.runCommand(collection, ping, onSuccess(reply -> {
-        assertTrue(reply.getBoolean("ismaster"));
-        testComplete();
-      }));
+    mongoService.runCommand(ping, onSuccess(reply -> {
+      assertTrue(reply.getBoolean("ismaster"));
+      testComplete();
     }));
     await();
   }
@@ -207,11 +204,8 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   @Test
   public void testRunInvalidCommand() throws Exception {
     JsonObject ping = new JsonObject().put("iuhioqwdqhwd", 1);
-    String collection = randomCollection();
-    mongoService.createCollection(collection, onSuccess(res -> {
-      mongoService.runCommand(collection, ping, onFailure(ex -> {
-        testComplete();
-      }));
+    mongoService.runCommand(ping, onFailure(ex -> {
+      testComplete();
     }));
     await();
   }

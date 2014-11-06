@@ -240,8 +240,7 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void runCommand(String collection, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
+  public void runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 

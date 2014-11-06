@@ -54,7 +54,7 @@ public interface MongoService {
 
   void dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
 
-  void runCommand(String collection, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
+  void runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @ProxyIgnore
   void start();
