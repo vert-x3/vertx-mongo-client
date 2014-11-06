@@ -25,7 +25,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
 
   @Override
   public void encode(BsonWriter writer, O value, EncoderContext encoderContext) {
-    writeDocument(writer, value, encoderContext);
+    writeDocument(writer, null, value, encoderContext);
   }
 
   protected Object readValue(BsonReader reader, DecoderContext ctx) {
@@ -77,68 +77,68 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
   }
 
   @SuppressWarnings("unchecked")
-  protected void writeValue(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeValue(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     BsonType type = getBsonType(value);
     switch (type) {
       case NULL:
-        writeNull(writer, value, ctx);
+        writeNull(writer, name, value, ctx);
         break;
       case ARRAY:
-        writeArray(writer, value, ctx);
+        writeArray(writer, name, value, ctx);
         break;
       case BINARY:
-        writeBinary(writer, value, ctx);
+        writeBinary(writer, name, value, ctx);
         break;
       case BOOLEAN:
-        writeBoolean(writer, value, ctx);
+        writeBoolean(writer, name, value, ctx);
         break;
       case DATE_TIME:
-        writeDateTime(writer, value, ctx);
+        writeDateTime(writer, name, value, ctx);
         break;
       case DB_POINTER:
-        writeDbPointer(writer, value, ctx);
+        writeDbPointer(writer, name, value, ctx);
         break;
       case DOCUMENT:
-        writeDocument(writer, value, ctx);
+        writeDocument(writer, name, value, ctx);
         break;
       case DOUBLE:
-        writeDouble(writer, value, ctx);
+        writeDouble(writer, name, value, ctx);
         break;
       case INT32:
-        writeInt32(writer, value, ctx);
+        writeInt32(writer, name, value, ctx);
         break;
       case INT64:
-        writeInt64(writer, value, ctx);
+        writeInt64(writer, name, value, ctx);
         break;
       case MAX_KEY:
-        writeMaxKey(writer, value, ctx);
+        writeMaxKey(writer, name, value, ctx);
         break;
       case MIN_KEY:
-        writeMinKey(writer, value, ctx);
+        writeMinKey(writer, name, value, ctx);
         break;
       case JAVASCRIPT:
-        writeJavaScript(writer, value, ctx);
+        writeJavaScript(writer, name, value, ctx);
         break;
       case JAVASCRIPT_WITH_SCOPE:
-        writeJavaScriptWithScope(writer, value, ctx);
+        writeJavaScriptWithScope(writer, name, value, ctx);
         break;
       case OBJECT_ID:
-        writeObjectId(writer, value, ctx);
+        writeObjectId(writer, name, value, ctx);
         break;
       case REGULAR_EXPRESSION:
-        writeRegularExpression(writer, value, ctx);
+        writeRegularExpression(writer, name, value, ctx);
         break;
       case STRING:
-        writeString(writer, value, ctx);
+        writeString(writer, name, value, ctx);
         break;
       case SYMBOL:
-        writeSymbol(writer, value, ctx);
+        writeSymbol(writer, name, value, ctx);
         break;
       case TIMESTAMP:
-        writeTimeStamp(writer, value, ctx);
+        writeTimeStamp(writer, name, value, ctx);
         break;
       case UNDEFINED:
-        writeUndefined(writer, value, ctx);
+        writeUndefined(writer, name, value, ctx);
         break;
       default:
         throw new IllegalStateException("Unknown bson type " + type);
@@ -172,7 +172,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     return null;
   }
 
-  protected void writeNull(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeNull(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     writer.writeNull();
   }
 
@@ -180,7 +180,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     return reader.readBoolean();
   }
 
-  protected void writeBoolean(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeBoolean(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     writer.writeBoolean((Boolean) value);
   }
 
@@ -188,7 +188,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     return reader.readDouble();
   }
 
-  protected void writeDouble(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeDouble(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     writer.writeDouble((double) value);
   }
 
@@ -196,7 +196,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     return reader.readInt32();
   }
 
-  protected void writeInt32(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeInt32(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     writer.writeInt32((int) value);
   }
 
@@ -204,7 +204,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     return reader.readInt64();
   }
 
-  protected void writeInt64(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeInt64(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     writer.writeInt64((long) value);
   }
 
@@ -212,7 +212,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     return reader.readString();
   }
 
-  protected void writeString(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeString(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     writer.writeString((String) value);
   }
 
@@ -231,7 +231,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     return object;
   }
 
-  protected void writeDocument(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeDocument(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     @SuppressWarnings("unchecked")
     O object = (O) value;
 
@@ -242,14 +242,14 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
       beforeFields(object, (k, v) -> {
         skip.add(k);
         writer.writeName(k);
-        writeValue(writer, v, ctx);
+        writeValue(writer, k, v, ctx);
       });
     }
 
     forEach(object, (k, v) -> {
       if (!skip.contains(k)) {
         writer.writeName(k);
-        writeValue(writer, v, ctx);
+        writeValue(writer, k, v, ctx);
       }
     });
 
@@ -281,12 +281,12 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     return array;
   }
 
-  protected void writeArray(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeArray(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     @SuppressWarnings("unchecked")
     A array = (A) value;
 
     writer.writeStartArray();
-    forEach(array, o -> writeValue(writer, o, ctx));
+    forEach(array, o -> writeValue(writer, null, o, ctx));
     writer.writeEndArray();
   }
 
@@ -304,7 +304,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeBinary(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeBinary(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -312,7 +312,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeDateTime(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeDateTime(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -320,7 +320,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeDbPointer(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeDbPointer(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -328,7 +328,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeMaxKey(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeMaxKey(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -336,7 +336,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeMinKey(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeMinKey(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -344,7 +344,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeJavaScript(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeJavaScript(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -352,7 +352,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeJavaScriptWithScope(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeJavaScriptWithScope(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -360,7 +360,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeObjectId(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeObjectId(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -368,7 +368,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeRegularExpression(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeRegularExpression(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -376,7 +376,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeSymbol(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeSymbol(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -384,7 +384,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeTimeStamp(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeTimeStamp(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 
@@ -392,7 +392,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     throw new UnsupportedOperationException();
   }
 
-  protected void writeUndefined(BsonWriter writer, Object value, EncoderContext ctx) {
+  protected void writeUndefined(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 }

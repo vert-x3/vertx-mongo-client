@@ -57,7 +57,8 @@ public class MongoServiceImpl implements MongoService {
     String dbName = config.getString("db_name", "default_db");
     db = mongo.getDatabase(dbName);
 
-    codec = new JsonObjectCodec();
+    // TODO: Revisit this because update & replace generate an ObjectId on upsert because codecs are a lil broken
+    codec = new JsonObjectCodec(config.getBoolean("useObjectId", false));
 
     log.debug("mongoDB service started");
   }
@@ -84,7 +85,7 @@ public class MongoServiceImpl implements MongoService {
     MongoCollection<Document> coll = db.getCollection(collection, collectionOptions(options, parser.settings()));
 
     //TODO: Consider returning WriteConcernResult as a JsonObject, instead of just the id mayhaps ?
-    MongoFuture<WriteConcernResult> future = coll.save(toDocument(document));
+    MongoFuture<WriteConcernResult> future = coll.save(toDocument(document, codec));
     adaptFuture(future, resultHandler, wr -> {
       if (insert) {
         return idAsString(codec.getDocumentId(document));
@@ -128,9 +129,9 @@ public class MongoServiceImpl implements MongoService {
     }
     MongoFuture<WriteConcernResult> future;
     if (isTrue(options.isMulti())) {
-      future = view.update(toDocument(update));
+      future = view.update(toDocument(update, codec));
     } else {
-      future = view.updateOne(toDocument(update));
+      future = view.updateOne(toDocument(update, codec));
     }
     adaptFuture(future, resultHandler);
   }
@@ -149,7 +150,7 @@ public class MongoServiceImpl implements MongoService {
       view.upsert();
     }
     @SuppressWarnings("unchecked")
-    MongoFuture<WriteConcernResult> future = view.replace(toDocument(replace));
+    MongoFuture<WriteConcernResult> future = view.replace(toDocument(replace, codec));
     adaptFuture(future, resultHandler);
   }
 
@@ -244,7 +245,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoFuture<Document> future = db.executeCommand(toDocument(command));
+    MongoFuture<Document> future = db.executeCommand(toDocument(command, codec));
     adaptFuture(future, resultHandler, Utils::toJson);
   }
 
@@ -284,7 +285,7 @@ public class MongoServiceImpl implements MongoService {
 
   private MongoView<JsonObject> getView(String collection, JsonObject query, FindOptions options) {
     MongoCollection<JsonObject> coll = getCollection(collection);
-    MongoView<JsonObject> view = coll.find(toDocument(query));
+    MongoView<JsonObject> view = coll.find(toDocument(query, codec));
     if (options.getLimit() != -1) {
       view.limit(options.getLimit());
     }
@@ -292,10 +293,10 @@ public class MongoServiceImpl implements MongoService {
       view.skip(options.getSkip());
     }
     if (options.getSort() != null) {
-      view.sort(toDocument(options.getSort()));
+      view.sort(toDocument(options.getSort(), codec));
     }
     if (options.getFields() != null) {
-      view.fields(toDocument(options.getFields()));
+      view.fields(toDocument(options.getFields(), codec));
     }
     return view;
   }
