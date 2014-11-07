@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class ClusterSettingsParser extends AbstractParser {
+class ClusterSettingsParser {
 
   private final ClusterSettings settings;
 
@@ -29,7 +29,7 @@ class ClusterSettingsParser extends AbstractParser {
       settings.hosts(hosts);
 
       // replica set / mode
-      String replicaSet = get(config, "replicaSet", String.class);
+      String replicaSet = config.getString("replicaSet");
       if (hosts.size() == 1 && replicaSet == null) {
         settings.mode(ClusterConnectionMode.SINGLE);
       } else {
@@ -40,7 +40,7 @@ class ClusterSettingsParser extends AbstractParser {
       }
 
       // cluster type (not supported via connection string)
-      String clusterType = get(config, "clusterType", String.class);
+      String clusterType = config.getString("clusterType");
       if (clusterType != null) {
         settings.requiredClusterType(ClusterType.valueOf(clusterType.toUpperCase()));
       }
@@ -55,10 +55,10 @@ class ClusterSettingsParser extends AbstractParser {
 
   private static List<ServerAddress> parseHosts(JsonObject config) {
     List<ServerAddress> hosts = new ArrayList<>();
-    JsonArray jsonHosts = get(config, "hosts", JsonArray.class);
+    JsonArray jsonHosts = config.getJsonArray("hosts");
     if (jsonHosts != null) {
-      forEach(jsonHosts, "hosts", JsonObject.class, jsonHost -> {
-        ServerAddress address = serverAddress(jsonHost);
+      jsonHosts.forEach(jsonHost -> {
+        ServerAddress address = serverAddress((JsonObject) jsonHost);
         if (address != null) {
           hosts.add(address);
         }
@@ -73,6 +73,8 @@ class ClusterSettingsParser extends AbstractParser {
   }
 
   private static ServerAddress serverAddress(JsonObject json) {
+    if (json == null) return null;
+
     String host = json.getString("host");
     Integer port = json.getInteger("port");
     if (host == null && port == null) {

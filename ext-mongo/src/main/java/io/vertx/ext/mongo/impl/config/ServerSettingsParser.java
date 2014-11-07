@@ -8,17 +8,17 @@ import static java.util.concurrent.TimeUnit.*;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class ServerSettingsParser extends AbstractParser {
+class ServerSettingsParser {
   private final ServerSettings settings;
 
   public ServerSettingsParser(JsonObject config) {
     ServerSettings.Builder settings = ServerSettings.builder();
 
-    Long heartbeatFrequencyMS = get(config, "heartbeatFrequencyMS", Long.class);
+    Long heartbeatFrequencyMS = config.getLong("heartbeatFrequencyMS");
     if (heartbeatFrequencyMS != null) {
       settings.heartbeatFrequency(heartbeatFrequencyMS, MILLISECONDS);
     }
-    Long minHeartbeatFrequencyMS = get(config, "minHeartbeatFrequencyMS", Long.class);
+    Long minHeartbeatFrequencyMS = config.getLong("minHeartbeatFrequencyMS");
     if (minHeartbeatFrequencyMS != null) {
       settings.minHeartbeatFrequency(minHeartbeatFrequencyMS, MILLISECONDS);
     }

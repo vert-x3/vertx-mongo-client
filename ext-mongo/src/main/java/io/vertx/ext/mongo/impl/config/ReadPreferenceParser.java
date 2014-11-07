@@ -14,21 +14,22 @@ import java.util.stream.Stream;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class ReadPreferenceParser extends AbstractParser {
+class ReadPreferenceParser {
   private final ReadPreference readPreference;
 
   public ReadPreferenceParser(JsonObject config) {
     ReadPreference rp;
-    String rps = get(config, "readPreference", String.class);
+    String rps = config.getString("readPreference");
     if (rps != null) {
-      JsonArray readPreferenceTags = get(config, "readPreferenceTags", JsonArray.class);
+      JsonArray readPreferenceTags = config.getJsonArray("readPreferenceTags");
       if (readPreferenceTags == null) {
         rp = ReadPreference.valueOf(rps);
         if (rp == null) throw new IllegalArgumentException("Invalid ReadPreference " + rps);
       } else {
         // Support advanced ReadPreference Tags
         List<TagSet> tagSet = new ArrayList<>();
-        forEach(readPreferenceTags, "readPreferenceTags", String.class, tagString -> {
+        readPreferenceTags.forEach(o -> {
+          String tagString = (String) o;
           List<Tag> tags = Stream.of(tagString.trim().split(","))
             .map(s -> s.split(":"))
             .filter(array -> {

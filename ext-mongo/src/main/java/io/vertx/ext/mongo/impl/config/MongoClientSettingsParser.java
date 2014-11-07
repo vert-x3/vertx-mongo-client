@@ -18,7 +18,7 @@ import java.util.Objects;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-public class MongoClientSettingsParser extends AbstractParser {
+public class MongoClientSettingsParser {
 
   private final MongoClientSettings settings;
 
@@ -48,7 +48,7 @@ public class MongoClientSettingsParser extends AbstractParser {
     settings.socketSettings(socketSettings);
 
     // Heartbeat SocketSettings
-    JsonObject hbConfig = get(config, "heartbeat.socket", JsonObject.class);
+    JsonObject hbConfig = config.getJsonObject("heartbeat.socket");
     if (hbConfig != null) {
       SocketSettings heartBetaSocketSettings = new SocketSettingsParser(null, hbConfig).settings();
       settings.socketSettings(heartBetaSocketSettings);

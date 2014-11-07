@@ -52,7 +52,7 @@ public class ReadPreferenceParserTest {
     new ReadPreferenceParser(config).readPreference();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = ClassCastException.class)
   public void testInvalidTypeReadPreference() {
     JsonObject config = new JsonObject();
     config.put("readPreference", 123);
@@ -101,7 +101,7 @@ public class ReadPreferenceParserTest {
     new ReadPreferenceParser(config).readPreference();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = ClassCastException.class)
   public void testInvalidReadPreferenceTagType() {
     JsonObject config = new JsonObject();
     config.put("readPreference", "nearest");

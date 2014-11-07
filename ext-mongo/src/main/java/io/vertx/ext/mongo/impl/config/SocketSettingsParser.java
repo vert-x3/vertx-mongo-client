@@ -9,7 +9,7 @@ import static java.util.concurrent.TimeUnit.*;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class SocketSettingsParser extends AbstractParser {
+class SocketSettingsParser {
   private final SocketSettings settings;
 
   public SocketSettingsParser(ConnectionString connectionString, JsonObject config) {
@@ -17,23 +17,23 @@ class SocketSettingsParser extends AbstractParser {
     if (connectionString != null) {
       settings.applyConnectionString(connectionString);
     } else {
-      Integer connectTimeoutMS = get(config, "connectTimeoutMS", Integer.class);
+      Integer connectTimeoutMS = config.getInteger("connectTimeoutMS");
       if (connectTimeoutMS != null) {
         settings.connectTimeout(connectTimeoutMS, MILLISECONDS);
       }
-      Integer socketTimeoutMS = get(config, "socketTimeoutMS", Integer.class);
+      Integer socketTimeoutMS = config.getInteger("socketTimeoutMS");
       if (socketTimeoutMS != null) {
         settings.readTimeout(socketTimeoutMS, MILLISECONDS);
       }
-      Boolean keepAlive = get(config, "keepAlive", Boolean.class);
+      Boolean keepAlive = config.getBoolean("keepAlive");
       if (keepAlive != null) {
         settings.keepAlive(keepAlive);
       }
-      Integer receiveBufferSize = get(config, "receiveBufferSize", Integer.class);
+      Integer receiveBufferSize = config.getInteger("receiveBufferSize");
       if (receiveBufferSize != null) {
         settings.receiveBufferSize(receiveBufferSize);
       }
-      Integer sendBufferSize = get(config, "sendBufferSize", Integer.class);
+      Integer sendBufferSize = config.getInteger("sendBufferSize");
       if (sendBufferSize != null) {
         settings.sendBufferSize(sendBufferSize);
       }

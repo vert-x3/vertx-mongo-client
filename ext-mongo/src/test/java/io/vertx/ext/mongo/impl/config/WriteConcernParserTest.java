@@ -45,7 +45,7 @@ public class WriteConcernParserTest {
     new WriteConcernParser(config).writeConcern();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = ClassCastException.class)
   public void testInvalidTypeWriteConcern() {
     JsonObject config = new JsonObject();
     config.put("writeConcern", 123);

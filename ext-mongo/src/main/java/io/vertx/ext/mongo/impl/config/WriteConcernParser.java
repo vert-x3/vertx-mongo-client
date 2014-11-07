@@ -6,26 +6,26 @@ import io.vertx.core.json.JsonObject;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class WriteConcernParser extends AbstractParser {
+class WriteConcernParser {
   private final WriteConcern writeConcern;
 
   public WriteConcernParser(JsonObject config) {
     // Allow convenient string value for writeConcern e.g. ACKNOWLEDGED, SAFE, MAJORITY, etc
     WriteConcern wc;
-    String wcs = get(config, "writeConcern", String.class);
+    String wcs = config.getString("writeConcern");
     if (wcs != null) {
       wc = WriteConcern.valueOf(wcs);
       if (wc == null) throw new IllegalArgumentException("Invalid WriteConcern " + wcs);
     } else {
       // Support advanced write concern options. There's some inconsistencies between driver options
       // and mongo docs [http://bit.ly/10SYO6x] but we'll be consistent with the driver for this.
-      Boolean safe = get(config, "safe", Boolean.class);
+      Boolean safe = config.getBoolean("safe");
       Object w = config.getValue("w");
-      int wtimeout = get(config, "wtimeoutMS", Integer.class, 0);
-      boolean fsync = get(config, "fsync", Boolean.class, false); // This doesn't exist in mongo docs, but you can specify it for driver...
-      boolean j = get(config, "j", Boolean.class, false);
+      int wtimeout = config.getInteger("wtimeoutMS", 0);
+      boolean fsync = config.getBoolean("fsync", false); // This doesn't exist in mongo docs, but you can specify it for driver...
+      boolean j = config.getBoolean("j", false);
       if (!j) {
-        j = get(config, "journal", Boolean.class, false); //TODO: Inconsistency with driver and mongo docs, support both ?
+        j = config.getBoolean("journal", false); //TODO: Inconsistency with driver and mongo docs, support both ?
       }
 
       if (w != null || wtimeout != 0 || fsync || j) {

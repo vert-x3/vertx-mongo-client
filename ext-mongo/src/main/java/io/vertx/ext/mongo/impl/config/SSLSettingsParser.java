@@ -7,7 +7,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-public class SSLSettingsParser extends AbstractParser {
+public class SSLSettingsParser {
   private final SSLSettings settings;
 
   public SSLSettingsParser(ConnectionString connectionString, JsonObject config) {
@@ -16,7 +16,7 @@ public class SSLSettingsParser extends AbstractParser {
     if (connectionString != null) {
       ssl = connectionString.getSslEnabled();
     } else {
-      ssl = get(config, "ssl", Boolean.class);
+      ssl = config.getBoolean("ssl");
     }
 
     if (ssl != null) {

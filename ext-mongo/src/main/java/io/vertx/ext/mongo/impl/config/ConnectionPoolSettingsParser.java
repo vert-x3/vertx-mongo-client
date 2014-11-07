@@ -9,7 +9,7 @@ import static java.util.concurrent.TimeUnit.*;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class ConnectionPoolSettingsParser extends AbstractParser {
+class ConnectionPoolSettingsParser {
 
   private final ConnectionPoolSettings settings;
 
@@ -18,35 +18,35 @@ class ConnectionPoolSettingsParser extends AbstractParser {
     if (connectionString != null) {
       settings.applyConnectionString(connectionString);
     } else {
-      Integer maxPoolSize = get(config, "maxPoolSize", Integer.class);
+      Integer maxPoolSize = config.getInteger("maxPoolSize");
       if (maxPoolSize != null) {
         settings.maxSize(maxPoolSize);
       }
-      Integer minPoolSize = get(config, "minPoolSize", Integer.class);
+      Integer minPoolSize = config.getInteger("minPoolSize");
       if (minPoolSize != null) {
         settings.minSize(minPoolSize);
       }
-      Long maxIdleTimeMS = get(config, "maxIdleTimeMS", Long.class);
+      Long maxIdleTimeMS = config.getLong("maxIdleTimeMS");
       if (maxIdleTimeMS != null) {
         settings.maxConnectionIdleTime(maxIdleTimeMS, MILLISECONDS);
       }
-      Long maxLifeTimeMS = get(config, "maxLifeTimeMS", Long.class);
+      Long maxLifeTimeMS = config.getLong("maxLifeTimeMS");
       if (maxLifeTimeMS != null) {
         settings.maxConnectionLifeTime(maxLifeTimeMS, MILLISECONDS);
       }
-      Integer waitQueueMultiple = get(config, "waitQueueMultiple", Integer.class);
+      Integer waitQueueMultiple = config.getInteger("waitQueueMultiple");
       if (waitQueueMultiple != null) {
         settings.maxWaitQueueSize(waitQueueMultiple);
       }
-      Long waitQueueTimeoutMS = get(config, "waitQueueTimeoutMS", Long.class);
+      Long waitQueueTimeoutMS = config.getLong("waitQueueTimeoutMS");
       if (waitQueueTimeoutMS != null) {
         settings.maxWaitTime(waitQueueTimeoutMS, MILLISECONDS);
       }
-      Long maintenanceInitialDelayMS = get(config, "maintenanceInitialDelayMS", Long.class);
+      Long maintenanceInitialDelayMS = config.getLong("maintenanceInitialDelayMS");
       if (maintenanceInitialDelayMS != null) {
         settings.maintenanceInitialDelay(maintenanceInitialDelayMS, MILLISECONDS);
       }
-      Long maintenanceFrequencyMS = get(config, "maintenanceFrequencyMS", Long.class);
+      Long maintenanceFrequencyMS = config.getLong("maintenanceFrequencyMS");
       if (maintenanceFrequencyMS != null) {
         settings.maintenanceFrequency(maintenanceFrequencyMS, MILLISECONDS);
       }
