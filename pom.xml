@@ -27,7 +27,6 @@
     <module>ext-reactive-streams</module>
     <module>ext-mongo-embedded-db</module>
     <module>ext-metrics</module>
-    <module>ext-jca</module>
     <module>ext-rx</module>
   </modules>
 
