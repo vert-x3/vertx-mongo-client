@@ -1,9 +1,7 @@
 package io.vertx.ext.mongo.impl;
 
 import com.mongodb.WriteConcern;
-import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.async.client.MongoCollectionOptions;
-import com.mongodb.async.client.MongoDatabaseOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.WriteOptions;
@@ -57,15 +55,13 @@ class Utils {
     return json;
   }
 
-  public static MongoCollectionOptions collectionOptions(WriteOptions options, MongoClientSettings settings) {
-    //TODO: If https://jira.mongodb.org/browse/JAVA-1524 gets resolved we won't need MongoClientSettings
-    MongoCollectionOptions.Builder builder = MongoCollectionOptions.builder();
+  public static MongoCollectionOptions collectionOptions(WriteOptions options) {
+    MongoCollectionOptions.Builder collectionOptions = MongoCollectionOptions.builder();
     if (options.getWriteConcern() != null) {
-      builder.writeConcern(WriteConcern.valueOf(options.getWriteConcern()));
+      collectionOptions.writeConcern(WriteConcern.valueOf(options.getWriteConcern()));
     }
 
-    MongoDatabaseOptions dbOptions = MongoDatabaseOptions.builder().build().withDefaults(settings);
-    return builder.build().withDefaults(dbOptions);
+    return collectionOptions.build();
   }
 
   @SuppressWarnings("unchecked")

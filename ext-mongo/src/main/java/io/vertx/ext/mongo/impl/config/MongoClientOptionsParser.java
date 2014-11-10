@@ -4,7 +4,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoCredential;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
-import com.mongodb.async.client.MongoClientSettings;
+import com.mongodb.async.client.MongoClientOptions;
 import com.mongodb.connection.ClusterSettings;
 import com.mongodb.connection.ConnectionPoolSettings;
 import com.mongodb.connection.SSLSettings;
@@ -18,14 +18,14 @@ import java.util.Objects;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-public class MongoClientSettingsParser {
+public class MongoClientOptionsParser {
 
-  private final MongoClientSettings settings;
+  private final MongoClientOptions options;
 
-  public MongoClientSettingsParser(JsonObject config) {
+  public MongoClientOptionsParser(JsonObject config) {
     Objects.requireNonNull(config);
 
-    MongoClientSettings.Builder settings = MongoClientSettings.builder();
+    MongoClientOptions.Builder options = MongoClientOptions.builder();
 
     // All parsers should support connection_string first
     String cs = config.getString("connection_string");
@@ -33,51 +33,51 @@ public class MongoClientSettingsParser {
 
     // ClusterSettings
     ClusterSettings clusterSettings = new ClusterSettingsParser(connectionString, config).settings();
-    settings.clusterSettings(clusterSettings);
+    options.clusterSettings(clusterSettings);
 
     // ConnectionPoolSettings
     ConnectionPoolSettings connectionPoolSettings = new ConnectionPoolSettingsParser(connectionString, config).settings();
-    settings.connectionPoolSettings(connectionPoolSettings);
+    options.connectionPoolSettings(connectionPoolSettings);
 
     // Credentials
     List<MongoCredential> credentials = new CredentialListParser(connectionString, config).credentials();
-    settings.credentialList(credentials);
+    options.credentialList(credentials);
 
     // SocketSettings
     SocketSettings socketSettings = new SocketSettingsParser(connectionString, config).settings();
-    settings.socketSettings(socketSettings);
+    options.socketSettings(socketSettings);
 
     // Heartbeat SocketSettings
     JsonObject hbConfig = config.getJsonObject("heartbeat.socket");
     if (hbConfig != null) {
       SocketSettings heartBetaSocketSettings = new SocketSettingsParser(null, hbConfig).settings();
-      settings.socketSettings(heartBetaSocketSettings);
+      options.socketSettings(heartBetaSocketSettings);
     }
 
     // ServerSettings
     ServerSettings serverSettings = new ServerSettingsParser(config).settings();
-    settings.serverSettings(serverSettings);
+    options.serverSettings(serverSettings);
 
     // SSLSettings
     SSLSettings sslSettings = new SSLSettingsParser(connectionString, config).settings();
-    settings.sslSettings(sslSettings);
+    options.sslSettings(sslSettings);
 
     // WriteConcern
     WriteConcern writeConcern = new WriteConcernParser(config).writeConcern();
     if (writeConcern != null) {
-      settings.writeConcern(writeConcern);
+      options.writeConcern(writeConcern);
     }
 
     // ReadPreference
     ReadPreference readPreference = new ReadPreferenceParser(config).readPreference();
     if (readPreference != null) {
-      settings.readPreference(readPreference);
+      options.readPreference(readPreference);
     }
 
-    this.settings = settings.build();
+    this.options = options.build();
   }
 
-  public MongoClientSettings settings() {
-    return settings;
+  public MongoClientOptions options() {
+    return options;
   }
 }

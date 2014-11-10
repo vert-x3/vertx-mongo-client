@@ -20,7 +20,7 @@ import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOptions;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
-import io.vertx.ext.mongo.impl.config.MongoClientSettingsParser;
+import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.Document;
 
 import java.util.ArrayList;
@@ -42,7 +42,6 @@ public class MongoServiceImpl implements MongoService {
 
   protected MongoClient mongo;
   protected MongoDatabase db;
-  private MongoClientSettingsParser parser;
   private JsonObjectCodec codec;
 
   public MongoServiceImpl(Vertx vertx, JsonObject config) {
@@ -51,8 +50,8 @@ public class MongoServiceImpl implements MongoService {
   }
 
   public void start() {
-    parser = new MongoClientSettingsParser(config);
-    mongo = MongoClients.create(parser.settings());
+    MongoClientOptionsParser parser = new MongoClientOptionsParser(config);
+    mongo = MongoClients.create(parser.options());
 
     String dbName = config.getString("db_name", "default_db");
     db = mongo.getDatabase(dbName);
@@ -82,7 +81,7 @@ public class MongoServiceImpl implements MongoService {
     boolean insert = !codec.documentHasId(document);
 
     codec.generateIdIfAbsentFromDocument(document);
-    MongoCollection<Document> coll = db.getCollection(collection, collectionOptions(options, parser.settings()));
+    MongoCollection<Document> coll = db.getCollection(collection, collectionOptions(options));
 
     //TODO: Consider returning WriteConcernResult as a JsonObject, instead of just the id mayhaps ?
     MongoFuture<WriteConcernResult> future = coll.save(toDocument(document, codec));
@@ -305,7 +304,7 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private MongoCollection<JsonObject> getCollection(String name, WriteOptions options) {
-    return db.getCollection(name, codec, collectionOptions(options, parser.settings()));
+    return db.getCollection(name, codec, collectionOptions(options));
   }
 
   private static boolean isTrue(Boolean bool) {
