@@ -14,11 +14,10 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-package io.vertx.ext.mongo.test;
+package io.vertx.ext.mongo;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoService;
 
 import java.util.concurrent.CountDownLatch;
 

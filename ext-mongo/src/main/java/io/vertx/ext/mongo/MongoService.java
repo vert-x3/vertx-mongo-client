@@ -1,6 +1,5 @@
 package io.vertx.ext.mongo;
 
-import com.mongodb.WriteConcern;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.ProxyIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -32,14 +31,14 @@ public interface MongoService {
 
   void save(String collection, JsonObject document, WriteOptions options, Handler<AsyncResult<String>> resultHandler);
 
-  void insert(String collection, JsonObject document, InsertOptions options, Handler<AsyncResult<String>> resultHandler);
+  void insert(String collection, JsonObject document, WriteOptions options, Handler<AsyncResult<String>> resultHandler);
 
   void update(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   void replace(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   // Currently firehose of data as Mongo client doesn't support flow control
-  void find(String collection, JsonObject query, JsonObject fields, JsonObject sort, int limit, int skip, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+  void find(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   void findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler);
 
@@ -55,7 +54,7 @@ public interface MongoService {
 
   void dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
 
-  void runCommand(String collection, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
+  void runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @ProxyIgnore
   void start();

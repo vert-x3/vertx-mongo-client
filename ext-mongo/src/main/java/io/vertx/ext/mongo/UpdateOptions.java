@@ -8,8 +8,8 @@ import io.vertx.core.json.JsonObject;
  */
 @Options
 public class UpdateOptions extends WriteOptions {
-  private Boolean upsert;
-  private Boolean multi;
+  private boolean upsert;
+  private boolean multi;
 
   public UpdateOptions() {
   }
@@ -22,11 +22,11 @@ public class UpdateOptions extends WriteOptions {
 
   public UpdateOptions(JsonObject json) {
     super(json);
-    upsert = json.getBoolean("upsert");
-    multi = json.getBoolean("multi");
+    upsert = json.getBoolean("upsert", false);
+    multi = json.getBoolean("multi", false);
   }
 
-  public Boolean isUpsert() {
+  public boolean isUpsert() {
     return upsert;
   }
 
@@ -35,7 +35,7 @@ public class UpdateOptions extends WriteOptions {
     return this;
   }
 
-  public Boolean isMulti() {
+  public boolean isMulti() {
     return multi;
   }
 
@@ -52,11 +52,11 @@ public class UpdateOptions extends WriteOptions {
 
   public JsonObject toJson() {
     JsonObject json = super.toJson();
-    if (upsert != null) {
-      json.put("upsert", upsert);
+    if (upsert) {
+      json.put("upsert", true);
     }
-    if (multi != null) {
-      json.put("multi", multi);
+    if (multi) {
+      json.put("multi", true);
     }
 
     return json;
