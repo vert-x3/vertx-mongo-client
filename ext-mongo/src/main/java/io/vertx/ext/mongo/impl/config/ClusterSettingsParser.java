@@ -38,12 +38,6 @@ class ClusterSettingsParser {
       if (replicaSet != null) {
         settings.requiredReplicaSetName(replicaSet);
       }
-
-      // cluster type (not supported via connection string)
-      String clusterType = config.getString("clusterType");
-      if (clusterType != null) {
-        settings.requiredClusterType(ClusterType.valueOf(clusterType.toUpperCase()));
-      }
     }
 
     this.settings = settings.build();

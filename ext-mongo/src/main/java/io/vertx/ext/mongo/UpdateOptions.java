@@ -61,4 +61,26 @@ public class UpdateOptions extends WriteOptions {
 
     return json;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+
+    UpdateOptions that = (UpdateOptions) o;
+
+    if (multi != that.multi) return false;
+    if (upsert != that.upsert) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = super.hashCode();
+    result = 31 * result + (upsert ? 1 : 0);
+    result = 31 * result + (multi ? 1 : 0);
+    return result;
+  }
 }

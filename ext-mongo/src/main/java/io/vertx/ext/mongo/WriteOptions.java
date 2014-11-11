@@ -38,4 +38,21 @@ public class WriteOptions {
 
     return json;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    WriteOptions that = (WriteOptions) o;
+
+    if (writeConcern != null ? !writeConcern.equals(that.writeConcern) : that.writeConcern != null) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return writeConcern != null ? writeConcern.hashCode() : 0;
+  }
 }

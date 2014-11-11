@@ -3,7 +3,6 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.ServerAddress;
 import com.mongodb.connection.ClusterConnectionMode;
 import com.mongodb.connection.ClusterSettings;
-import com.mongodb.connection.ClusterType;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
@@ -44,20 +43,6 @@ public class ClusterSettingsParserTest {
     ClusterSettings settings = settings(multipleHosts().put("replicaSet", "foobar"));
     assertMultipleHosts(settings);
     assertEquals("foobar", settings.getRequiredReplicaSetName());
-  }
-
-  @Test
-  public void testClusterTypeSingleHost() {
-    ClusterSettings settings = settings(singleHost().put("clusterType", "sharded")); // test case insensitivity too
-    assertSingleHost(ClusterConnectionMode.SINGLE, settings);
-    assertEquals(ClusterType.SHARDED, settings.getRequiredClusterType());
-  }
-
-  @Test
-  public void testClusterTypeMultipleHosts() {
-    ClusterSettings settings = settings(multipleHosts().put("clusterType", "REPLICA_SET"));
-    assertMultipleHosts(settings);
-    assertEquals(ClusterType.REPLICA_SET, settings.getRequiredClusterType());
   }
 
   private static void assertSingleHost(ClusterConnectionMode mode, ClusterSettings settings) {

@@ -77,6 +77,29 @@ public class MyVerticle extends AbstractVerticle
 This will create the service proxy allowing you to call the MongoService API methods instead of having to send
 messages over the event bus. See [Service Proxy](https://github.com/vert-x3/service-proxy) for more information.
 
+## Send manually over Event Bus
+
+The service can also be called by sending JSON over the event bus manually.
+
+Here's an example of performing a [Save](#save) by sending json over the event bus.
+```java
+JsonObject save = new JsonObject();
+save.put("collection", "books");
+JsonObject document = new JsonObject().put("title", "The Hobbit");
+save.put("document", document);
+save.put("options", new JsonObject());
+vertx.eventBus().send("vertx.mongo", save, new DeliveryOptions().addHeader("action", "save"), saveResult -> {
+  if (saveResult.succeeded()) {
+    String id = (String) saveResult.result().body();
+    System.out.println("Saved book with id " + id);
+  } else {
+    saveResult.cause().printStackTrace();
+  }
+});
+```
+
+See [Service Proxy](https://github.com/vert-x3/service-proxy) for more information on how this works.
+
 # Operations
 
 The following are some examples of the operations supported by the MongoService API. Consult the javadoc/documentation
@@ -189,9 +212,9 @@ service.find("books", query, new FindOptions(), outcome -> {
 
 FindOptions
  - `fields` The fields to return in the results. Defaults to null, meaning all fields will be returned
- - `sort` The fields to sort. Defaults to null.
- - `limit` The limit of the number of results to return. Default to -1, meaning all results will be returned.
- - `skip` The number of documents to skip before returning the results. Defaults to 0.
+ - `sort` The fields to sort. Defaults to `null`.
+ - `limit` The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
+ - `skip` The number of documents to skip before returning the results. Defaults to `0`.
 
 ## Count
 
@@ -290,8 +313,8 @@ Below are the supported options to configure the mongo client for the java drive
 ```javascript
 {
   // Single Cluster Settings
-  "host" : "example.org", // string
-  "port" : 27000,         // int
+  "host" : "17.0.0.1", // string
+  "port" : 27017,      // int
 
   // Multiple Cluster Settings
   "hosts" : [
@@ -305,8 +328,7 @@ Below are the supported options to configure the mongo client for the java drive
     },
     ...
   ]
-  "replicaSet" :  "foo"         // string
-  "clusterType" : "REPLICA_SET" // string
+  "replicaSet" :  "foo"    // string
 
   // Connection Pool Settings
   "maxPoolSize" : 50,                // int
@@ -329,7 +351,7 @@ Below are the supported options to configure the mongo client for the java drive
   // Socket Settings
   "connectTimeoutMS" : 300000, // int
   "socketTimeoutMS"  : 100000, // int
-  "receiveBufferSize" : 8192,  // int
+  "sendBufferSize"    : 8192,  // int
   "receiveBufferSize" : 8192,  // int
   "keepAlive" : true           // boolean
 
@@ -337,7 +359,7 @@ Below are the supported options to configure the mongo client for the java drive
   "heartbeat.socket" : {
     "connectTimeoutMS" : 300000, // int
     "socketTimeoutMS"  : 100000, // int
-    "receiveBufferSize" : 8192,  // int
+    "sendBufferSize"    : 8192,  // int
     "receiveBufferSize" : 8192,  // int
     "keepAlive" : true           // boolean
   }
@@ -348,7 +370,36 @@ Below are the supported options to configure the mongo client for the java drive
 }
 ```
 
-*Note: The options above are made up and do not represent default values*
+**Option Descriptions**
+ - `host` The host the mongoDB instance is running. Defaults to `127.0.0.1`. This is ignored if `hosts` is specified
+ - `port` The port the mongoDB instance is listening on. Defaults to `27017`. This is ignored if `hosts` is specified
+ - `hosts` An array representing the hosts and ports to support a mongoDB cluster (sharding / replication)
+   - `host` A host in the cluster
+   - `port` The port a host in the cluster is listening on
+ - `replicaSet` The name of the replica set, if the mongoDB instance is a member of a replica set
+ - `maxPoolSize` The maximum number of connections in the connection pool. The default value is `100`
+ - `minPoolSize` The minimum number of connections in the connection pool. The default value is `0`
+ - `maxIdleTimeMS` The maximum idle time of a pooled connection. The default value is `0` which means there is no limit
+ - `maxLifeTimeMS` The maximum time a pooled connection can live for. The default value is `0` which means there is no limit
+ - `waitQueueMultiple` The maximum number of waiters for a connection to become available from the pool. Default value is `500`
+ - `waitQueueTimeoutMS` The maximum time that a thread may wait for a connection to become available. Default value is `120000` (2 minutes)
+ - `maintenanceFrequencyMS` The time period between runs of the maintenance job. Default is `0`.
+ - `maintenanceInitialDelayMS` The period of time to wait before running the first maintenance job on the connection pool. Default is `0`.
+ - `username` The username to authenticate. Default is `null` (meaning no authentication required)
+ - `password` The password to use to authenticate.
+ - `authSource` The database name associated with the user's credentials. Default value is `admin`
+ - `authMechanism` The authentication mechanism to use. See [Authentication](http://docs.mongodb.org/manual/core/authentication/) for more details.
+ - `gssapiServiceName` The Kerberos service name if `GSSAPI` is specified as the `authMechanism`.
+ - `connectTimeoutMS` The time in milliseconds to attempt a connection before timing out. Default is `10000` (10 seconds)
+ - `socketTimeoutMS` The time in milliseconds to attempt a send or receive on a socket before the attempt times out. Default is `0` meaning there is no timeout
+ - `sendBufferSize` Sets the send buffer size (SO_SNDBUF) for the socket. Default is `0`, meaning it will use the OS default for this option.
+ - `receiveBufferSize` Sets the receive buffer size (SO_RCVBUF) for the socket. Default is `0`, meaning it will use the OS default for this option.
+ - `keepAlive` Sets the keep alive (SO_KEEPALIVE) for the socket. Default is `false`
+ - `heartbeat.socket` Configures the socket settings for the cluster monitor of the mongoDB java driver.
+ - `heartbeatFrequencyMS` The frequency that the cluster monitor attempts to reach each server. Default is `5000` (5 seconds)
+ - `minHeartbeatFrequencyMS` The minimum heartbeat frequency. The default value is `1000` (1 second)
 
-TODO
- - finish off option descriptions
+*Note: Most of the default values listed above use the default values of the mongoDB Java Driver.
+Please consult the driver documentation for up to date information.*
+
+TODO: Include links to 3.0 driver documentation when made available
