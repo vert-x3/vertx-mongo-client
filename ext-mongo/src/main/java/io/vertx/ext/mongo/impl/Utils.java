@@ -4,7 +4,6 @@ import com.mongodb.WriteConcern;
 import com.mongodb.async.client.MongoCollectionOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.WriteOptions;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
@@ -55,10 +54,10 @@ class Utils {
     return json;
   }
 
-  public static MongoCollectionOptions collectionOptions(WriteOptions options) {
+  public static MongoCollectionOptions collectionOptions(String writeConcern) {
     MongoCollectionOptions.Builder collectionOptions = MongoCollectionOptions.builder();
-    if (options.getWriteConcern() != null) {
-      collectionOptions.writeConcern(WriteConcern.valueOf(options.getWriteConcern()));
+    if (writeConcern != null) {
+      collectionOptions.writeConcern(WriteConcern.valueOf(writeConcern));
     }
 
     return collectionOptions.build();

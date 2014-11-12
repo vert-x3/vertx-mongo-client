@@ -7,23 +7,42 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 @Options
-public class UpdateOptions extends WriteOptions {
+public class UpdateOptions {
+  private String writeConcern;
   private boolean upsert;
   private boolean multi;
 
   public UpdateOptions() {
   }
 
+  public UpdateOptions(boolean upsert) {
+    this.upsert = upsert;
+  }
+
+  public UpdateOptions(boolean upsert, boolean multi) {
+    this.upsert = upsert;
+    this.multi = multi;
+  }
+
   public UpdateOptions(UpdateOptions other) {
-    super(other);
+    this.writeConcern = other.writeConcern;
     this.upsert = other.upsert;
     this.multi = other.multi;
   }
 
   public UpdateOptions(JsonObject json) {
-    super(json);
+    writeConcern = json.getString("writeConcern");
     upsert = json.getBoolean("upsert", false);
     multi = json.getBoolean("multi", false);
+  }
+
+  public String getWriteConcern() {
+    return writeConcern;
+  }
+
+  public UpdateOptions setWriteConcern(String writeConcern) {
+    this.writeConcern = writeConcern;
+    return this;
   }
 
   public boolean isUpsert() {
@@ -44,14 +63,11 @@ public class UpdateOptions extends WriteOptions {
     return this;
   }
 
-  @Override
-  public UpdateOptions setWriteConcern(String writeConcern) {
-    super.setWriteConcern(writeConcern);
-    return this;
-  }
-
   public JsonObject toJson() {
-    JsonObject json = super.toJson();
+    JsonObject json = new JsonObject();
+    if (writeConcern != null) {
+      json.put("writeConcern", writeConcern);
+    }
     if (upsert) {
       json.put("upsert", true);
     }
@@ -66,19 +82,19 @@ public class UpdateOptions extends WriteOptions {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
 
     UpdateOptions that = (UpdateOptions) o;
 
     if (multi != that.multi) return false;
     if (upsert != that.upsert) return false;
+    if (writeConcern != null ? !writeConcern.equals(that.writeConcern) : that.writeConcern != null) return false;
 
     return true;
   }
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
+    int result = writeConcern != null ? writeConcern.hashCode() : 0;
     result = 31 * result + (upsert ? 1 : 0);
     result = 31 * result + (multi ? 1 : 0);
     return result;

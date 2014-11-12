@@ -18,7 +18,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
-import io.vertx.ext.mongo.WriteOptions;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.Document;
@@ -36,6 +35,8 @@ import static java.util.Objects.*;
 public class MongoServiceImpl implements MongoService {
 
   private static final Logger log = LoggerFactory.getLogger(MongoServiceImpl.class);
+  private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
+  private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
 
   private final Vertx vertx;
   private final JsonObject config;
@@ -71,17 +72,21 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void save(String collection, JsonObject document, WriteOptions options, Handler<AsyncResult<String>> resultHandler) {
+  public void save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+    saveWithOptions(collection, document, null, resultHandler);
+  }
+
+  @Override
+  public void saveWithOptions(String collection, JsonObject document, String writeConcern, Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
-    requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     //FIXME: Use MongoCollection<JsonObject> when https://jira.mongodb.org/browse/JAVA-1325 is complete and no need for this genId malarkey
     boolean insert = !codec.documentHasId(document);
 
     codec.generateIdIfAbsentFromDocument(document);
-    MongoCollection<Document> coll = db.getCollection(collection, collectionOptions(options));
+    MongoCollection<Document> coll = db.getCollection(collection, collectionOptions(writeConcern));
 
     //TODO: Consider returning WriteConcernResult as a JsonObject, instead of just the id mayhaps ?
     MongoFuture<WriteConcernResult> future = coll.save(toDocument(document, codec));
@@ -95,15 +100,19 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void insert(String collection, JsonObject document, WriteOptions options, Handler<AsyncResult<String>> resultHandler) {
+  public void insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+    insertWithOptions(collection, document, null, resultHandler);
+  }
+
+  @Override
+  public void insertWithOptions(String collection, JsonObject document, String writeConcern, Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
-    requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     boolean insert = !codec.documentHasId(document);
 
-    MongoCollection<JsonObject> coll = getCollection(collection, options);
+    MongoCollection<JsonObject> coll = getCollection(collection, writeConcern);
     MongoFuture<WriteConcernResult> future = coll.insert(document);
     adaptFuture(future, resultHandler, wr -> {
       if (insert) {
@@ -115,7 +124,12 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void update(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public void update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler) {
+    updateWithOptions(collection, query, update, DEFAULT_UPDATE_OPTIONS, resultHandler);
+  }
+
+  @Override
+  public void updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(update, "update cannot be null");
@@ -123,11 +137,11 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoView<JsonObject> view = getView(collection, query);
-    if (isTrue(options.isUpsert())) {
+    if (options.isUpsert()) {
       view.upsert();
     }
     MongoFuture<WriteConcernResult> future;
-    if (isTrue(options.isMulti())) {
+    if (options.isMulti()) {
       future = view.update(toDocument(update, codec));
     } else {
       future = view.updateOne(toDocument(update, codec));
@@ -136,7 +150,12 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void replace(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public void replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler) {
+    replaceWithOptions(collection, query, replace, DEFAULT_UPDATE_OPTIONS, resultHandler);
+  }
+
+  @Override
+  public void replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(replace, "update cannot be null");
@@ -145,7 +164,7 @@ public class MongoServiceImpl implements MongoService {
 
     //FIXME: Use typed API when mongo driver is updated
     MongoView view = getView(collection, query);
-    if (isTrue(options.isUpsert())) {
+    if (options.isUpsert()) {
       view.upsert();
     }
     @SuppressWarnings("unchecked")
@@ -154,7 +173,12 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void find(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+  public void find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    findWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
+  }
+
+  @Override
+  public void findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -188,25 +212,33 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void remove(String collection, JsonObject query, WriteOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public void remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
+    removeWithOptions(collection, query, null, resultHandler);
+  }
+
+  @Override
+  public void removeWithOptions(String collection, JsonObject query, String writeConcern, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
-    requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query);
+    MongoView<JsonObject> view = getView(collection, writeConcern, query);
     MongoFuture<WriteConcernResult> future = view.remove();
     adaptFuture(future, resultHandler);
   }
 
   @Override
-  public void removeOne(String collection, JsonObject query, WriteOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public void removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
+    removeOneWithOptions(collection, query, null, resultHandler);
+  }
+
+  @Override
+  public void removeOneWithOptions(String collection, JsonObject query, String writeConcern, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
-    requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query, new FindOptions());
+    MongoView<JsonObject> view = getView(collection, writeConcern, query);
     MongoFuture<WriteConcernResult> future = view.removeOne();
     adaptFuture(future, resultHandler);
   }
@@ -278,16 +310,24 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private MongoView<JsonObject> getView(String collection, JsonObject query) {
-    return getView(collection, query, new FindOptions());
+    return getView(collection, null, query);
+  }
+
+  private MongoView<JsonObject> getView(String collection, String writeConcern, JsonObject query) {
+    return getView(collection, writeConcern, query, DEFAULT_FIND_OPTIONS);
   }
 
   private MongoView<JsonObject> getView(String collection, JsonObject query, FindOptions options) {
-    MongoCollection<JsonObject> coll = getCollection(collection);
+    return getView(collection, null, query, options);
+  }
+
+  private MongoView<JsonObject> getView(String collection, String writeConcern, JsonObject query, FindOptions options) {
+    MongoCollection<JsonObject> coll = getCollection(collection, writeConcern);
     MongoView<JsonObject> view = coll.find(toDocument(query, codec));
     if (options.getLimit() != -1) {
       view.limit(options.getLimit());
     }
-    if (options.getSkip() != -1) {
+    if (options.getSkip() > 0) {
       view.skip(options.getSkip());
     }
     if (options.getSort() != null) {
@@ -300,11 +340,11 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private MongoCollection<JsonObject> getCollection(String name) {
-    return getCollection(name, new WriteOptions());
+    return getCollection(name, null);
   }
 
-  private MongoCollection<JsonObject> getCollection(String name, WriteOptions options) {
-    return db.getCollection(name, codec, collectionOptions(options));
+  private MongoCollection<JsonObject> getCollection(String name, String writeConcern) {
+    return db.getCollection(name, codec, collectionOptions(writeConcern));
   }
 
   private static boolean isTrue(Boolean bool) {
