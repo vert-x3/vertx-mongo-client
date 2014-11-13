@@ -346,8 +346,4 @@ public class MongoServiceImpl implements MongoService {
   private MongoCollection<JsonObject> getCollection(String name, String writeConcern) {
     return db.getCollection(name, codec, collectionOptions(writeConcern));
   }
-
-  private static boolean isTrue(Boolean bool) {
-    return bool != null && bool;
-  }
 }
