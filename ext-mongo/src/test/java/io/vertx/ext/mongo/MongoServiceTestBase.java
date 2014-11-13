@@ -35,7 +35,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -281,6 +284,32 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   }
 
   @Test
+  public void testInsertWithNestedListMap() throws Exception {
+    Map<String, Object> map = new HashMap<>();
+    Map<String, Object> nestedMap = new HashMap<>();
+    nestedMap.put("foo", "bar");
+    map.put("nestedMap", nestedMap);
+    map.put("nestedList", Arrays.asList(1, 2, 3));
+
+    String collection = randomCollection();
+    JsonObject doc = new JsonObject(map);
+    mongoService.insert(collection, doc, onSuccess(id -> {
+      assertNotNull(id);
+      mongoService.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(result -> {
+        assertNotNull(result);
+        assertNotNull(result.getJsonObject("nestedMap"));
+        assertEquals("bar", result.getJsonObject("nestedMap").getString("foo"));
+        assertNotNull(result.getJsonArray("nestedList"));
+        assertEquals(1, (int) result.getJsonArray("nestedList").getInteger(0));
+        assertEquals(2, (int) result.getJsonArray("nestedList").getInteger(1));
+        assertEquals(3, (int) result.getJsonArray("nestedList").getInteger(2));
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testSave() throws Exception {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
@@ -297,6 +326,32 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
             testComplete();
           }));
         }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testSaveWithNestedListMap() throws Exception {
+    Map<String, Object> map = new HashMap<>();
+    Map<String, Object> nestedMap = new HashMap<>();
+    nestedMap.put("foo", "bar");
+    map.put("nestedMap", nestedMap);
+    map.put("nestedList", Arrays.asList(1, 2, 3));
+
+    String collection = randomCollection();
+    JsonObject doc = new JsonObject(map);
+    mongoService.save(collection, doc, onSuccess(id -> {
+      assertNotNull(id);
+      mongoService.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(result -> {
+        assertNotNull(result);
+        assertNotNull(result.getJsonObject("nestedMap"));
+        assertEquals("bar", result.getJsonObject("nestedMap").getString("foo"));
+        assertNotNull(result.getJsonArray("nestedList"));
+        assertEquals(1, (int) result.getJsonArray("nestedList").getInteger(0));
+        assertEquals(2, (int) result.getJsonArray("nestedList").getInteger(1));
+        assertEquals(3, (int) result.getJsonArray("nestedList").getInteger(2));
+        testComplete();
       }));
     }));
     await();
@@ -724,22 +779,4 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
       resultHandler.handle(Future.completedFuture());
     }
   }
-
-//  @Test
-//  public void testCreateConnectionViaProxy() throws Exception {
-//    Vertx vertx = Vertx.vertx();
-//
-//    vertx.deployVerticle("java:" + MongoDBServiceVerticle.class.getName(), DeploymentOptions.options(), ar -> {
-//
-//    });
-//
-//
-//    MongoDBService mongo = MongoDBService.createEventBusProxy(vertx, "vertx.mongodb");
-//
-//    String collection = TestUtils.randomAlphaString(100);
-//    mongo.createCollection(collection, onSuccess(res -> {
-//      testComplete();
-//    }));
-//    await();
-//  }
 }

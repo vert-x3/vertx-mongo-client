@@ -14,6 +14,7 @@ import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
@@ -77,6 +78,18 @@ class Utils {
         list.add(getDocumentValue(null, o, codec));
       }
       return list;
+    } else if (value instanceof List) {
+      List<Object> list = new ArrayList<>();
+      for (Object o : (List) value) {
+        list.add(getDocumentValue(null, o, codec));
+      }
+      return list;
+    } else if (value instanceof Map) {
+      Document doc = new Document();
+      ((Map<String, Object>) value).forEach((k, v) -> {
+        doc.put(k, getDocumentValue(k, v, codec));
+      });
+      return doc;
     } else if (value instanceof String) {
       // While this should go away, we need to support querying ObjectId's
       if (JsonObjectCodec.ID_FIELD.equals(key) && codec.isSupportingObjectId()) {
