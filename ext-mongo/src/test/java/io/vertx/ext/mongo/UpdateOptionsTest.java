@@ -79,4 +79,18 @@ public class UpdateOptionsTest {
     assertEquals(options.isMulti(), copy.isMulti());
     assertEquals(options.isUpsert(), copy.isUpsert());
   }
+
+  @Test
+  public void testToJson() {
+    UpdateOptions options = new UpdateOptions();
+    String wc = TestUtils.randomAlphaString(10);
+    boolean multi = TestUtils.randomBoolean();
+    boolean upsert = TestUtils.randomBoolean();
+
+    options.setWriteConcern(wc);
+    options.setMulti(multi);
+    options.setUpsert(upsert);
+
+    assertEquals(options, new UpdateOptions(options.toJson()));
+  }
 }
