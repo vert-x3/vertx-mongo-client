@@ -31,11 +31,11 @@ public interface MongoService {
 
   void save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
 
-  void saveWithOptions(String collection, JsonObject document, String writeConcern, Handler<AsyncResult<String>> resultHandler);
+  void saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   void insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
 
-  void insertWithOptions(String collection, JsonObject document, String writeConcern, Handler<AsyncResult<String>> resultHandler);
+  void insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   void update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler);
 
@@ -56,11 +56,11 @@ public interface MongoService {
 
   void remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
 
-  void removeWithOptions(String collection, JsonObject query, String writeConcern, Handler<AsyncResult<Void>> resultHandler);
+  void removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
 
   void removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
 
-  void removeOneWithOptions(String collection, JsonObject query, String writeConcern, Handler<AsyncResult<Void>> resultHandler);
+  void removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
 
   void createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler);
 

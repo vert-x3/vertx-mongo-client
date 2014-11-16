@@ -43,6 +43,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import static io.vertx.ext.mongo.WriteOption.*;
+
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
@@ -275,7 +277,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongoService.insertWithOptions(collection, doc, "normal", onSuccess(id -> {
+      mongoService.insertWithOptions(collection, doc, UNACKNOWLEDGED, onSuccess(id -> {
         assertNotNull(id);
         testComplete();
       }));
@@ -362,7 +364,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
     String collection = randomCollection();
     mongoService.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongoService.saveWithOptions(collection, doc, "safe", onSuccess(id -> {
+      mongoService.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
         assertNotNull(id);
         doc.put("_id", id);
         doc.put("newField", "sheep");
@@ -710,7 +712,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   public void testRemoveOneWithOptions() throws Exception {
     String collection = randomCollection();
     insertDocs(collection, 6, onSuccess(res2 -> {
-      mongoService.removeOneWithOptions(collection, new JsonObject().put("num", 123), "normal", onSuccess(res3 -> {
+      mongoService.removeOneWithOptions(collection, new JsonObject().put("num", 123), UNACKNOWLEDGED, onSuccess(res3 -> {
         mongoService.count(collection, new JsonObject(), onSuccess(count -> {
           assertEquals(5, (long) count);
           testComplete();
@@ -738,7 +740,7 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
   public void testRemoveWithOptions() throws Exception {
     String collection = randomCollection();
     insertDocs(collection, 10, onSuccess(v -> {
-      mongoService.removeWithOptions(collection, new JsonObject(), "safe", onSuccess(v2 -> {
+      mongoService.removeWithOptions(collection, new JsonObject(), ACKNOWLEDGED, onSuccess(v2 -> {
         mongoService.find(collection, new JsonObject(), onSuccess(res2 -> {
           assertTrue(res2.isEmpty());
           testComplete();

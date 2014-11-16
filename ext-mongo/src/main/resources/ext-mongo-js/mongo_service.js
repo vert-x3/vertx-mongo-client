@@ -44,10 +44,10 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.saveWithOptions = function(collection, document, writeConcern, resultHandler) {
+  this.saveWithOptions = function(collection, document, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService.saveWithOptions(collection, utils.convJSObjectToJsonObject(document), writeConcern, function(ar) {
+      j_mongoService.saveWithOptions(collection, utils.convJSObjectToJsonObject(document), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
       } else {
@@ -70,10 +70,10 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.insertWithOptions = function(collection, document, writeConcern, resultHandler) {
+  this.insertWithOptions = function(collection, document, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService.insertWithOptions(collection, utils.convJSObjectToJsonObject(document), writeConcern, function(ar) {
+      j_mongoService.insertWithOptions(collection, utils.convJSObjectToJsonObject(document), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
       } else {
@@ -200,10 +200,10 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.removeWithOptions = function(collection, query, writeConcern, resultHandler) {
+  this.removeWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService.removeWithOptions(collection, utils.convJSObjectToJsonObject(query), writeConcern, function(ar) {
+      j_mongoService.removeWithOptions(collection, utils.convJSObjectToJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
@@ -226,10 +226,10 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.removeOneWithOptions = function(collection, query, writeConcern, resultHandler) {
+  this.removeOneWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService.removeOneWithOptions(collection, utils.convJSObjectToJsonObject(query), writeConcern, function(ar) {
+      j_mongoService.removeOneWithOptions(collection, utils.convJSObjectToJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
