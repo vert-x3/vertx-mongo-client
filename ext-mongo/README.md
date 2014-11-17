@@ -116,7 +116,7 @@ is null.
 Example of saving a document into the books collection
 ```java
 JsonObject document = new JsonObject().put("title", "The Hobbit");
-service.save("books", document, new WriteOptions(), outcome -> {
+service.save("books", document, outcome -> {
   if (outcome.succeeded()) {
     String id = outcome.result();
     System.out.println("Saved book with id " + id);
@@ -130,13 +130,13 @@ service.save("books", document, new WriteOptions(), outcome -> {
 
 Inserts a document into the collection.
 
-If the document has no id, then the id field generated will be returned to the result handler. Otherwise it
-is null.
+If the document has no `id`, then the `id` field generated will be returned to the result handler. Otherwise it
+is `null`.
 
 Example of inserting a document into the books collection
 ```java
 JsonObject document = new JsonObject().put("title", "The Hobbit");
-service.insert("books", document, new WriteOptions(), outcome -> {
+service.insert("books", document, outcome -> {
   if (outcome.succeeded()) {
     String id = outcome.result();
     System.out.println("Saved book with id " + id);
@@ -155,7 +155,7 @@ Example of updating a document in the books collection
 ```java
 JsonObject query = new JsonObject().put("title", "The Hobbit");
 JsonObject update = new JsonObject().put("$set", new JsonObject().put("author", "J. R. R. Tolkien"));
-service.update("books", query, update, new UpdateOptions(), outcome -> {
+service.update("books", query, update, outcome -> {
   if (outcome.succeeded()) {
     System.out.println("Book updated !");
   } else {
@@ -164,13 +164,16 @@ service.update("books", query, update, new UpdateOptions(), outcome -> {
 });
 ```
 
+To specify if the update should upsert or update multiple documents, use the `updateWithOptions` operation and pass in the an `UpdateOptions` object.
+
 UpdateOptions
  - `multi` set to true to update multiple documents
  - `upsert` set to true to insert the document if the query doesn't match
+ - `writeConcern` the write concern for this operation
 
 ## Replace
 
-Replaces one or multiple documents in a collection.
+Replaces a document in a collection.
 
 This is similar to the update operation, however it does not take any [Update Operators](http://docs.mongodb.org/manual/reference/operator/update-field/).
 Instead it replaces the entire document with the one provided.
@@ -179,7 +182,7 @@ Example of replacing a document in the books collection
 ```java
 JsonObject query = new JsonObject().put("title", "The Hobbit");
 JsonObject replace = new JsonObject().put("title", "The Lord of the Rings").put("author", "J. R. R. Tolkien");
-service.replace("books", query, replace, new UpdateOptions(), outcome -> {
+service.replace("books", query, replace, outcome -> {
   if (outcome.succeeded()) {
     System.out.println("Book replaced !");
   } else {
@@ -188,10 +191,6 @@ service.replace("books", query, replace, new UpdateOptions(), outcome -> {
 });
 ```
 
-UpdateOptions
- - `multi` set to true to update multiple documents
- - `upsert` set to true to insert the document if the query doesn't match
-
 ## Find
 
 Finds matching documents in a collection
@@ -199,7 +198,7 @@ Finds matching documents in a collection
 Example of finding all documents in the books collection
 ```java
 JsonObject query = new JsonObject(); // empty query = match any
-service.find("books", query, new FindOptions(), outcome -> {
+service.find("books", query, outcome -> {
   if (outcome.succeeded()) {
     for (JsonObject json : outcome.result()) {
       System.out.println(json.encodePrettily());
@@ -210,8 +209,11 @@ service.find("books", query, new FindOptions(), outcome -> {
 });
 ```
 
+To specify things like what fields to return, how many results to return, etc use the `findWithOptions` operation and
+pass in the a `FindOptions` object.
+
 FindOptions
- - `fields` The fields to return in the results. Defaults to null, meaning all fields will be returned
+ - `fields` The fields to return in the results. Defaults to `null`, meaning all fields will be returned
  - `sort` The fields to sort. Defaults to `null`.
  - `limit` The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
  - `skip` The number of documents to skip before returning the results. Defaults to `0`.
@@ -239,7 +241,7 @@ Removes matching documents in a collection
 Example of removing all documents in the books collection
 ```java
 JsonObject query = new JsonObject(); // empty query = match any
-service.remove("books", query, new WriteOptions(), outcome -> {
+service.remove("books", query, outcome -> {
   if (outcome.succeeded()) {
     System.out.println("Removed all documents !");
   } else {

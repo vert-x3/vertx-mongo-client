@@ -14,6 +14,10 @@ public class UpdateOptionsTest {
   public void testOptions() {
     UpdateOptions options = new UpdateOptions();
 
+    String writeConcern = TestUtils.randomAlphaString(10);
+    assertEquals(options, options.setWriteConcern(writeConcern));
+    assertEquals(writeConcern, options.getWriteConcern());
+
     boolean multi = TestUtils.randomBoolean();
     assertEquals(options, options.setMulti(multi));
     assertEquals(multi, options.isMulti());
@@ -26,6 +30,7 @@ public class UpdateOptionsTest {
   @Test
   public void testDefaultOptions() {
     UpdateOptions options = new UpdateOptions();
+    assertNull(options.getWriteConcern());
     assertFalse(options.isMulti());
     assertFalse(options.isUpsert());
   }
@@ -34,6 +39,9 @@ public class UpdateOptionsTest {
   public void testOptionsJson() {
     JsonObject json = new JsonObject();
 
+    String wc = TestUtils.randomAlphaString(10);
+    json.put("writeConcern", wc);
+
     boolean multi = TestUtils.randomBoolean();
     json.put("multi", multi);
 
@@ -41,6 +49,7 @@ public class UpdateOptionsTest {
     json.put("upsert", upsert);
 
     UpdateOptions options = new UpdateOptions(json);
+    assertEquals(wc, options.getWriteConcern());
     assertEquals(multi, options.isMulti());
     assertEquals(upsert, options.isUpsert());
   }
@@ -49,6 +58,7 @@ public class UpdateOptionsTest {
   public void testDefaultOptionsJson() {
     UpdateOptions options = new UpdateOptions(new JsonObject());
     UpdateOptions def = new UpdateOptions();
+    assertEquals(def.getWriteConcern(), options.getWriteConcern());
     assertEquals(def.isMulti(), options.isMulti());
     assertEquals(def.isUpsert(), options.isUpsert());
   }
@@ -56,13 +66,31 @@ public class UpdateOptionsTest {
   @Test
   public void testCopyOptions() {
     UpdateOptions options = new UpdateOptions();
+    String wc = TestUtils.randomAlphaString(10);
     boolean multi = TestUtils.randomBoolean();
     boolean upsert = TestUtils.randomBoolean();
+
+    options.setWriteConcern(wc);
     options.setMulti(multi);
     options.setUpsert(upsert);
 
     UpdateOptions copy = new UpdateOptions(options);
+    assertEquals(options.getWriteConcern(), copy.getWriteConcern());
     assertEquals(options.isMulti(), copy.isMulti());
     assertEquals(options.isUpsert(), copy.isUpsert());
+  }
+
+  @Test
+  public void testToJson() {
+    UpdateOptions options = new UpdateOptions();
+    String wc = TestUtils.randomAlphaString(10);
+    boolean multi = TestUtils.randomBoolean();
+    boolean upsert = TestUtils.randomBoolean();
+
+    options.setWriteConcern(wc);
+    options.setMulti(multi);
+    options.setUpsert(upsert);
+
+    assertEquals(options, new UpdateOptions(options.toJson()));
   }
 }

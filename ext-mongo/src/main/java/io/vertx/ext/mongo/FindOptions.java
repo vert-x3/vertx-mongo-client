@@ -9,12 +9,17 @@ import io.vertx.core.json.JsonObject;
 @Options
 public class FindOptions {
 
+  public static final int DEFAULT_LIMIT = -1;
+  public static final int DEFAULT_SKIP = 0;
+
   private JsonObject fields;
   private JsonObject sort;
-  private int limit = -1;
+  private int limit;
   private int skip;
 
   public FindOptions() {
+    this.limit = DEFAULT_LIMIT;
+    this.skip = DEFAULT_SKIP;
   }
 
   public FindOptions(FindOptions other) {
@@ -27,8 +32,8 @@ public class FindOptions {
   public FindOptions(JsonObject json) {
     this.fields = json.getJsonObject("fields");
     this.sort = json.getJsonObject("sort");
-    this.limit = json.getInteger("limit", limit);
-    this.skip = json.getInteger("skip", skip);
+    this.limit = json.getInteger("limit", DEFAULT_LIMIT);
+    this.skip = json.getInteger("skip", DEFAULT_SKIP);
   }
 
   public JsonObject toJson() {
@@ -39,10 +44,10 @@ public class FindOptions {
     if (sort != null) {
       json.put("sort", sort);
     }
-    if (limit != -1) {
+    if (limit != DEFAULT_LIMIT) {
       json.put("limit", limit);
     }
-    if (skip > 0) {
+    if (skip != DEFAULT_SKIP) {
       json.put("skip", skip);
     }
 
