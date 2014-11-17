@@ -38,7 +38,6 @@ public class MongoServiceImpl implements MongoService {
   private static final Logger log = LoggerFactory.getLogger(MongoServiceImpl.class);
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
-  private static final WriteOption DEFAULT_WRITE_CONCERN = WriteOption.ACKNOWLEDGED;
 
   private final Vertx vertx;
   private final JsonObject config;
@@ -75,7 +74,7 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   public void save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
-    saveWithOptions(collection, document, DEFAULT_WRITE_CONCERN, resultHandler);
+    saveWithOptions(collection, document, null, resultHandler);
   }
 
   @Override
@@ -103,7 +102,7 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   public void insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
-    insertWithOptions(collection, document, DEFAULT_WRITE_CONCERN, resultHandler);
+    insertWithOptions(collection, document, null, resultHandler);
   }
 
   @Override
@@ -215,7 +214,7 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   public void remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
-    removeWithOptions(collection, query, DEFAULT_WRITE_CONCERN, resultHandler);
+    removeWithOptions(collection, query, null, resultHandler);
   }
 
   @Override
@@ -231,7 +230,7 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   public void removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
-    removeOneWithOptions(collection, query, DEFAULT_WRITE_CONCERN, resultHandler);
+    removeOneWithOptions(collection, query, null, resultHandler);
   }
 
   @Override
@@ -312,7 +311,7 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private MongoView<JsonObject> getView(String collection, JsonObject query) {
-    return getView(collection, DEFAULT_WRITE_CONCERN, query);
+    return getView(collection, null, query);
   }
 
   private MongoView<JsonObject> getView(String collection, WriteOption writeOption, JsonObject query) {
@@ -320,7 +319,7 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private MongoView<JsonObject> getView(String collection, JsonObject query, FindOptions options) {
-    return getView(collection, DEFAULT_WRITE_CONCERN, query, options);
+    return getView(collection, null, query, options);
   }
 
   private MongoView<JsonObject> getView(String collection, WriteOption writeOption, JsonObject query, FindOptions options) {

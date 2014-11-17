@@ -12,7 +12,7 @@ public class UpdateOptions {
   public static final boolean DEFAULT_UPSERT = false;
   public static final boolean DEFAULT_MULTI = false;
 
-  private String writeConcern;
+  private WriteOption writeOption;
   private boolean upsert;
   private boolean multi;
 
@@ -32,23 +32,26 @@ public class UpdateOptions {
   }
 
   public UpdateOptions(UpdateOptions other) {
-    this.writeConcern = other.writeConcern;
+    this.writeOption = other.writeOption;
     this.upsert = other.upsert;
     this.multi = other.multi;
   }
 
   public UpdateOptions(JsonObject json) {
-    writeConcern = json.getString("writeConcern");
+    String wo = json.getString("writeOption");
+    if (wo != null) {
+      writeOption = WriteOption.valueOf(wo.toUpperCase());
+    }
     upsert = json.getBoolean("upsert", DEFAULT_UPSERT);
     multi = json.getBoolean("multi", DEFAULT_MULTI);
   }
 
-  public String getWriteConcern() {
-    return writeConcern;
+  public WriteOption getWriteOption() {
+    return writeOption;
   }
 
-  public UpdateOptions setWriteConcern(String writeConcern) {
-    this.writeConcern = writeConcern;
+  public UpdateOptions setWriteOption(WriteOption writeOption) {
+    this.writeOption = writeOption;
     return this;
   }
 
@@ -72,8 +75,8 @@ public class UpdateOptions {
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    if (writeConcern != null) {
-      json.put("writeConcern", writeConcern);
+    if (writeOption != null) {
+      json.put("writeOption", writeOption.name());
     }
     if (upsert) {
       json.put("upsert", true);
@@ -90,18 +93,18 @@ public class UpdateOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    UpdateOptions that = (UpdateOptions) o;
+    UpdateOptions options = (UpdateOptions) o;
 
-    if (multi != that.multi) return false;
-    if (upsert != that.upsert) return false;
-    if (writeConcern != null ? !writeConcern.equals(that.writeConcern) : that.writeConcern != null) return false;
+    if (multi != options.multi) return false;
+    if (upsert != options.upsert) return false;
+    if (writeOption != options.writeOption) return false;
 
     return true;
   }
 
   @Override
   public int hashCode() {
-    int result = writeConcern != null ? writeConcern.hashCode() : 0;
+    int result = writeOption != null ? writeOption.hashCode() : 0;
     result = 31 * result + (upsert ? 1 : 0);
     result = 31 * result + (multi ? 1 : 0);
     return result;
