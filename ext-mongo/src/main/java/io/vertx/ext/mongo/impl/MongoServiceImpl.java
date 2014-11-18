@@ -24,7 +24,6 @@ import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
-import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +82,6 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    //TODO: Check to see if save could added back to API
     String id = document.getString(ID_FIELD);
     if (id == null) {
       MongoFuture<WriteConcernResult> future = coll.insertOne(document);
@@ -233,10 +231,10 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   public void getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
-    MongoFuture<List<String>> future = db.getCollectionNames();
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    adaptFuture(future, resultHandler, res -> res);
+    MongoFuture<List<String>> future = db.getCollectionNames();
+    handleFuture(future, resultHandler);
   }
 
   @Override
@@ -254,9 +252,8 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    //TODO: Looks like executeCommand cannot accept a codec atm.
-    MongoFuture<Document> future = db.executeCommand(Utils.toDocument(command));
-    adaptFuture(future, resultHandler, Utils::toJson);
+    MongoFuture<JsonObject> future = db.executeCommand(command, null, JsonObject.class);
+    handleFuture(future, resultHandler);
   }
 
   private <T, U> void adaptFuture(MongoFuture<T> future, Handler<AsyncResult<U>> resultHandler, Function<T, U> converter) {
