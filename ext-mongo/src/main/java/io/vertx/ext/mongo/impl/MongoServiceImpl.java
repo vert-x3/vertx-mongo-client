@@ -285,7 +285,7 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private <T, U> void adaptFuture(MongoFuture<T> future, Handler<AsyncResult<U>> resultHandler, Function<T, U> converter) {
-    Context context = vertx.context();
+    Context context = vertx.getOrCreateContext();
     future.register((wr, e) -> {
       context.runOnContext(v -> {
         if (e != null) {
@@ -298,7 +298,7 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private <T> void handleFuture(MongoFuture<T> future, Handler<AsyncResult<T>> resultHandler) {
-    Context context = vertx.context();
+    Context context = vertx.getOrCreateContext();
     future.register((result, e) -> {
       context.runOnContext(v -> {
         if (e != null) {

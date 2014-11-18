@@ -43,11 +43,11 @@ public class EmbeddedMongoVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    if (vertx != null && !vertx.context().isWorker()) {
+    if (vertx != null && !context.isWorker()) {
       throw new IllegalStateException("Must be started as worker verticle!");
     }
 
-    JsonObject config = vertx.context().config();
+    JsonObject config = context.config();
 
     int port = config.getInteger("port");
 

@@ -17,7 +17,7 @@ public class MongoServiceVerticle extends AbstractVerticle {
     service = MongoService.create(vertx, config());
 
     // And register it on the event bus against the configured address
-    String address = vertx.context().config().getString("address");
+    String address = config().getString("address");
     if (address == null) {
       throw new IllegalStateException("address field must be specified in config for service verticle");
     }
