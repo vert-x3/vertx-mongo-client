@@ -1,16 +1,8 @@
 package io.vertx.ext.mongo.impl;
 
-import com.mongodb.WriteConcern;
-import com.mongodb.async.client.MongoCollectionOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.WriteOption;
-import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
-import org.bson.BsonObjectId;
-import org.bson.BsonString;
-import org.bson.BsonValue;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,27 +14,17 @@ import java.util.Map;
  */
 class Utils {
 
-  public static String idAsString(BsonValue value) {
-    if (value instanceof BsonString) {
-      return ((BsonString) value).getValue();
-    } else if (value instanceof BsonObjectId) {
-      return ((BsonObjectId) value).getValue().toHexString();
-    }
-
-    throw new IllegalArgumentException("Unvalid bson type " + value.getBsonType() + " for ID field");
-  }
-
   //FIXME: All the manual conversion from JsonObject <-> Document should be removed when https://jira.mongodb.org/browse/JAVA-1325 is finished.
-  public static Document toDocument(JsonObject json, JsonObjectCodec codec) {
-    return toDocument(json, false, codec);
+  public static Document toDocument(JsonObject json) {
+    return toDocument(json, false);
   }
 
-  public static Document toDocument(JsonObject json, boolean createIfNull, JsonObjectCodec codec) {
+  public static Document toDocument(JsonObject json, boolean createIfNull) {
     if (json == null && createIfNull) {
       return new Document();
     } else if (json != null) {
       Document doc = new Document();
-      json.getMap().forEach((k, v) -> doc.put(k, getDocumentValue(k, v, codec)));
+      json.getMap().forEach((k, v) -> doc.put(k, getDocumentValue(v)));
       return doc;
     } else {
       return null;
@@ -56,48 +38,32 @@ class Utils {
     return json;
   }
 
-  public static MongoCollectionOptions collectionOptions(WriteOption writeOption) {
-    MongoCollectionOptions.Builder collectionOptions = MongoCollectionOptions.builder();
-    if (writeOption != null) {
-      collectionOptions.writeConcern(WriteConcern.valueOf(writeOption.name()));
-    }
-
-    return collectionOptions.build();
-  }
-
   @SuppressWarnings("unchecked")
-  private static Object getDocumentValue(String key, Object value, JsonObjectCodec codec) {
+  private static Object getDocumentValue(Object value) {
     if (value instanceof JsonObject) {
       Document doc = new Document();
       ((JsonObject) value).getMap().forEach((k, v) -> {
-        doc.put(k, getDocumentValue(k, v, codec));
+        doc.put(k, getDocumentValue(v));
       });
       return doc;
     } else if (value instanceof JsonArray) {
       List<Object> list = new ArrayList<>();
       for (Object o : (JsonArray) value) {
-        list.add(getDocumentValue(null, o, codec));
+        list.add(getDocumentValue(o));
       }
       return list;
     } else if (value instanceof List) {
       List<Object> list = new ArrayList<>();
       for (Object o : (List) value) {
-        list.add(getDocumentValue(null, o, codec));
+        list.add(getDocumentValue(o));
       }
       return list;
     } else if (value instanceof Map) {
       Document doc = new Document();
       ((Map<String, Object>) value).forEach((k, v) -> {
-        doc.put(k, getDocumentValue(k, v, codec));
+        doc.put(k, getDocumentValue(v));
       });
       return doc;
-    } else if (value instanceof String) {
-      // While this should go away, we need to support querying ObjectId's
-      if (JsonObjectCodec.ID_FIELD.equals(key) && codec.isSupportingObjectId()) {
-        return new ObjectId((String) value);
-      } else {
-        return value;
-      }
     } else {
       return value;
     }
