@@ -1,12 +1,16 @@
 package io.vertx.ext.mongo.impl;
 
+import com.mongodb.WriteConcern;
 import com.mongodb.WriteConcernResult;
 import com.mongodb.async.MongoFuture;
+import com.mongodb.async.client.FindFluent;
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
-import com.mongodb.async.client.MongoView;
+import com.mongodb.client.options.OperationOptions;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -19,15 +23,12 @@ import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
-import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
-import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static io.vertx.ext.mongo.impl.Utils.*;
 import static java.util.Objects.*;
 
 /**
@@ -38,13 +39,13 @@ public class MongoServiceImpl implements MongoService {
   private static final Logger log = LoggerFactory.getLogger(MongoServiceImpl.class);
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
+  private static final String ID_FIELD = "_id";
 
   private final Vertx vertx;
   private final JsonObject config;
 
   protected MongoClient mongo;
   protected MongoDatabase db;
-  private JsonObjectCodec codec;
 
   public MongoServiceImpl(Vertx vertx, JsonObject config) {
     this.vertx = vertx;
@@ -57,9 +58,6 @@ public class MongoServiceImpl implements MongoService {
 
     String dbName = config.getString("db_name", "default_db");
     db = mongo.getDatabase(dbName);
-
-    // TODO: Revisit this because update & replace generate an ObjectId on upsert because codecs are a lil broken
-    codec = new JsonObjectCodec(config.getBoolean("useObjectId", false));
 
     log.debug("mongoDB service started");
   }
@@ -83,21 +81,15 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    //FIXME: Use MongoCollection<JsonObject> when https://jira.mongodb.org/browse/JAVA-1325 is complete and no need for this genId malarkey
-    boolean insert = !codec.documentHasId(document);
-
-    codec.generateIdIfAbsentFromDocument(document);
-    MongoCollection<Document> coll = db.getCollection(collection, collectionOptions(writeOption));
-
-    //TODO: Consider returning WriteConcernResult as a JsonObject, instead of just the id mayhaps ?
-    MongoFuture<WriteConcernResult> future = coll.save(toDocument(document, codec));
-    adaptFuture(future, resultHandler, wr -> {
-      if (insert) {
-        return idAsString(codec.getDocumentId(document));
-      } else {
-        return null;
-      }
-    });
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    String id = document.getString(ID_FIELD);
+    if (id == null) {
+      MongoFuture<WriteConcernResult> future = coll.insertOne(document);
+      adaptFuture(future, resultHandler, wr -> document.getString(ID_FIELD));
+    } else {
+      MongoFuture<UpdateResult> future = coll.replaceOne(new JsonObject().put(ID_FIELD, document.getString(ID_FIELD)), document);
+      adaptFuture(future, resultHandler, result -> null);
+    }
   }
 
   @Override
@@ -111,17 +103,9 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    boolean insert = !codec.documentHasId(document);
-
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    MongoFuture<WriteConcernResult> future = coll.insert(document);
-    adaptFuture(future, resultHandler, wr -> {
-      if (insert) {
-        return idAsString(codec.getDocumentId(document));
-      } else {
-        return null;
-      }
-    });
+    MongoFuture<WriteConcernResult> future = coll.insertOne(document);
+    adaptFuture(future, resultHandler, wr -> document.getString(ID_FIELD));
   }
 
   @Override
@@ -137,17 +121,14 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query);
-    if (options.isUpsert()) {
-      view.upsert();
-    }
-    MongoFuture<WriteConcernResult> future;
+    MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
+    MongoFuture<UpdateResult> future;
     if (options.isMulti()) {
-      future = view.update(toDocument(update, codec));
+      future = coll.updateMany(query, update, mongoUpdateOptions(options));
     } else {
-      future = view.updateOne(toDocument(update, codec));
+      future = coll.updateOne(query, update, mongoUpdateOptions(options));
     }
-    adaptFuture(future, resultHandler);
+    adaptFuture(future, resultHandler, result -> null);
   }
 
   @Override
@@ -163,14 +144,9 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    //FIXME: Use typed API when mongo driver is updated
-    MongoView view = getView(collection, query);
-    if (options.isUpsert()) {
-      view.upsert();
-    }
-    @SuppressWarnings("unchecked")
-    MongoFuture<WriteConcernResult> future = view.replace(toDocument(replace, codec));
-    adaptFuture(future, resultHandler);
+    MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
+    MongoFuture<UpdateResult> future = coll.replaceOne(query, replace, mongoUpdateOptions(options));
+    adaptFuture(future, resultHandler, result -> null);
   }
 
   @Override
@@ -184,7 +160,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query, options);
+    FindFluent<JsonObject> view = doFind(collection, query, options);
     List<JsonObject> results = new ArrayList<>();
     MongoFuture<List<JsonObject>> future = view.into(results);
     handleFuture(future, resultHandler);
@@ -196,9 +172,15 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query, new FindOptions().setFields(fields));
-    MongoFuture<JsonObject> future = view.one();
-    handleFuture(future, resultHandler);
+    //TODO: No findOne in API, and FindFluent#first seems to be bugged atm https://jira.mongodb.org/browse/JAVA-1565
+    findWithOptions(collection, query, new FindOptions().setFields(fields).setLimit(1), ar -> {
+      if (ar.succeeded()) {
+        JsonObject result = ar.result().isEmpty() ? null : ar.result().get(0);
+        resultHandler.handle(Future.completedFuture(result));
+      } else {
+        resultHandler.handle(Future.completedFuture(ar.cause()));
+      }
+    });
   }
 
   @Override
@@ -207,8 +189,8 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, query);
-    MongoFuture<Long> future = view.count();
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    MongoFuture<Long> future = coll.count();
     handleFuture(future, resultHandler);
   }
 
@@ -223,9 +205,9 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, writeOption, query);
-    MongoFuture<WriteConcernResult> future = view.remove();
-    adaptFuture(future, resultHandler);
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    MongoFuture<DeleteResult> future = coll.deleteMany(query);
+    adaptFuture(future, resultHandler, result -> null);
   }
 
   @Override
@@ -239,9 +221,9 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoView<JsonObject> view = getView(collection, writeOption, query);
-    MongoFuture<WriteConcernResult> future = view.removeOne();
-    adaptFuture(future, resultHandler);
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    MongoFuture<DeleteResult> future = coll.deleteOne(query);
+    adaptFuture(future, resultHandler, result -> null);
   }
 
   @Override
@@ -249,16 +231,16 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoFuture<Void> future = db.tools().createCollection(collection);
+    MongoFuture<Void> future = db.createCollection(collection);
     adaptFuture(future, resultHandler, wr -> null);
   }
 
   @Override
   public void getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
-    MongoFuture<List<String>> future = db.tools().getCollectionNames();
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    adaptFuture(future, resultHandler, res -> res);
+    MongoFuture<List<String>> future = db.getCollectionNames();
+    handleFuture(future, resultHandler);
   }
 
   @Override
@@ -267,7 +249,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection);
-    MongoFuture<Void> future = coll.tools().drop();
+    MongoFuture<Void> future = coll.dropCollection();
     handleFuture(future, resultHandler);
   }
 
@@ -276,12 +258,8 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoFuture<Document> future = db.executeCommand(toDocument(command, codec));
-    adaptFuture(future, resultHandler, Utils::toJson);
-  }
-
-  private void adaptFuture(MongoFuture<WriteConcernResult> future, Handler<AsyncResult<Void>> resultHandler) {
-    adaptFuture(future, resultHandler, wr -> null);
+    MongoFuture<JsonObject> future = db.executeCommand(command, null, JsonObject.class);
+    handleFuture(future, resultHandler);
   }
 
   private <T, U> void adaptFuture(MongoFuture<T> future, Handler<AsyncResult<U>> resultHandler, Function<T, U> converter) {
@@ -310,34 +288,26 @@ public class MongoServiceImpl implements MongoService {
     });
   }
 
-  private MongoView<JsonObject> getView(String collection, JsonObject query) {
-    return getView(collection, null, query);
+  private FindFluent<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {
+    return doFind(collection, null, query, options);
   }
 
-  private MongoView<JsonObject> getView(String collection, WriteOption writeOption, JsonObject query) {
-    return getView(collection, writeOption, query, DEFAULT_FIND_OPTIONS);
-  }
-
-  private MongoView<JsonObject> getView(String collection, JsonObject query, FindOptions options) {
-    return getView(collection, null, query, options);
-  }
-
-  private MongoView<JsonObject> getView(String collection, WriteOption writeOption, JsonObject query, FindOptions options) {
+  private FindFluent<JsonObject> doFind(String collection, WriteOption writeOption, JsonObject query, FindOptions options) {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    MongoView<JsonObject> view = coll.find(toDocument(query, codec));
+    FindFluent<JsonObject> find = coll.find(query, JsonObject.class);
     if (options.getLimit() != -1) {
-      view.limit(options.getLimit());
+      find.limit(options.getLimit());
     }
     if (options.getSkip() > 0) {
-      view.skip(options.getSkip());
+      find.skip(options.getSkip());
     }
     if (options.getSort() != null) {
-      view.sort(toDocument(options.getSort(), codec));
+      find.sort(options.getSort());
     }
     if (options.getFields() != null) {
-      view.fields(toDocument(options.getFields(), codec));
+      find.projection(options.getFields());
     }
-    return view;
+    return find;
   }
 
   private MongoCollection<JsonObject> getCollection(String name) {
@@ -345,6 +315,19 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private MongoCollection<JsonObject> getCollection(String name, WriteOption writeOption) {
-    return db.getCollection(name, codec, collectionOptions(writeOption));
+    return db.getCollection(name, JsonObject.class, operationOptions(writeOption));
+  }
+
+  private static OperationOptions operationOptions(WriteOption writeOption) {
+    OperationOptions.Builder options = OperationOptions.builder();
+    if (writeOption != null) {
+      options.writeConcern(WriteConcern.valueOf(writeOption.name()));
+    }
+
+    return options.build();
+  }
+
+  private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
+    return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
   }
 }

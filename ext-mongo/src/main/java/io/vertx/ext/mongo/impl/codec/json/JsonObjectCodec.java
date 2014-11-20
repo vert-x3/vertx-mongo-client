@@ -2,14 +2,11 @@ package io.vertx.ext.mongo.impl.codec.json;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.bson.BsonObjectId;
 import org.bson.BsonReader;
 import org.bson.BsonString;
 import org.bson.BsonValue;
-import org.bson.BsonWriter;
 import org.bson.codecs.CollectibleCodec;
 import org.bson.codecs.DecoderContext;
-import org.bson.codecs.EncoderContext;
 import org.bson.types.ObjectId;
 
 import java.util.function.BiConsumer;
@@ -20,17 +17,6 @@ import java.util.function.Consumer;
  */
 public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> implements CollectibleCodec<JsonObject> {
   public static final String ID_FIELD = "_id";
-
-  // Support for the use of storing ObjectId's in mongoDB. This is handy if there's an existing database with ObjectId's.
-  private final boolean useObjectId;
-
-  public JsonObjectCodec(boolean useObjectId) {
-    this.useObjectId = useObjectId;
-  }
-
-  public boolean isSupportingObjectId() {
-    return useObjectId;
-  }
 
   @Override
   public void generateIdIfAbsentFromDocument(JsonObject json) {
@@ -53,11 +39,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
     }
 
     String id = json.getString(ID_FIELD);
-    if (useObjectId) {
-      return new BsonObjectId(new ObjectId(id));
-    } else {
-      return new BsonString(id);
-    }
+    return new BsonString(id);
   }
 
   @Override
@@ -119,16 +101,6 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected Object readObjectId(BsonReader reader, DecoderContext ctx) {
     return reader.readObjectId().toHexString();
-  }
-
-  @Override
-  protected void writeString(BsonWriter writer, String name, Object value, EncoderContext ctx) {
-    // If useObjectId is true then write an ObjectId if we're writing the _id field
-    if (useObjectId && ID_FIELD.equals(name)) {
-      writer.writeObjectId(new ObjectId((String) value));
-    } else {
-      super.writeString(writer, name, value, ctx);
-    }
   }
 
   @Override
