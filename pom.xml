@@ -254,6 +254,8 @@
           <argLine>-server -Xms128m -Xmx1024m -XX:NewRatio=2</argLine>
           <excludes>
             <exclude>**/ScratchPad.java</exclude>
+            <!-- Exclude Mongo tests until driver API is more stable -->
+            <exclude>**/ext/mongo/**</exclude>
           </excludes>
         </configuration>
       </plugin>
