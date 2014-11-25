@@ -770,15 +770,15 @@ public abstract class MongoServiceTestBase extends VertxTestBase {
         mongoService.insert(collection, doc, ar -> {
           if (ar.succeeded()) {
             if (cnt.incrementAndGet() == num) {
-              resultHandler.handle(Future.completedFuture());
+              resultHandler.handle(Future.succeededFuture());
             }
           } else {
-            resultHandler.handle(Future.completedFuture(ar.cause()));
+            resultHandler.handle(Future.failedFuture(ar.cause()));
           }
         });
       }
     } else {
-      resultHandler.handle(Future.completedFuture());
+      resultHandler.handle(Future.succeededFuture());
     }
   }
 }

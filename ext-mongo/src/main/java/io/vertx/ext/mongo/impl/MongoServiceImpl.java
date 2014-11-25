@@ -176,9 +176,9 @@ public class MongoServiceImpl implements MongoService {
     findWithOptions(collection, query, new FindOptions().setFields(fields).setLimit(1), ar -> {
       if (ar.succeeded()) {
         JsonObject result = ar.result().isEmpty() ? null : ar.result().get(0);
-        resultHandler.handle(Future.completedFuture(result));
+        resultHandler.handle(Future.succeededFuture(result));
       } else {
-        resultHandler.handle(Future.completedFuture(ar.cause()));
+        resultHandler.handle(Future.failedFuture(ar.cause()));
       }
     });
   }
@@ -267,9 +267,9 @@ public class MongoServiceImpl implements MongoService {
     future.register((wr, e) -> {
       context.runOnContext(v -> {
         if (e != null) {
-          resultHandler.handle(Future.completedFuture(e));
+          resultHandler.handle(Future.failedFuture(e));
         } else {
-          resultHandler.handle(Future.completedFuture(converter.apply(wr)));
+          resultHandler.handle(Future.succeededFuture(converter.apply(wr)));
         }
       });
     });
@@ -280,9 +280,9 @@ public class MongoServiceImpl implements MongoService {
     future.register((result, e) -> {
       context.runOnContext(v -> {
         if (e != null) {
-          resultHandler.handle(Future.completedFuture(e));
+          resultHandler.handle(Future.failedFuture(e));
         } else {
-          resultHandler.handle(Future.completedFuture(result));
+          resultHandler.handle(Future.succeededFuture(result));
         }
       });
     });
