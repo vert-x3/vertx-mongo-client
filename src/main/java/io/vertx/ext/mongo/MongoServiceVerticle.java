@@ -1,7 +1,7 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.proxygen.ProxyHelper;
+import io.vertx.serviceproxy.ProxyHelper;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
