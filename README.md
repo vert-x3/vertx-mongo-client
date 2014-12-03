@@ -1,6 +1,6 @@
-# mongoDB for Vert.x
+# MongoDB Service for Vert.x
 
-A Vert.x library allowing applications to seamlessly interact with a mongoDB instance, whether that's
+A Vert.x service allowing applications to seamlessly interact with a mongoDB instance, whether that's
 saving, retrieving, searching, or deleting documents. Mongo is a great match for persisting data in a Vert.x application
 since it natively handles JSON (BSON) documents.
 
