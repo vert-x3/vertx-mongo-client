@@ -26,26 +26,27 @@
     <version>3.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>vertx-ext</artifactId>
+  <artifactId>vertx-mongo</artifactId>
   <version>3.0.0-SNAPSHOT</version>
 
-  <name>Vert.x - Extensions</name>
-
-  <packaging>pom</packaging>
-
-  <modules>
-    <module>ext-sockjs</module>
-    <module>ext-routematcher</module>
-    <module>ext-mongo</module>
-    <module>ext-reactive-streams</module>
-    <module>ext-mongo-embedded-db</module>
-  </modules>
+  <name>Vert.x Mongo</name>
 
   <dependencies>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
       <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>driver-async</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-mongo-embedded-db</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
