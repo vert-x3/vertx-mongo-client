@@ -1,16 +1,16 @@
 # MongoDB Service for Vert.x
 
-A Vert.x service allowing applications to seamlessly interact with a mongoDB instance, whether that's
+A Vert.x service allowing applications to seamlessly interact with a MongoDB instance, whether that's
 saving, retrieving, searching, or deleting documents. Mongo is a great match for persisting data in a Vert.x application
 since it natively handles JSON (BSON) documents.
 
 **Features**
  - Completely Async and Non-blocking
  - Custom codec to support fast serialization to/from Vert.x JSON
- - Supports a majority of the configuration options from the mongoDB Java Driver
+ - Supports a majority of the configuration options from the MongoDB Java Driver
  - Event Bus Proxy Support
 
-*Note: The mongoDB Java Driver is still under heavy development.*
+*Note: The MongoDB Java Driver is still under heavy development.*
 
 # Getting Started
 
@@ -397,11 +397,11 @@ Below are the supported options to configure the mongo client for the java drive
  - `sendBufferSize` Sets the send buffer size (SO_SNDBUF) for the socket. Default is `0`, meaning it will use the OS default for this option.
  - `receiveBufferSize` Sets the receive buffer size (SO_RCVBUF) for the socket. Default is `0`, meaning it will use the OS default for this option.
  - `keepAlive` Sets the keep alive (SO_KEEPALIVE) for the socket. Default is `false`
- - `heartbeat.socket` Configures the socket settings for the cluster monitor of the mongoDB java driver.
+ - `heartbeat.socket` Configures the socket settings for the cluster monitor of the MongoDB java driver.
  - `heartbeatFrequencyMS` The frequency that the cluster monitor attempts to reach each server. Default is `5000` (5 seconds)
  - `minHeartbeatFrequencyMS` The minimum heartbeat frequency. The default value is `1000` (1 second)
 
-*Note: Most of the default values listed above use the default values of the mongoDB Java Driver.
+*Note: Most of the default values listed above use the default values of the MongoDB Java Driver.
 Please consult the driver documentation for up to date information.*
 
 TODO: Include links to 3.0 driver documentation when made available
