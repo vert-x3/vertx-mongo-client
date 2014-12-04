@@ -14,6 +14,7 @@
  * under the License.
  */
 
+/** @module ext-mongo-js/mongo_service */
 var utils = require('vertx-js/util/utils');
 
 var io = Packages.io;
@@ -25,13 +26,20 @@ var FindOptions = io.vertx.ext.mongo.FindOptions;
 
 /**
 
-  @class
+ @class
 */
 var MongoService = function(j_val) {
 
   var j_mongoService = j_val;
   var that = this;
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param document {Object} 
+   @param resultHandler {function} 
+   */
   this.save = function(collection, document, resultHandler) {
     var __args = arguments;
     if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'function') {
@@ -45,6 +53,14 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param document {Object} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   */
   this.saveWithOptions = function(collection, document, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
@@ -58,6 +74,13 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param document {Object} 
+   @param resultHandler {function} 
+   */
   this.insert = function(collection, document, resultHandler) {
     var __args = arguments;
     if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'function') {
@@ -71,6 +94,14 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param document {Object} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   */
   this.insertWithOptions = function(collection, document, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
@@ -84,6 +115,14 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param update {Object} 
+   @param resultHandler {function} 
+   */
   this.update = function(collection, query, update, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
@@ -97,6 +136,15 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param update {Object} 
+   @param options {Object} 
+   @param resultHandler {function} 
+   */
   this.updateWithOptions = function(collection, query, update, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'object' && typeof __args[4] === 'function') {
@@ -110,6 +158,14 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param replace {Object} 
+   @param resultHandler {function} 
+   */
   this.replace = function(collection, query, replace, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
@@ -123,6 +179,15 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param replace {Object} 
+   @param options {Object} 
+   @param resultHandler {function} 
+   */
   this.replaceWithOptions = function(collection, query, replace, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'object' && typeof __args[4] === 'function') {
@@ -136,6 +201,13 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param resultHandler {function} 
+   */
   this.find = function(collection, query, resultHandler) {
     var __args = arguments;
     if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'function') {
@@ -149,6 +221,14 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param options {Object} 
+   @param resultHandler {function} 
+   */
   this.findWithOptions = function(collection, query, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
@@ -162,6 +242,14 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param fields {Object} 
+   @param resultHandler {function} 
+   */
   this.findOne = function(collection, query, fields, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
@@ -175,6 +263,13 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param resultHandler {function} 
+   */
   this.count = function(collection, query, resultHandler) {
     var __args = arguments;
     if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'function') {
@@ -188,6 +283,13 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param resultHandler {function} 
+   */
   this.remove = function(collection, query, resultHandler) {
     var __args = arguments;
     if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'function') {
@@ -201,6 +303,14 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   */
   this.removeWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
@@ -214,6 +324,13 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param resultHandler {function} 
+   */
   this.removeOne = function(collection, query, resultHandler) {
     var __args = arguments;
     if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'function') {
@@ -227,6 +344,14 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   */
   this.removeOneWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
@@ -240,6 +365,12 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collectionName {string} 
+   @param resultHandler {function} 
+   */
   this.createCollection = function(collectionName, resultHandler) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
@@ -253,6 +384,11 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param resultHandler {function} 
+   */
   this.getCollections = function(resultHandler) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] === 'function') {
@@ -266,6 +402,12 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param collection {string} 
+   @param resultHandler {function} 
+   */
   this.dropCollection = function(collection, resultHandler) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
@@ -279,6 +421,12 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param command {Object} 
+   @param resultHandler {function} 
+   */
   this.runCommand = function(command, resultHandler) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
@@ -292,6 +440,11 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+
+   */
   this.start = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -299,6 +452,11 @@ var MongoService = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+
+   */
   this.stop = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -312,6 +470,13 @@ var MongoService = function(j_val) {
   this._jdel = j_mongoService;
 };
 
+/**
+
+ @memberof module:ext-mongo-js/mongo_service
+ @param vertx {Vertx} 
+ @param config {Object} 
+ @return {MongoService}
+ */
 MongoService.create = function(vertx, config) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object') {
@@ -319,6 +484,13 @@ MongoService.create = function(vertx, config) {
   } else utils.invalidArgs();
 };
 
+/**
+
+ @memberof module:ext-mongo-js/mongo_service
+ @param vertx {Vertx} 
+ @param address {string} 
+ @return {MongoService}
+ */
 MongoService.createEventBusProxy = function(vertx, address) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'string') {

@@ -1,18 +1,14 @@
 package io.vertx.ext.mongo.impl;
 
 import com.mongodb.WriteConcern;
-import com.mongodb.WriteConcernResult;
-import com.mongodb.async.MongoFuture;
+import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.FindFluent;
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.client.options.OperationOptions;
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.UpdateResult;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -84,11 +80,9 @@ public class MongoServiceImpl implements MongoService {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     String id = document.getString(ID_FIELD);
     if (id == null) {
-      MongoFuture<WriteConcernResult> future = coll.insertOne(document);
-      adaptFuture(future, resultHandler, wr -> document.getString(ID_FIELD));
+      coll.insertOne(document, convertCallback(resultHandler, wr -> document.getString(ID_FIELD)));
     } else {
-      MongoFuture<UpdateResult> future = coll.replaceOne(new JsonObject().put(ID_FIELD, document.getString(ID_FIELD)), document);
-      adaptFuture(future, resultHandler, result -> null);
+      coll.replaceOne(new JsonObject().put(ID_FIELD, document.getString(ID_FIELD)), document, convertCallback(resultHandler, result -> null));
     }
   }
 
@@ -103,9 +97,16 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
+    boolean id = document.containsKey(ID_FIELD);
+
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    MongoFuture<WriteConcernResult> future = coll.insertOne(document);
-    adaptFuture(future, resultHandler, wr -> document.getString(ID_FIELD));
+    coll.insertOne(document, convertCallback(resultHandler, wr -> {
+      if (id) {
+        return null;
+      } else {
+        return document.getString(ID_FIELD);
+      }
+    }));
   }
 
   @Override
@@ -122,13 +123,11 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    MongoFuture<UpdateResult> future;
     if (options.isMulti()) {
-      future = coll.updateMany(query, update, mongoUpdateOptions(options));
+      coll.updateMany(query, update, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
     } else {
-      future = coll.updateOne(query, update, mongoUpdateOptions(options));
+      coll.updateOne(query, update, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
     }
-    adaptFuture(future, resultHandler, result -> null);
   }
 
   @Override
@@ -145,8 +144,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    MongoFuture<UpdateResult> future = coll.replaceOne(query, replace, mongoUpdateOptions(options));
-    adaptFuture(future, resultHandler, result -> null);
+    coll.replaceOne(query, replace, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
   }
 
   @Override
@@ -162,8 +160,7 @@ public class MongoServiceImpl implements MongoService {
 
     FindFluent<JsonObject> view = doFind(collection, query, options);
     List<JsonObject> results = new ArrayList<>();
-    MongoFuture<List<JsonObject>> future = view.into(results);
-    handleFuture(future, resultHandler);
+    view.into(results, wrapCallback(resultHandler));
   }
 
   @Override
@@ -190,8 +187,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection);
-    MongoFuture<Long> future = coll.count();
-    handleFuture(future, resultHandler);
+    coll.count(query, wrapCallback(resultHandler));
   }
 
   @Override
@@ -206,8 +202,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    MongoFuture<DeleteResult> future = coll.deleteMany(query);
-    adaptFuture(future, resultHandler, result -> null);
+    coll.deleteMany(query, convertCallback(resultHandler, result -> null));
   }
 
   @Override
@@ -222,8 +217,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    MongoFuture<DeleteResult> future = coll.deleteOne(query);
-    adaptFuture(future, resultHandler, result -> null);
+    coll.deleteOne(query, convertCallback(resultHandler, result -> null));
   }
 
   @Override
@@ -231,16 +225,14 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoFuture<Void> future = db.createCollection(collection);
-    adaptFuture(future, resultHandler, wr -> null);
+    db.createCollection(collection, wrapCallback(resultHandler));
   }
 
   @Override
   public void getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoFuture<List<String>> future = db.getCollectionNames();
-    handleFuture(future, resultHandler);
+    db.getCollectionNames(wrapCallback(resultHandler));
   }
 
   @Override
@@ -249,8 +241,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection);
-    MongoFuture<Void> future = coll.dropCollection();
-    handleFuture(future, resultHandler);
+    coll.dropCollection(wrapCallback(resultHandler));
   }
 
   @Override
@@ -258,34 +249,31 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoFuture<JsonObject> future = db.executeCommand(command, null, JsonObject.class);
-    handleFuture(future, resultHandler);
+    db.executeCommand(command, db.getOptions().getReadPreference(), JsonObject.class, wrapCallback(resultHandler));
   }
 
-  private <T, U> void adaptFuture(MongoFuture<T> future, Handler<AsyncResult<U>> resultHandler, Function<T, U> converter) {
-    Context context = vertx.getOrCreateContext();
-    future.register((wr, e) -> {
-      context.runOnContext(v -> {
-        if (e != null) {
-          resultHandler.handle(Future.failedFuture(e));
+  private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
+    return (result, error) -> {
+      vertx.runOnContext(v -> {
+        if (error != null) {
+          resultHandler.handle(Future.failedFuture(error));
         } else {
-          resultHandler.handle(Future.succeededFuture(converter.apply(wr)));
+          resultHandler.handle(Future.succeededFuture(converter.apply(result)));
         }
       });
-    });
+    };
   }
 
-  private <T> void handleFuture(MongoFuture<T> future, Handler<AsyncResult<T>> resultHandler) {
-    Context context = vertx.getOrCreateContext();
-    future.register((result, e) -> {
-      context.runOnContext(v -> {
-        if (e != null) {
-          resultHandler.handle(Future.failedFuture(e));
+  private <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
+    return (result, error) -> {
+      vertx.runOnContext(v -> {
+        if (error != null) {
+          resultHandler.handle(Future.failedFuture(error));
         } else {
           resultHandler.handle(Future.succeededFuture(result));
         }
       });
-    });
+    };
   }
 
   private FindFluent<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {

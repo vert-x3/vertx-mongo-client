@@ -8,7 +8,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.MongoServiceImpl;
-import io.vertx.proxygen.ProxyHelper;
+import io.vertx.serviceproxy.ProxyHelper;
 
 import java.util.List;
 
