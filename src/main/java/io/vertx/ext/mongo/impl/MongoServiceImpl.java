@@ -169,15 +169,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    //TODO: No findOne in API, and FindFluent#first seems to be bugged atm https://jira.mongodb.org/browse/JAVA-1565
-    findWithOptions(collection, query, new FindOptions().setFields(fields).setLimit(1), ar -> {
-      if (ar.succeeded()) {
-        JsonObject result = ar.result().isEmpty() ? null : ar.result().get(0);
-        resultHandler.handle(Future.succeededFuture(result));
-      } else {
-        resultHandler.handle(Future.failedFuture(ar.cause()));
-      }
-    });
+    getCollection(collection).find(query).projection(fields).first(wrapCallback(resultHandler));
   }
 
   @Override
