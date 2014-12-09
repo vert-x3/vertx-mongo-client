@@ -83,17 +83,25 @@ The service can also be called by sending JSON over the event bus manually.
 
 Here's an example of performing a [Save](#save) by sending json over the event bus.
 ```java
-JsonObject save = new JsonObject();
-save.put("collection", "books");
-JsonObject document = new JsonObject().put("title", "The Hobbit");
-save.put("document", document);
-save.put("options", new JsonObject());
-vertx.eventBus().send("vertx.mongo", save, new DeliveryOptions().addHeader("action", "save"), saveResult -> {
-  if (saveResult.succeeded()) {
-    String id = (String) saveResult.result().body();
-    System.out.println("Saved book with id " + id);
-  } else {
-    saveResult.cause().printStackTrace();
+// First send message to get the collection
+JsonObject json = new JsonObject();
+json.put("name", "books");
+vertx.eventBus().send("vertx.mongo", json, new DeliveryOptions().addHeader("action", "getCollection"), res -> {
+  if (res.succeeded()) {
+    // This gets the proxyaddr to send messages to for collection operations
+    String addr = res.result().headers().get("proxyaddr");
+    // Construct the save message
+    JsonObject save = new JsonObject();
+    JsonObject document = new JsonObject().put("title", "The Hobbit");
+    save.put("document", document);
+    vertx.eventBus().send(addr, save, new DeliveryOptions().addHeader("action", "save"), saveResult -> {
+      if (saveResult.succeeded()) {
+        String id = (String) saveResult.result().body();
+        System.out.println("Saved book with id " + id);
+      } else {
+        saveResult.cause().printStackTrace();
+      }
+    });
   }
 });
 ```
@@ -105,6 +113,16 @@ See [Service Proxy](https://github.com/vert-x3/service-proxy) for more informati
 The following are some examples of the operations supported by the MongoService API. Consult the javadoc/documentation
 for detailed information on all API methods.
 
+All code examples that refer to `collection` assume the following has been done to retrieve the collection:
+
+```java
+service.getCollection("books", ar -> {
+  if (ar.succeeded()) {
+    MongoCollection collection = ar.result();
+    ...
+  }
+}
+```
 ## Save
 
 Saves a document into the collection. If the document has no id, it is inserted.  Otherwise, it is upserted
@@ -116,7 +134,7 @@ is null.
 Example of saving a document into the books collection
 ```java
 JsonObject document = new JsonObject().put("title", "The Hobbit");
-service.save("books", document, outcome -> {
+collection.save(document, outcome -> {
   if (outcome.succeeded()) {
     String id = outcome.result();
     System.out.println("Saved book with id " + id);
@@ -128,15 +146,15 @@ service.save("books", document, outcome -> {
 
 ## Insert
 
-Inserts a document into the collection.
+Inserts one document into the collection.
 
 If the document has no `id`, then the `id` field generated will be returned to the result handler. Otherwise it
 is `null`.
 
-Example of inserting a document into the books collection
+Example of inserting one document into the books collection
 ```java
 JsonObject document = new JsonObject().put("title", "The Hobbit");
-service.insert("books", document, outcome -> {
+collection.insertOne(document, outcome -> {
   if (outcome.succeeded()) {
     String id = outcome.result();
     System.out.println("Saved book with id " + id);
@@ -148,14 +166,14 @@ service.insert("books", document, outcome -> {
 
 ## Update
 
-Updates one or multiple documents in a collection. The JsonObject that is passed in as part of the update must contain
+Updates one document in a collection. The JsonObject that is passed in as part of the update must contain
 [Update Operators](http://docs.mongodb.org/manual/reference/operator/update-field/).
 
-Example of updating a document in the books collection
+Example of updating a document in the books collection with upsert set to `false`
 ```java
 JsonObject query = new JsonObject().put("title", "The Hobbit");
 JsonObject update = new JsonObject().put("$set", new JsonObject().put("author", "J. R. R. Tolkien"));
-service.update("books", query, update, outcome -> {
+collection.update(query, update, false, outcome -> {
   if (outcome.succeeded()) {
     System.out.println("Book updated !");
   } else {
@@ -164,16 +182,9 @@ service.update("books", query, update, outcome -> {
 });
 ```
 
-To specify if the update should upsert or update multiple documents, use the `updateWithOptions` operation and pass in the an `UpdateOptions` object.
-
-UpdateOptions
- - `multi` set to true to update multiple documents
- - `upsert` set to true to insert the document if the query doesn't match
- - `writeConcern` the write concern for this operation
-
 ## Replace
 
-Replaces a document in a collection.
+Replaces one document in a collection.
 
 This is similar to the update operation, however it does not take any [Update Operators](http://docs.mongodb.org/manual/reference/operator/update-field/).
 Instead it replaces the entire document with the one provided.
@@ -182,7 +193,7 @@ Example of replacing a document in the books collection
 ```java
 JsonObject query = new JsonObject().put("title", "The Hobbit");
 JsonObject replace = new JsonObject().put("title", "The Lord of the Rings").put("author", "J. R. R. Tolkien");
-service.replace("books", query, replace, outcome -> {
+service.replaceOne(query, replace, false, outcome -> {
   if (outcome.succeeded()) {
     System.out.println("Book replaced !");
   } else {
@@ -198,7 +209,7 @@ Finds matching documents in a collection
 Example of finding all documents in the books collection
 ```java
 JsonObject query = new JsonObject(); // empty query = match any
-service.find("books", query, outcome -> {
+service.find(query, outcome -> {
   if (outcome.succeeded()) {
     for (JsonObject json : outcome.result()) {
       System.out.println(json.encodePrettily());
@@ -225,7 +236,7 @@ Counts the number of documents in a collection
 Example of counting the total number of documents in the books collection
 ```java
 JsonObject query = new JsonObject(); // empty query = match any
-service.count("books", query, outcome -> {
+collection.count(query, outcome -> {
   if (outcome.succeeded()) {
     long count = outcome.result();
     System.out.println(count + " document(s) found.");
@@ -234,14 +245,14 @@ service.count("books", query, outcome -> {
   }
 });
 ```
-## Remove
+## Delete
 
-Removes matching documents in a collection
+Deletes matching documents in a collection
 
-Example of removing all documents in the books collection
+Example of deleting all documents in the books collection
 ```java
 JsonObject query = new JsonObject(); // empty query = match any
-service.remove("books", query, outcome -> {
+service.deleteMany(query, outcome -> {
   if (outcome.succeeded()) {
     System.out.println("Removed all documents !");
   } else {
@@ -332,6 +343,9 @@ Below are the supported options to configure the mongo client for the java drive
   ]
   "replicaSet" :  "foo"    // string
 
+  // SSL Settings
+  "ssl" : true,   // boolean
+
   // Connection Pool Settings
   "maxPoolSize" : 50,                // int
   "minPoolSize" : 25,                // int
@@ -379,6 +393,7 @@ Below are the supported options to configure the mongo client for the java drive
    - `host` A host in the cluster
    - `port` The port a host in the cluster is listening on
  - `replicaSet` The name of the replica set, if the mongoDB instance is a member of a replica set
+ - `ssl` If SSL should be used to connect to mongo.
  - `maxPoolSize` The maximum number of connections in the connection pool. The default value is `100`
  - `minPoolSize` The minimum number of connections in the connection pool. The default value is `0`
  - `maxIdleTimeMS` The maximum idle time of a pooled connection. The default value is `0` which means there is no limit
