@@ -21,7 +21,7 @@ package io.vertx.ext.mongo;
  *
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-public enum WriteOption {
+public enum WriteConcern {
   /**
    * @see com.mongodb.WriteConcern#ACKNOWLEDGED
    */
