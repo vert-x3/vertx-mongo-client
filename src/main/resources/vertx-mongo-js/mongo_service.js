@@ -14,7 +14,7 @@
  * under the License.
  */
 
-/** @module ext-mongo-js/mongo_service */
+/** @module vertx-mongo-js/mongo_service */
 var utils = require('vertx-js/util/utils');
 
 var io = Packages.io;
@@ -472,7 +472,7 @@ var MongoService = function(j_val) {
 
 /**
 
- @memberof module:ext-mongo-js/mongo_service
+ @memberof module:vertx-mongo-js/mongo_service
  @param vertx {Vertx} 
  @param config {Object} 
  @return {MongoService}
@@ -486,7 +486,7 @@ MongoService.create = function(vertx, config) {
 
 /**
 
- @memberof module:ext-mongo-js/mongo_service
+ @memberof module:vertx-mongo-js/mongo_service
  @param vertx {Vertx} 
  @param address {string} 
  @return {MongoService}
