@@ -1,12 +1,12 @@
 package io.vertx.ext.mongo;
 
-import io.vertx.codegen.annotations.Options;
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-@Options
+@DataObject
 public class FindOptions {
 
   public static final int DEFAULT_LIMIT = -1;
