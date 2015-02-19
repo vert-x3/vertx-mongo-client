@@ -6,6 +6,7 @@
  * since it natively handles JSON (BSON) documents.
  *
  * *Features*
+ *
  * * Completely non-blocking
  * * Custom codec to support fast serialization to/from Vert.x JSON
  * * Supports a majority of the configuration options from the MongoDB Java Driver
@@ -28,7 +29,7 @@
  *
  * Now you can either send messages to it directly over the event bus like this:
  *
- * * [source,java]
+ * [source,java]
  * ----
  * {@link examples.Examples#example0_1_1}
  * ----
@@ -54,13 +55,13 @@
  *
  * == Using the API
  *
- * The service is API is represented by {@link io.vertx.ext.mongo.MongoService}.
+ * The service API is represented by {@link io.vertx.ext.mongo.MongoService}.
  *
  * === Saving documents
  *
  * To save a document you use {@link io.vertx.ext.mongo.MongoService#save}.
  *
- * If the document has no `_id` field, it is inserted, otherwise, it is _upserted_. Upserted means it is inserted
+ * If the document has no `\_id` field, it is inserted, otherwise, it is _upserted_. Upserted means it is inserted
  * if it doesn't already exist, otherwise it is updated.
  *
  * If the document is inserted and has no id, then the id field generated will be returned to the result handler.
@@ -153,14 +154,14 @@
  * [source,$lang]
  * ----
  * {@link examples.Examples#example8}
- * -----
+ * ----
  *
  * Here's another example that will match all books by Tolkien:
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#example9}
- * -----
+ * ----
  *
  * The matching documents are returned as a list of json objects in the result handler.
  *
@@ -191,7 +192,7 @@
  * [source,$lang]
  * ----
  * {@link examples.Examples#example10}
- * -----
+ * ----
  *
  * === Removing a single document
  *
@@ -208,7 +209,7 @@
  * [source,$lang]
  * ----
  * {@link examples.Examples#example11}
- * -----
+ * ----
  *
  * === Managing MongoDB collections
  *
@@ -219,14 +220,14 @@
  * [source,$lang]
  * ----
  * {@link examples.Examples#example11_1}
- * -----
+ * ----
  *
  * To create a new collection you can use {@link io.vertx.ext.mongo.MongoService#createCollection}
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#example11_2}
- * -----
+ * ----
  *
  * To drop a collection you can use {@link io.vertx.ext.mongo.MongoService#dropCollection}
  *
@@ -235,7 +236,7 @@
  * [source,$lang]
  * ----
  * {@link examples.Examples#example11_3}
- * -----
+ * ----
  *
  *
  * === Running other MongoDB commands
@@ -250,7 +251,7 @@
  * [source,$lang]
  * ----
  * {@link examples.Examples#example12}
- * -----
+ * ----
  *
  * == Configuring the service
  *
@@ -334,7 +335,7 @@
  * }
  * ----
  *
- * * Driver option descriptions*
+ * *Driver option descriptions*
  *
  * `host`:: The host the mongoDB instance is running. Defaults to `127.0.0.1`. This is ignored if `hosts` is specified
  * `port`:: The port the mongoDB instance is listening on. Defaults to `27017`. This is ignored if `hosts` is specified
@@ -366,8 +367,6 @@
  *
  * NOTE: Most of the default values listed above use the default values of the MongoDB Java Driver.
  * Please consult the driver documentation for up to date information.
- *
- * === Service
  *
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>

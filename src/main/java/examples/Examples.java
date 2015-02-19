@@ -51,7 +51,8 @@ public class Examples {
     JsonObject save = new JsonObject().put("collection", "books")
       .put("document", new JsonObject().put("title", "The Hobbit"));
 
-    vertx.eventBus().send("vertx.mongo", save, new DeliveryOptions().addHeader("action", "save"), saveResult -> {
+    vertx.eventBus().send("vertx.mongo", save,
+      new DeliveryOptions().addHeader("action", "save"), saveResult -> {
 
       if (saveResult.succeeded()) {
 
