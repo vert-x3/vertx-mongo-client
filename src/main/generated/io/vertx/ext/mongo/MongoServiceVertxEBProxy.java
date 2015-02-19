@@ -48,10 +48,10 @@ public class MongoServiceVertxEBProxy implements MongoService {
     this._address = address;
   }
 
-  public void save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+  public MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -65,12 +65,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -85,12 +86,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+  public MongoService insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -104,12 +106,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -124,12 +127,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -144,12 +148,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -165,12 +170,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -185,12 +191,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -206,12 +213,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+  public MongoService find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -225,12 +233,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(convertList(res.result().body().getList())));
       }
     });
+    return this;
   }
 
-  public void findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+  public MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -245,12 +254,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(convertList(res.result().body().getList())));
       }
     });
+    return this;
   }
 
-  public void findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MongoService findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -265,12 +275,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) {
+  public MongoService count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -284,12 +295,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -303,12 +315,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -323,12 +336,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -342,12 +356,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -362,12 +377,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collectionName", collectionName);
@@ -380,12 +396,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
+  public MongoService getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
@@ -397,12 +414,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(convertList(res.result().body().getList())));
       }
     });
+    return this;
   }
 
-  public void dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
@@ -415,12 +433,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
-  public void runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("command", command);
@@ -433,6 +452,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
   public void start() {

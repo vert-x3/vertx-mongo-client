@@ -25,6 +25,7 @@ var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
 
 /**
+ A Vert.x service used to interact with MongoDB server instances.
 
  @class
 */
@@ -34,11 +35,13 @@ var MongoService = function(j_val) {
   var that = this;
 
   /**
+   Save a document in the specified collection
 
    @public
-   @param collection {string} 
-   @param document {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param document {Object} the document 
+   @param resultHandler {function} result handler will be provided with the id if document didn't already have one 
+   @return {MongoService}
    */
   this.save = function(collection, document, resultHandler) {
     var __args = arguments;
@@ -50,16 +53,19 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Save a document in the specified collection with the specified write option
 
    @public
-   @param collection {string} 
-   @param document {Object} 
-   @param writeOption {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param document {Object} the document 
+   @param writeOption {Object} the write option to use 
+   @param resultHandler {function} result handler will be provided with the id if document didn't already have one 
+   @return {MongoService}
    */
   this.saveWithOptions = function(collection, document, writeOption, resultHandler) {
     var __args = arguments;
@@ -71,15 +77,18 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Insert a document in the specified collection
 
    @public
-   @param collection {string} 
-   @param document {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param document {Object} the document 
+   @param resultHandler {function} result handler will be provided with the id if document didn't already have one 
+   @return {MongoService}
    */
   this.insert = function(collection, document, resultHandler) {
     var __args = arguments;
@@ -91,16 +100,19 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Insert a document in the specified collection with the specified write option
 
    @public
-   @param collection {string} 
-   @param document {Object} 
-   @param writeOption {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param document {Object} the document 
+   @param writeOption {Object} the write option to use 
+   @param resultHandler {function} result handler will be provided with the id if document didn't already have one 
+   @return {MongoService}
    */
   this.insertWithOptions = function(collection, document, writeOption, resultHandler) {
     var __args = arguments;
@@ -112,16 +124,19 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Update matching documents in the specified collection
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param update {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match the documents 
+   @param update {Object} used to describe how the documents will be updated 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.update = function(collection, query, update, resultHandler) {
     var __args = arguments;
@@ -133,17 +148,20 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Update matching documents in the specified collection, specifying options
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param update {Object} 
-   @param options {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match the documents 
+   @param update {Object} used to describe how the documents will be updated 
+   @param options {Object} options to configure the update 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.updateWithOptions = function(collection, query, update, options, resultHandler) {
     var __args = arguments;
@@ -155,16 +173,19 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Replace matching documents in the specified collection
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param replace {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match the documents 
+   @param replace {Object} all matching documents will be replaced with this 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.replace = function(collection, query, replace, resultHandler) {
     var __args = arguments;
@@ -176,17 +197,20 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Replace matching documents in the specified collection, specifying options
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param replace {Object} 
-   @param options {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match the documents 
+   @param replace {Object} all matching documents will be replaced with this 
+   @param options {Object} options to configure the replace 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.replaceWithOptions = function(collection, query, replace, options, resultHandler) {
     var __args = arguments;
@@ -198,15 +222,18 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Find matching documents in the specified collection
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match documents 
+   @param resultHandler {function} will be provided with list of documents 
+   @return {MongoService}
    */
   this.find = function(collection, query, resultHandler) {
     var __args = arguments;
@@ -218,16 +245,19 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Find matching documents in the specified collection, specifying options
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param options {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match documents 
+   @param options {Object} options to configure the find 
+   @param resultHandler {function} will be provided with list of documents 
+   @return {MongoService}
    */
   this.findWithOptions = function(collection, query, options, resultHandler) {
     var __args = arguments;
@@ -239,16 +269,19 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Find a single matching document in the specified collection
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param fields {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} the query used to match the document 
+   @param fields {Object} the fields 
+   @param resultHandler {function} will be provided with the document, if any 
+   @return {MongoService}
    */
   this.findOne = function(collection, query, fields, resultHandler) {
     var __args = arguments;
@@ -260,15 +293,18 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Count matching documents in a collection.
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match documents 
+   @param resultHandler {function} will be provided with the number of matching documents 
+   @return {MongoService}
    */
   this.count = function(collection, query, resultHandler) {
     var __args = arguments;
@@ -280,15 +316,18 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Remove matching documents from a collection
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match documents 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.remove = function(collection, query, resultHandler) {
     var __args = arguments;
@@ -300,16 +339,19 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Remove matching documents from a collection with the specified write option
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param writeOption {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match documents 
+   @param writeOption {Object} the write option to use 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.removeWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
@@ -321,15 +363,18 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Remove a single matching document from a collection
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match document 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.removeOne = function(collection, query, resultHandler) {
     var __args = arguments;
@@ -341,16 +386,19 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Remove a single matching document from a collection with the specified write option
 
    @public
-   @param collection {string} 
-   @param query {Object} 
-   @param writeOption {Object} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param query {Object} query used to match document 
+   @param writeOption {Object} the write option to use 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.removeOneWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
@@ -362,14 +410,17 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Create a new collection
 
    @public
-   @param collectionName {string} 
-   @param resultHandler {function} 
+   @param collectionName {string} the name of the collection 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.createCollection = function(collectionName, resultHandler) {
     var __args = arguments;
@@ -381,13 +432,16 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Get a list of all collections in the database.
 
    @public
-   @param resultHandler {function} 
+   @param resultHandler {function} will be called with a list of collections. 
+   @return {MongoService}
    */
   this.getCollections = function(resultHandler) {
     var __args = arguments;
@@ -399,14 +453,17 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Drop a collection
 
    @public
-   @param collection {string} 
-   @param resultHandler {function} 
+   @param collection {string} the collection 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoService}
    */
   this.dropCollection = function(collection, resultHandler) {
     var __args = arguments;
@@ -418,14 +475,17 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Run an arbitrary MongoDB command.
 
    @public
-   @param command {Object} 
-   @param resultHandler {function} 
+   @param command {Object} the command 
+   @param resultHandler {function} will be called with the result. 
+   @return {MongoService}
    */
   this.runCommand = function(command, resultHandler) {
     var __args = arguments;
@@ -437,10 +497,12 @@ var MongoService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 
   /**
+   Start the service
 
    @public
 
@@ -453,6 +515,7 @@ var MongoService = function(j_val) {
   };
 
   /**
+   Stop the service
 
    @public
 
@@ -471,11 +534,12 @@ var MongoService = function(j_val) {
 };
 
 /**
+ Create a service
 
  @memberof module:vertx-mongo-js/mongo_service
- @param vertx {Vertx} 
- @param config {Object} 
- @return {MongoService}
+ @param vertx {Vertx} the Vert.x instance 
+ @param config {Object} the config 
+ @return {MongoService} the service
  */
 MongoService.create = function(vertx, config) {
   var __args = arguments;
@@ -485,11 +549,12 @@ MongoService.create = function(vertx, config) {
 };
 
 /**
+ Create a proxy to a service that is deployed somewhere on the event bus
 
  @memberof module:vertx-mongo-js/mongo_service
- @param vertx {Vertx} 
- @param address {string} 
- @return {MongoService}
+ @param vertx {Vertx} the Vert.x instance 
+ @param address {string} the address the service is listening on on the event bus 
+ @return {MongoService} the service
  */
 MongoService.createEventBusProxy = function(vertx, address) {
   var __args = arguments;

@@ -67,12 +67,13 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public void save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+  public MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
     saveWithOptions(collection, document, null, resultHandler);
+    return this;
   }
 
   @Override
-  public void saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -84,15 +85,17 @@ public class MongoServiceImpl implements MongoService {
     } else {
       coll.replaceOne(new JsonObject().put(ID_FIELD, document.getString(ID_FIELD)), document, convertCallback(resultHandler, result -> null));
     }
+    return this;
   }
 
   @Override
-  public void insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+  public MongoService insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
     insertWithOptions(collection, document, null, resultHandler);
+    return this;
   }
 
   @Override
-  public void insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -107,15 +110,17 @@ public class MongoServiceImpl implements MongoService {
         return document.getString(ID_FIELD);
       }
     }));
+    return this;
   }
 
   @Override
-  public void update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler) {
     updateWithOptions(collection, query, update, DEFAULT_UPDATE_OPTIONS, resultHandler);
+    return this;
   }
 
   @Override
-  public void updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(update, "update cannot be null");
@@ -128,15 +133,17 @@ public class MongoServiceImpl implements MongoService {
     } else {
       coll.updateOne(query, update, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
     }
+    return this;
   }
 
   @Override
-  public void replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler) {
     replaceWithOptions(collection, query, replace, DEFAULT_UPDATE_OPTIONS, resultHandler);
+    return this;
   }
 
   @Override
-  public void replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(replace, "update cannot be null");
@@ -145,15 +152,17 @@ public class MongoServiceImpl implements MongoService {
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
     coll.replaceOne(query, replace, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
+    return this;
   }
 
   @Override
-  public void find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+  public MongoService find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     findWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
+    return this;
   }
 
   @Override
-  public void findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+  public MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -161,87 +170,98 @@ public class MongoServiceImpl implements MongoService {
     FindFluent<JsonObject> view = doFind(collection, query, options);
     List<JsonObject> results = new ArrayList<>();
     view.into(results, wrapCallback(resultHandler));
+    return this;
   }
 
   @Override
-  public void findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MongoService findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     getCollection(collection).find(query).projection(fields).first(wrapCallback(resultHandler));
+    return this;
   }
 
   @Override
-  public void count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) {
+  public MongoService count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     coll.count(query, wrapCallback(resultHandler));
+    return this;
   }
 
   @Override
-  public void remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
     removeWithOptions(collection, query, null, resultHandler);
+    return this;
   }
 
   @Override
-  public void removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     coll.deleteMany(query, convertCallback(resultHandler, result -> null));
+    return this;
   }
 
   @Override
-  public void removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
     removeOneWithOptions(collection, query, null, resultHandler);
+    return this;
   }
 
   @Override
-  public void removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     coll.deleteOne(query, convertCallback(resultHandler, result -> null));
+    return this;
   }
 
   @Override
-  public void createCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService createCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     db.createCollection(collection, wrapCallback(resultHandler));
+    return this;
   }
 
   @Override
-  public void getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
+  public MongoService getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     db.getCollectionNames(wrapCallback(resultHandler));
+    return this;
   }
 
   @Override
-  public void dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
+  public MongoService dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     coll.dropCollection(wrapCallback(resultHandler));
+    return this;
   }
 
   @Override
-  public void runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     db.executeCommand(command, db.getOptions().getReadPreference(), JsonObject.class, wrapCallback(resultHandler));
+    return this;
   }
 
   private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
