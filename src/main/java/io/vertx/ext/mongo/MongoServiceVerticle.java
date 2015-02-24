@@ -4,6 +4,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.serviceproxy.ProxyHelper;
 
 /**
+ * A verticle which starts a MongoDB service and registers it to listen on the event bus.
+ *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public class MongoServiceVerticle extends AbstractVerticle {

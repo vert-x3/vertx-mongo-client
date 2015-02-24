@@ -1,0 +1,11 @@
+= Mongo Service
+
+A Vert.x service used to interact with MongoDB server instances from Vert.x applications.
+
+Please see the in source asciidoc documentation or the main documentation on the web-site for a full description
+of Mongo service:
+
+* Web-site docs
+* link:src/main/asciidoc/java/index.adoc[Java in-source docs]
+* link:src/main/asciidoc/js/index.adoc[JavaScript in-source docs]
+* link:src/main/asciidoc/groovy/index.adoc[Groovy in-source docs]
