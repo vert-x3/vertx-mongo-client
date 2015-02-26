@@ -2,12 +2,7 @@ package io.vertx.ext.mongo.impl;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.FindFluent;
-import com.mongodb.async.client.MongoClient;
-import com.mongodb.async.client.MongoClients;
-import com.mongodb.async.client.MongoCollection;
-import com.mongodb.async.client.MongoDatabase;
-import com.mongodb.client.options.OperationOptions;
+import com.mongodb.async.client.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -167,7 +162,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    FindFluent<JsonObject> view = doFind(collection, query, options);
+    FindIterable<JsonObject> view = doFind(collection, query, options);
     List<JsonObject> results = new ArrayList<>();
     view.into(results, wrapCallback(resultHandler));
     return this;
@@ -240,8 +235,16 @@ public class MongoServiceImpl implements MongoService {
   @Override
   public MongoService getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
     requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    db.getCollectionNames(wrapCallback(resultHandler));
+    List<String> names = new ArrayList<>();
+    db.listCollectionNames().into(names, (res, error) -> {
+      vertx.runOnContext(v -> {
+        if (error != null) {
+          resultHandler.handle(Future.failedFuture(error));
+        } else {
+          resultHandler.handle(Future.succeededFuture(names));
+        }
+      });
+    });
     return this;
   }
 
@@ -259,8 +262,7 @@ public class MongoServiceImpl implements MongoService {
   public MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    db.executeCommand(command, db.getOptions().getReadPreference(), JsonObject.class, wrapCallback(resultHandler));
+    db.executeCommand(command, JsonObject.class, wrapCallback(resultHandler));
     return this;
   }
 
@@ -288,13 +290,13 @@ public class MongoServiceImpl implements MongoService {
     };
   }
 
-  private FindFluent<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {
+  private FindIterable<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {
     return doFind(collection, null, query, options);
   }
 
-  private FindFluent<JsonObject> doFind(String collection, WriteOption writeOption, JsonObject query, FindOptions options) {
+  private FindIterable<JsonObject> doFind(String collection, WriteOption writeOption, JsonObject query, FindOptions options) {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    FindFluent<JsonObject> find = coll.find(query, JsonObject.class);
+    FindIterable<JsonObject> find = coll.find(query, JsonObject.class);
     if (options.getLimit() != -1) {
       find.limit(options.getLimit());
     }
@@ -315,16 +317,7 @@ public class MongoServiceImpl implements MongoService {
   }
 
   private MongoCollection<JsonObject> getCollection(String name, WriteOption writeOption) {
-    return db.getCollection(name, JsonObject.class, operationOptions(writeOption));
-  }
-
-  private static OperationOptions operationOptions(WriteOption writeOption) {
-    OperationOptions.Builder options = OperationOptions.builder();
-    if (writeOption != null) {
-      options.writeConcern(WriteConcern.valueOf(writeOption.name()));
-    }
-
-    return options.build();
+    return db.getCollection(name, JsonObject.class).withWriteConcern(WriteConcern.valueOf(writeOption.name()));
   }
 
   private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
