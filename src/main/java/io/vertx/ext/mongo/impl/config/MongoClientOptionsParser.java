@@ -5,11 +5,7 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.client.MongoClientOptions;
-import com.mongodb.connection.ClusterSettings;
-import com.mongodb.connection.ConnectionPoolSettings;
-import com.mongodb.connection.SSLSettings;
-import com.mongodb.connection.ServerSettings;
-import com.mongodb.connection.SocketSettings;
+import com.mongodb.connection.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.codec.VertxCodecRegistry;
 
@@ -61,7 +57,7 @@ public class MongoClientOptionsParser {
     options.serverSettings(serverSettings);
 
     // SSLSettings
-    SSLSettings sslSettings = new SSLSettingsParser(connectionString, config).settings();
+    SslSettings sslSettings = new SSLSettingsParser(connectionString, config).settings();
     options.sslSettings(sslSettings);
 
     // WriteConcern

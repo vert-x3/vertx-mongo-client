@@ -1,17 +1,17 @@
 package io.vertx.ext.mongo.impl.config;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.connection.SSLSettings;
+import com.mongodb.connection.SslSettings;
 import io.vertx.core.json.JsonObject;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 public class SSLSettingsParser {
-  private final SSLSettings settings;
+  private final SslSettings settings;
 
   public SSLSettingsParser(ConnectionString connectionString, JsonObject config) {
-    SSLSettings.Builder settings = SSLSettings.builder();
+    SslSettings.Builder settings = SslSettings.builder();
     Boolean ssl;
     if (connectionString != null) {
       ssl = connectionString.getSslEnabled();
@@ -25,7 +25,7 @@ public class SSLSettingsParser {
     this.settings = settings.build();
   }
 
-  public SSLSettings settings() {
+  public SslSettings settings() {
     return settings;
   }
 }

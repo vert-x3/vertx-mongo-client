@@ -19,12 +19,13 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   public static final String ID_FIELD = "_id";
 
   @Override
-  public void generateIdIfAbsentFromDocument(JsonObject json) {
+  public JsonObject generateIdIfAbsentFromDocument(JsonObject json) {
     //TODO: Is this faster/better then Java UUID ?
     if (!documentHasId(json)) {
       ObjectId id = new ObjectId();
       json.put(ID_FIELD, id.toHexString());
     }
+    return json;
   }
 
   @Override

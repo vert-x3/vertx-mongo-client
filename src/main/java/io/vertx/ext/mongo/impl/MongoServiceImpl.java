@@ -15,12 +15,13 @@ import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
+import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static java.util.Objects.*;
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -78,7 +79,7 @@ public class MongoServiceImpl implements MongoService {
     if (id == null) {
       coll.insertOne(document, convertCallback(resultHandler, wr -> document.getString(ID_FIELD)));
     } else {
-      coll.replaceOne(new JsonObject().put(ID_FIELD, document.getString(ID_FIELD)), document, convertCallback(resultHandler, result -> null));
+      coll.replaceOne(new JsonObjectBsonAdapter(new JsonObject().put(ID_FIELD, document.getString(ID_FIELD))), document, convertCallback(resultHandler, result -> null));
     }
     return this;
   }
@@ -123,10 +124,12 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
+    Bson bquery = new JsonObjectBsonAdapter(query);
+    Bson bupdate = new JsonObjectBsonAdapter(update);
     if (options.isMulti()) {
-      coll.updateMany(query, update, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
+      coll.updateMany(bquery, bupdate, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
     } else {
-      coll.updateOne(query, update, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
+      coll.updateOne(bquery, bupdate, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
     }
     return this;
   }
@@ -146,7 +149,8 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    coll.replaceOne(query, replace, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
+    Bson bquery = new JsonObjectBsonAdapter(query);
+    coll.replaceOne(bquery, replace, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
     return this;
   }
 
@@ -174,7 +178,9 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    getCollection(collection).find(query).projection(fields).first(wrapCallback(resultHandler));
+    Bson bquery = new JsonObjectBsonAdapter(query);
+    Bson bfields = new JsonObjectBsonAdapter(fields);
+    getCollection(collection).find(bquery).projection(bfields).first(wrapCallback(resultHandler));
     return this;
   }
 
@@ -184,8 +190,9 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
+    Bson bquery = new JsonObjectBsonAdapter(query);
     MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.count(query, wrapCallback(resultHandler));
+    coll.count(bquery, wrapCallback(resultHandler));
     return this;
   }
 
@@ -202,7 +209,8 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    coll.deleteMany(query, convertCallback(resultHandler, result -> null));
+    Bson bquery = new JsonObjectBsonAdapter(query);
+    coll.deleteMany(bquery, convertCallback(resultHandler, result -> null));
     return this;
   }
 
@@ -219,7 +227,8 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    coll.deleteOne(query, convertCallback(resultHandler, result -> null));
+    Bson bquery = new JsonObjectBsonAdapter(query);
+    coll.deleteOne(bquery, convertCallback(resultHandler, result -> null));
     return this;
   }
 
@@ -296,7 +305,8 @@ public class MongoServiceImpl implements MongoService {
 
   private FindIterable<JsonObject> doFind(String collection, WriteOption writeOption, JsonObject query, FindOptions options) {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    FindIterable<JsonObject> find = coll.find(query, JsonObject.class);
+    Bson bquery = new JsonObjectBsonAdapter(query);
+    FindIterable<JsonObject> find = coll.find(bquery, JsonObject.class);
     if (options.getLimit() != -1) {
       find.limit(options.getLimit());
     }
@@ -304,10 +314,10 @@ public class MongoServiceImpl implements MongoService {
       find.skip(options.getSkip());
     }
     if (options.getSort() != null) {
-      find.sort(options.getSort());
+      find.sort(new JsonObjectBsonAdapter(options.getSort()));
     }
     if (options.getFields() != null) {
-      find.projection(options.getFields());
+      find.projection(new JsonObjectBsonAdapter(options.getFields()));
     }
     return find;
   }
