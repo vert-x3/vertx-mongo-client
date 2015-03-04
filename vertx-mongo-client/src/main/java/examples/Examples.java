@@ -358,4 +358,24 @@ public class Examples {
 
   }
 
+  public void example13_0(MongoClient mongoService) {
+
+    JsonObject document = new JsonObject().put("title", "The Hobbit")
+        .put("publicationDate", new JsonObject().put("$date", -1018659600000L /* 21/9/1937 */));
+
+    mongoService.save("publishedBooks", document, res -> {
+
+      if (res.succeeded()) {
+
+        String id = res.result();
+        System.out.println("Saved book with id " + id);
+
+      } else {
+        res.cause().printStackTrace();
+      }
+
+    });
+
+  }
+
 }

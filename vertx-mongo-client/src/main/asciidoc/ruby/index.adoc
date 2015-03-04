@@ -590,6 +590,38 @@ mongoClient.run_command("aggregate", command) { |res,res_err|
 
 ----
 
+=== MongoDB Extended JSON support
+
+For now, only date type is supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
+
+Here's an example of inserting a document with a date field
+
+[source,ruby]
+----
+
+document = {
+  'title' => "The Hobbit",
+  'publicationDate' => {
+    '$date' => -1018659600000
+  }
+}
+
+mongoService.save("publishedBooks", document) { |res,res_err|
+
+  if (res_err == nil)
+
+    id = res
+    puts "Saved book with id #{id}"
+
+  else
+    res_err.print_stack_trace()
+  end
+
+}
+
+
+----
+
 == Configuring the client
 
 The client is configured with a json object.

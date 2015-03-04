@@ -354,7 +354,7 @@ mongoClient.find("books", query, { res ->
 
     res.result().each { json ->
 
-      println(groovy.json.JsonOutput.toJson(json))
+      println(json.toString())
 
     }
 
@@ -385,7 +385,7 @@ mongoClient.find("books", query, { res ->
 
     res.result().each { json ->
 
-      println(groovy.json.JsonOutput.toJson(json))
+      println(json.toString())
 
     }
 
@@ -582,6 +582,38 @@ mongoClient.runCommand("aggregate", command, { res ->
   } else {
     res.cause().printStackTrace()
   }
+})
+
+
+----
+
+=== MongoDB Extended JSON support
+
+For now, only date type is supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
+
+Here's an example of inserting a document with a date field
+
+[source,groovy]
+----
+
+def document = [
+  title:"The Hobbit",
+  publicationDate:[
+    $date:-1018659600000L
+  ]
+]
+
+mongoService.save("publishedBooks", document, { res ->
+
+  if (res.succeeded()) {
+
+    def id = res.result()
+    println("Saved book with id ${id}")
+
+  } else {
+    res.cause().printStackTrace()
+  }
+
 })
 
 
