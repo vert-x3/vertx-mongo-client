@@ -1,0 +1,22 @@
+== UpdateOptions
+
+++++
+ Options for configuring updates.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+
+|`upsert`
+|`Boolean`
+|+++
+Set whether upsert is enabled+++
+
+|`multi`
+|`Boolean`
+|+++
+Set whether multi is enabled+++
+|===
