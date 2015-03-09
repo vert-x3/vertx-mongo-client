@@ -263,7 +263,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.drop(wrapCallback(resultHandler));
+    coll.dropCollection(wrapCallback(resultHandler));
     return this;
   }
 
@@ -271,7 +271,7 @@ public class MongoServiceImpl implements MongoService {
   public MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
-    db.runCommand(wrap(command), JsonObject.class, wrapCallback(resultHandler));
+    db.executeCommand(wrap(command), JsonObject.class, wrapCallback(resultHandler));
     return this;
   }
 
