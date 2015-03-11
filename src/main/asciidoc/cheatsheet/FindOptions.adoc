@@ -10,12 +10,12 @@
 |===
 ^|Name | Type ^| Description
 
-|`limit`
+|[[limit]]`limit`
 |`Number`
 |+++
 Set the limit+++
 
-|`skip`
+|[[skip]]`skip`
 |`Number`
 |+++
 Set the skip+++

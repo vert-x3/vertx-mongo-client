@@ -10,12 +10,12 @@
 |===
 ^|Name | Type ^| Description
 
-|`upsert`
+|[[upsert]]`upsert`
 |`Boolean`
 |+++
 Set whether upsert is enabled+++
 
-|`multi`
+|[[multi]]`multi`
 |`Boolean`
 |+++
 Set whether multi is enabled+++
