@@ -15,7 +15,7 @@
  *
  * == Setting up the service
  *
- * As with other services you can use the service either by deploying it as a verticle somewhere on your network and
+ * As with other services you can use the service either by deploying the service somewhere on your network and
  * interacting with it over the event bus, either directly by sending messages, or using a service proxy.
  *
  * Please consult the services and service proxy information on how to deploy and interact with services.
