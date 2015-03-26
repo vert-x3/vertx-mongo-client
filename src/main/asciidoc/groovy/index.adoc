@@ -31,7 +31,7 @@ def options = [
   config:config
 ]
 
-vertx.deployVerticle("service:io.vertx:mongo-service", options, { res ->
+vertx.deployVerticle("service:io.vertx.mongo-service", options, { res ->
 
   if (res.succeeded()) {
     // Deployed ok

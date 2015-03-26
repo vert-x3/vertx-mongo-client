@@ -32,7 +32,7 @@ public class MongoServiceVerticleTest extends MongoServiceTestBase {
     JsonObject config = getConfig();
     DeploymentOptions options = new DeploymentOptions().setConfig(config);
     CountDownLatch latch = new CountDownLatch(1);
-    vertx.deployVerticle("service:io.vertx:vertx-mongo-service", options, onSuccess(id -> {
+    vertx.deployVerticle("service:io.vertx.mongo-service", options, onSuccess(id -> {
       mongoService = MongoService.createEventBusProxy(vertx, "vertx.mongo");
       dropCollections(latch);
     }));

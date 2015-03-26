@@ -35,7 +35,7 @@ public class Examples {
     // Deploy service - can be anywhere on your network
     DeploymentOptions options = new DeploymentOptions().setConfig(config);
 
-    vertx.deployVerticle("service:io.vertx:vertx-mongo-service", options, res -> {
+    vertx.deployVerticle("service:io.vertx.mongo-service", options, res -> {
 
       if (res.succeeded()) {
         // Deployed ok
