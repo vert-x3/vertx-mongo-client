@@ -4,7 +4,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoCredential;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
-import com.mongodb.async.client.MongoClientOptions;
+import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.connection.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.codec.VertxCodecRegistry;
@@ -17,12 +17,12 @@ import java.util.Objects;
  */
 public class MongoClientOptionsParser {
 
-  private final MongoClientOptions options;
+  private final MongoClientSettings settings;
 
   public MongoClientOptionsParser(JsonObject config) {
     Objects.requireNonNull(config);
 
-    MongoClientOptions.Builder options = MongoClientOptions.builder();
+    MongoClientSettings.Builder options = MongoClientSettings.builder();
     options.codecRegistry(new VertxCodecRegistry());
 
     // All parsers should support connection_string first
@@ -72,10 +72,10 @@ public class MongoClientOptionsParser {
       options.readPreference(readPreference);
     }
 
-    this.options = options.build();
+    this.settings = options.build();
   }
 
-  public MongoClientOptions options() {
-    return options;
+  public MongoClientSettings settings() {
+    return settings;
   }
 }

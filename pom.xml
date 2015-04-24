@@ -55,7 +55,7 @@
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-async</artifactId>
-      <version>3.0.0-beta3</version>
+      <version>3.0.0</version>
       <exclusions>
         <exclusion>
           <groupId>io.netty</groupId>

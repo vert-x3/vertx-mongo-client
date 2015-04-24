@@ -46,7 +46,7 @@ public class MongoServiceImpl implements MongoService {
 
   public void start() {
     MongoClientOptionsParser parser = new MongoClientOptionsParser(config);
-    mongo = MongoClients.create(parser.options());
+    mongo = MongoClients.create(parser.settings());
 
     String dbName = config.getString("db_name", "default_db");
     db = mongo.getDatabase(dbName);
@@ -263,7 +263,7 @@ public class MongoServiceImpl implements MongoService {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.dropCollection(wrapCallback(resultHandler));
+    coll.drop(wrapCallback(resultHandler));
     return this;
   }
 
@@ -271,7 +271,7 @@ public class MongoServiceImpl implements MongoService {
   public MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
-    db.executeCommand(wrap(command), JsonObject.class, wrapCallback(resultHandler));
+    db.runCommand(wrap(command), JsonObject.class, wrapCallback(resultHandler));
     return this;
   }
 

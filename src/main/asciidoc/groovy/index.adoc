@@ -47,7 +47,7 @@ Now you can either send messages to it directly over the event bus like this:
 
 [source,java]
 ----
-todo
+Code not translatable
 ----
 
 or you can create a proxy to the service from wherever you are and just use that:
