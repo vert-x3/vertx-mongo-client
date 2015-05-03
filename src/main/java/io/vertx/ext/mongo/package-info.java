@@ -1,9 +1,9 @@
 /**
- * = Vert.x MongoDB Service
+ * = Vert.x MongoDB Client
  *
- * A Vert.x service allowing applications to seamlessly interact with a MongoDB instance, whether that's
+ * A Vert.x client allowing applications to interact with a MongoDB instance, whether that's
  * saving, retrieving, searching, or deleting documents. Mongo is a great match for persisting data in a Vert.x application
- * since it natively handles JSON (BSON) documents.
+ * as it natively handles JSON (BSON) documents.
  *
  * *Features*
  *
@@ -11,55 +11,72 @@
  * * Custom codec to support fast serialization to/from Vert.x JSON
  * * Supports a majority of the configuration options from the MongoDB Java Driver
  *
- * NOTE: The MongoDB Java Driver is still under heavy development.
+ * == Creating a client
  *
- * == Setting up the service
+ * You can create a client in several ways:
  *
- * As with other services you can use the service either by deploying the service somewhere on your network and
- * interacting with it over the event bus, either directly by sending messages, or using a service proxy.
+ * === Using the default shared pool
  *
- * Please consult the services and service proxy information on how to deploy and interact with services.
+ * In most cases you will want to share a pool between different client instances.
  *
- * Somewhere you deploy it:
+ * E.g. you scale your application by deploying multiple instances of your verticle and you want each verticle instance
+ * to share the same pool so you don't end up with multiple pools
  *
- * [source,java]
- * ----
- * {@link examples.Examples#example0_1}
- * ----
- *
- * Now you can either send messages to it directly over the event bus like this:
+ * The simplest way to do this is as follows:
  *
  * [source,java]
  * ----
- * {@link examples.Examples#example0_1_1}
+ * {@link examples.Examples#exampleCreateDefault}
  * ----
  *
- * or you can create a proxy to the service from wherever you are and just use that:
+ * The first call to {@link io.vertx.ext.mongo.MongoClient#createShared(io.vertx.core.Vertx, io.vertx.core.json.JsonObject)}
+ * will actually create the pool, and the specified config will be used.
+ *
+ * Subsequent calls will return a new client instance that uses the same pool, so the configuration won't be used.
+ *
+ * === Specifying a pool source name
+ *
+ * You can create a client specifying a pool source name as follows
  *
  * [source,java]
  * ----
- * {@link examples.Examples#example0_2}
+ * {@link examples.Examples#exampleCreatePoolName}
  * ----
  *
- * Alternatively you can create an instance of the service directly and just use that locally:
+ * If different clients are created using the same Vert.x instance and specifying the same pool name, they will
+ * share the same pool.
+ *
+ * The first call to {@link io.vertx.ext.mongo.MongoClient#createShared(io.vertx.core.Vertx, io.vertx.core.json.JsonObject)}
+ * will actually create the pool, and the specified config will be used.
+ *
+ * Subsequent calls will return a new client instance that uses the same pool, so the configuration won't be used.
+ *
+ * Use this way of creating if you wish different groups of clients to have different pools, e.g. they're
+ * interacting with different databases.
+ *
+ * === Creating a client with a non shared data pool
+ *
+ * In most cases you will want to share a pool between different client instances.
+ * However, it's possible you want to create a client instance that doesn't share its pool with any other client.
+ *
+ * In that case you can use {@link io.vertx.ext.mongo.MongoClient#createNonShared(io.vertx.core.Vertx, io.vertx.core.json.JsonObject)}.
  *
  * [source,java]
  * ----
- * {@link examples.Examples#example0_3}
+ * {@link examples.Examples#exampleCreateNonShared}
  * ----
  *
- * If you create an instance this way you should make sure you start it with {@link io.vertx.ext.mongo.MongoService#start}
- * before you use it.
+ * This is equivalent to calling {@link io.vertx.ext.mongo.MongoClient#createShared(io.vertx.core.Vertx, io.vertx.core.json.JsonObject, java.lang.String)}
+ * with a unique pool name each time.
  *
- * However you do it, once you've got your service you can start using it.
  *
  * == Using the API
  *
- * The service API is represented by {@link io.vertx.ext.mongo.MongoService}.
+ * The client API is represented by {@link io.vertx.ext.mongo.MongoClient}.
  *
  * === Saving documents
  *
- * To save a document you use {@link io.vertx.ext.mongo.MongoService#save}.
+ * To save a document you use {@link io.vertx.ext.mongo.MongoClient#save}.
  *
  * If the document has no `\_id` field, it is inserted, otherwise, it is _upserted_. Upserted means it is inserted
  * if it doesn't already exist, otherwise it is updated.
@@ -82,7 +99,7 @@
  *
  * === Inserting documents
  *
- * To insert a document you use {@link io.vertx.ext.mongo.MongoService#insert}.
+ * To insert a document you use {@link io.vertx.ext.mongo.MongoClient#insert}.
  *
  * If the document is inserted and has no id, then the id field generated will be returned to the result handler.
  *
@@ -100,7 +117,7 @@
  *
  * === Updating documents
  *
- * To update a documents you use {@link io.vertx.ext.mongo.MongoService#update}.
+ * To update a documents you use {@link io.vertx.ext.mongo.MongoClient#update}.
  *
  * This updates one or multiple documents in a collection. The json object that is passed in the `update`
  * parameter must contain http://docs.mongodb.org/manual/reference/operator/update-field/[Update Operators] and determines
@@ -115,7 +132,7 @@
  * {@link examples.Examples#example5}
  * ----
  *
- * To specify if the update should upsert or update multiple documents, use {@link io.vertx.ext.mongo.MongoService#updateWithOptions}
+ * To specify if the update should upsert or update multiple documents, use {@link io.vertx.ext.mongo.MongoClient#updateWithOptions}
  * and pass in an instance of {@link io.vertx.ext.mongo.UpdateOptions}.
  *
  * This has the following fields:
@@ -131,7 +148,7 @@
  *
  * === Replacing documents
  *
- * To replace documents you use {@link io.vertx.ext.mongo.MongoService#replace}.
+ * To replace documents you use {@link io.vertx.ext.mongo.MongoClient#replace}.
  *
  * This is similar to the update operation, however it does not take any update operators like `update`.
  * Instead it replaces the entire document with the one provided.
@@ -145,7 +162,7 @@
  *
  * === Finding documents
  *
- * To find documents you use {@link io.vertx.ext.mongo.MongoService#find}.
+ * To find documents you use {@link io.vertx.ext.mongo.MongoClient#find}.
  *
  * The `query` parameter is used to match the documents in the collection.
  *
@@ -165,7 +182,7 @@
  *
  * The matching documents are returned as a list of json objects in the result handler.
  *
- * To specify things like what fields to return, how many results to return, etc use {@link io.vertx.ext.mongo.MongoService#findWithOptions}
+ * To specify things like what fields to return, how many results to return, etc use {@link io.vertx.ext.mongo.MongoClient#findWithOptions}
  * and pass in the an instance of {@link io.vertx.ext.mongo.FindOptions}.
  *
  * This has the following fields:
@@ -177,13 +194,13 @@
  *
  * === Finding a single document
  *
- * To find a single document you use {@link io.vertx.ext.mongo.MongoService#findOne}.
+ * To find a single document you use {@link io.vertx.ext.mongo.MongoClient#findOne}.
  *
- * This works just like {@link io.vertx.ext.mongo.MongoService#find} but it returns just the first matching document.
+ * This works just like {@link io.vertx.ext.mongo.MongoClient#find} but it returns just the first matching document.
  *
  * === Removing documents
  *
- * To remove documents use {@link io.vertx.ext.mongo.MongoService#remove}.
+ * To remove documents use {@link io.vertx.ext.mongo.MongoClient#remove}.
  *
  * The `query` parameter is used to match the documents in the collection to determine which ones to remove.
  *
@@ -196,13 +213,13 @@
  *
  * === Removing a single document
  *
- * To remove a single document you use {@link io.vertx.ext.mongo.MongoService#removeOne}.
+ * To remove a single document you use {@link io.vertx.ext.mongo.MongoClient#removeOne}.
  *
- * This works just like {@link io.vertx.ext.mongo.MongoService#remove} but it removes just the first matching document.
+ * This works just like {@link io.vertx.ext.mongo.MongoClient#remove} but it removes just the first matching document.
  *
  * === Counting documents
  *
- * To count documents use {@link io.vertx.ext.mongo.MongoService#count}.
+ * To count documents use {@link io.vertx.ext.mongo.MongoClient#count}.
  *
  * Here's an example that counts the number of Tolkien books. The number is passed to the result handler.
  *
@@ -215,21 +232,21 @@
  *
  * All MongoDB documents are stored in collections.
  *
- * To get a list of all collections you can use {@link io.vertx.ext.mongo.MongoService#getCollections}
+ * To get a list of all collections you can use {@link io.vertx.ext.mongo.MongoClient#getCollections}
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#example11_1}
  * ----
  *
- * To create a new collection you can use {@link io.vertx.ext.mongo.MongoService#createCollection}
+ * To create a new collection you can use {@link io.vertx.ext.mongo.MongoClient#createCollection}
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#example11_2}
  * ----
  *
- * To drop a collection you can use {@link io.vertx.ext.mongo.MongoService#dropCollection}
+ * To drop a collection you can use {@link io.vertx.ext.mongo.MongoClient#dropCollection}
  *
  * NOTE: Dropping a collection will delete all documents within it!
  *
@@ -241,7 +258,7 @@
  *
  * === Running other MongoDB commands
  *
- * You can run arbitrary MongoDB commands with {@link io.vertx.ext.mongo.MongoService#runCommand}.
+ * You can run arbitrary MongoDB commands with {@link io.vertx.ext.mongo.MongoClient#runCommand}.
  *
  * Commands can be used to run more advanced mongoDB features, such as using MapReduce.
  * For more information see the mongo docs for supported http://docs.mongodb.org/manual/reference/command[Commands].
@@ -253,22 +270,20 @@
  * {@link examples.Examples#example12}
  * ----
  *
- * == Configuring the service
+ * == Configuring the client
  *
- * The service is configured with a json object.
+ * The client is configured with a json object.
  *
- * The following configuration is supported by the mongo service:
+ * The following configuration is supported by the mongo client:
  *
- * `address`:: The event bus address used by the service proxy. Defaults to `vertx.mongo`. This is only used if deploying
- * the service as a verticle.
  *
  * `db_name`:: Name of the database in the mongoDB instance to use. Defaults to `default_db`
  * `useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. Defaults to `false`.
  *
- * The mongo service tries to support most options that are allowed by the driver. There are two ways to configure mongo
+ * The mongo client tries to support most options that are allowed by the driver. There are two ways to configure mongo
  * for use by the driver, either by a connection string or by separate configuration options.
  *
- * NOTE: If the connection string is used the mongo service will ignore any driver configuration options.
+ * NOTE: If the connection string is used the mongo client will ignore any driver configuration options.
  *
  * `connection_string`:: The connection string the driver uses to create the client. E.g. `mongodb://localhost:27017`.
  * For more information on the format of the connection string please consult the driver documentation.

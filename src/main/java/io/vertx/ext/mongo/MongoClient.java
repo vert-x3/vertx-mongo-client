@@ -1,17 +1,15 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.ProxyGen;
-import io.vertx.codegen.annotations.ProxyIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.impl.MongoServiceImpl;
-import io.vertx.serviceproxy.ProxyHelper;
+import io.vertx.ext.mongo.impl.MongoClientImpl;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * A Vert.x service used to interact with MongoDB server instances.
@@ -19,30 +17,52 @@ import java.util.List;
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 @VertxGen
-@ProxyGen
-public interface MongoService {
+public interface MongoClient {
 
   /**
-   * Create a service
+   * The name of the default data source
+   */
+  static final String DEFAULT_DS_NAME = "DEFAULT_DS";
+
+  /**
+   * The name of the default database
+   */
+  static final String DEFAULT_DB_NAME = "DEFAULT_DB";
+
+  /**
+   * Create a Mongo client which maintains its own data source.
    *
    * @param vertx  the Vert.x instance
-   * @param config  the config
-   * @return the service
+   * @param config  the configuration
+   * @return the client
    */
-  static MongoService create(Vertx vertx, JsonObject config) {
-    return new MongoServiceImpl(vertx, config);
+  static MongoClient createNonShared(Vertx vertx, JsonObject config) {
+    return new MongoClientImpl(vertx, config, UUID.randomUUID().toString());
   }
 
   /**
-   * Create a proxy to a service that is deployed somewhere on the event bus
+   * Create a Mongo client which shares its data source with any other Mongo clients created with the same
+   * data source name
    *
    * @param vertx  the Vert.x instance
-   * @param address  the address the service is listening on on the event bus
-   * @return the service
+   * @param config  the configuration
+   * @param dataSourceName  the data source name
+   * @return the client
    */
-  static MongoService createEventBusProxy(Vertx vertx, String address) {
-    return ProxyHelper.createProxy(MongoService.class, vertx, address);
+  static MongoClient createShared(Vertx vertx, JsonObject config, String dataSourceName) {
+    return new MongoClientImpl(vertx, config, dataSourceName);
   }
+
+  /**
+   * Like {@link #createShared(io.vertx.core.Vertx, JsonObject, String)} but with the default data source name
+   * @param vertx  the Vert.x instance
+   * @param config  the configuration
+   * @return the client
+   */
+  static MongoClient createShared(Vertx vertx, JsonObject config) {
+    return new MongoClientImpl(vertx, config, DEFAULT_DS_NAME);
+  }
+
 
   /**
    * Save a document in the specified collection
@@ -52,7 +72,7 @@ public interface MongoService {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
+  MongoClient save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Save a document in the specified collection with the specified write option
@@ -63,7 +83,7 @@ public interface MongoService {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+  MongoClient saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Insert a document in the specified collection
@@ -73,7 +93,7 @@ public interface MongoService {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoService insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
+  MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Insert a document in the specified collection with the specified write option
@@ -84,7 +104,7 @@ public interface MongoService {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+  MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Update matching documents in the specified collection
@@ -95,7 +115,7 @@ public interface MongoService {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoService update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Update matching documents in the specified collection, specifying options
@@ -107,7 +127,7 @@ public interface MongoService {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoService updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Replace matching documents in the specified collection
@@ -118,7 +138,7 @@ public interface MongoService {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoService replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Replace matching documents in the specified collection, specifying options
@@ -130,7 +150,7 @@ public interface MongoService {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoService replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Find matching documents in the specified collection
@@ -140,7 +160,7 @@ public interface MongoService {
    * @param resultHandler  will be provided with list of documents
    */
   @Fluent
-  MongoService find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+  MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   /**
    * Find matching documents in the specified collection, specifying options
@@ -151,7 +171,7 @@ public interface MongoService {
    * @param resultHandler  will be provided with list of documents
    */
   @Fluent
-  MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+  MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection
@@ -162,7 +182,7 @@ public interface MongoService {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
-  MongoService findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Count matching documents in a collection.
@@ -172,7 +192,7 @@ public interface MongoService {
    * @param resultHandler will be provided with the number of matching documents
    */
   @Fluent
-  MongoService count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler);
+  MongoClient count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler);
 
   /**
    * Remove matching documents from a collection
@@ -182,7 +202,7 @@ public interface MongoService {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoService remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Remove matching documents from a collection with the specified write option
@@ -193,7 +213,7 @@ public interface MongoService {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoService removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Remove a single matching document from a collection
@@ -203,7 +223,7 @@ public interface MongoService {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoService removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Remove a single matching document from a collection with the specified write option
@@ -214,7 +234,7 @@ public interface MongoService {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoService removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Create a new collection
@@ -223,7 +243,7 @@ public interface MongoService {
    * @param resultHandler  will be called when complete
    */
   @Fluent
-  MongoService createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Get a list of all collections in the database.
@@ -231,7 +251,7 @@ public interface MongoService {
    * @param resultHandler  will be called with a list of collections.
    */
   @Fluent
-  MongoService getCollections(Handler<AsyncResult<List<String>>> resultHandler);
+  MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler);
 
   /**
    * Drop a collection
@@ -240,7 +260,7 @@ public interface MongoService {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoService dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Run an arbitrary MongoDB command.
@@ -249,18 +269,11 @@ public interface MongoService {
    * @param resultHandler  will be called with the result.
    */
   @Fluent
-  MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
-   * Start the service
+   * Close the client and release its resources
    */
-  @ProxyIgnore
-  void start();
-
-  /**
-   * Stop the service
-   */
-  @ProxyIgnore
-  void stop();
+  void close();
 
 }

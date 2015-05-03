@@ -1,10 +1,10 @@
-= Vert.x MongoDB Service
+= Vert.x MongoDB Client
 
-A Vert.x service allowing applications to seamlessly interact with a MongoDB instance, whether that's
+A Vert.x client allowing applications to interact with a MongoDB instance, whether that's
 saving, retrieving, searching, or deleting documents.
 
 Mongo is a great match for persisting data in a Vert.x application
-since it natively handles JSON (BSON) documents.
+as it natively handles JSON (BSON) documents.
 
 *Features*
 
@@ -12,99 +12,84 @@ since it natively handles JSON (BSON) documents.
 * Custom codec to support fast serialization to/from Vert.x JSON
 * Supports a majority of the configuration options from the MongoDB Java Driver
 
-NOTE: The MongoDB Java Driver is still under heavy development.
+== Creating a client
 
-== Setting up the service
+You can create a client in several ways:
 
-As with other services you can use the service either by deploying the service somewhere on your network and
-interacting with it over the event bus, either directly by sending messages, or using a service proxy.
+=== Using the default shared pool
 
-Please consult the services and service proxy information on how to deploy and interact with services.
+In most cases you will want to share a pool between different client instances.
 
-Somewhere you deploy it:
+E.g. you scale your application by deploying multiple instances of your verticle and you want each verticle instance
+to share the same pool so you don't end up with multiple pools
 
-[source,java]
-----
-
-// Deploy service - can be anywhere on your network
-def options = [
-  config:config
-]
-
-vertx.deployVerticle("service:io.vertx.mongo-service", options, { res ->
-
-  if (res.succeeded()) {
-    // Deployed ok
-  } else {
-    // Failed to deploy
-  }
-
-})
-
-----
-
-Now you can either send messages to it directly over the event bus like this:
+The simplest way to do this is as follows:
 
 [source,java]
 ----
-Code not translatable
+import io.vertx.groovy.ext.mongo.MongoClient
+
+def client = MongoClient.createShared(vertx, config)
+
+
 ----
 
-or you can create a proxy to the service from wherever you are and just use that:
+The first call to `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#createShared(io.vertx.core.Vertx,%20io.vertx.core.json.JsonObject)[MongoClient.createShared]`
+will actually create the pool, and the specified config will be used.
+
+Subsequent calls will return a new client instance that uses the same pool, so the configuration won't be used.
+
+=== Specifying a pool source name
+
+You can create a client specifying a pool source name as follows
 
 [source,java]
 ----
-import io.vertx.groovy.ext.mongo.MongoService
+import io.vertx.groovy.ext.mongo.MongoClient
 
-def proxy = MongoService.createEventBusProxy(vertx, "vertx.mongo")
+def client = MongoClient.createShared(vertx, config, "MyPoolName")
 
-// Now do stuff with it:
-
-proxy.count("books", [:], { res ->
-
-  // ...
-
-})
 
 ----
 
-Alternatively you can create an instance of the service directly and just use that locally:
+If different clients are created using the same Vert.x instance and specifying the same pool name, they will
+share the same pool.
+
+The first call to `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#createShared(io.vertx.core.Vertx,%20io.vertx.core.json.JsonObject)[MongoClient.createShared]`
+will actually create the pool, and the specified config will be used.
+
+Subsequent calls will return a new client instance that uses the same pool, so the configuration won't be used.
+
+Use this way of creating if you wish different groups of clients to have different pools, e.g. they're
+interacting with different databases.
+
+=== Creating a client with a non shared data pool
+
+In most cases you will want to share a pool between different client instances.
+However, it's possible you want to create a client instance that doesn't share its pool with any other client.
+
+In that case you can use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#createNonShared(io.vertx.core.Vertx,%20io.vertx.core.json.JsonObject)[MongoClient.createNonShared]`.
 
 [source,java]
 ----
-import io.vertx.groovy.ext.mongo.MongoService
+import io.vertx.groovy.ext.mongo.MongoClient
 
-def config = [:]
-
-// Set your config properties
-
-def mongoService = MongoService.create(vertx, config)
-
-mongoService.start()
-
-// Now do stuff with it:
-
-mongoService.count("books", [:], { res ->
-
-  // ...
-
-})
+def client = MongoClient.createNonShared(vertx, config)
 
 
 ----
 
-If you create an instance this way you should make sure you start it with `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#start()[start]`
-before you use it.
+This is equivalent to calling `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#createShared(io.vertx.core.Vertx,%20io.vertx.core.json.JsonObject,%20java.lang.String)[MongoClient.createShared]`
+with a unique pool name each time.
 
-However you do it, once you've got your service you can start using it.
 
 == Using the API
 
-The service API is represented by `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html[MongoService]`.
+The client API is represented by `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html[MongoClient]`.
 
 === Saving documents
 
-To save a document you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#save(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[save]`.
+To save a document you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#save(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[save]`.
 
 If the document has no `\_id` field, it is inserted, otherwise, it is _upserted_. Upserted means it is inserted
 if it doesn't already exist, otherwise it is updated.
@@ -122,7 +107,7 @@ def document = [
   title:"The Hobbit"
 ]
 
-mongoService.save("books", document, { res ->
+mongoClient.save("books", document, { res ->
 
   if (res.succeeded()) {
 
@@ -150,7 +135,7 @@ def document = [
   _id:"123244"
 ]
 
-mongoService.save("books", document, { res ->
+mongoClient.save("books", document, { res ->
 
   if (res.succeeded()) {
 
@@ -167,7 +152,7 @@ mongoService.save("books", document, { res ->
 
 === Inserting documents
 
-To insert a document you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#insert(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[insert]`.
+To insert a document you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#insert(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[insert]`.
 
 If the document is inserted and has no id, then the id field generated will be returned to the result handler.
 
@@ -180,7 +165,7 @@ def document = [
   title:"The Hobbit"
 ]
 
-mongoService.insert("books", document, { res ->
+mongoClient.insert("books", document, { res ->
 
   if (res.succeeded()) {
 
@@ -208,7 +193,7 @@ def document = [
   _id:"123244"
 ]
 
-mongoService.insert("books", document, { res ->
+mongoClient.insert("books", document, { res ->
 
   if (res.succeeded()) {
 
@@ -226,7 +211,7 @@ mongoService.insert("books", document, { res ->
 
 === Updating documents
 
-To update a documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#update(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[update]`.
+To update a documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#update(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[update]`.
 
 This updates one or multiple documents in a collection. The json object that is passed in the `update`
 parameter must contain http://docs.mongodb.org/manual/reference/operator/update-field/[Update Operators] and determines
@@ -251,7 +236,7 @@ def update = [
   ]
 ]
 
-mongoService.update("books", query, update, { res ->
+mongoClient.update("books", query, update, { res ->
 
   if (res.succeeded()) {
 
@@ -267,7 +252,7 @@ mongoService.update("books", query, update, { res ->
 
 ----
 
-To specify if the update should upsert or update multiple documents, use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#updateWithOptions(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.ext.mongo.UpdateOptions,%20io.vertx.core.Handler)[updateWithOptions]`
+To specify if the update should upsert or update multiple documents, use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#updateWithOptions(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.ext.mongo.UpdateOptions,%20io.vertx.core.Handler)[updateWithOptions]`
 and pass in an instance of `link:../cheatsheet/UpdateOptions.html[UpdateOptions]`.
 
 This has the following fields:
@@ -295,7 +280,7 @@ def options = [
   multi:true
 ]
 
-mongoService.updateWithOptions("books", query, update, options, { res ->
+mongoClient.updateWithOptions("books", query, update, options, { res ->
 
   if (res.succeeded()) {
 
@@ -313,7 +298,7 @@ mongoService.updateWithOptions("books", query, update, options, { res ->
 
 === Replacing documents
 
-To replace documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#replace(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[replace]`.
+To replace documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#replace(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[replace]`.
 
 This is similar to the update operation, however it does not take any update operators like `update`.
 Instead it replaces the entire document with the one provided.
@@ -332,7 +317,7 @@ def replace = [
   author:"J. R. R. Tolkien"
 ]
 
-mongoService.replace("books", query, replace, { res ->
+mongoClient.replace("books", query, replace, { res ->
 
   if (res.succeeded()) {
 
@@ -351,7 +336,7 @@ mongoService.replace("books", query, replace, { res ->
 
 === Finding documents
 
-To find documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#find(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[find]`.
+To find documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#find(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[find]`.
 
 The `query` parameter is used to match the documents in the collection.
 
@@ -363,7 +348,7 @@ Here's a simple example with an empty query that will match all books:
 // empty query = match any
 def query = [:]
 
-mongoService.find("books", query, { res ->
+mongoClient.find("books", query, { res ->
 
   if (res.succeeded()) {
 
@@ -394,7 +379,7 @@ def query = [
   author:"J. R. R. Tolkien"
 ]
 
-mongoService.find("books", query, { res ->
+mongoClient.find("books", query, { res ->
 
   if (res.succeeded()) {
 
@@ -417,7 +402,7 @@ mongoService.find("books", query, { res ->
 
 The matching documents are returned as a list of json objects in the result handler.
 
-To specify things like what fields to return, how many results to return, etc use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#findWithOptions(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.ext.mongo.FindOptions,%20io.vertx.core.Handler)[findWithOptions]`
+To specify things like what fields to return, how many results to return, etc use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#findWithOptions(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.ext.mongo.FindOptions,%20io.vertx.core.Handler)[findWithOptions]`
 and pass in the an instance of `link:../cheatsheet/FindOptions.html[FindOptions]`.
 
 This has the following fields:
@@ -429,13 +414,13 @@ This has the following fields:
 
 === Finding a single document
 
-To find a single document you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#findOne(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[findOne]`.
+To find a single document you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#findOne(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[findOne]`.
 
-This works just like `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#find(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[find]` but it returns just the first matching document.
+This works just like `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#find(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[find]` but it returns just the first matching document.
 
 === Removing documents
 
-To remove documents use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#remove(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[remove]`.
+To remove documents use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#remove(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[remove]`.
 
 The `query` parameter is used to match the documents in the collection to determine which ones to remove.
 
@@ -448,7 +433,7 @@ def query = [
   author:"J. R. R. Tolkien"
 ]
 
-mongoService.remove("books", query, { res ->
+mongoClient.remove("books", query, { res ->
 
   if (res.succeeded()) {
 
@@ -466,13 +451,13 @@ mongoService.remove("books", query, { res ->
 
 === Removing a single document
 
-To remove a single document you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#removeOne(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[removeOne]`.
+To remove a single document you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#removeOne(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[removeOne]`.
 
-This works just like `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#remove(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[remove]` but it removes just the first matching document.
+This works just like `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#remove(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[remove]` but it removes just the first matching document.
 
 === Counting documents
 
-To count documents use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#count(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[count]`.
+To count documents use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#count(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[count]`.
 
 Here's an example that counts the number of Tolkien books. The number is passed to the result handler.
 
@@ -483,7 +468,7 @@ def query = [
   author:"J. R. R. Tolkien"
 ]
 
-mongoService.count("books", query, { res ->
+mongoClient.count("books", query, { res ->
 
   if (res.succeeded()) {
 
@@ -503,12 +488,12 @@ mongoService.count("books", query, { res ->
 
 All MongoDB documents are stored in collections.
 
-To get a list of all collections you can use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#getCollections(io.vertx.core.Handler)[getCollections]`
+To get a list of all collections you can use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#getCollections(io.vertx.core.Handler)[getCollections]`
 
 [source,groovy]
 ----
 
-mongoService.getCollections({ res ->
+mongoClient.getCollections({ res ->
 
   if (res.succeeded()) {
 
@@ -524,12 +509,12 @@ mongoService.getCollections({ res ->
 
 ----
 
-To create a new collection you can use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#createCollection(java.lang.String,%20io.vertx.core.Handler)[createCollection]`
+To create a new collection you can use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#createCollection(java.lang.String,%20io.vertx.core.Handler)[createCollection]`
 
 [source,groovy]
 ----
 
-mongoService.createCollection("mynewcollectionr", { res ->
+mongoClient.createCollection("mynewcollectionr", { res ->
 
   if (res.succeeded()) {
 
@@ -545,14 +530,14 @@ mongoService.createCollection("mynewcollectionr", { res ->
 
 ----
 
-To drop a collection you can use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#dropCollection(java.lang.String,%20io.vertx.core.Handler)[dropCollection]`
+To drop a collection you can use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#dropCollection(java.lang.String,%20io.vertx.core.Handler)[dropCollection]`
 
 NOTE: Dropping a collection will delete all documents within it!
 
 [source,groovy]
 ----
 
-mongoService.dropCollection("mynewcollectionr", { res ->
+mongoClient.dropCollection("mynewcollectionr", { res ->
 
   if (res.succeeded()) {
 
@@ -571,7 +556,7 @@ mongoService.dropCollection("mynewcollectionr", { res ->
 
 === Running other MongoDB commands
 
-You can run arbitrary MongoDB commands with `link:groovydoc/io/vertx/groovy/ext/mongo/MongoService.html#runCommand(io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[runCommand]`.
+You can run arbitrary MongoDB commands with `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#runCommand(io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[runCommand]`.
 
 Commands can be used to run more advanced mongoDB features, such as using MapReduce.
 For more information see the mongo docs for supported http://docs.mongodb.org/manual/reference/command[Commands].
@@ -581,7 +566,7 @@ Here's an example of running a ping command
 [source,groovy]
 ----
 
-mongoService.runCommand([
+mongoClient.runCommand([
   ping:1
 ], { res ->
 
@@ -599,22 +584,20 @@ mongoService.runCommand([
 
 ----
 
-== Configuring the service
+== Configuring the client
 
-The service is configured with a json object.
+The client is configured with a json object.
 
-The following configuration is supported by the mongo service:
+The following configuration is supported by the mongo client:
 
-`address`:: The event bus address used by the service proxy. Defaults to `vertx.mongo`. This is only used if deploying
-the service as a verticle.
 
 `db_name`:: Name of the database in the mongoDB instance to use. Defaults to `default_db`
 `useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. Defaults to `false`.
 
-The mongo service tries to support most options that are allowed by the driver. There are two ways to configure mongo
+The mongo client tries to support most options that are allowed by the driver. There are two ways to configure mongo
 for use by the driver, either by a connection string or by separate configuration options.
 
-NOTE: If the connection string is used the mongo service will ignore any driver configuration options.
+NOTE: If the connection string is used the mongo client will ignore any driver configuration options.
 
 `connection_string`:: The connection string the driver uses to create the client. E.g. `mongodb://localhost:27017`.
 For more information on the format of the connection string please consult the driver documentation.

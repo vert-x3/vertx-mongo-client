@@ -16,11 +16,9 @@
 
 package examples;
 
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoService;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
 
 import java.util.List;
@@ -30,84 +28,33 @@ import java.util.List;
  */
 public class Examples {
 
-  public void example0_1(Vertx vertx, JsonObject config) {
 
-    // Deploy service - can be anywhere on your network
-    DeploymentOptions options = new DeploymentOptions().setConfig(config);
+  public void exampleCreateDefault(Vertx vertx, JsonObject config) {
 
-    vertx.deployVerticle("service:io.vertx.mongo-service", options, res -> {
-
-      if (res.succeeded()) {
-        // Deployed ok
-      } else {
-        // Failed to deploy
-      }
-
-    });
-  }
-
-  public void example0_1_1(Vertx vertx, JsonObject config) {
-
-    JsonObject save = new JsonObject().put("collection", "books")
-      .put("document", new JsonObject().put("title", "The Hobbit"));
-
-    vertx.eventBus().send("vertx.mongo", save,
-      new DeliveryOptions().addHeader("action", "save"), saveResult -> {
-
-      if (saveResult.succeeded()) {
-
-        String id = (String) saveResult.result().body();
-
-        System.out.println("Saved book with id " + id);
-
-      } else {
-        saveResult.cause().printStackTrace();
-      }
-
-    });
+    MongoClient client = MongoClient.createShared(vertx, config);
 
   }
 
-  public void example0_2(Vertx vertx, JsonObject credentials) {
+  public void exampleCreatePoolName(Vertx vertx, JsonObject config) {
 
-    MongoService proxy = MongoService.createEventBusProxy(vertx, "vertx.mongo");
-
-    // Now do stuff with it:
-
-    proxy.count("books", new JsonObject(), res -> {
-
-      // ...
-
-    });
-  }
-
-  public void example0_3(Vertx vertx, JsonObject credentials) {
-
-    JsonObject config = new JsonObject();
-
-    // Set your config properties
-
-    MongoService mongoService = MongoService.create(vertx, config);
-
-    mongoService.start();
-
-    // Now do stuff with it:
-
-    mongoService.count("books", new JsonObject(), res -> {
-
-      // ...
-
-    });
+    MongoClient client = MongoClient.createShared(vertx, config, "MyPoolName");
 
   }
 
-  public void example1(MongoService mongoService) {
+  public void exampleCreateNonShared(Vertx vertx, JsonObject config) {
+
+    MongoClient client = MongoClient.createNonShared(vertx, config);
+
+  }
+
+
+  public void example1(MongoClient mongoClient) {
 
     // Document has no id
 
     JsonObject document = new JsonObject().put("title", "The Hobbit");
 
-    mongoService.save("books", document, res -> {
+    mongoClient.save("books", document, res -> {
 
       if (res.succeeded()) {
 
@@ -122,13 +69,13 @@ public class Examples {
 
   }
 
-  public void example2(MongoService mongoService) {
+  public void example2(MongoClient mongoClient) {
 
     // Document has an id already
 
     JsonObject document = new JsonObject().put("title", "The Hobbit").put("_id", "123244");
 
-    mongoService.save("books", document, res -> {
+    mongoClient.save("books", document, res -> {
 
       if (res.succeeded()) {
 
@@ -142,13 +89,13 @@ public class Examples {
 
   }
 
-  public void example3(MongoService mongoService) {
+  public void example3(MongoClient mongoClient) {
 
     // Document has an id already
 
     JsonObject document = new JsonObject().put("title", "The Hobbit");
 
-    mongoService.insert("books", document, res -> {
+    mongoClient.insert("books", document, res -> {
 
       if (res.succeeded()) {
 
@@ -163,13 +110,13 @@ public class Examples {
 
   }
 
-  public void example4(MongoService mongoService) {
+  public void example4(MongoClient mongoClient) {
 
     // Document has an id already
 
     JsonObject document = new JsonObject().put("title", "The Hobbit").put("_id", "123244");
 
-    mongoService.insert("books", document, res -> {
+    mongoClient.insert("books", document, res -> {
 
       if (res.succeeded()) {
 
@@ -184,7 +131,7 @@ public class Examples {
 
   }
 
-  public void example5(MongoService mongoService) {
+  public void example5(MongoClient mongoClient) {
 
     // Match any documents with title=The Hobbit
     JsonObject query = new JsonObject().put("title", "The Hobbit");
@@ -192,7 +139,7 @@ public class Examples {
     // Set the author field
     JsonObject update = new JsonObject().put("$set", new JsonObject().put("author", "J. R. R. Tolkien"));
 
-    mongoService.update("books", query, update, res -> {
+    mongoClient.update("books", query, update, res -> {
 
       if (res.succeeded()) {
 
@@ -207,7 +154,7 @@ public class Examples {
 
   }
 
-  public void example6(MongoService mongoService) {
+  public void example6(MongoClient mongoClient) {
 
     // Match any documents with title=The Hobbit
     JsonObject query = new JsonObject().put("title", "The Hobbit");
@@ -217,7 +164,7 @@ public class Examples {
 
     UpdateOptions options = new UpdateOptions().setMulti(true);
 
-    mongoService.updateWithOptions("books", query, update, options, res -> {
+    mongoClient.updateWithOptions("books", query, update, options, res -> {
 
       if (res.succeeded()) {
 
@@ -232,13 +179,13 @@ public class Examples {
 
   }
 
-  public void example7(MongoService mongoService) {
+  public void example7(MongoClient mongoClient) {
 
     JsonObject query = new JsonObject().put("title", "The Hobbit");
 
     JsonObject replace = new JsonObject().put("title", "The Lord of the Rings").put("author", "J. R. R. Tolkien");
 
-    mongoService.replace("books", query, replace, res -> {
+    mongoClient.replace("books", query, replace, res -> {
 
       if (res.succeeded()) {
 
@@ -254,12 +201,12 @@ public class Examples {
 
   }
 
-  public void example8(MongoService mongoService) {
+  public void example8(MongoClient mongoClient) {
 
     // empty query = match any
     JsonObject query = new JsonObject();
 
-    mongoService.find("books", query, res -> {
+    mongoClient.find("books", query, res -> {
 
       if (res.succeeded()) {
 
@@ -279,12 +226,12 @@ public class Examples {
 
   }
 
-  public void example9(MongoService mongoService) {
+  public void example9(MongoClient mongoClient) {
 
     // will match all Tolkien books
     JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
 
-    mongoService.find("books", query, res -> {
+    mongoClient.find("books", query, res -> {
 
       if (res.succeeded()) {
 
@@ -304,11 +251,11 @@ public class Examples {
 
   }
 
-  public void example10(MongoService mongoService) {
+  public void example10(MongoClient mongoClient) {
 
     JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
 
-    mongoService.remove("books", query, res -> {
+    mongoClient.remove("books", query, res -> {
 
       if (res.succeeded()) {
 
@@ -323,11 +270,11 @@ public class Examples {
 
   }
 
-  public void example11(MongoService mongoService) {
+  public void example11(MongoClient mongoClient) {
 
     JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
 
-    mongoService.count("books", query, res -> {
+    mongoClient.count("books", query, res -> {
 
       if (res.succeeded()) {
 
@@ -342,9 +289,9 @@ public class Examples {
 
   }
 
-  public void example11_1(MongoService mongoService) {
+  public void example11_1(MongoClient mongoClient) {
 
-    mongoService.getCollections(res -> {
+    mongoClient.getCollections(res -> {
 
       if (res.succeeded()) {
 
@@ -359,9 +306,9 @@ public class Examples {
 
   }
 
-  public void example11_2(MongoService mongoService) {
+  public void example11_2(MongoClient mongoClient) {
 
-    mongoService.createCollection("mynewcollectionr", res -> {
+    mongoClient.createCollection("mynewcollectionr", res -> {
 
       if (res.succeeded()) {
 
@@ -376,9 +323,9 @@ public class Examples {
 
   }
 
-  public void example11_3(MongoService mongoService) {
+  public void example11_3(MongoClient mongoClient) {
 
-    mongoService.dropCollection("mynewcollectionr", res -> {
+    mongoClient.dropCollection("mynewcollectionr", res -> {
 
       if (res.succeeded()) {
 
@@ -393,9 +340,9 @@ public class Examples {
 
   }
 
-  public void example12(MongoService mongoService) {
+  public void example12(MongoClient mongoClient) {
 
-    mongoService.runCommand(new JsonObject().put("ping", 1), res -> {
+    mongoClient.runCommand(new JsonObject().put("ping", 1), res -> {
 
       if (res.succeeded()) {
 
