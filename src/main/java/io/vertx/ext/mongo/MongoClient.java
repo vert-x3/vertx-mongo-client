@@ -20,9 +20,9 @@ import java.util.UUID;
 public interface MongoClient {
 
   /**
-   * The name of the default data source
+   * The name of the default pool
    */
-  static final String DEFAULT_DS_NAME = "DEFAULT_DS";
+  static final String DEFAULT_POOL_NAME = "DEFAULT_POOL";
 
   /**
    * The name of the default database
@@ -60,7 +60,7 @@ public interface MongoClient {
    * @return the client
    */
   static MongoClient createShared(Vertx vertx, JsonObject config) {
-    return new MongoClientImpl(vertx, config, DEFAULT_DS_NAME);
+    return new MongoClientImpl(vertx, config, DEFAULT_POOL_NAME);
   }
 
 

@@ -26,10 +26,10 @@
     <version>9</version>
   </parent>
 
-  <artifactId>vertx-mongo-service</artifactId>
+  <artifactId>vertx-mongo-client</artifactId>
   <version>3.0.0-SNAPSHOT</version>
 
-  <name>Vert.x Mongo Service</name>
+  <name>Vert.x Mongo Client</name>
 
   <properties>
     <stack.version>3.0.0-SNAPSHOT</stack.version>
