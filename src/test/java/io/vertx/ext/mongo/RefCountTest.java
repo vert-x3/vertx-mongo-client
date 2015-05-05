@@ -40,9 +40,9 @@ public class RefCountTest extends MongoClientTestBase {
     MongoClient client3 = MongoClient.createNonShared(vertx, config);
     assertEquals(3, map.size());
     client1.close();
-    waitUntil(() -> map.size() == 2);
+    assertEquals(2, map.size());
     client2.close();
-    waitUntil(() -> map.size() == 1);
+    assertEquals(1, map.size());
     client3.close();
     waitUntil(() -> map.size() == 0);
     waitUntil(() -> getLocalMap().size() == 0);
@@ -60,13 +60,12 @@ public class RefCountTest extends MongoClientTestBase {
     MongoClient client3 = MongoClient.createShared(vertx, config);
     assertEquals(1, map.size());
     client1.close();
-    Thread.sleep(200);
     assertEquals(1, map.size());
     client2.close();
     assertEquals(1, map.size());
     client3.close();
-    waitUntil(() -> map.size() == 0);
-    waitUntil(() -> map != getLocalMap()); // Map has been closed
+    assertEquals(0, map.size());
+    assertNotSame(map, getLocalMap());
   }
 
   @Test
@@ -88,20 +87,18 @@ public class RefCountTest extends MongoClientTestBase {
     assertEquals(2, map.size());
 
     client1.close();
-    Thread.sleep(200);
     assertEquals(2, map.size());
     client2.close();
     assertEquals(2, map.size());
     client3.close();
-    waitUntil(() -> map.size() == 1);
+    assertEquals(1, map.size());
 
     client4.close();
-    Thread.sleep(200);
     assertEquals(1, map.size());
     client5.close();
     assertEquals(1, map.size());
     client6.close();
-    waitUntil(() -> map.size() == 0);
-    waitUntil(() -> map != getLocalMap()); // Map has been closed
+    assertEquals(0, map.size());
+    assertNotSame(map, getLocalMap());
   }
 }
