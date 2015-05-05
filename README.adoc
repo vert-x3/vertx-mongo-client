@@ -1,6 +1,6 @@
 = Mongo Service
 
-A Vert.x service used to interact with MongoDB server instances from Vert.x applications.
+An asynchronous client for interacting with a MongoDB database
 
 Please see the in source asciidoc documentation or the main documentation on the web-site for a full description
 of Mongo service:

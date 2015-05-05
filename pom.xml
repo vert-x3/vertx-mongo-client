@@ -26,10 +26,10 @@
     <version>9</version>
   </parent>
 
-  <artifactId>vertx-mongo-service</artifactId>
+  <artifactId>vertx-mongo-client</artifactId>
   <version>3.0.0-SNAPSHOT</version>
 
-  <name>Vert.x Mongo Service</name>
+  <name>Vert.x Mongo Client</name>
 
   <properties>
     <stack.version>3.0.0-SNAPSHOT</stack.version>
@@ -83,10 +83,6 @@
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-service-proxy</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
       <artifactId>vertx-lang-groovy</artifactId>
       <optional>true</optional>
     </dependency>
@@ -114,11 +110,6 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
       <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-service-factory</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

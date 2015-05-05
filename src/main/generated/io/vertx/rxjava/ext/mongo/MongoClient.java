@@ -32,14 +32,14 @@ import io.vertx.ext.mongo.UpdateOptions;
  * A Vert.x service used to interact with MongoDB server instances.
  *
  * <p/>
- * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.MongoService original} non RX-ified interface using Vert.x codegen.
+ * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.MongoClient original} non RX-ified interface using Vert.x codegen.
  */
 
-public class MongoService {
+public class MongoClient {
 
-  final io.vertx.ext.mongo.MongoService delegate;
+  final io.vertx.ext.mongo.MongoClient delegate;
 
-  public MongoService(io.vertx.ext.mongo.MongoService delegate) {
+  public MongoClient(io.vertx.ext.mongo.MongoClient delegate) {
     this.delegate = delegate;
   }
 
@@ -48,24 +48,37 @@ public class MongoService {
   }
 
   /**
-   * Create a service
+   * Create a Mongo client which maintains its own data source.
    * @param vertx the Vert.x instance
-   * @param config the config
-   * @return the service
+   * @param config the configuration
+   * @return the client
    */
-  public static MongoService create(Vertx vertx, JsonObject config) { 
-    MongoService ret= MongoService.newInstance(io.vertx.ext.mongo.MongoService.create((io.vertx.core.Vertx) vertx.getDelegate(), config));
+  public static MongoClient createNonShared(Vertx vertx, JsonObject config) { 
+    MongoClient ret= MongoClient.newInstance(io.vertx.ext.mongo.MongoClient.createNonShared((io.vertx.core.Vertx) vertx.getDelegate(), config));
     return ret;
   }
 
   /**
-   * Create a proxy to a service that is deployed somewhere on the event bus
+   * Create a Mongo client which shares its data source with any other Mongo clients created with the same
+   * data source name
    * @param vertx the Vert.x instance
-   * @param address the address the service is listening on on the event bus
-   * @return the service
+   * @param config the configuration
+   * @param dataSourceName the data source name
+   * @return the client
    */
-  public static MongoService createEventBusProxy(Vertx vertx, String address) { 
-    MongoService ret= MongoService.newInstance(io.vertx.ext.mongo.MongoService.createEventBusProxy((io.vertx.core.Vertx) vertx.getDelegate(), address));
+  public static MongoClient createShared(Vertx vertx, JsonObject config, String dataSourceName) { 
+    MongoClient ret= MongoClient.newInstance(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx) vertx.getDelegate(), config, dataSourceName));
+    return ret;
+  }
+
+  /**
+   * Like {@link  #createShared(io.vertx.rxjava.core.Vertx, JsonObject, String)} but with the default data source name
+   * @param vertx the Vert.x instance
+   * @param config the configuration
+   * @return the client
+   */
+  public static MongoClient createShared(Vertx vertx, JsonObject config) { 
+    MongoClient ret= MongoClient.newInstance(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx) vertx.getDelegate(), config));
     return ret;
   }
 
@@ -76,7 +89,7 @@ public class MongoService {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    * @return 
    */
-  public MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
+  public MongoClient save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
     this.delegate.save(collection, document, resultHandler);
     return this;
   }
@@ -101,7 +114,7 @@ public class MongoService {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    * @return 
    */
-  public MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
+  public MongoClient saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
     this.delegate.saveWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
@@ -126,7 +139,7 @@ public class MongoService {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    * @return 
    */
-  public MongoService insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
+  public MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
     this.delegate.insert(collection, document, resultHandler);
     return this;
   }
@@ -151,7 +164,7 @@ public class MongoService {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    * @return 
    */
-  public MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
+  public MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
     this.delegate.insertWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
@@ -177,7 +190,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.update(collection, query, update, resultHandler);
     return this;
   }
@@ -204,7 +217,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.updateWithOptions(collection, query, update, options, resultHandler);
     return this;
   }
@@ -231,7 +244,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.replace(collection, query, replace, resultHandler);
     return this;
   }
@@ -258,7 +271,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.replaceWithOptions(collection, query, replace, options, resultHandler);
     return this;
   }
@@ -284,7 +297,7 @@ public class MongoService {
    * @param resultHandler will be provided with list of documents
    * @return 
    */
-  public MongoService find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
+  public MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
     this.delegate.find(collection, query, resultHandler);
     return this;
   }
@@ -309,7 +322,7 @@ public class MongoService {
    * @param resultHandler will be provided with list of documents
    * @return 
    */
-  public MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
+  public MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
     this.delegate.findWithOptions(collection, query, options, resultHandler);
     return this;
   }
@@ -335,7 +348,7 @@ public class MongoService {
    * @param resultHandler will be provided with the document, if any
    * @return 
    */
-  public MongoService findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) { 
+  public MongoClient findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) { 
     this.delegate.findOne(collection, query, fields, resultHandler);
     return this;
   }
@@ -360,7 +373,7 @@ public class MongoService {
    * @param resultHandler will be provided with the number of matching documents
    * @return 
    */
-  public MongoService count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) { 
+  public MongoClient count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) { 
     this.delegate.count(collection, query, resultHandler);
     return this;
   }
@@ -384,7 +397,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.remove(collection, query, resultHandler);
     return this;
   }
@@ -409,7 +422,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.removeWithOptions(collection, query, writeOption, resultHandler);
     return this;
   }
@@ -434,7 +447,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.removeOne(collection, query, resultHandler);
     return this;
   }
@@ -459,7 +472,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.removeOneWithOptions(collection, query, writeOption, resultHandler);
     return this;
   }
@@ -483,7 +496,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.createCollection(collectionName, resultHandler);
     return this;
   }
@@ -504,7 +517,7 @@ public class MongoService {
    * @param resultHandler will be called with a list of collections.
    * @return 
    */
-  public MongoService getCollections(Handler<AsyncResult<List<String>>> resultHandler) { 
+  public MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler) { 
     this.delegate.getCollections(resultHandler);
     return this;
   }
@@ -525,7 +538,7 @@ public class MongoService {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoService dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) { 
+  public MongoClient dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) { 
     this.delegate.dropCollection(collection, resultHandler);
     return this;
   }
@@ -547,7 +560,7 @@ public class MongoService {
    * @param resultHandler will be called with the result.
    * @return 
    */
-  public MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) { 
+  public MongoClient runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) { 
     this.delegate.runCommand(command, resultHandler);
     return this;
   }
@@ -564,21 +577,14 @@ public class MongoService {
   }
 
   /**
-   * Start the service
+   * Close the client and release its resources
    */
-  public void start() { 
-    this.delegate.start();
-  }
-
-  /**
-   * Stop the service
-   */
-  public void stop() { 
-    this.delegate.stop();
+  public void close() { 
+    this.delegate.close();
   }
 
 
-  public static MongoService newInstance(io.vertx.ext.mongo.MongoService arg) {
-    return new MongoService(arg);
+  public static MongoClient newInstance(io.vertx.ext.mongo.MongoClient arg) {
+    return new MongoClient(arg);
   }
 }
