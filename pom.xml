@@ -26,10 +26,16 @@
     <version>11</version>
   </parent>
 
-  <artifactId>vertx-mongo-client</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
+  <modules>
+    <module>vertx-mongo-client</module>
+    <module>vertx-mongo-service</module>
+  </modules>
 
-  <name>Vert.x Mongo Client</name>
+  <artifactId>vertx-mongo</artifactId>
+  <version>3.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Vert.x Mongo</name>
 
   <properties>
     <stack.version>3.0.0-SNAPSHOT</stack.version>
@@ -124,5 +130,6 @@
       <version>4.11</version>
     </dependency>
   </dependencies>
+
 
 </project>
