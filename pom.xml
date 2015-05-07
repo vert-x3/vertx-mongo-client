@@ -32,13 +32,13 @@
   </modules>
 
   <artifactId>vertx-mongo</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.0.0-milestone5</version>
   <packaging>pom</packaging>
 
   <name>Vert.x Mongo</name>
 
   <properties>
-    <stack.version>3.0.0-SNAPSHOT</stack.version>
+    <stack.version>3.0.0-milestone5</stack.version>
   </properties>
 
   <dependencyManagement>
