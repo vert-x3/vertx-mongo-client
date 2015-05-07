@@ -1,0 +1,22 @@
+== FindOptions
+
+++++
+ Options used to configure find operations.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+
+|[[limit]]`limit`
+|`Number`
+|+++
+Set the limit+++
+
+|[[skip]]`skip`
+|`Number`
+|+++
+Set the skip+++
+|===
