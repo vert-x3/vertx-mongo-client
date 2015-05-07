@@ -26,10 +26,16 @@
     <version>12</version>
   </parent>
 
-  <artifactId>vertx-mongo-client</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
+  <modules>
+    <module>vertx-mongo-client</module>
+    <module>vertx-mongo-service</module>
+  </modules>
 
-  <name>Vert.x Mongo Client</name>
+  <artifactId>vertx-mongo</artifactId>
+  <version>3.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Vert.x Mongo</name>
 
   <properties>
     <stack.version>3.0.0-SNAPSHOT</stack.version>
@@ -124,5 +130,30 @@
       <version>4.11</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Work around because the vertx-ext-parent does not support well aggregators -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <configuration>
+              <target>
+                <mkdir dir="${project.basedir}/src/main/asciidoc"/>
+                <mkdir dir="${project.basedir}/src/main/resources"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>generate-sources</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
 
 </project>
