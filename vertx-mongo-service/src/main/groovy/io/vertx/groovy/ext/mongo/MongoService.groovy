@@ -160,8 +160,8 @@ public class MongoService extends MongoClient {
     this.delegate.dropCollection(collection, resultHandler);
     return this;
   }
-  public MongoService runCommand(Map<String, Object> command, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    this.delegate.runCommand(command != null ? new io.vertx.core.json.JsonObject(command) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+  public MongoService runCommand(String commandName, Map<String, Object> command, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    this.delegate.runCommand(commandName, command != null ? new io.vertx.core.json.JsonObject(command) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
       public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
         AsyncResult<Map<String, Object>> f
         if (event.succeeded()) {

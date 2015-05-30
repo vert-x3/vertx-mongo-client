@@ -154,8 +154,8 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
-    client.runCommand(command, resultHandler);
+  public MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.runCommand(commandName, command, resultHandler);
     return this;
   }
 

@@ -179,7 +179,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "runCommand": {
-        service.runCommand((io.vertx.core.json.JsonObject)json.getValue("command"), createHandler(msg));
+        service.runCommand((java.lang.String)json.getValue("commandName"), (io.vertx.core.json.JsonObject)json.getValue("command"), createHandler(msg));
         break;
       }
       case "close": {

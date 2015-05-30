@@ -437,12 +437,13 @@ public class MongoServiceVertxEBProxy implements MongoService {
     return this;
   }
 
-  public MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return this;
     }
     JsonObject _json = new JsonObject();
+    _json.put("commandName", commandName);
     _json.put("command", command);
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "runCommand");

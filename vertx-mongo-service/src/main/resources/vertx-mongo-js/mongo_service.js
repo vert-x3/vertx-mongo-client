@@ -464,14 +464,15 @@ var MongoService = function(j_val) {
   /**
 
    @public
+   @param commandName {string} 
    @param command {Object} 
    @param resultHandler {function} 
    @return {MongoService}
    */
-  this.runCommand = function(command, resultHandler) {
+  this.runCommand = function(commandName, command, resultHandler) {
     var __args = arguments;
-    if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
-      j_mongoService["runCommand(io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](utils.convParamJsonObject(command), function(ar) {
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'function') {
+      j_mongoService["runCommand(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](commandName, utils.convParamJsonObject(command), function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {

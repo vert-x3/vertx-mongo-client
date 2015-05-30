@@ -17,6 +17,7 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
@@ -342,16 +343,16 @@ public class Examples {
 
   public void example12(MongoClient mongoClient) {
 
-    mongoClient.runCommand(new JsonObject().put("ping", 1), res -> {
+    JsonObject command = new JsonObject()
+      .put("aggregate", "collection_name")
+      .put("pipeline", new JsonArray());
 
+    mongoClient.runCommand("aggregate", command, res -> {
       if (res.succeeded()) {
-
-        System.out.println("Result: " + res.result().encodePrettily());
-
+        JsonArray resArr = res.result().getJsonArray("result");
+        // etc
       } else {
-
         res.cause().printStackTrace();
-
       }
     });
 

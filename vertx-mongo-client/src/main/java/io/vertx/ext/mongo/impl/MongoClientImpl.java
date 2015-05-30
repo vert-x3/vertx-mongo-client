@@ -281,10 +281,25 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
+    requireNonNull(commandName, "commandName cannot be null");
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
-    holder.db.runCommand(wrap(command), JsonObject.class, wrapCallback(resultHandler));
+    // The command name must be the first entry in the bson, so to ensure this we must recreate and add the command
+    // name as first (JsonObject is internally ordered)
+    JsonObject json = new JsonObject();
+    Object commandVal = command.getValue(commandName);
+    if (commandVal == null) {
+      throw new IllegalArgumentException("commandBody does not contain key for " + commandName);
+    }
+    json.put(commandName, commandVal);
+    command.forEach(entry -> {
+      if (!entry.getKey().equals(commandName)) {
+        json.put(entry.getKey(), entry.getValue());
+      }
+    });
+
+    holder.db.runCommand(wrap(json), JsonObject.class, wrapCallback(resultHandler));
     return this;
   }
 

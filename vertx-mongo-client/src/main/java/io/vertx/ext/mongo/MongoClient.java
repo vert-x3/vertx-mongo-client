@@ -265,11 +265,12 @@ public interface MongoClient {
   /**
    * Run an arbitrary MongoDB command.
    *
+   * @param commandName  the name of the command
    * @param command  the command
    * @param resultHandler  will be called with the result.
    */
   @Fluent
-  MongoClient runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Close the client and release its resources

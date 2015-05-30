@@ -556,23 +556,25 @@ public class MongoClient {
 
   /**
    * Run an arbitrary MongoDB command.
+   * @param commandName the name of the command
    * @param command the command
    * @param resultHandler will be called with the result.
    * @return 
    */
-  public MongoClient runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    this.delegate.runCommand(command, resultHandler);
+  public MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    this.delegate.runCommand(commandName, command, resultHandler);
     return this;
   }
 
   /**
    * Run an arbitrary MongoDB command.
+   * @param commandName the name of the command
    * @param command the command
    * @return 
    */
-  public Observable<JsonObject> runCommandObservable(JsonObject command) { 
+  public Observable<JsonObject> runCommandObservable(String commandName, JsonObject command) { 
     io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
-    runCommand(command, resultHandler.toHandler());
+    runCommand(commandName, command, resultHandler.toHandler());
     return resultHandler;
   }
 

@@ -109,7 +109,7 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Override
   @ProxyIgnore

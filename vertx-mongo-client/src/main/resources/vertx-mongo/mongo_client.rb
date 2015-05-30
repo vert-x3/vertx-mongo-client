@@ -274,15 +274,16 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling drop_collection(collection)"
     end
     #  Run an arbitrary MongoDB command.
+    # @param [String] commandName the name of the command
     # @param [Hash{String => Object}] command the command
     # @yield will be called with the result.
     # @return [self]
-    def run_command(command=nil)
-      if command.class == Hash && block_given?
-        @j_del.java_method(:runCommand, [Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(::Vertx::Util::Utils.to_json_object(command),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+    def run_command(commandName=nil,command=nil)
+      if commandName.class == String && command.class == Hash && block_given?
+        @j_del.java_method(:runCommand, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(commandName,::Vertx::Util::Utils.to_json_object(command),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling run_command(command)"
+      raise ArgumentError, "Invalid arguments when calling run_command(commandName,command)"
     end
     #  Close the client and release its resources
     # @return [void]

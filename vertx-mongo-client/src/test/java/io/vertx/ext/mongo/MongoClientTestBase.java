@@ -74,8 +74,8 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
   @Test
   public void testRunCommand() throws Exception {
-    JsonObject ping = new JsonObject().put("isMaster", 1);
-    mongoClient.runCommand(ping, onSuccess(reply -> {
+    JsonObject command  = new JsonObject().put("isMaster", 1);
+    mongoClient.runCommand("isMaster", command, onSuccess(reply -> {
       assertTrue(reply.getBoolean("ismaster"));
       testComplete();
     }));
@@ -83,9 +83,25 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testRunCommandWithBody() throws Exception {
+
+    JsonObject command = new JsonObject()
+      .put("aggregate", "collection_name")
+      .put("pipeline", new JsonArray());
+
+    mongoClient.runCommand("aggregate", command, onSuccess(resultObj -> {
+      JsonArray resArr = resultObj.getJsonArray("result");
+      assertNotNull(resArr);
+      assertEquals(0, resArr.size());
+      testComplete();
+    }));
+    await();
+  }
+
+  @Test
   public void testRunInvalidCommand() throws Exception {
-    JsonObject ping = new JsonObject().put("iuhioqwdqhwd", 1);
-    mongoClient.runCommand(ping, onFailure(ex -> {
+    JsonObject command  = new JsonObject().put("iuhioqwdqhwd", 1);
+    mongoClient.runCommand("iuhioqwdqhwd", command, onFailure(ex -> {
       testComplete();
     }));
     await();

@@ -279,7 +279,10 @@
  * Commands can be used to run more advanced mongoDB features, such as using MapReduce.
  * For more information see the mongo docs for supported http://docs.mongodb.org/manual/reference/command[Commands].
  *
- * Here's an example of running a ping command
+ * Here's an example of running an aggregate command. Note that the command name must be specified as a parameter
+ * and also be contained in the JSON that represents the command. This is because JSON is not ordered but BSON is
+ * ordered and MongoDB expects the first BSON entry to be the name of the command. In order for us to know which
+ * of the entries in the JSON is the command name it must be specified as a parameter.
  *
  * [source,$lang]
  * ----

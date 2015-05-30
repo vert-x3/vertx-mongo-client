@@ -268,14 +268,14 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
-  public MongoService runCommand(JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    this.delegate.runCommand(command, resultHandler);
+  public MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    this.delegate.runCommand(commandName, command, resultHandler);
     return this;
   }
 
-  public Observable<JsonObject> runCommandObservable(JsonObject command) { 
+  public Observable<JsonObject> runCommandObservable(String commandName, JsonObject command) { 
     io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
-    runCommand(command, resultHandler.toHandler());
+    runCommand(commandName, command, resultHandler.toHandler());
     return resultHandler;
   }
 

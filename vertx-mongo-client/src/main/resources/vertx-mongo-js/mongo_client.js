@@ -483,14 +483,15 @@ var MongoClient = function(j_val) {
    Run an arbitrary MongoDB command.
 
    @public
+   @param commandName {string} the name of the command 
    @param command {Object} the command 
    @param resultHandler {function} will be called with the result. 
    @return {MongoClient}
    */
-  this.runCommand = function(command, resultHandler) {
+  this.runCommand = function(commandName, command, resultHandler) {
     var __args = arguments;
-    if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
-      j_mongoClient["runCommand(io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](utils.convParamJsonObject(command), function(ar) {
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && typeof __args[2] === 'function') {
+      j_mongoClient["runCommand(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](commandName, utils.convParamJsonObject(command), function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {
