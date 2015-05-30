@@ -22,7 +22,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import java.util.ArrayList;import java.util.HashSet;import java.util.List;import java.util.Map;import java.util.Set;import io.vertx.serviceproxy.ProxyHelper;
+import java.util.ArrayList;import java.util.HashSet;import java.util.List;import java.util.Map;import java.util.Set;import java.util.stream.Collectors;
+import io.vertx.serviceproxy.ProxyHelper;
 import java.util.List;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.core.Vertx;
@@ -76,7 +77,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("document", document);
-    _json.put("writeOption", writeOption.toString());
+    _json.put("writeOption", writeOption == null ? null : writeOption.toString());
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "saveWithOptions");
     _vertx.eventBus().<String>send(_address, _json, _deliveryOptions, res -> {
@@ -117,7 +118,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("document", document);
-    _json.put("writeOption", writeOption.toString());
+    _json.put("writeOption", writeOption == null ? null : writeOption.toString());
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "insertWithOptions");
     _vertx.eventBus().<String>send(_address, _json, _deliveryOptions, res -> {
@@ -160,7 +161,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("query", query);
     _json.put("update", update);
-    _json.put("options", options.toJson());
+    _json.put("options", options == null ? null : options.toJson());
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "updateWithOptions");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
@@ -203,7 +204,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("query", query);
     _json.put("replace", replace);
-    _json.put("options", options.toJson());
+    _json.put("options", options == null ? null : options.toJson());
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "replaceWithOptions");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
@@ -244,7 +245,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("query", query);
-    _json.put("options", options.toJson());
+    _json.put("options", options == null ? null : options.toJson());
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "findWithOptions");
     _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
@@ -326,7 +327,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("query", query);
-    _json.put("writeOption", writeOption.toString());
+    _json.put("writeOption", writeOption == null ? null : writeOption.toString());
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "removeWithOptions");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
@@ -367,7 +368,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("query", query);
-    _json.put("writeOption", writeOption.toString());
+    _json.put("writeOption", writeOption == null ? null : writeOption.toString());
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "removeOneWithOptions");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {

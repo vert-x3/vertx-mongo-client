@@ -25,7 +25,13 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import java.util.ArrayList;import java.util.HashSet;import java.util.List;import java.util.Map;import java.util.Set;import java.util.UUID;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
 import java.util.List;
@@ -101,7 +107,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "saveWithOptions": {
-        service.saveWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
+        service.saveWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
         break;
       }
       case "insert": {
@@ -109,7 +115,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "insertWithOptions": {
-        service.insertWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
+        service.insertWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
         break;
       }
       case "update": {
@@ -117,7 +123,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "updateWithOptions": {
-        service.updateWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), createHandler(msg));
+        service.updateWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), createHandler(msg));
         break;
       }
       case "replace": {
@@ -125,7 +131,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "replaceWithOptions": {
-        service.replaceWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("replace"), new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), createHandler(msg));
+        service.replaceWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("replace"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), createHandler(msg));
         break;
       }
       case "find": {
@@ -133,7 +139,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "findWithOptions": {
-        service.findWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), new io.vertx.ext.mongo.FindOptions(json.getJsonObject("options")), createListHandler(msg));
+        service.findWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.FindOptions(json.getJsonObject("options")), createListHandler(msg));
         break;
       }
       case "findOne": {
@@ -149,7 +155,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "removeWithOptions": {
-        service.removeWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
+        service.removeWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
         break;
       }
       case "removeOne": {
@@ -157,7 +163,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "removeOneWithOptions": {
-        service.removeOneWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
+        service.removeOneWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
         break;
       }
       case "createCollection": {
