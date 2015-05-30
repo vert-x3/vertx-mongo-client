@@ -600,7 +600,7 @@ Here's an example of inserting a document with a date field
 var document = {
   "title" : "The Hobbit",
   "publicationDate" : {
-    "$date" : -1018659600000
+    "$date" : "1937-09-21T00:00:00+00:00"
   }
 };
 
@@ -609,7 +609,18 @@ mongoService.save("publishedBooks", document, function (res, res_err) {
   if (res_err == null) {
 
     var id = res;
-    console.log("Saved book with id " + id);
+
+    mongoService.findOne("publishedBooks", {
+      "_id" : id
+    }, null, function (res2, res2_err) {
+      if (res2_err == null) {
+
+        console.log("To retrieve ISO-8601 date : " + res2."publicationDate"."$date");
+
+      } else {
+        res2_err.printStackTrace();
+      };
+    });
 
   } else {
     res_err.printStackTrace();

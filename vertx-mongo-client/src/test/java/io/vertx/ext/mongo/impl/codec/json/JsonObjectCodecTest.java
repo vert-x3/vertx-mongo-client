@@ -11,8 +11,10 @@ import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.junit.Test;
 
-import java.util.Date;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -25,7 +27,7 @@ public class JsonObjectCodecTest {
     JsonObjectCodec codec = new JsonObjectCodec();
 
     JsonObject value = new JsonObject();
-    value.put(JsonObjectCodec.DATE_FIELD, System.currentTimeMillis());
+    value.put(JsonObjectCodec.DATE_FIELD, "2015-05-30T22:50:02+02:00");
 
     assertEquals(BsonType.DATE_TIME, codec.getBsonType(value));
   }
@@ -34,9 +36,9 @@ public class JsonObjectCodecTest {
   public void writeDocument_supportBsonDateTime() {
     JsonObjectCodec codec = new JsonObjectCodec();
 
-    Date date = new Date();
+    OffsetDateTime now = OffsetDateTime.now();
     JsonObject dateValue = new JsonObject();
-    dateValue.put(JsonObjectCodec.DATE_FIELD, date.getTime());
+    dateValue.put(JsonObjectCodec.DATE_FIELD, now.format(ISO_OFFSET_DATE_TIME));
     JsonObject value = new JsonObject();
     value.put("test", dateValue);
 
@@ -47,22 +49,22 @@ public class JsonObjectCodecTest {
 
     BsonValue resultValue = bsonResult.get("test");
     assertEquals(BsonType.DATE_TIME, resultValue.getBsonType());
-    assertEquals(date.getTime(), resultValue.asDateTime().getValue());
+    assertEquals(now.toInstant().toEpochMilli(), resultValue.asDateTime().getValue());
   }
 
   @Test
   public void readDocument_supportBsonDateTime() {
     JsonObjectCodec codec = new JsonObjectCodec();
 
-    Date date = new Date();
+    Instant now = Instant.now();
     BsonDocument bson = new BsonDocument();
-    bson.append("test", new BsonDateTime(date.getTime()));
+    bson.append("test", new BsonDateTime(now.toEpochMilli()));
 
     BsonDocumentReader reader = new BsonDocumentReader(bson);
 
     JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
 
     JsonObject resultValue = result.getJsonObject("test");
-    assertEquals(date.getTime(), (long) resultValue.getLong(JsonObjectCodec.DATE_FIELD));
+    assertEquals(now, OffsetDateTime.parse(resultValue.getString(JsonObjectCodec.DATE_FIELD)).toInstant());
   }
 }

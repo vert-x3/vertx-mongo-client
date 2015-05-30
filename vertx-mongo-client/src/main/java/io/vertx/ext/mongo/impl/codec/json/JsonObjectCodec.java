@@ -12,8 +12,13 @@ import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.types.ObjectId;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
@@ -145,12 +150,13 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected Object readDateTime(BsonReader reader, DecoderContext ctx) {
     final JsonObject result = new JsonObject();
-    result.put(DATE_FIELD, reader.readDateTime());
+    result.put(DATE_FIELD,
+        OffsetDateTime.ofInstant(Instant.ofEpochMilli(reader.readDateTime()), ZoneOffset.UTC).format(ISO_OFFSET_DATE_TIME));
     return result;
   }
 
   @Override
   protected void writeDateTime(BsonWriter writer, String name, Object value, EncoderContext ctx) {
-    writer.writeDateTime(((JsonObject) value).getLong(DATE_FIELD));
+    writer.writeDateTime(OffsetDateTime.parse(((JsonObject) value).getString(DATE_FIELD)).toInstant().toEpochMilli());
   }
 }
