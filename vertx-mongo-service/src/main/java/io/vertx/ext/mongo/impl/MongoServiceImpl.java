@@ -21,28 +21,28 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService save(String collection, JsonObject document, Handler<AsyncResult<Object>> resultHandler) {
+  public MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
     client.save(collection, document, resultHandler);
     return this;
   }
 
   @Override
   @Fluent
-  public MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler) {
+  public MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     client.saveWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
 
   @Override
   @Fluent
-  public MongoService insert(String collection, JsonObject document, Handler<AsyncResult<Object>> resultHandler) {
+  public MongoService insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
     client.insert(collection, document, resultHandler);
     return this;
   }
 
   @Override
   @Fluent
-  public MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler) {
+  public MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     client.insertWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }

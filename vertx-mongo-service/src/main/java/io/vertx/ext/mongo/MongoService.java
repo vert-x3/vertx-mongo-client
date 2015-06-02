@@ -33,19 +33,19 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService save(String collection, JsonObject document, Handler<AsyncResult<Object>> resultHandler);
+  MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
 
   @Override
   @Fluent
-  MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler);
+  MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   @Override
   @Fluent
-  MongoService insert(String collection, JsonObject document, Handler<AsyncResult<Object>> resultHandler);
+  MongoService insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
 
   @Override
   @Fluent
-  MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler);
+  MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   @Override
   @Fluent

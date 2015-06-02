@@ -159,7 +159,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       JsonObject doc = createDoc();
       Long genID  = TestUtils.randomLong();
       doc.put("_id", genID);
-      mongoClient.insert(collection, doc, onSuccess(id -> {
+      mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
         assertNull(id);
         testComplete();
       }));
