@@ -153,6 +153,36 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testInsertPreexistingLongID() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      Long genID  = TestUtils.randomLong();
+      doc.put("_id", genID);
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNull(id);
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testInsertPreexistingObjectID() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      JsonObject genID  = new JsonObject().put("id", TestUtils.randomAlphaString(100));
+      doc.put("_id", genID);
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNull(id);
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testInsertAlreadyExists() throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {

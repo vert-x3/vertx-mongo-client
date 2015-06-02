@@ -76,35 +76,35 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient save(String collection, JsonObject document, Handler<AsyncResult<Object>> resultHandler) {
     saveWithOptions(collection, document, null, resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    String id = document.getString(ID_FIELD);
+    Object id = document.getValue(ID_FIELD);
     if (id == null) {
-      coll.insertOne(document, convertCallback(resultHandler, wr -> document.getString(ID_FIELD)));
+      coll.insertOne(document, convertCallback(resultHandler, wr -> document.getValue(ID_FIELD)));
     } else {
-      coll.replaceOne(wrap(new JsonObject().put(ID_FIELD, document.getString(ID_FIELD))), document, convertCallback(resultHandler, result -> null));
+      coll.replaceOne(wrap(new JsonObject().put(ID_FIELD, document.getValue(ID_FIELD))), document, convertCallback(resultHandler, result -> null));
     }
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<Object>> resultHandler) {
     insertWithOptions(collection, document, null, resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -116,7 +116,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       if (id) {
         return null;
       } else {
-        return document.getString(ID_FIELD);
+        return document.getValue(ID_FIELD);
       }
     }));
     return this;

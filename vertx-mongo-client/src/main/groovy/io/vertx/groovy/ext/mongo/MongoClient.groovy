@@ -14,17 +14,16 @@
  * under the License.
  */
 
-package io.vertx.groovy.ext.mongo;
+package io.vertx.groovy.ext.mongo
+
 import groovy.transform.CompileStatic
-import io.vertx.lang.groovy.InternalHelper
-import java.util.List
-import io.vertx.ext.mongo.WriteOption
-import io.vertx.groovy.core.Vertx
-import io.vertx.ext.mongo.FindOptions
-import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
-import io.vertx.ext.mongo.UpdateOptions
+import io.vertx.core.json.JsonObject
+import io.vertx.ext.mongo.WriteOption
+import io.vertx.groovy.core.Vertx
+import io.vertx.lang.groovy.InternalHelper
+
 /**
  * A Vert.x service used to interact with MongoDB server instances.
 */
@@ -76,7 +75,7 @@ public class MongoClient {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    * @return 
    */
-  public MongoClient save(String collection, Map<String, Object> document, Handler<AsyncResult<String>> resultHandler) {
+  public MongoClient save(String collection, Map<String, Object> document, Handler<AsyncResult<Object>> resultHandler) {
     this.delegate.save(collection, document != null ? new io.vertx.core.json.JsonObject(document) : null, resultHandler);
     return this;
   }
@@ -88,7 +87,7 @@ public class MongoClient {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    * @return 
    */
-  public MongoClient saveWithOptions(String collection, Map<String, Object> document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public MongoClient saveWithOptions(String collection, Map<String, Object> document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler) {
     this.delegate.saveWithOptions(collection, document != null ? new io.vertx.core.json.JsonObject(document) : null, writeOption, resultHandler);
     return this;
   }
@@ -99,7 +98,7 @@ public class MongoClient {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    * @return 
    */
-  public MongoClient insert(String collection, Map<String, Object> document, Handler<AsyncResult<String>> resultHandler) {
+  public MongoClient insert(String collection, Map<String, Object> document, Handler<AsyncResult<Object>> resultHandler) {
     this.delegate.insert(collection, document != null ? new io.vertx.core.json.JsonObject(document) : null, resultHandler);
     return this;
   }
@@ -111,7 +110,7 @@ public class MongoClient {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    * @return 
    */
-  public MongoClient insertWithOptions(String collection, Map<String, Object> document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public MongoClient insertWithOptions(String collection, Map<String, Object> document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler) {
     this.delegate.insertWithOptions(collection, document != null ? new io.vertx.core.json.JsonObject(document) : null, writeOption, resultHandler);
     return this;
   }

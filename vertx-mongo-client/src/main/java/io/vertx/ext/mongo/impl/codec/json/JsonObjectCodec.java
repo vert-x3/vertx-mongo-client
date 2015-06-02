@@ -2,11 +2,10 @@ package io.vertx.ext.mongo.impl.codec.json;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.bson.BsonReader;
-import org.bson.BsonString;
-import org.bson.BsonValue;
+import org.bson.*;
 import org.bson.codecs.CollectibleCodec;
 import org.bson.codecs.DecoderContext;
+import org.bson.codecs.EncoderContext;
 import org.bson.types.ObjectId;
 
 import java.util.function.BiConsumer;
@@ -39,8 +38,18 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
       throw new IllegalStateException("The document does not contain an _id");
     }
 
-    String id = json.getString(ID_FIELD);
-    return new BsonString(id);
+    Object id = json.getValue(ID_FIELD);
+    if (id instanceof BsonValue) {
+      return (BsonValue) id;
+    }
+
+    BsonDocument idHoldingDocument = new BsonDocument();
+    BsonWriter writer = new BsonDocumentWriter(idHoldingDocument);
+    writer.writeStartDocument();
+    writer.writeName(ID_FIELD);
+    writeValue(writer, null, id, EncoderContext.builder().build());
+    writer.writeEndDocument();
+    return idHoldingDocument.get( ID_FIELD);
   }
 
   @Override
@@ -51,7 +60,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected void beforeFields(JsonObject object, BiConsumer<String, Object> objectConsumer) {
     if (object.containsKey(ID_FIELD)) {
-      objectConsumer.accept(ID_FIELD, object.getString(ID_FIELD));
+      objectConsumer.accept(ID_FIELD, object.getValue(ID_FIELD));
     }
   }
 

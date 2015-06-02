@@ -59,7 +59,7 @@ public class Examples {
 
       if (res.succeeded()) {
 
-        String id = res.result();
+        Object id = res.result();
         System.out.println("Saved book with id " + id);
 
       } else {
@@ -100,7 +100,7 @@ public class Examples {
 
       if (res.succeeded()) {
 
-        String id = res.result();
+        Object id = res.result();
         System.out.println("Inserted book with id " + id);
 
       } else {

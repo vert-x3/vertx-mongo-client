@@ -72,7 +72,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
+  MongoClient save(String collection, JsonObject document, Handler<AsyncResult<Object>> resultHandler);
 
   /**
    * Save a document in the specified collection with the specified write option
@@ -83,7 +83,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+  MongoClient saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler);
 
   /**
    * Insert a document in the specified collection
@@ -93,7 +93,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
+  MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<Object>> resultHandler);
 
   /**
    * Insert a document in the specified collection with the specified write option
@@ -104,7 +104,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+  MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<Object>> resultHandler);
 
   /**
    * Update matching documents in the specified collection
