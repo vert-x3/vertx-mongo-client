@@ -39,8 +39,8 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
     }
 
     Object id = json.getValue(ID_FIELD);
-    if (id instanceof BsonValue) {
-      return (BsonValue) id;
+    if (id instanceof String) {
+      return new BsonString((String) id);
     }
 
     BsonDocument idHoldingDocument = new BsonDocument();
@@ -49,7 +49,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
     writer.writeName(ID_FIELD);
     writeValue(writer, null, id, EncoderContext.builder().build());
     writer.writeEndDocument();
-    return idHoldingDocument.get( ID_FIELD);
+    return idHoldingDocument.get(ID_FIELD);
   }
 
   @Override
