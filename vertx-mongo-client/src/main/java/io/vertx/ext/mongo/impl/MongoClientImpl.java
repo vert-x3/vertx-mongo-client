@@ -22,6 +22,7 @@ import com.mongodb.async.client.FindIterable;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -32,9 +33,11 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.InsertManyOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
+
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
@@ -119,6 +122,41 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
         return document.getString(ID_FIELD);
       }
     }));
+    return this;
+  }
+  
+  @Override
+  public io.vertx.ext.mongo.MongoClient insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler) {
+    insertManyWithWriteOption(collection, documents, null, resultHandler);
+    return this;
+  }
+  
+  @Override
+  public io.vertx.ext.mongo.MongoClient insertManyWithWriteOption(String collection, List<JsonObject> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(documents, "documents cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    coll.insertMany(documents, convertCallback(resultHandler, result -> null));
+    return this;
+  }
+  
+  @Override
+  public io.vertx.ext.mongo.MongoClient insertManyWithManyOptions(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, Handler<AsyncResult<Void>> resultHandler) {
+    insertManyWithManyOptionsAndWriteOption(collection, documents, manyOptions, null, resultHandler);
+    return this;
+  }
+  
+  @Override
+  public io.vertx.ext.mongo.MongoClient insertManyWithManyOptionsAndWriteOption(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(documents, "documents cannot be null");
+    requireNonNull(manyOptions, "manyOptions cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    coll.insertMany(documents, mongoInsertManyOptions(manyOptions), convertCallback(resultHandler, result -> null));
     return this;
   }
 
@@ -365,7 +403,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
     return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
   }
-
+  
+  private static com.mongodb.client.model.InsertManyOptions mongoInsertManyOptions(InsertManyOptions options) {
+    return new com.mongodb.client.model.InsertManyOptions().ordered(options.isOrdered());
+  }
+  
   private JsonObjectBsonAdapter wrap(JsonObject jsonObject) {
     return jsonObject == null ? null : new JsonObjectBsonAdapter(jsonObject);
   }

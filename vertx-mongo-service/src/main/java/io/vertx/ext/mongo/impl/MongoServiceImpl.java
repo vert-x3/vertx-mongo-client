@@ -46,6 +46,34 @@ public class MongoServiceImpl implements MongoService {
     client.insertWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
+  
+  @Override
+  @Fluent
+  public MongoService insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler) {
+    client.insertMany(collection, documents, resultHandler);
+    return this;
+  }
+  
+  @Override
+  @Fluent
+  public MongoService insertManyWithWriteOption(String collection, List<JsonObject> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    client.insertManyWithWriteOption(collection, documents, writeOption, resultHandler);
+    return this;
+  }
+  
+  @Override
+  @Fluent
+  public MongoService insertManyWithManyOptions(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, Handler<AsyncResult<Void>> resultHandler) {
+    client.insertManyWithManyOptions(collection, documents, manyOptions, resultHandler);
+    return this;
+  }
+  
+  @Override
+  @Fluent
+  public MongoService insertManyWithManyOptionsAndWriteOption(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    client.insertManyWithManyOptionsAndWriteOption(collection, documents, manyOptions, writeOption, resultHandler);
+    return this;
+  }
 
   @Override
   @Fluent
