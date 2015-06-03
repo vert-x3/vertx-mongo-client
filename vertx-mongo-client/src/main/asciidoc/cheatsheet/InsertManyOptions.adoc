@@ -1,0 +1,17 @@
+== InsertManyOptions
+
+++++
+ Options for configuring inserts.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+
+|[[ordered]]`ordered`
+|`Boolean`
+|+++
+Set whether ordered is enabled+++
+|===

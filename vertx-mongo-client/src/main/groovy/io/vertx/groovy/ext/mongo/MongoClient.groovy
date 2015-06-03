@@ -17,9 +17,10 @@
 package io.vertx.groovy.ext.mongo;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
-import java.util.List
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
+import java.util.List
+import io.vertx.ext.mongo.InsertManyOptions
 import io.vertx.ext.mongo.FindOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
@@ -113,6 +114,54 @@ public class MongoClient {
    */
   public MongoClient insertWithOptions(String collection, Map<String, Object> document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     this.delegate.insertWithOptions(collection, document != null ? new io.vertx.core.json.JsonObject(document) : null, writeOption, resultHandler);
+    return this;
+  }
+  /**
+   * Insert a documents in the specified collection
+   * @param collection the collection
+   * @param documents the documents
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertMany(String collection, List<Map<String, Object>> documents, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertMany(collection, documents.collect({underpants -> new JsonObject(underpants)}), resultHandler);
+    return this;
+  }
+  /**
+   * Insert a documents in the specified collection with the specified write option
+   * @param collection the collection
+   * @param documents the documents
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithWriteOption(String collection, List<Map<String, Object>> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), writeOption, resultHandler);
+    return this;
+  }
+  /**
+   * Insert a documents in the specified collection with the specified many options
+   * @param collection the collection
+   * @param documents the documents
+   * @param manyOptions the insert many options to use (see <a href="../../../../../../../cheatsheet/InsertManyOptions.html">InsertManyOptions</a>)
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithManyOptions(String collection, List<Map<String, Object>> documents, Map<String, Object> manyOptions, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithManyOptions(collection, documents.collect({underpants -> new JsonObject(underpants)}), manyOptions != null ? new io.vertx.ext.mongo.InsertManyOptions(new io.vertx.core.json.JsonObject(manyOptions)) : null, resultHandler);
+    return this;
+  }
+  /**
+   * Insert a documents in the specified collection with the specified write many options and write option
+   * @param collection the collection
+   * @param documents the documents
+   * @param manyOptions the insert many options to use (see <a href="../../../../../../../cheatsheet/InsertManyOptions.html">InsertManyOptions</a>)
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithManyOptionsAndWriteOption(String collection, List<Map<String, Object>> documents, Map<String, Object> manyOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithManyOptionsAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), manyOptions != null ? new io.vertx.ext.mongo.InsertManyOptions(new io.vertx.core.json.JsonObject(manyOptions)) : null, writeOption, resultHandler);
     return this;
   }
   /**

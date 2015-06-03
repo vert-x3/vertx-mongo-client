@@ -49,6 +49,22 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
+  MongoService insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler);
+  
+  @Override
+  @Fluent
+  MongoService insertManyWithWriteOption(String collection, List<JsonObject> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
+  
+  @Override
+  @Fluent
+  MongoService insertManyWithManyOptions(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, Handler<AsyncResult<Void>> resultHandler);
+  
+  @Override
+  @Fluent
+  MongoService insertManyWithManyOptionsAndWriteOption(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
+  
+  @Override
+  @Fluent
   MongoService update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler);
 
   @Override

@@ -17,9 +17,10 @@
 package io.vertx.groovy.ext.mongo;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
-import java.util.List
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
+import java.util.List
+import io.vertx.ext.mongo.InsertManyOptions
 import io.vertx.ext.mongo.FindOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
@@ -62,6 +63,22 @@ public class MongoService extends MongoClient {
   }
   public MongoService insertWithOptions(String collection, Map<String, Object> document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     this.delegate.insertWithOptions(collection, document != null ? new io.vertx.core.json.JsonObject(document) : null, writeOption, resultHandler);
+    return this;
+  }
+  public MongoService insertMany(String collection, List<Map<String, Object>> documents, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertMany(collection, documents.collect({underpants -> new JsonObject(underpants)}), resultHandler);
+    return this;
+  }
+  public MongoService insertManyWithWriteOption(String collection, List<Map<String, Object>> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), writeOption, resultHandler);
+    return this;
+  }
+  public MongoService insertManyWithManyOptions(String collection, List<Map<String, Object>> documents, Map<String, Object> manyOptions, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithManyOptions(collection, documents.collect({underpants -> new JsonObject(underpants)}), manyOptions != null ? new io.vertx.ext.mongo.InsertManyOptions(new io.vertx.core.json.JsonObject(manyOptions)) : null, resultHandler);
+    return this;
+  }
+  public MongoService insertManyWithManyOptionsAndWriteOption(String collection, List<Map<String, Object>> documents, Map<String, Object> manyOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithManyOptionsAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), manyOptions != null ? new io.vertx.ext.mongo.InsertManyOptions(new io.vertx.core.json.JsonObject(manyOptions)) : null, writeOption, resultHandler);
     return this;
   }
   public MongoService update(String collection, Map<String, Object> query, Map<String, Object> update, Handler<AsyncResult<Void>> resultHandler) {

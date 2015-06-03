@@ -21,6 +21,8 @@ var MongoClient = require('vertx-mongo-js/mongo_client');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoService = io.vertx.ext.mongo.MongoService;
+var InsertManyOptions = io.vertx.ext.mongo.InsertManyOptions;
+var InsertManyOptions = io.vertx.ext.mongo.InsertManyOptions;
 var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
@@ -117,6 +119,98 @@ var MongoService = function(j_val) {
       j_mongoService["insertWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(document), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param documents {Array.<Object>} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.insertMany = function(collection, documents, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'function') {
+      j_mongoService["insertMany(java.lang.String,java.util.List,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param documents {Array.<Object>} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.insertManyWithWriteOption = function(collection, documents, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoService["insertManyWithWriteOption(java.lang.String,java.util.List,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param documents {Array.<Object>} 
+   @param manyOptions {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.insertManyWithManyOptions = function(collection, documents, manyOptions, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
+      j_mongoService["insertManyWithManyOptions(java.lang.String,java.util.List,io.vertx.ext.mongo.InsertManyOptions,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), manyOptions != null ? new InsertManyOptions(new JsonObject(JSON.stringify(manyOptions))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param documents {Array.<Object>} 
+   @param manyOptions {Object} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.insertManyWithManyOptionsAndWriteOption = function(collection, documents, manyOptions, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'object' && typeof __args[3] === 'string' && typeof __args[4] === 'function') {
+      j_mongoService["insertManyWithManyOptionsAndWriteOption(java.lang.String,java.util.List,io.vertx.ext.mongo.InsertManyOptions,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), manyOptions != null ? new InsertManyOptions(new JsonObject(JSON.stringify(manyOptions))) : null, io.vertx.ext.mongo.WriteOption.valueOf(__args[3]), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
       } else {
         resultHandler(null, ar.cause());
       }

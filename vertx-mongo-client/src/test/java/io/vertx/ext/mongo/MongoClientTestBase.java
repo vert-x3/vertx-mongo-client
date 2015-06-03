@@ -224,6 +224,85 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     }));
     await();
   }
+  
+  @Test
+  public void testInsertMany() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      List<JsonObject> docs = createDocs(6);
+      mongoClient.insertMany(collection, docs, onSuccess(res3 -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(6, (long) count);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+  
+  @Test
+  public void testInsertManyWithDefaultManyOptions() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      List<JsonObject> docs = createDocsWithDuplicatedId();
+      mongoClient.insertManyWithManyOptions(collection, docs, new InsertManyOptions(), onFailure(res3 -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(4, (long) count);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+  
+  @Test
+  public void testInsertManyWithCustomManyOptions() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      List<JsonObject> docs = createDocsWithDuplicatedId();
+      InsertManyOptions options = new InsertManyOptions();
+      options.setOrdered(false);
+      mongoClient.insertManyWithManyOptions(collection, docs, options, onFailure(res3 -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(7, (long) count);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+  
+  @Test
+  public void testInsertManyWithWriteOption() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      List<JsonObject> docs = createDocs(6);
+      mongoClient.insertManyWithWriteOption(collection, docs, UNACKNOWLEDGED, onSuccess(res3 -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(6, (long) count);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+  
+  @Test
+  public void testInsertManyWithCustomManyOptionsAndWriteOption() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      List<JsonObject> docs = createDocsWithDuplicatedId();
+      InsertManyOptions options = new InsertManyOptions();
+      options.setOrdered(false);
+      mongoClient.insertManyWithManyOptionsAndWriteOption(collection, docs, options, UNACKNOWLEDGED, onSuccess(res3 -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(7, (long) count);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
 
   @Test
   public void testSave() throws Exception {
@@ -674,6 +753,27 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     return new JsonObject().put("foo", "bar" + (num != -1 ? num : "")).put("num", 123).put("big", true).putNull("nullentry").
       put("other", new JsonObject().put("quux", "flib").put("myarr",
         new JsonArray().add("blah").add(true).add(312)));
+  }
+  
+  private List<JsonObject> createDocs(int num) {
+      List<JsonObject> documents = new ArrayList<JsonObject>();
+      for(int i = 0; i < num; i++) {
+          JsonObject doc = createDoc(i);
+          documents.add(doc);
+      }
+      return documents;
+  }
+  
+  private List<JsonObject> createDocsWithDuplicatedId() {
+      List<JsonObject> docs = createDocs(6);
+      JsonObject doc = createDoc();
+      String genID  = TestUtils.randomAlphaString(100);
+      doc.put("_id", genID);
+      docs.add(0, doc);
+      JsonObject docWithDuplicatedId = createDoc();
+      docWithDuplicatedId.put("_id", genID);
+      docs.add(4, docWithDuplicatedId);
+      return docs;
   }
 
   private void insertDocs(String collection, int num, Handler<AsyncResult<Void>> resultHandler) {

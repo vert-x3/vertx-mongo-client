@@ -72,6 +72,54 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling insert_with_options(collection,document,writeOption)"
     end
     # @param [String] collection
+    # @param [Array<Hash{String => Object}>] documents
+    # @yield 
+    # @return [self]
+    def insert_many(collection=nil,documents=nil)
+      if collection.class == String && documents.class == Array && block_given?
+        @j_del.java_method(:insertMany, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many(collection,documents)"
+    end
+    # @param [String] collection
+    # @param [Array<Hash{String => Object}>] documents
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
+    # @yield 
+    # @return [self]
+    def insert_many_with_write_option(collection=nil,documents=nil,writeOption=nil)
+      if collection.class == String && documents.class == Array && writeOption.class == Symbol && block_given?
+        @j_del.java_method(:insertManyWithWriteOption, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_write_option(collection,documents,writeOption)"
+    end
+    # @param [String] collection
+    # @param [Array<Hash{String => Object}>] documents
+    # @param [Hash] manyOptions
+    # @yield 
+    # @return [self]
+    def insert_many_with_many_options(collection=nil,documents=nil,manyOptions=nil)
+      if collection.class == String && documents.class == Array && manyOptions.class == Hash && block_given?
+        @j_del.java_method(:insertManyWithManyOptions, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxExtMongo::InsertManyOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },Java::IoVertxExtMongo::InsertManyOptions.new(::Vertx::Util::Utils.to_json_object(manyOptions)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_many_options(collection,documents,manyOptions)"
+    end
+    # @param [String] collection
+    # @param [Array<Hash{String => Object}>] documents
+    # @param [Hash] manyOptions
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
+    # @yield 
+    # @return [self]
+    def insert_many_with_many_options_and_write_option(collection=nil,documents=nil,manyOptions=nil,writeOption=nil)
+      if collection.class == String && documents.class == Array && manyOptions.class == Hash && writeOption.class == Symbol && block_given?
+        @j_del.java_method(:insertManyWithManyOptionsAndWriteOption, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxExtMongo::InsertManyOptions.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },Java::IoVertxExtMongo::InsertManyOptions.new(::Vertx::Util::Utils.to_json_object(manyOptions)),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_many_options_and_write_option(collection,documents,manyOptions,writeOption)"
+    end
+    # @param [String] collection
     # @param [Hash{String => Object}] query
     # @param [Hash{String => Object}] update
     # @yield 
