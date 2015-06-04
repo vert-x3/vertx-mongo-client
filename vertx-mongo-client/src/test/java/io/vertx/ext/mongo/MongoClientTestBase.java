@@ -403,8 +403,8 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     int num = 10;
     doTestFind(num, new JsonObject(), new FindOptions(), results -> {
       assertEquals(num, results.size());
-      for (JsonObject doc: results) {
-        assertEquals(6, doc.size()); // Contains _id too
+      for (JsonObject doc : results) {
+        assertEquals(7, doc.size()); // Contains _id too
       }
     });
   }
@@ -414,7 +414,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     int num = 10;
     doTestFind(num, new JsonObject(), new FindOptions().setFields(new JsonObject().put("num", true)), results -> {
       assertEquals(num, results.size());
-      for (JsonObject doc: results) {
+      for (JsonObject doc : results) {
         assertEquals(2, doc.size()); // Contains _id too
       }
     });
@@ -572,7 +572,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(6, doc.size());
+        assertEquals(7, doc.size());
         assertEquals("fooed", doc.getString("foo"));
         assertNotNull(doc.getString("_id"));
       }
@@ -585,7 +585,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(false, true), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(6, doc.size());
+        assertEquals(7, doc.size());
         assertEquals("fooed", doc.getString("foo"));
         assertNotNull(doc.getString("_id"));
       }
@@ -666,12 +666,14 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
   private JsonObject createDoc() {
     return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
+      put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
       put("other", new JsonObject().put("quux", "flib").put("myarr",
-        new JsonArray().add("blah").add(true).add(312)));
+          new JsonArray().add("blah").add(true).add(312)));
   }
 
   private JsonObject createDoc(int num) {
     return new JsonObject().put("foo", "bar" + (num != -1 ? num : "")).put("num", 123).put("big", true).putNull("nullentry").
+      put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
       put("other", new JsonObject().put("quux", "flib").put("myarr",
         new JsonArray().add("blah").add(true).add(312)));
   }

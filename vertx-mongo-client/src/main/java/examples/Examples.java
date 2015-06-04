@@ -358,4 +358,35 @@ public class Examples {
 
   }
 
+  public void example13_0(MongoClient mongoService) {
+
+    JsonObject document = new JsonObject().put("title", "The Hobbit")
+        //ISO-8601 date
+        .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
+
+    mongoService.save("publishedBooks", document, res -> {
+
+      if (res.succeeded()) {
+
+        String id = res.result();
+
+        mongoService.findOne("publishedBooks", new JsonObject().put("_id", id), null, res2 -> {
+          if(res2.succeeded()) {
+
+            System.out.println("To retrieve ISO-8601 date : "
+                + res2.result().getJsonObject("publicationDate").getString("$date"));
+
+          } else {
+            res2.cause().printStackTrace();
+          }
+        });
+
+      } else {
+        res.cause().printStackTrace();
+      }
+
+    });
+
+  }
+
 }
