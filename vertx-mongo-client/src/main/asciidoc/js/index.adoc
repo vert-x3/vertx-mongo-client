@@ -116,7 +116,7 @@ mongoClient.save("books", document, function (res, res_err) {
 
   } else {
     res_err.printStackTrace();
-  };
+  }
 
 });
 
@@ -143,7 +143,7 @@ mongoClient.save("books", document, function (res, res_err) {
 
   } else {
     res_err.printStackTrace();
-  };
+  }
 
 });
 
@@ -174,7 +174,7 @@ mongoClient.insert("books", document, function (res, res_err) {
 
   } else {
     res_err.printStackTrace();
-  };
+  }
 
 });
 
@@ -202,7 +202,7 @@ mongoClient.insert("books", document, function (res, res_err) {
   } else {
 
     // Will fail if the book with that id already exists.
-  };
+  }
 
 });
 
@@ -245,7 +245,7 @@ mongoClient.update("books", query, update, function (res, res_err) {
   } else {
 
     res_err.printStackTrace();
-  };
+  }
 
 });
 
@@ -289,7 +289,7 @@ mongoClient.updateWithOptions("books", query, update, options, function (res, re
   } else {
 
     res_err.printStackTrace();
-  };
+  }
 
 });
 
@@ -327,7 +327,7 @@ mongoClient.replace("books", query, replace, function (res, res_err) {
 
     res_err.printStackTrace();
 
-  };
+  }
 
 });
 
@@ -363,7 +363,7 @@ mongoClient.find("books", query, function (res, res_err) {
 
     res_err.printStackTrace();
 
-  };
+  }
 
 });
 
@@ -394,7 +394,7 @@ mongoClient.find("books", query, function (res, res_err) {
 
     res_err.printStackTrace();
 
-  };
+  }
 
 });
 
@@ -444,7 +444,7 @@ mongoClient.remove("books", query, function (res, res_err) {
 
     res_err.printStackTrace();
 
-  };
+  }
 });
 
 
@@ -479,7 +479,7 @@ mongoClient.count("books", query, function (res, res_err) {
 
     res_err.printStackTrace();
 
-  };
+  }
 });
 
 
@@ -504,7 +504,7 @@ mongoClient.getCollections(function (res, res_err) {
 
     res_err.printStackTrace();
 
-  };
+  }
 });
 
 
@@ -525,7 +525,7 @@ mongoClient.createCollection("mynewcollectionr", function (res, res_err) {
 
     res_err.printStackTrace();
 
-  };
+  }
 });
 
 
@@ -548,7 +548,7 @@ mongoClient.dropCollection("mynewcollectionr", function (res, res_err) {
 
     res_err.printStackTrace();
 
-  };
+  }
 });
 
 
@@ -582,7 +582,7 @@ mongoClient.runCommand("aggregate", command, function (res, res_err) {
     // etc
   } else {
     res_err.printStackTrace();
-  };
+  }
 });
 
 
@@ -619,12 +619,12 @@ mongoService.save("publishedBooks", document, function (res, res_err) {
 
       } else {
         res2_err.printStackTrace();
-      };
+      }
     });
 
   } else {
     res_err.printStackTrace();
-  };
+  }
 
 });
 
