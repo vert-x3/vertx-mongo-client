@@ -60,7 +60,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected void beforeFields(JsonObject object, BiConsumer<String, Object> objectConsumer) {
     if (object.containsKey(ID_FIELD)) {
-      objectConsumer.accept(ID_FIELD, object.getString(ID_FIELD));
+      objectConsumer.accept(ID_FIELD, object.getValue(ID_FIELD));
     }
   }
 

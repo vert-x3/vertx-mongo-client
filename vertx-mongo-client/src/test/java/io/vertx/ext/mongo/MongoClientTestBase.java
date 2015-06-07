@@ -664,6 +664,24 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
+  @Test
+  public void testNonStringID() {
+    String collection = randomCollection();
+    JsonObject document = new JsonObject().put("title", "The Hobbit");
+    // here it happened
+    document.put("_id", 123456);
+    document.put("foo", "bar");
+
+    mongoClient.insert(collection, document, onSuccess(id -> {
+      System.out.println("Inserted with id " + id);
+      mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
+        assertEquals(document, retrieved);
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
   private JsonObject createDoc() {
     return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
       put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
