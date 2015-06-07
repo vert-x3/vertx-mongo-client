@@ -666,7 +666,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
   private JsonObject createDoc() {
     return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
-      put("arr", new JsonArray().add("x").add(true).add(12).add(1.23)).
+      put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
       put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
       put("other", new JsonObject().put("quux", "flib").put("myarr",
         new JsonArray().add("blah").add(true).add(312)));
@@ -674,7 +674,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
   private JsonObject createDoc(int num) {
     return new JsonObject().put("foo", "bar" + (num != -1 ? num : "")).put("num", 123).put("big", true).putNull("nullentry").
-      put("arr", new JsonArray().add("x").add(true).add(12).add(1.23)).
+      put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
       put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
       put("other", new JsonObject().put("quux", "flib").put("myarr",
         new JsonArray().add("blah").add(true).add(312)));

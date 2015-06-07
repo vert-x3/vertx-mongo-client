@@ -93,7 +93,11 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected void add(JsonArray array, Object value) {
-    array.add(value);
+    if (value != null) {
+      array.add(value);
+    } else {
+      array.addNull();
+    }
   }
 
   @Override

@@ -354,7 +354,7 @@ mongoClient.find("books", query, { res ->
 
     res.result().each { json ->
 
-      println(json.toString())
+      println(groovy.json.JsonOutput.toJson(json))
 
     }
 
@@ -385,7 +385,7 @@ mongoClient.find("books", query, { res ->
 
     res.result().each { json ->
 
-      println(json.toString())
+      println(groovy.json.JsonOutput.toJson(json))
 
     }
 
