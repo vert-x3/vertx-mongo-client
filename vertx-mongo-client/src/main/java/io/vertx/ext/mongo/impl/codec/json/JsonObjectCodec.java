@@ -6,6 +6,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonDocumentWriter;
 import org.bson.BsonReader;
 import org.bson.BsonString;
+import org.bson.BsonType;
 import org.bson.BsonValue;
 import org.bson.BsonWriter;
 import org.bson.codecs.CollectibleCodec;
@@ -13,14 +14,20 @@ import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.types.ObjectId;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> implements CollectibleCodec<JsonObject> {
   public static final String ID_FIELD = "_id";
+  public static final String DATE_FIELD = "$date";
 
   @Override
   public JsonObject generateIdIfAbsentFromDocument(JsonObject json) {
@@ -98,7 +105,11 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected void add(JsonArray array, Object value) {
-    array.add(value);
+    if (value != null) {
+      array.add(value);
+    } else {
+      array.addNull();
+    }
   }
 
   @Override
@@ -111,6 +122,40 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
     array.forEach(arrayConsumer);
   }
 
+  @Override
+  protected BsonType getBsonType(Object value) {
+    BsonType type = super.getBsonType(value);
+    if (type == BsonType.DOCUMENT) {
+      JsonObject obj = (JsonObject) value;
+      if (obj.containsKey(DATE_FIELD)) {
+        return BsonType.DATE_TIME;
+      }
+      //not supported yet
+      /*else if (obj.containsKey("$binary")) {
+        return BsonType.BINARY;
+      } else if (obj.containsKey("$maxKey")) {
+        return BsonType.MAX_KEY;
+      } else if (obj.containsKey("$minKey")) {
+        return BsonType.MIN_KEY;
+      } else if (obj.containsKey("$oid")) {
+        return BsonType.OBJECT_ID;
+      } else if (obj.containsKey("$regex")) {
+        return BsonType.REGULAR_EXPRESSION;
+      } else if (obj.containsKey("$symbol")) {
+        return BsonType.SYMBOL;
+      } else if (obj.containsKey("$timestamp")) {
+        return BsonType.TIMESTAMP;
+      } else if (obj.containsKey("$undefined")) {
+        return BsonType.UNDEFINED;
+      } else if (obj.containsKey("$numberLong")) {
+        return BsonType.INT64;
+      } else if (obj.containsKey("$code")) {
+        return JAVASCRIPT or JAVASCRIPT_WITH_SCOPE;
+      } */
+    }
+    return type;
+  }
+
   //---------- Support additional mappings
 
   @Override
@@ -120,6 +165,14 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected Object readDateTime(BsonReader reader, DecoderContext ctx) {
-    return reader.readDateTime();
+    final JsonObject result = new JsonObject();
+    result.put(DATE_FIELD,
+        OffsetDateTime.ofInstant(Instant.ofEpochMilli(reader.readDateTime()), ZoneOffset.UTC).format(ISO_OFFSET_DATE_TIME));
+    return result;
+  }
+
+  @Override
+  protected void writeDateTime(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    writer.writeDateTime(OffsetDateTime.parse(((JsonObject) value).getString(DATE_FIELD)).toInstant().toEpochMilli());
   }
 }

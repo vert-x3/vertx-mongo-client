@@ -433,8 +433,8 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     int num = 10;
     doTestFind(num, new JsonObject(), new FindOptions(), results -> {
       assertEquals(num, results.size());
-      for (JsonObject doc: results) {
-        assertEquals(6, doc.size()); // Contains _id too
+      for (JsonObject doc : results) {
+        assertEquals(8, doc.size()); // Contains _id too
       }
     });
   }
@@ -444,7 +444,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     int num = 10;
     doTestFind(num, new JsonObject(), new FindOptions().setFields(new JsonObject().put("num", true)), results -> {
       assertEquals(num, results.size());
-      for (JsonObject doc: results) {
+      for (JsonObject doc : results) {
         assertEquals(2, doc.size()); // Contains _id too
       }
     });
@@ -602,7 +602,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(6, doc.size());
+        assertEquals(8, doc.size());
         assertEquals("fooed", doc.getString("foo"));
         assertNotNull(doc.getString("_id"));
       }
@@ -615,7 +615,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(false, true), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(6, doc.size());
+        assertEquals(8, doc.size());
         assertEquals("fooed", doc.getString("foo"));
         assertNotNull(doc.getString("_id"));
       }
@@ -694,14 +694,36 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
+  @Test
+  public void testNonStringID() {
+    String collection = randomCollection();
+    JsonObject document = new JsonObject().put("title", "The Hobbit");
+    // here it happened
+    document.put("_id", 123456);
+    document.put("foo", "bar");
+
+    mongoClient.insert(collection, document, onSuccess(id -> {
+      System.out.println("Inserted with id " + id);
+      mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
+        assertEquals(document, retrieved);
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
   private JsonObject createDoc() {
     return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
+      put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
+      put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
       put("other", new JsonObject().put("quux", "flib").put("myarr",
         new JsonArray().add("blah").add(true).add(312)));
   }
 
   private JsonObject createDoc(int num) {
     return new JsonObject().put("foo", "bar" + (num != -1 ? num : "")).put("num", 123).put("big", true).putNull("nullentry").
+      put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
+      put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
       put("other", new JsonObject().put("quux", "flib").put("myarr",
         new JsonArray().add("blah").add(true).add(312)));
   }

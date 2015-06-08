@@ -25,8 +25,8 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling create_event_bus_proxy(vertx,address)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] document
+    # @param [String] collection 
+    # @param [Hash{String => Object}] document 
     # @yield 
     # @return [self]
     def save(collection=nil,document=nil)
@@ -36,9 +36,9 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling save(collection,document)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] document
-    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
+    # @param [String] collection 
+    # @param [Hash{String => Object}] document 
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption 
     # @yield 
     # @return [self]
     def save_with_options(collection=nil,document=nil,writeOption=nil)
@@ -48,8 +48,8 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling save_with_options(collection,document,writeOption)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] document
+    # @param [String] collection 
+    # @param [Hash{String => Object}] document 
     # @yield 
     # @return [self]
     def insert(collection=nil,document=nil)
@@ -59,9 +59,9 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling insert(collection,document)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] document
-    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
+    # @param [String] collection 
+    # @param [Hash{String => Object}] document 
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption 
     # @yield 
     # @return [self]
     def insert_with_options(collection=nil,document=nil,writeOption=nil)
@@ -71,9 +71,9 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling insert_with_options(collection,document,writeOption)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
-    # @param [Hash{String => Object}] update
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] update 
     # @yield 
     # @return [self]
     def update(collection=nil,query=nil,update=nil)
@@ -83,10 +83,10 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling update(collection,query,update)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
-    # @param [Hash{String => Object}] update
-    # @param [Hash] options
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] update 
+    # @param [Hash] options 
     # @yield 
     # @return [self]
     def update_with_options(collection=nil,query=nil,update=nil,options=nil)
@@ -96,9 +96,9 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling update_with_options(collection,query,update,options)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
-    # @param [Hash{String => Object}] replace
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] replace 
     # @yield 
     # @return [self]
     def replace(collection=nil,query=nil,replace=nil)
@@ -108,10 +108,10 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling replace(collection,query,replace)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
-    # @param [Hash{String => Object}] replace
-    # @param [Hash] options
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] replace 
+    # @param [Hash] options 
     # @yield 
     # @return [self]
     def replace_with_options(collection=nil,query=nil,replace=nil,options=nil)
@@ -121,8 +121,8 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling replace_with_options(collection,query,replace,options)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
     # @yield 
     # @return [self]
     def find(collection=nil,query=nil)
@@ -132,9 +132,9 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling find(collection,query)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
-    # @param [Hash] options
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash] options 
     # @yield 
     # @return [self]
     def find_with_options(collection=nil,query=nil,options=nil)
@@ -144,9 +144,9 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling find_with_options(collection,query,options)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
-    # @param [Hash{String => Object}] fields
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] fields 
     # @yield 
     # @return [self]
     def find_one(collection=nil,query=nil,fields=nil)
@@ -156,8 +156,8 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling find_one(collection,query,fields)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
     # @yield 
     # @return [self]
     def count(collection=nil,query=nil)
@@ -167,8 +167,8 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling count(collection,query)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
     # @yield 
     # @return [self]
     def remove(collection=nil,query=nil)
@@ -178,9 +178,9 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling remove(collection,query)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
-    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption 
     # @yield 
     # @return [self]
     def remove_with_options(collection=nil,query=nil,writeOption=nil)
@@ -190,8 +190,8 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling remove_with_options(collection,query,writeOption)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
     # @yield 
     # @return [self]
     def remove_one(collection=nil,query=nil)
@@ -201,9 +201,9 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling remove_one(collection,query)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
-    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption 
     # @yield 
     # @return [self]
     def remove_one_with_options(collection=nil,query=nil,writeOption=nil)
@@ -213,7 +213,7 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling remove_one_with_options(collection,query,writeOption)"
     end
-    # @param [String] collectionName
+    # @param [String] collectionName 
     # @yield 
     # @return [self]
     def create_collection(collectionName=nil)
@@ -232,7 +232,7 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling get_collections()"
     end
-    # @param [String] collection
+    # @param [String] collection 
     # @yield 
     # @return [self]
     def drop_collection(collection=nil)
@@ -242,8 +242,8 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling drop_collection(collection)"
     end
-    # @param [String] commandName
-    # @param [Hash{String => Object}] command
+    # @param [String] commandName 
+    # @param [Hash{String => Object}] command 
     # @yield 
     # @return [self]
     def run_command(commandName=nil,command=nil)

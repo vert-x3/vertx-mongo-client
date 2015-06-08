@@ -481,6 +481,42 @@ mongoClient.runCommand("aggregate", command, res -> {
 });
 ----
 
+=== MongoDB Extended JSON support
+
+For now, only date type is supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
+
+Here's an example of inserting a document with a date field
+
+[source,java]
+----
+JsonObject document = new JsonObject().put("title", "The Hobbit")
+    //ISO-8601 date
+    .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
+
+mongoService.save("publishedBooks", document, res -> {
+
+  if (res.succeeded()) {
+
+    String id = res.result();
+
+    mongoService.findOne("publishedBooks", new JsonObject().put("_id", id), null, res2 -> {
+      if(res2.succeeded()) {
+
+        System.out.println("To retrieve ISO-8601 date : "
+            + res2.result().getJsonObject("publicationDate").getString("$date"));
+
+      } else {
+        res2.cause().printStackTrace();
+      }
+    });
+
+  } else {
+    res.cause().printStackTrace();
+  }
+
+});
+----
+
 == Configuring the client
 
 The client is configured with a json object.

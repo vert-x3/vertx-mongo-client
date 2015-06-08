@@ -72,7 +72,7 @@ public class MongoClient {
   }
 
   /**
-   * Like {@link  #createShared(io.vertx.rxjava.core.Vertx, JsonObject, String)} but with the default data source name
+   * Like {@link io.vertx.rxjava.ext.mongo.MongoClient#createShared} but with the default data source name
    * @param vertx the Vert.x instance
    * @param config the configuration
    * @return the client
