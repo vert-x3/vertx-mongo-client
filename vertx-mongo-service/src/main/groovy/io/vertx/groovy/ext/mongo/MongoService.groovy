@@ -45,7 +45,7 @@ public class MongoService extends MongoClient {
    * @return the service
    */
   public static MongoService createEventBusProxy(Vertx vertx, String address) {
-    def ret= new io.vertx.groovy.ext.mongo.MongoService(io.vertx.ext.mongo.MongoService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mongo.MongoService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address), io.vertx.ext.mongo.MongoService.class, io.vertx.groovy.ext.mongo.MongoService.class);
     return ret;
   }
   public MongoService save(String collection, Map<String, Object> document, Handler<AsyncResult<String>> resultHandler) {

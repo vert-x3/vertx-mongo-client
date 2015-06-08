@@ -14,16 +14,17 @@
  * under the License.
  */
 
-package io.vertx.groovy.ext.mongo
-
+package io.vertx.groovy.ext.mongo;
 import groovy.transform.CompileStatic
-import io.vertx.core.AsyncResult
-import io.vertx.core.Handler
-import io.vertx.core.json.JsonObject
+import io.vertx.lang.groovy.InternalHelper
+import java.util.List
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
-import io.vertx.lang.groovy.InternalHelper
-
+import io.vertx.ext.mongo.FindOptions
+import io.vertx.core.json.JsonObject
+import io.vertx.core.AsyncResult
+import io.vertx.core.Handler
+import io.vertx.ext.mongo.UpdateOptions
 /**
  * A Vert.x service used to interact with MongoDB server instances.
 */
@@ -43,7 +44,7 @@ public class MongoClient {
    * @return the client
    */
   public static MongoClient createNonShared(Vertx vertx, Map<String, Object> config) {
-    def ret= new io.vertx.groovy.ext.mongo.MongoClient(io.vertx.ext.mongo.MongoClient.createNonShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mongo.MongoClient.createNonShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null), io.vertx.ext.mongo.MongoClient.class, io.vertx.groovy.ext.mongo.MongoClient.class);
     return ret;
   }
   /**
@@ -55,7 +56,7 @@ public class MongoClient {
    * @return the client
    */
   public static MongoClient createShared(Vertx vertx, Map<String, Object> config, String dataSourceName) {
-    def ret= new io.vertx.groovy.ext.mongo.MongoClient(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null, dataSourceName));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null, dataSourceName), io.vertx.ext.mongo.MongoClient.class, io.vertx.groovy.ext.mongo.MongoClient.class);
     return ret;
   }
   /**
@@ -65,7 +66,7 @@ public class MongoClient {
    * @return the client
    */
   public static MongoClient createShared(Vertx vertx, Map<String, Object> config) {
-    def ret= new io.vertx.groovy.ext.mongo.MongoClient(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null), io.vertx.ext.mongo.MongoClient.class, io.vertx.groovy.ext.mongo.MongoClient.class);
     return ret;
   }
   /**

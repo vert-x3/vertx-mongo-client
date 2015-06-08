@@ -19,7 +19,7 @@ module VertxMongo
     # @return [::VertxMongo::MongoClient] the client
     def self.create_non_shared(vertx=nil,config=nil)
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
-        return ::VertxMongo::MongoClient.new(Java::IoVertxExtMongo::MongoClient.java_method(:createNonShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config)))
+        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMongo::MongoClient.java_method(:createNonShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config)),::VertxMongo::MongoClient)
       end
       raise ArgumentError, "Invalid arguments when calling create_non_shared(vertx,config)"
     end
@@ -31,9 +31,9 @@ module VertxMongo
     # @return [::VertxMongo::MongoClient] the client
     def self.create_shared(vertx=nil,config=nil,dataSourceName=nil)
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given? && dataSourceName == nil
-        return ::VertxMongo::MongoClient.new(Java::IoVertxExtMongo::MongoClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config)))
+        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMongo::MongoClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config)),::VertxMongo::MongoClient)
       elsif vertx.class.method_defined?(:j_del) && config.class == Hash && dataSourceName.class == String && !block_given?
-        return ::VertxMongo::MongoClient.new(Java::IoVertxExtMongo::MongoClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config),dataSourceName))
+        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMongo::MongoClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config),dataSourceName),::VertxMongo::MongoClient)
       end
       raise ArgumentError, "Invalid arguments when calling create_shared(vertx,config,dataSourceName)"
     end

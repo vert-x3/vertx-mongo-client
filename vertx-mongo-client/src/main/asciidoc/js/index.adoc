@@ -578,7 +578,7 @@ var command = {
 
 mongoClient.runCommand("aggregate", command, function (res, res_err) {
   if (res_err == null) {
-    var resArr = res."result";
+    var resArr = res.result;
     // etc
   } else {
     res_err.printStackTrace();
@@ -615,7 +615,7 @@ mongoService.save("publishedBooks", document, function (res, res_err) {
     }, null, function (res2, res2_err) {
       if (res2_err == null) {
 
-        console.log("To retrieve ISO-8601 date : " + res2."publicationDate"."$date");
+        console.log("To retrieve ISO-8601 date : " + res2.publicationDate.$date);
 
       } else {
         res2_err.printStackTrace();

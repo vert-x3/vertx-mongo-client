@@ -285,6 +285,6 @@ public class MongoService extends MongoClient {
 
 
   public static MongoService newInstance(io.vertx.ext.mongo.MongoService arg) {
-    return new MongoService(arg);
+    return arg != null ? new MongoService(arg) : null;
   }
 }

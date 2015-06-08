@@ -512,7 +512,7 @@ var MongoService = function(j_val) {
 MongoService.createEventBusProxy = function(vertx, address) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'string') {
-    return new MongoService(JMongoService["createEventBusProxy(io.vertx.core.Vertx,java.lang.String)"](vertx._jdel, address));
+    return utils.convReturnVertxGen(JMongoService["createEventBusProxy(io.vertx.core.Vertx,java.lang.String)"](vertx._jdel, address), MongoService);
   } else utils.invalidArgs();
 };
 

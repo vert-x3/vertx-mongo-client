@@ -21,7 +21,7 @@ module VertxMongo
     # @return [::VertxMongo::MongoService] the service
     def self.create_event_bus_proxy(vertx=nil,address=nil)
       if vertx.class.method_defined?(:j_del) && address.class == String && !block_given?
-        return ::VertxMongo::MongoService.new(Java::IoVertxExtMongo::MongoService.java_method(:createEventBusProxy, [Java::IoVertxCore::Vertx.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,address))
+        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMongo::MongoService.java_method(:createEventBusProxy, [Java::IoVertxCore::Vertx.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,address),::VertxMongo::MongoService)
       end
       raise ArgumentError, "Invalid arguments when calling create_event_bus_proxy(vertx,address)"
     end

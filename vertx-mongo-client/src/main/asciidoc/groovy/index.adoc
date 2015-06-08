@@ -577,7 +577,7 @@ def command = [
 
 mongoClient.runCommand("aggregate", command, { res ->
   if (res.succeeded()) {
-    def resArr = res.result()."result"
+    def resArr = res.result().result
     // etc
   } else {
     res.cause().printStackTrace()
@@ -614,7 +614,7 @@ mongoService.save("publishedBooks", document, { res ->
     ], null, { res2 ->
       if (res2.succeeded()) {
 
-        println("To retrieve ISO-8601 date : ${res2.result()."publicationDate"."$date"}")
+        println("To retrieve ISO-8601 date : ${res2.result().publicationDate.$date}")
 
       } else {
         res2.cause().printStackTrace()

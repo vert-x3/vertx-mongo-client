@@ -587,6 +587,6 @@ public class MongoClient {
 
 
   public static MongoClient newInstance(io.vertx.ext.mongo.MongoClient arg) {
-    return new MongoClient(arg);
+    return arg != null ? new MongoClient(arg) : null;
   }
 }
