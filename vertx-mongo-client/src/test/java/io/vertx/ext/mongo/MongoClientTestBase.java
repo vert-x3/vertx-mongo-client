@@ -182,7 +182,6 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
-
   @Test
   public void testInsertPreexistingObjectID() throws Exception {
     String collection = randomCollection();
@@ -197,7 +196,6 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     }));
     await();
   }
-
 
   @Test
   public void testSavePreexistingObjectID() throws Exception {
