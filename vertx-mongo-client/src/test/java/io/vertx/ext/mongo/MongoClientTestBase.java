@@ -159,7 +159,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       JsonObject doc = createDoc();
       Long genID  = TestUtils.randomLong();
       doc.put("_id", genID);
-      mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
+      mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
         assertNull(id);
         testComplete();
       }));
@@ -168,13 +168,45 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testSavePreexistingLongID() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      Long genID  = TestUtils.randomLong();
+      doc.put("_id", genID);
+      mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
+        assertNull(id);
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+
+  @Test
   public void testInsertPreexistingObjectID() throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       JsonObject genID  = new JsonObject().put("id", TestUtils.randomAlphaString(100));
       doc.put("_id", genID);
-      mongoClient.insert(collection, doc, onSuccess(id -> {
+      mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
+        assertNull(id);
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+
+  @Test
+  public void testSavePreexistingObjectID() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      JsonObject genID  = new JsonObject().put("id", TestUtils.randomAlphaString(100));
+      doc.put("_id", genID);
+      mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
         assertNull(id);
         testComplete();
       }));
@@ -242,7 +274,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      String genID  = TestUtils.randomAlphaString(100);
+      String genID = TestUtils.randomAlphaString(100);
       doc.put("_id", genID);
       mongoClient.insert(collection, doc, onSuccess(id -> {
         assertNull(id);
