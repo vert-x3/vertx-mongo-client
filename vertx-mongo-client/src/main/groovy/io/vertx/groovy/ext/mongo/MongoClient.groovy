@@ -17,10 +17,9 @@
 package io.vertx.groovy.ext.mongo;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
+import java.util.List
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
-import java.util.List
-import io.vertx.ext.mongo.InsertManyOptions
 import io.vertx.ext.mongo.FindOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
@@ -45,7 +44,7 @@ public class MongoClient {
    * @return the client
    */
   public static MongoClient createNonShared(Vertx vertx, Map<String, Object> config) {
-    def ret= new io.vertx.groovy.ext.mongo.MongoClient(io.vertx.ext.mongo.MongoClient.createNonShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mongo.MongoClient.createNonShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null), io.vertx.ext.mongo.MongoClient.class, io.vertx.groovy.ext.mongo.MongoClient.class);
     return ret;
   }
   /**
@@ -57,7 +56,7 @@ public class MongoClient {
    * @return the client
    */
   public static MongoClient createShared(Vertx vertx, Map<String, Object> config, String dataSourceName) {
-    def ret= new io.vertx.groovy.ext.mongo.MongoClient(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null, dataSourceName));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null, dataSourceName), io.vertx.ext.mongo.MongoClient.class, io.vertx.groovy.ext.mongo.MongoClient.class);
     return ret;
   }
   /**
@@ -67,7 +66,7 @@ public class MongoClient {
    * @return the client
    */
   public static MongoClient createShared(Vertx vertx, Map<String, Object> config) {
-    def ret= new io.vertx.groovy.ext.mongo.MongoClient(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mongo.MongoClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.core.json.JsonObject(config) : null), io.vertx.ext.mongo.MongoClient.class, io.vertx.groovy.ext.mongo.MongoClient.class);
     return ret;
   }
   /**
@@ -143,25 +142,25 @@ public class MongoClient {
    * Insert a documents in the specified collection with the specified many options
    * @param collection the collection
    * @param documents the documents
-   * @param manyOptions the insert many options to use (see <a href="../../../../../../../cheatsheet/InsertManyOptions.html">InsertManyOptions</a>)
+   * @param ordered the insert many options field to use
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient insertManyWithManyOptions(String collection, List<Map<String, Object>> documents, Map<String, Object> manyOptions, Handler<AsyncResult<Void>> resultHandler) {
-    this.delegate.insertManyWithManyOptions(collection, documents.collect({underpants -> new JsonObject(underpants)}), manyOptions != null ? new io.vertx.ext.mongo.InsertManyOptions(new io.vertx.core.json.JsonObject(manyOptions)) : null, resultHandler);
+  public MongoClient insertManyWithManyOptions(String collection, List<Map<String, Object>> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithManyOptions(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, resultHandler);
     return this;
   }
   /**
    * Insert a documents in the specified collection with the specified write many options and write option
    * @param collection the collection
    * @param documents the documents
-   * @param manyOptions the insert many options to use (see <a href="../../../../../../../cheatsheet/InsertManyOptions.html">InsertManyOptions</a>)
+   * @param ordered the insert many options field to use
    * @param writeOption the write option to use
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient insertManyWithManyOptionsAndWriteOption(String collection, List<Map<String, Object>> documents, Map<String, Object> manyOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
-    this.delegate.insertManyWithManyOptionsAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), manyOptions != null ? new io.vertx.ext.mongo.InsertManyOptions(new io.vertx.core.json.JsonObject(manyOptions)) : null, writeOption, resultHandler);
+  public MongoClient insertManyWithManyOptionsAndWriteOption(String collection, List<Map<String, Object>> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithManyOptionsAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, writeOption, resultHandler);
     return this;
   }
   /**

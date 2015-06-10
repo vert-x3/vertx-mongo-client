@@ -115,29 +115,29 @@ module VertxMongo
     #  Insert a documents in the specified collection with the specified many options
     # @param [String] collection the collection
     # @param [Array<Hash{String => Object}>] documents the documents
-    # @param [Hash] manyOptions the insert many options to use
+    # @param [true,false] ordered the insert many options field to use
     # @yield will be called when complete
     # @return [self]
-    def insert_many_with_many_options(collection=nil,documents=nil,manyOptions=nil)
-      if collection.class == String && documents.class == Array && manyOptions.class == Hash && block_given?
-        @j_del.java_method(:insertManyWithManyOptions, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxExtMongo::InsertManyOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },Java::IoVertxExtMongo::InsertManyOptions.new(::Vertx::Util::Utils.to_json_object(manyOptions)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+    def insert_many_with_many_options(collection=nil,documents=nil,ordered=nil)
+      if collection.class == String && documents.class == Array && (ordered.class == TrueClass || ordered.class == FalseClass) && block_given?
+        @j_del.java_method(:insertManyWithManyOptions, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::boolean.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },ordered,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling insert_many_with_many_options(collection,documents,manyOptions)"
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_many_options(collection,documents,ordered)"
     end
     #  Insert a documents in the specified collection with the specified write many options and write option
     # @param [String] collection the collection
     # @param [Array<Hash{String => Object}>] documents the documents
-    # @param [Hash] manyOptions the insert many options to use
+    # @param [true,false] ordered the insert many options field to use
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption the write option to use
     # @yield will be called when complete
     # @return [self]
-    def insert_many_with_many_options_and_write_option(collection=nil,documents=nil,manyOptions=nil,writeOption=nil)
-      if collection.class == String && documents.class == Array && manyOptions.class == Hash && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:insertManyWithManyOptionsAndWriteOption, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxExtMongo::InsertManyOptions.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },Java::IoVertxExtMongo::InsertManyOptions.new(::Vertx::Util::Utils.to_json_object(manyOptions)),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+    def insert_many_with_many_options_and_write_option(collection=nil,documents=nil,ordered=nil,writeOption=nil)
+      if collection.class == String && documents.class == Array && (ordered.class == TrueClass || ordered.class == FalseClass) && writeOption.class == Symbol && block_given?
+        @j_del.java_method(:insertManyWithManyOptionsAndWriteOption, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::boolean.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },ordered,Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling insert_many_with_many_options_and_write_option(collection,documents,manyOptions,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_many_options_and_write_option(collection,documents,ordered,writeOption)"
     end
     #  Update matching documents in the specified collection
     # @param [String] collection the collection

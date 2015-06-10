@@ -20,8 +20,6 @@ var utils = require('vertx-js/util/utils');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoClient = io.vertx.ext.mongo.MongoClient;
-var InsertManyOptions = io.vertx.ext.mongo.InsertManyOptions;
-var InsertManyOptions = io.vertx.ext.mongo.InsertManyOptions;
 var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
@@ -183,14 +181,14 @@ var MongoClient = function(j_val) {
    @public
    @param collection {string} the collection 
    @param documents {Array.<Object>} the documents 
-   @param manyOptions {Object} the insert many options to use 
+   @param ordered {boolean} the insert many options field to use 
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.insertManyWithManyOptions = function(collection, documents, manyOptions, resultHandler) {
+  this.insertManyWithManyOptions = function(collection, documents, ordered, resultHandler) {
     var __args = arguments;
-    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'object' && typeof __args[3] === 'function') {
-      j_mongoClient["insertManyWithManyOptions(java.lang.String,java.util.List,io.vertx.ext.mongo.InsertManyOptions,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), manyOptions != null ? new InsertManyOptions(new JsonObject(JSON.stringify(manyOptions))) : null, function(ar) {
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'function') {
+      j_mongoClient["insertManyWithManyOptions(java.lang.String,java.util.List,boolean,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
@@ -207,15 +205,15 @@ var MongoClient = function(j_val) {
    @public
    @param collection {string} the collection 
    @param documents {Array.<Object>} the documents 
-   @param manyOptions {Object} the insert many options to use 
+   @param ordered {boolean} the insert many options field to use 
    @param writeOption {Object} the write option to use 
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.insertManyWithManyOptionsAndWriteOption = function(collection, documents, manyOptions, writeOption, resultHandler) {
+  this.insertManyWithManyOptionsAndWriteOption = function(collection, documents, ordered, writeOption, resultHandler) {
     var __args = arguments;
-    if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'object' && typeof __args[3] === 'string' && typeof __args[4] === 'function') {
-      j_mongoClient["insertManyWithManyOptionsAndWriteOption(java.lang.String,java.util.List,io.vertx.ext.mongo.InsertManyOptions,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), manyOptions != null ? new InsertManyOptions(new JsonObject(JSON.stringify(manyOptions))) : null, io.vertx.ext.mongo.WriteOption.valueOf(__args[3]), function(ar) {
+    if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'string' && typeof __args[4] === 'function') {
+      j_mongoClient["insertManyWithManyOptionsAndWriteOption(java.lang.String,java.util.List,boolean,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, io.vertx.ext.mongo.WriteOption.valueOf(__args[3]), function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
@@ -630,7 +628,7 @@ var MongoClient = function(j_val) {
 MongoClient.createNonShared = function(vertx, config) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object') {
-    return new MongoClient(JMongoClient["createNonShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject)"](vertx._jdel, utils.convParamJsonObject(config)));
+    return utils.convReturnVertxGen(JMongoClient["createNonShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject)"](vertx._jdel, utils.convParamJsonObject(config)), MongoClient);
   } else utils.invalidArgs();
 };
 
@@ -647,9 +645,9 @@ MongoClient.createNonShared = function(vertx, config) {
 MongoClient.createShared = function() {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object') {
-    return new MongoClient(JMongoClient["createShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject)"](__args[0]._jdel, utils.convParamJsonObject(__args[1])));
+    return utils.convReturnVertxGen(JMongoClient["createShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject)"](__args[0]._jdel, utils.convParamJsonObject(__args[1])), MongoClient);
   }else if (__args.length === 3 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object' && typeof __args[2] === 'string') {
-    return new MongoClient(JMongoClient["createShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject,java.lang.String)"](__args[0]._jdel, utils.convParamJsonObject(__args[1]), __args[2]));
+    return utils.convReturnVertxGen(JMongoClient["createShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject,java.lang.String)"](__args[0]._jdel, utils.convParamJsonObject(__args[1]), __args[2]), MongoClient);
   } else utils.invalidArgs();
 };
 

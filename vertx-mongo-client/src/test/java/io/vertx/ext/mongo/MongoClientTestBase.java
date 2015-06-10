@@ -305,7 +305,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       List<JsonObject> docs = createDocsWithDuplicatedId();
-      mongoClient.insertManyWithManyOptions(collection, docs, new InsertManyOptions(), onFailure(res3 -> {
+      mongoClient.insertManyWithManyOptions(collection, docs, true, onFailure(res3 -> {
         mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
           assertEquals(4, (long) count);
           testComplete();
@@ -320,9 +320,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       List<JsonObject> docs = createDocsWithDuplicatedId();
-      InsertManyOptions options = new InsertManyOptions();
-      options.setOrdered(false);
-      mongoClient.insertManyWithManyOptions(collection, docs, options, onFailure(res3 -> {
+      mongoClient.insertManyWithManyOptions(collection, docs, false, onFailure(res3 -> {
         mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
           assertEquals(7, (long) count);
           testComplete();
@@ -352,9 +350,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       List<JsonObject> docs = createDocsWithDuplicatedId();
-      InsertManyOptions options = new InsertManyOptions();
-      options.setOrdered(false);
-      mongoClient.insertManyWithManyOptionsAndWriteOption(collection, docs, options, UNACKNOWLEDGED, onSuccess(res3 -> {
+      mongoClient.insertManyWithManyOptionsAndWriteOption(collection, docs, false, UNACKNOWLEDGED, onSuccess(res3 -> {
         mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
           assertEquals(7, (long) count);
           testComplete();

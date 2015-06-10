@@ -132,23 +132,23 @@ public interface MongoClient {
    *
    * @param collection  the collection
    * @param documents  the documents
-   * @param manyOptions  the insert many options to use
+   * @param ordered  the insert many options field to use
    * @param resultHandler  will be called when complete
    */
   @Fluent
-  MongoClient insertManyWithManyOptions(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient insertManyWithManyOptions(String collection, List<JsonObject> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler);
   
   /**
    * Insert a documents in the specified collection with the specified write many options and write option
    *
    * @param collection  the collection
    * @param documents  the documents
-   * @param manyOptions  the insert many options to use
+   * @param ordered  the insert many options field to use
    * @param writeOption  the write option to use
    * @param resultHandler  will be called when complete
    */
   @Fluent
-  MongoClient insertManyWithManyOptionsAndWriteOption(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient insertManyWithManyOptionsAndWriteOption(String collection, List<JsonObject> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
   
   /**
    * Update matching documents in the specified collection

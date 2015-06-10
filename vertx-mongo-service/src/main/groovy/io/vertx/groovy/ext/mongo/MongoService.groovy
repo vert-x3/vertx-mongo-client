@@ -17,10 +17,9 @@
 package io.vertx.groovy.ext.mongo;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
+import java.util.List
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
-import java.util.List
-import io.vertx.ext.mongo.InsertManyOptions
 import io.vertx.ext.mongo.FindOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
@@ -73,12 +72,12 @@ public class MongoService extends MongoClient {
     this.delegate.insertManyWithWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), writeOption, resultHandler);
     return this;
   }
-  public MongoService insertManyWithManyOptions(String collection, List<Map<String, Object>> documents, Map<String, Object> manyOptions, Handler<AsyncResult<Void>> resultHandler) {
-    this.delegate.insertManyWithManyOptions(collection, documents.collect({underpants -> new JsonObject(underpants)}), manyOptions != null ? new io.vertx.ext.mongo.InsertManyOptions(new io.vertx.core.json.JsonObject(manyOptions)) : null, resultHandler);
+  public MongoService insertManyWithManyOptions(String collection, List<Map<String, Object>> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithManyOptions(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, resultHandler);
     return this;
   }
-  public MongoService insertManyWithManyOptionsAndWriteOption(String collection, List<Map<String, Object>> documents, Map<String, Object> manyOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
-    this.delegate.insertManyWithManyOptionsAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), manyOptions != null ? new io.vertx.ext.mongo.InsertManyOptions(new io.vertx.core.json.JsonObject(manyOptions)) : null, writeOption, resultHandler);
+  public MongoService insertManyWithManyOptionsAndWriteOption(String collection, List<Map<String, Object>> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithManyOptionsAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, writeOption, resultHandler);
     return this;
   }
   public MongoService update(String collection, Map<String, Object> query, Map<String, Object> update, Handler<AsyncResult<Void>> resultHandler) {
