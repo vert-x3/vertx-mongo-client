@@ -119,9 +119,9 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling insert_many_with_many_options_and_write_option(collection,documents,manyOptions,writeOption)"
     end
-    # @param [String] collection
-    # @param [Hash{String => Object}] query
-    # @param [Hash{String => Object}] update
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] update 
     # @yield 
     # @return [self]
     def update(collection=nil,query=nil,update=nil)

@@ -29,7 +29,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mongo.FindOptions;
@@ -91,11 +91,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    String id = document.getString(ID_FIELD);
+    Object id = document.getValue(ID_FIELD);
     if (id == null) {
       coll.insertOne(document, convertCallback(resultHandler, wr -> document.getString(ID_FIELD)));
     } else {
-      coll.replaceOne(wrap(new JsonObject().put(ID_FIELD, document.getString(ID_FIELD))), document, convertCallback(resultHandler, result -> null));
+      coll.replaceOne(wrap(new JsonObject().put(ID_FIELD, document.getValue(ID_FIELD))), document, convertCallback(resultHandler, result -> null));
     }
     return this;
   }

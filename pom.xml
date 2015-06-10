@@ -39,6 +39,7 @@
 
   <properties>
     <stack.version>3.0.0-SNAPSHOT</stack.version>
+    <mongo.async.version>3.0.2</mongo.async.version>
   </properties>
 
   <dependencyManagement>
@@ -61,7 +62,7 @@
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-async</artifactId>
-      <version>3.0.0</version>
+      <version>${mongo.async.version}</version>
       <exclusions>
         <exclusion>
           <groupId>io.netty</groupId>

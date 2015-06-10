@@ -587,6 +587,49 @@ mongoClient.runCommand("aggregate", command, { res ->
 
 ----
 
+=== MongoDB Extended JSON support
+
+For now, only date type is supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
+
+Here's an example of inserting a document with a date field
+
+[source,groovy]
+----
+
+def document = [
+  title:"The Hobbit",
+  publicationDate:[
+    $date:"1937-09-21T00:00:00+00:00"
+  ]
+]
+
+mongoService.save("publishedBooks", document, { res ->
+
+  if (res.succeeded()) {
+
+    def id = res.result()
+
+    mongoService.findOne("publishedBooks", [
+      _id:id
+    ], null, { res2 ->
+      if (res2.succeeded()) {
+
+        println("To retrieve ISO-8601 date : ${res2.result()."publicationDate"."$date"}")
+
+      } else {
+        res2.cause().printStackTrace()
+      }
+    })
+
+  } else {
+    res.cause().printStackTrace()
+  }
+
+})
+
+
+----
+
 == Configuring the client
 
 The client is configured with a json object.
