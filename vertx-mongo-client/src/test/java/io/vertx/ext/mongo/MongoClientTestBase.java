@@ -757,10 +757,10 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       System.out.println("Inserted with id " + id);
       mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
         assertEquals("1997-07-16T00:00:00Z", retrieved.getJsonObject("ts2").getString("$date"));
-        assertEquals("1997-07-16T20:20:00Z", retrieved.getJsonObject("ts3").getString("$date"));
-        assertEquals("1997-07-16T20:20:30Z", retrieved.getJsonObject("ts4").getString("$date"));
-        assertEquals("2015-06-08T15:10:16.148Z", retrieved.getJsonObject("ts5").getString("$date"));
-        assertEquals("1997-07-16T20:20:30.45Z", retrieved.getJsonObject("ts6").getString("$date"));
+        assertEquals("1997-07-16T18:20:00Z", retrieved.getJsonObject("ts3").getString("$date"));
+        assertEquals("1997-07-16T18:20:30Z", retrieved.getJsonObject("ts4").getString("$date"));
+        assertEquals("2015-06-08T09:10:16.148Z", retrieved.getJsonObject("ts5").getString("$date"));
+        assertEquals("1997-07-16T18:20:30.45Z", retrieved.getJsonObject("ts6").getString("$date"));
 
         testComplete();
       }));

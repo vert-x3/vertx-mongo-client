@@ -2,7 +2,6 @@ package io.vertx.ext.mongo.impl.codec.json;
 
 import java.time.DateTimeException;
 import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,7 +56,7 @@ public class ISODate {
     int sec = parseInt(secSegment, 0);
     int ms = Math.round(parseFloat(res.group(10), 0) * 1000);
 
-    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    Calendar cal = Calendar.getInstance();
 
     cal.set(Calendar.YEAR, year);
     cal.set(Calendar.MONTH, month);
@@ -66,14 +65,18 @@ public class ISODate {
     cal.set(Calendar.MINUTE, min);
     cal.set(Calendar.SECOND, sec);
     cal.set(Calendar.MILLISECOND, ms);
+    cal.set(Calendar.DST_OFFSET, 0);
+    cal.set(Calendar.ZONE_OFFSET, 0);
 
     String tzSegment = res.group(11);
 
-    if (tzSegment != null && !"Z".equals(tzSegment)) {
-      int ahead = "+".equals(res.group(12)) ? 1 : -1;
+    if (tzSegment != null) {
+      if (!"Z".equals(tzSegment)) {
+        int ahead = "+".equals(res.group(12)) ? -1 : 1;
 
-      cal.add(Calendar.HOUR_OF_DAY, ahead * parseInt(res.group(13), 0));
-      cal.add(Calendar.MINUTE, ahead * parseInt(res.group(14), 0));
+        cal.add(Calendar.HOUR_OF_DAY, ahead * parseInt(res.group(13), 0));
+        cal.add(Calendar.MINUTE, ahead * parseInt(res.group(14), 0));
+      }
     }
 
     return cal.getTimeInMillis();

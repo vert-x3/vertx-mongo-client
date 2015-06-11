@@ -2,6 +2,8 @@ package io.vertx.ext.mongo.impl.codec.json;
 
 import org.junit.Test;
 
+import java.util.Date;
+
 public class ISODateTest {
 
   @Test
@@ -50,5 +52,10 @@ public class ISODateTest {
   public void testMessedUpCase() {
     // it should not crash increment the hour
     ISODate.parse("1997-07-16T19:20:60");
+  }
+
+  @Test
+  public void test1() {
+    System.out.println(new Date(ISODate.parse("2015-06-11T16:41:44.845+02:00")));
   }
 }
