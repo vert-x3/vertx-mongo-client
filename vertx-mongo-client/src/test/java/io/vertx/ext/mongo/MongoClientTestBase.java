@@ -797,24 +797,4 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       }
     }));
   }
-
-  protected List<String> getOurCollections(List<String> colls) {
-    List<String> ours = new ArrayList<>();
-    for (String coll : colls) {
-      if (coll.startsWith("ext-mongo")) {
-        ours.add(coll);
-      }
-    }
-    return ours;
-  }
-
-
-  private String randomCollection() {
-    return "ext-mongo" + TestUtils.randomAlphaString(20);
-  }
-
-
-
-
-
 }

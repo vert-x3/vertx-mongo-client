@@ -16,6 +16,9 @@
 
 package io.vertx.ext.mongo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.IMongodConfig;
@@ -24,7 +27,9 @@ import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 import io.vertx.core.json.JsonObject;
+import io.vertx.test.core.TestUtils;
 import io.vertx.test.core.VertxTestBase;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -34,14 +39,14 @@ import org.junit.BeforeClass;
 public abstract class MongoTestBase extends VertxTestBase {
 
   protected static String getConnectionString() {
-    return getProperty("connection_string");
+    return getConfigProperty("connection_string");
   }
 
   protected static String getDatabaseName() {
-    return getProperty("db_name");
+    return getConfigProperty("db_name");
   }
 
-  protected static String getProperty(String name) {
+  protected static String getConfigProperty(String name) {
     String s = System.getProperty(name);
     if (s != null) {
       s = s.trim();
@@ -89,6 +94,19 @@ public abstract class MongoTestBase extends VertxTestBase {
     return config;
   }
 
+  protected List<String> getOurCollections(List<String> colls) {
+    List<String> ours = new ArrayList<>();
+    for (String coll : colls) {
+      if (coll.startsWith("ext-mongo")) {
+        ours.add(coll);
+      }
+    }
+    return ours;
+  }
+
+  protected String randomCollection() {
+    return "ext-mongo" + TestUtils.randomAlphaString(20);
+  }
 
 
 }
