@@ -742,6 +742,32 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
+  @Test
+  public void test$date() {
+    String collection = randomCollection();
+    // official TZ formats:
+    JsonObject document = new JsonObject()
+        .put("ts2", new JsonObject().put("$date", "1997-07-16"))
+        .put("ts3", new JsonObject().put("$date", "1997-07-16T19:20+01:00"))
+        .put("ts4", new JsonObject().put("$date", "1997-07-16T19:20:30+01:00"))
+        .put("ts5", new JsonObject().put("$date", "2015-06-08T12:10:16.148+03"))
+        .put("ts6", new JsonObject().put("$date", "1997-07-16T19:20:30.45+01:00"));
+
+    mongoClient.insert(collection, document, onSuccess(id -> {
+      System.out.println("Inserted with id " + id);
+      mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
+        assertEquals("1997-07-16T00:00:00Z", retrieved.getJsonObject("ts2").getString("$date"));
+        assertEquals("1997-07-16T20:20:00Z", retrieved.getJsonObject("ts3").getString("$date"));
+        assertEquals("1997-07-16T20:20:30Z", retrieved.getJsonObject("ts4").getString("$date"));
+        assertEquals("2015-06-08T15:10:16.148Z", retrieved.getJsonObject("ts5").getString("$date"));
+        assertEquals("1997-07-16T20:20:30.45Z", retrieved.getJsonObject("ts6").getString("$date"));
+
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
   private JsonObject createDoc() {
     return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
       put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
@@ -808,13 +834,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     return ours;
   }
 
-
   private String randomCollection() {
     return "ext-mongo" + TestUtils.randomAlphaString(20);
   }
-
-
-
-
-
 }
