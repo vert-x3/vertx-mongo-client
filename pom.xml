@@ -23,7 +23,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-ext-parent</artifactId>
-    <version>12</version>
+    <version>14</version>
   </parent>
 
   <modules>
@@ -40,6 +40,7 @@
   <properties>
     <stack.version>3.0.0-SNAPSHOT</stack.version>
     <mongo.async.version>3.0.2</mongo.async.version>
+    <doc.skip>true</doc.skip>
   </properties>
 
   <dependencyManagement>
@@ -131,30 +132,5 @@
       <version>4.11</version>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <!-- Work around because the vertx-ext-parent does not support well aggregators -->
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.8</version>
-        <executions>
-          <execution>
-            <configuration>
-              <target>
-                <mkdir dir="${project.basedir}/src/main/asciidoc"/>
-                <mkdir dir="${project.basedir}/src/main/resources"/>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <phase>generate-sources</phase>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
 
 </project>
