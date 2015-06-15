@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.junit.Assert.assertEquals;
@@ -66,5 +67,32 @@ public class JsonObjectCodecTest {
 
     JsonObject resultValue = result.getJsonObject("test");
     assertEquals(now, OffsetDateTime.parse(resultValue.getString(JsonObjectCodec.DATE_FIELD)).toInstant());
+  }
+
+  @Test
+  public void writeDocument_supportBsonDateTimeWithMillis() {
+    JsonObjectCodec codec = new JsonObjectCodec();
+
+    JsonObject dateValue = new JsonObject();
+    dateValue.put(JsonObjectCodec.DATE_FIELD, "2011-12-03T10:15:30.500+01:00");
+    JsonObject value = new JsonObject();
+    value.put("test", dateValue);
+
+    BsonDocument bsonResult = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+    codec.writeDocument(writer, "", value, EncoderContext.builder().build());
+
+    long millis = 1322903730500l;
+
+    BsonValue resultValue = bsonResult.get("test");
+    assertEquals(BsonType.DATE_TIME, resultValue.getBsonType());
+    assertEquals(millis, resultValue.asDateTime().getValue());
+
+    String back =
+        OffsetDateTime.ofInstant(Instant.ofEpochMilli(1322903730500l), ZoneOffset.UTC).format(ISO_OFFSET_DATE_TIME);
+
+    // we encode always in UTC
+    assertEquals("2011-12-03T09:15:30.5Z", back);
   }
 }
