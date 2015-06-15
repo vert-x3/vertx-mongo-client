@@ -28,8 +28,8 @@
 
   <artifactId>vertx-mongo-client</artifactId>
 
-
-
-
+  <properties>
+    <doc.skip>false</doc.skip>
+  </properties>
 
 </project>
