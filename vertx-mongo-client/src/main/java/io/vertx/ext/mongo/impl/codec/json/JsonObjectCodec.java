@@ -173,6 +173,6 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected void writeDateTime(BsonWriter writer, String name, Object value, EncoderContext ctx) {
-    writer.writeDateTime(OffsetDateTime.parse(((JsonObject) value).getString(DATE_FIELD)).toInstant().toEpochMilli());
+    writer.writeDateTime(ISODate.parse(((JsonObject) value).getString(DATE_FIELD)));
   }
 }
