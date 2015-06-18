@@ -107,7 +107,7 @@ document = {
   'title' => "The Hobbit"
 }
 
-mongoClient.save("books", document) { |res,res_err|
+mongoClient.save("books", document) { |res_err,res|
 
   if (res_err == nil)
 
@@ -135,7 +135,7 @@ document = {
   '_id' => "123244"
 }
 
-mongoClient.save("books", document) { |res,res_err|
+mongoClient.save("books", document) { |res_err,res|
 
   if (res_err == nil)
 
@@ -165,7 +165,7 @@ document = {
   'title' => "The Hobbit"
 }
 
-mongoClient.insert("books", document) { |res,res_err|
+mongoClient.insert("books", document) { |res_err,res|
 
   if (res_err == nil)
 
@@ -193,7 +193,7 @@ document = {
   '_id' => "123244"
 }
 
-mongoClient.insert("books", document) { |res,res_err|
+mongoClient.insert("books", document) { |res_err,res|
 
   if (res_err == nil)
 
@@ -236,7 +236,7 @@ update = {
   }
 }
 
-mongoClient.update("books", query, update) { |res,res_err|
+mongoClient.update("books", query, update) { |res_err,res|
 
   if (res_err == nil)
 
@@ -280,7 +280,7 @@ options = {
   'multi' => true
 }
 
-mongoClient.update_with_options("books", query, update, options) { |res,res_err|
+mongoClient.update_with_options("books", query, update, options) { |res_err,res|
 
   if (res_err == nil)
 
@@ -317,7 +317,7 @@ replace = {
   'author' => "J. R. R. Tolkien"
 }
 
-mongoClient.replace("books", query, replace) { |res,res_err|
+mongoClient.replace("books", query, replace) { |res_err,res|
 
   if (res_err == nil)
 
@@ -350,7 +350,7 @@ require 'json'
 query = {
 }
 
-mongoClient.find("books", query) { |res,res_err|
+mongoClient.find("books", query) { |res_err,res|
 
   if (res_err == nil)
 
@@ -382,7 +382,7 @@ query = {
   'author' => "J. R. R. Tolkien"
 }
 
-mongoClient.find("books", query) { |res,res_err|
+mongoClient.find("books", query) { |res_err,res|
 
   if (res_err == nil)
 
@@ -436,7 +436,7 @@ query = {
   'author' => "J. R. R. Tolkien"
 }
 
-mongoClient.remove("books", query) { |res,res_err|
+mongoClient.remove("books", query) { |res_err,res|
 
   if (res_err == nil)
 
@@ -471,7 +471,7 @@ query = {
   'author' => "J. R. R. Tolkien"
 }
 
-mongoClient.count("books", query) { |res,res_err|
+mongoClient.count("books", query) { |res_err,res|
 
   if (res_err == nil)
 
@@ -496,7 +496,7 @@ To get a list of all collections you can use `link:yardoc/VertxMongo/MongoClient
 [source,ruby]
 ----
 
-mongoClient.get_collections() { |res,res_err|
+mongoClient.get_collections() { |res_err,res|
 
   if (res_err == nil)
 
@@ -517,7 +517,7 @@ To create a new collection you can use `link:yardoc/VertxMongo/MongoClient.html#
 [source,ruby]
 ----
 
-mongoClient.create_collection("mynewcollectionr") { |res,res_err|
+mongoClient.create_collection("mynewcollectionr") { |res_err,res|
 
   if (res_err == nil)
 
@@ -540,7 +540,7 @@ NOTE: Dropping a collection will delete all documents within it!
 [source,ruby]
 ----
 
-mongoClient.drop_collection("mynewcollectionr") { |res,res_err|
+mongoClient.drop_collection("mynewcollectionr") { |res_err,res|
 
   if (res_err == nil)
 
@@ -578,7 +578,7 @@ command = {
   ]
 }
 
-mongoClient.run_command("aggregate", command) { |res,res_err|
+mongoClient.run_command("aggregate", command) { |res_err,res|
   if (res_err == nil)
     resArr = res['result']
     # etc
@@ -606,7 +606,7 @@ document = {
   }
 }
 
-mongoService.save("publishedBooks", document) { |res,res_err|
+mongoService.save("publishedBooks", document) { |res_err,res|
 
   if (res_err == nil)
 
@@ -614,7 +614,7 @@ mongoService.save("publishedBooks", document) { |res,res_err|
 
     mongoService.find_one("publishedBooks", {
       '_id' => id
-    }, nil) { |res2,res2_err|
+    }, nil) { |res2_err,res2|
       if (res2_err == nil)
 
         puts "To retrieve ISO-8601 date : #{res2['publicationDate']['$date']}"
