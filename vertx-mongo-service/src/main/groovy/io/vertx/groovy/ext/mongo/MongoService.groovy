@@ -87,7 +87,7 @@ public class MongoService extends MongoClient {
         if (event.succeeded()) {
           f = InternalHelper.<List<Map<String, Object>>>result(event.result().collect({
             io.vertx.core.json.JsonObject element ->
-            element?.getMap()
+            InternalHelper.wrapObject(element)
           }) as List)
         } else {
           f = InternalHelper.<List<Map<String, Object>>>failure(event.cause())
@@ -104,7 +104,7 @@ public class MongoService extends MongoClient {
         if (event.succeeded()) {
           f = InternalHelper.<List<Map<String, Object>>>result(event.result().collect({
             io.vertx.core.json.JsonObject element ->
-            element?.getMap()
+            InternalHelper.wrapObject(element)
           }) as List)
         } else {
           f = InternalHelper.<List<Map<String, Object>>>failure(event.cause())
@@ -119,7 +119,7 @@ public class MongoService extends MongoClient {
       public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
         AsyncResult<Map<String, Object>> f
         if (event.succeeded()) {
-          f = InternalHelper.<Map<String, Object>>result(event.result()?.getMap())
+          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()))
         } else {
           f = InternalHelper.<Map<String, Object>>failure(event.cause())
         }
@@ -165,7 +165,7 @@ public class MongoService extends MongoClient {
       public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
         AsyncResult<Map<String, Object>> f
         if (event.succeeded()) {
-          f = InternalHelper.<Map<String, Object>>result(event.result()?.getMap())
+          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()))
         } else {
           f = InternalHelper.<Map<String, Object>>failure(event.cause())
         }
