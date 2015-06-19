@@ -107,7 +107,7 @@ public interface MongoClient {
   MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   /**
-   * Insert a documents in the specified collection
+   * Insert documents in the specified collection
    *
    * @param collection  the collection
    * @param documents  the documents
@@ -117,7 +117,7 @@ public interface MongoClient {
   MongoClient insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler);
   
   /**
-   * Insert a documents in the specified collection with the specified write option
+   * Insert documents in the specified collection with the specified write option
    *
    * @param collection  the collection
    * @param documents  the documents
@@ -128,7 +128,7 @@ public interface MongoClient {
   MongoClient insertManyWithWriteOption(String collection, List<JsonObject> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
   
   /**
-   * Insert a documents in the specified collection with the specified many options
+   * Insert documents in the specified collection with the specified many options
    *
    * @param collection  the collection
    * @param documents  the documents
@@ -136,10 +136,10 @@ public interface MongoClient {
    * @param resultHandler  will be called when complete
    */
   @Fluent
-  MongoClient insertManyWithManyOptions(String collection, List<JsonObject> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient insertManyWithOrdered(String collection, List<JsonObject> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler);
   
   /**
-   * Insert a documents in the specified collection with the specified write many options and write option
+   * Insert documents in the specified collection with the specified write many options and write option
    *
    * @param collection  the collection
    * @param documents  the documents
@@ -148,7 +148,7 @@ public interface MongoClient {
    * @param resultHandler  will be called when complete
    */
   @Fluent
-  MongoClient insertManyWithManyOptionsAndWriteOption(String collection, List<JsonObject> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
+  MongoClient insertManyWithOrderedAndWriteOption(String collection, List<JsonObject> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
   
   /**
    * Update matching documents in the specified collection

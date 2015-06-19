@@ -179,10 +179,10 @@ var MongoService = function(j_val) {
    @param resultHandler {function} 
    @return {MongoService}
    */
-  this.insertManyWithManyOptions = function(collection, documents, ordered, resultHandler) {
+  this.insertManyWithOrdered = function(collection, documents, ordered, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'function') {
-      j_mongoService["insertManyWithManyOptions(java.lang.String,java.util.List,boolean,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, function(ar) {
+      j_mongoService["insertManyWithOrdered(java.lang.String,java.util.List,boolean,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
@@ -203,10 +203,10 @@ var MongoService = function(j_val) {
    @param resultHandler {function} 
    @return {MongoService}
    */
-  this.insertManyWithManyOptionsAndWriteOption = function(collection, documents, ordered, writeOption, resultHandler) {
+  this.insertManyWithOrderedAndWriteOption = function(collection, documents, ordered, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'string' && typeof __args[4] === 'function') {
-      j_mongoService["insertManyWithManyOptionsAndWriteOption(java.lang.String,java.util.List,boolean,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, io.vertx.ext.mongo.WriteOption.valueOf(__args[3]), function(ar) {
+      j_mongoService["insertManyWithOrderedAndWriteOption(java.lang.String,java.util.List,boolean,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, io.vertx.ext.mongo.WriteOption.valueOf(__args[3]), function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {

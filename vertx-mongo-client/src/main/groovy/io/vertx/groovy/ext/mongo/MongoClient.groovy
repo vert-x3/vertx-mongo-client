@@ -116,7 +116,7 @@ public class MongoClient {
     return this;
   }
   /**
-   * Insert a documents in the specified collection
+   * Insert documents in the specified collection
    * @param collection the collection
    * @param documents the documents
    * @param resultHandler will be called when complete
@@ -127,7 +127,7 @@ public class MongoClient {
     return this;
   }
   /**
-   * Insert a documents in the specified collection with the specified write option
+   * Insert documents in the specified collection with the specified write option
    * @param collection the collection
    * @param documents the documents
    * @param writeOption the write option to use
@@ -139,19 +139,19 @@ public class MongoClient {
     return this;
   }
   /**
-   * Insert a documents in the specified collection with the specified many options
+   * Insert documents in the specified collection with the specified many options
    * @param collection the collection
    * @param documents the documents
    * @param ordered the insert many options field to use
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient insertManyWithManyOptions(String collection, List<Map<String, Object>> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler) {
-    this.delegate.insertManyWithManyOptions(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, resultHandler);
+  public MongoClient insertManyWithOrdered(String collection, List<Map<String, Object>> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithOrdered(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, resultHandler);
     return this;
   }
   /**
-   * Insert a documents in the specified collection with the specified write many options and write option
+   * Insert documents in the specified collection with the specified write many options and write option
    * @param collection the collection
    * @param documents the documents
    * @param ordered the insert many options field to use
@@ -159,8 +159,8 @@ public class MongoClient {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient insertManyWithManyOptionsAndWriteOption(String collection, List<Map<String, Object>> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
-    this.delegate.insertManyWithManyOptionsAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, writeOption, resultHandler);
+  public MongoClient insertManyWithOrderedAndWriteOption(String collection, List<Map<String, Object>> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithOrderedAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, writeOption, resultHandler);
     return this;
   }
   /**

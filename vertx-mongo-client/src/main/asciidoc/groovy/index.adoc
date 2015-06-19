@@ -209,6 +209,33 @@ mongoClient.insert("books", document, { res ->
 
 ----
 
+To insert documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#insertMany(java.lang.String,%20java.util.List,%20io.vertx.core.Handler)[insertMany]`.
+
+[source,groovy]
+----
+def documents = []
+def document1 = [
+  title:"The Hobbit"
+]
+def document2 = [
+  title:"The Lord of the Rings"
+]
+documents.add(document1)
+documents.add(document2)
+
+mongoClient.insertMany("books", documents, { res ->
+
+  if (res.succeeded()) {
+    //...
+  } else {
+    //...
+  }
+
+})
+
+
+----
+
 === Updating documents
 
 To update a documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#update(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[update]`.
@@ -354,7 +381,7 @@ mongoClient.find("books", query, { res ->
 
     res.result().each { json ->
 
-      println(json.toString())
+      println(groovy.json.JsonOutput.toJson(json))
 
     }
 
@@ -385,7 +412,7 @@ mongoClient.find("books", query, { res ->
 
     res.result().each { json ->
 
-      println(json.toString())
+      println(groovy.json.JsonOutput.toJson(json))
 
     }
 
@@ -577,7 +604,7 @@ def command = [
 
 mongoClient.runCommand("aggregate", command, { res ->
   if (res.succeeded()) {
-    def resArr = res.result()."result"
+    def resArr = res.result().result
     // etc
   } else {
     res.cause().printStackTrace()
@@ -614,7 +641,7 @@ mongoService.save("publishedBooks", document, { res ->
     ], null, { res2 ->
       if (res2.succeeded()) {
 
-        println("To retrieve ISO-8601 date : ${res2.result()."publicationDate"."$date"}")
+        println("To retrieve ISO-8601 date : ${res2.result().publicationDate.$date}")
 
       } else {
         res2.cause().printStackTrace()

@@ -72,12 +72,12 @@ public class MongoService extends MongoClient {
     this.delegate.insertManyWithWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), writeOption, resultHandler);
     return this;
   }
-  public MongoService insertManyWithManyOptions(String collection, List<Map<String, Object>> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler) {
-    this.delegate.insertManyWithManyOptions(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, resultHandler);
+  public MongoService insertManyWithOrdered(String collection, List<Map<String, Object>> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithOrdered(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, resultHandler);
     return this;
   }
-  public MongoService insertManyWithManyOptionsAndWriteOption(String collection, List<Map<String, Object>> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
-    this.delegate.insertManyWithManyOptionsAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, writeOption, resultHandler);
+  public MongoService insertManyWithOrderedAndWriteOption(String collection, List<Map<String, Object>> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithOrderedAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, writeOption, resultHandler);
     return this;
   }
   public MongoService update(String collection, Map<String, Object> query, Map<String, Object> update, Handler<AsyncResult<Void>> resultHandler) {

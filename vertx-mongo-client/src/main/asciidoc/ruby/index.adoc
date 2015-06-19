@@ -209,6 +209,33 @@ mongoClient.insert("books", document) { |res,res_err|
 
 ----
 
+To insert documents you use `link:yardoc/VertxMongo/MongoClient.html#insert_many-instance_method[insertMany]`.
+
+[source,ruby]
+----
+documents = Array.new
+document1 = {
+  'title' => "The Hobbit"
+}
+document2 = {
+  'title' => "The Lord of the Rings"
+}
+documents.push(document1)
+documents.push(document2)
+
+mongoClient.insert_many("books", documents) { |res,res_err|
+
+  if (res_err == nil)
+    #...
+  else
+    #...
+  end
+
+}
+
+
+----
+
 === Updating documents
 
 To update a documents you use `link:yardoc/VertxMongo/MongoClient.html#update-instance_method[update]`.
@@ -580,7 +607,7 @@ command = {
 
 mongoClient.run_command("aggregate", command) { |res,res_err|
   if (res_err == nil)
-    resArr = res["result"]
+    resArr = res['result']
     # etc
   else
     res_err.print_stack_trace()
@@ -617,7 +644,7 @@ mongoService.save("publishedBooks", document) { |res,res_err|
     }, nil) { |res2,res2_err|
       if (res2_err == nil)
 
-        puts "To retrieve ISO-8601 date : #{res2["publicationDate"]["$date"]}"
+        puts "To retrieve ISO-8601 date : #{res2['publicationDate']['$date']}"
 
       else
         res2_err.print_stack_trace()

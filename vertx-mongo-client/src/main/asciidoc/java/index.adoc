@@ -167,7 +167,7 @@ mongoClient.insert("books", document, res -> {
 });
 ----
 
-To insert a documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#insertMany-java.lang.String-java.util.List-io.vertx.core.Handler-[insertMany]`.
+To insert documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#insertMany-java.lang.String-java.util.List-io.vertx.core.Handler-[insertMany]`.
 
 [source,java]
 ----
@@ -184,6 +184,7 @@ mongoClient.insertMany("books", documents, res -> {
   } else {
     //...
   }
+    
 });
 ----
 

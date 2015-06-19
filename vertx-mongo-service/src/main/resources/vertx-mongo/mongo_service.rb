@@ -27,7 +27,7 @@ module VertxMongo
     end
     # @param [String] collection
     # @param [Hash{String => Object}] document
-    # @yield 
+    # @yield
     # @return [self]
     def save(collection=nil,document=nil)
       if collection.class == String && document.class == Hash && block_given?
@@ -39,7 +39,7 @@ module VertxMongo
     # @param [String] collection
     # @param [Hash{String => Object}] document
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
-    # @yield 
+    # @yield
     # @return [self]
     def save_with_options(collection=nil,document=nil,writeOption=nil)
       if collection.class == String && document.class == Hash && writeOption.class == Symbol && block_given?
@@ -50,7 +50,7 @@ module VertxMongo
     end
     # @param [String] collection
     # @param [Hash{String => Object}] document
-    # @yield 
+    # @yield
     # @return [self]
     def insert(collection=nil,document=nil)
       if collection.class == String && document.class == Hash && block_given?
@@ -62,7 +62,7 @@ module VertxMongo
     # @param [String] collection
     # @param [Hash{String => Object}] document
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
-    # @yield 
+    # @yield
     # @return [self]
     def insert_with_options(collection=nil,document=nil,writeOption=nil)
       if collection.class == String && document.class == Hash && writeOption.class == Symbol && block_given?
@@ -73,7 +73,7 @@ module VertxMongo
     end
     # @param [String] collection
     # @param [Array<Hash{String => Object}>] documents
-    # @yield 
+    # @yield
     # @return [self]
     def insert_many(collection=nil,documents=nil)
       if collection.class == String && documents.class == Array && block_given?
@@ -85,7 +85,7 @@ module VertxMongo
     # @param [String] collection
     # @param [Array<Hash{String => Object}>] documents
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
-    # @yield 
+    # @yield
     # @return [self]
     def insert_many_with_write_option(collection=nil,documents=nil,writeOption=nil)
       if collection.class == String && documents.class == Array && writeOption.class == Symbol && block_given?
@@ -97,32 +97,32 @@ module VertxMongo
     # @param [String] collection
     # @param [Array<Hash{String => Object}>] documents
     # @param [true,false] ordered
-    # @yield 
+    # @yield
     # @return [self]
-    def insert_many_with_many_options(collection=nil,documents=nil,ordered=nil)
+    def insert_many_with_ordered(collection=nil,documents=nil,ordered=nil)
       if collection.class == String && documents.class == Array && (ordered.class == TrueClass || ordered.class == FalseClass) && block_given?
-        @j_del.java_method(:insertManyWithManyOptions, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::boolean.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },ordered,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        @j_del.java_method(:insertManyWithOrdered, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::boolean.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },ordered,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling insert_many_with_many_options(collection,documents,ordered)"
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_ordered(collection,documents,ordered)"
     end
     # @param [String] collection
     # @param [Array<Hash{String => Object}>] documents
     # @param [true,false] ordered
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
-    # @yield 
+    # @yield
     # @return [self]
-    def insert_many_with_many_options_and_write_option(collection=nil,documents=nil,ordered=nil,writeOption=nil)
+    def insert_many_with_ordered_and_write_option(collection=nil,documents=nil,ordered=nil,writeOption=nil)
       if collection.class == String && documents.class == Array && (ordered.class == TrueClass || ordered.class == FalseClass) && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:insertManyWithManyOptionsAndWriteOption, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::boolean.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },ordered,Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        @j_del.java_method(:insertManyWithOrderedAndWriteOption, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::boolean.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },ordered,Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling insert_many_with_many_options_and_write_option(collection,documents,ordered,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_ordered_and_write_option(collection,documents,ordered,writeOption)"
     end
-    # @param [String] collection 
-    # @param [Hash{String => Object}] query 
-    # @param [Hash{String => Object}] update 
-    # @yield 
+    # @param [String] collection
+    # @param [Hash{String => Object}] query
+    # @param [Hash{String => Object}] update
+    # @yield
     # @return [self]
     def update(collection=nil,query=nil,update=nil)
       if collection.class == String && query.class == Hash && update.class == Hash && block_given?
@@ -135,7 +135,7 @@ module VertxMongo
     # @param [Hash{String => Object}] query
     # @param [Hash{String => Object}] update
     # @param [Hash] options
-    # @yield 
+    # @yield
     # @return [self]
     def update_with_options(collection=nil,query=nil,update=nil,options=nil)
       if collection.class == String && query.class == Hash && update.class == Hash && options.class == Hash && block_given?
@@ -147,7 +147,7 @@ module VertxMongo
     # @param [String] collection
     # @param [Hash{String => Object}] query
     # @param [Hash{String => Object}] replace
-    # @yield 
+    # @yield
     # @return [self]
     def replace(collection=nil,query=nil,replace=nil)
       if collection.class == String && query.class == Hash && replace.class == Hash && block_given?
@@ -160,7 +160,7 @@ module VertxMongo
     # @param [Hash{String => Object}] query
     # @param [Hash{String => Object}] replace
     # @param [Hash] options
-    # @yield 
+    # @yield
     # @return [self]
     def replace_with_options(collection=nil,query=nil,replace=nil,options=nil)
       if collection.class == String && query.class == Hash && replace.class == Hash && options.class == Hash && block_given?
@@ -171,7 +171,7 @@ module VertxMongo
     end
     # @param [String] collection
     # @param [Hash{String => Object}] query
-    # @yield 
+    # @yield
     # @return [self]
     def find(collection=nil,query=nil)
       if collection.class == String && query.class == Hash && block_given?
@@ -183,7 +183,7 @@ module VertxMongo
     # @param [String] collection
     # @param [Hash{String => Object}] query
     # @param [Hash] options
-    # @yield 
+    # @yield
     # @return [self]
     def find_with_options(collection=nil,query=nil,options=nil)
       if collection.class == String && query.class == Hash && options.class == Hash && block_given?
@@ -195,7 +195,7 @@ module VertxMongo
     # @param [String] collection
     # @param [Hash{String => Object}] query
     # @param [Hash{String => Object}] fields
-    # @yield 
+    # @yield
     # @return [self]
     def find_one(collection=nil,query=nil,fields=nil)
       if collection.class == String && query.class == Hash && fields.class == Hash && block_given?
@@ -206,7 +206,7 @@ module VertxMongo
     end
     # @param [String] collection
     # @param [Hash{String => Object}] query
-    # @yield 
+    # @yield
     # @return [self]
     def count(collection=nil,query=nil)
       if collection.class == String && query.class == Hash && block_given?
@@ -217,7 +217,7 @@ module VertxMongo
     end
     # @param [String] collection
     # @param [Hash{String => Object}] query
-    # @yield 
+    # @yield
     # @return [self]
     def remove(collection=nil,query=nil)
       if collection.class == String && query.class == Hash && block_given?
@@ -229,7 +229,7 @@ module VertxMongo
     # @param [String] collection
     # @param [Hash{String => Object}] query
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
-    # @yield 
+    # @yield
     # @return [self]
     def remove_with_options(collection=nil,query=nil,writeOption=nil)
       if collection.class == String && query.class == Hash && writeOption.class == Symbol && block_given?
@@ -240,7 +240,7 @@ module VertxMongo
     end
     # @param [String] collection
     # @param [Hash{String => Object}] query
-    # @yield 
+    # @yield
     # @return [self]
     def remove_one(collection=nil,query=nil)
       if collection.class == String && query.class == Hash && block_given?
@@ -252,7 +252,7 @@ module VertxMongo
     # @param [String] collection
     # @param [Hash{String => Object}] query
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption
-    # @yield 
+    # @yield
     # @return [self]
     def remove_one_with_options(collection=nil,query=nil,writeOption=nil)
       if collection.class == String && query.class == Hash && writeOption.class == Symbol && block_given?
@@ -262,7 +262,7 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling remove_one_with_options(collection,query,writeOption)"
     end
     # @param [String] collectionName
-    # @yield 
+    # @yield
     # @return [self]
     def create_collection(collectionName=nil)
       if collectionName.class == String && block_given?
@@ -271,7 +271,7 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling create_collection(collectionName)"
     end
-    # @yield 
+    # @yield
     # @return [self]
     def get_collections
       if block_given?
@@ -281,7 +281,7 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling get_collections()"
     end
     # @param [String] collection
-    # @yield 
+    # @yield
     # @return [self]
     def drop_collection(collection=nil)
       if collection.class == String && block_given?
@@ -292,7 +292,7 @@ module VertxMongo
     end
     # @param [String] commandName
     # @param [Hash{String => Object}] command
-    # @yield 
+    # @yield
     # @return [self]
     def run_command(commandName=nil,command=nil)
       if commandName.class == String && command.class == Hash && block_given?

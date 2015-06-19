@@ -129,7 +129,7 @@ var MongoClient = function(j_val) {
   };
 
   /**
-   Insert a documents in the specified collection
+   Insert documents in the specified collection
 
    @public
    @param collection {string} the collection 
@@ -152,7 +152,7 @@ var MongoClient = function(j_val) {
   };
 
   /**
-   Insert a documents in the specified collection with the specified write option
+   Insert documents in the specified collection with the specified write option
 
    @public
    @param collection {string} the collection 
@@ -176,7 +176,7 @@ var MongoClient = function(j_val) {
   };
 
   /**
-   Insert a documents in the specified collection with the specified many options
+   Insert documents in the specified collection with the specified many options
 
    @public
    @param collection {string} the collection 
@@ -185,10 +185,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.insertManyWithManyOptions = function(collection, documents, ordered, resultHandler) {
+  this.insertManyWithOrdered = function(collection, documents, ordered, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'function') {
-      j_mongoClient["insertManyWithManyOptions(java.lang.String,java.util.List,boolean,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, function(ar) {
+      j_mongoClient["insertManyWithOrdered(java.lang.String,java.util.List,boolean,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
@@ -200,7 +200,7 @@ var MongoClient = function(j_val) {
   };
 
   /**
-   Insert a documents in the specified collection with the specified write many options and write option
+   Insert documents in the specified collection with the specified write many options and write option
 
    @public
    @param collection {string} the collection 
@@ -210,10 +210,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.insertManyWithManyOptionsAndWriteOption = function(collection, documents, ordered, writeOption, resultHandler) {
+  this.insertManyWithOrderedAndWriteOption = function(collection, documents, ordered, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'string' && typeof __args[4] === 'function') {
-      j_mongoClient["insertManyWithManyOptionsAndWriteOption(java.lang.String,java.util.List,boolean,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, io.vertx.ext.mongo.WriteOption.valueOf(__args[3]), function(ar) {
+      j_mongoClient["insertManyWithOrderedAndWriteOption(java.lang.String,java.util.List,boolean,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, io.vertx.ext.mongo.WriteOption.valueOf(__args[3]), function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {

@@ -22,6 +22,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -130,6 +131,25 @@ public class Examples {
 
     });
 
+  }
+  
+  public void example4_1(MongoClient mongoClient) {
+    List<JsonObject> documents = new ArrayList<JsonObject>();
+    JsonObject document1 = new JsonObject().put("title", "The Hobbit");
+    JsonObject document2 = new JsonObject().put("title", "The Lord of the Rings");
+    documents.add(document1);
+    documents.add(document2);
+
+    mongoClient.insertMany("books", documents, res -> {
+
+      if (res.succeeded()) {
+        //...
+      } else {
+        //...
+      }
+        
+    });
+      
   }
 
   public void example5(MongoClient mongoClient) {
