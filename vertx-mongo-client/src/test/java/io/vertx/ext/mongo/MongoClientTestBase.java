@@ -198,6 +198,29 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testInsertDoesntAlterObject() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+
+      Map<String, Object> map = new LinkedHashMap<>();
+      map.put("nestedMap", new HashMap<>());
+      map.put("nestedList", new ArrayList<>());
+      JsonObject doc = new JsonObject(map);
+
+      mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
+        assertNotNull(id);
+
+        // Check the internal types haven't been converted
+        assertTrue(map.get("nestedMap") instanceof HashMap);
+        assertTrue(map.get("nestedList") instanceof ArrayList);
+
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testSavePreexistingObjectID() throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
