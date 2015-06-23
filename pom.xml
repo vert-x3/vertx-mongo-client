@@ -32,13 +32,13 @@
   </modules>
 
   <artifactId>vertx-mongo</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Vert.x Mongo</name>
 
   <properties>
-    <stack.version>3.0.0</stack.version>
+    <stack.version>3.1.0-SNAPSHOT</stack.version>
     <mongo.async.version>3.0.2</mongo.async.version>
     <doc.skip>true</doc.skip>
   </properties>
