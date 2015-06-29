@@ -71,9 +71,12 @@ class ClusterSettingsParser {
 
     String host = json.getString("host");
     Integer port = json.getInteger("port");
-    if (host == null && port == null) {
+    if (host == null) {
       return null;
     } else {
+      if (port == null) {
+        return new ServerAddress(host);
+      }
       return new ServerAddress(host, port);
     }
   }
