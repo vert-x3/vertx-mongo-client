@@ -27,6 +27,29 @@
  * * Custom codec to support fast serialization to/from Vert.x JSON
  * * Supports a majority of the configuration options from the MongoDB Java Driver
  *
+ * == Using Vert.x MongoDB Client
+ *
+ * To use this project, add the following dependency to the _dependencies_ section of your build descriptor:
+ *
+ * * Maven (in your `pom.xml`):
+ *
+ * [source,xml,subs="+attributes"]
+ * ----
+ * <dependency>
+ *   <groupId>{maven-groupId}</groupId>
+ *   <artifactId>{maven-artifactId}</artifactId>
+ *   <version>{maven-version}</version>
+ * </dependency>
+ * ----
+ *
+ * * Gradle (in your `build.gradle` file):
+ *
+ * [source,groovy,subs="+attributes"]
+ * ----
+ * compile {maven-groupId}:{maven-artifactId}:{maven-version}
+ * ----
+ *
+ *
  * == Creating a client
  *
  * You can create a client in several ways:
