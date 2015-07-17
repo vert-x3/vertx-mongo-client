@@ -1,22 +1,19 @@
 package io.vertx.ext.mongo.impl.codec.json;
 
 import io.vertx.core.json.JsonObject;
-import org.bson.BsonDateTime;
-import org.bson.BsonDocument;
-import org.bson.BsonDocumentReader;
-import org.bson.BsonDocumentWriter;
-import org.bson.BsonType;
-import org.bson.BsonValue;
+import org.bson.*;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.junit.Test;
 
+import java.io.*;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -95,4 +92,78 @@ public class JsonObjectCodecTest {
     // we encode always in UTC
     assertEquals("2011-12-03T09:15:30.5Z", back);
   }
+
+  @Test
+  public void writeDocument_supportBsonBinary() {
+    JsonObjectCodec codec = new JsonObjectCodec();
+
+    OffsetDateTime now = OffsetDateTime.now();
+
+    try {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(now);
+      oos.close();
+
+      JsonObject binaryJson = new JsonObject();
+      binaryJson.put(JsonObjectCodec.BINARY_FIELD, baos.toByteArray());
+      JsonObject value = new JsonObject();
+      value.put("test", binaryJson);
+
+      BsonDocument bsonResult = new BsonDocument();
+      BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+      codec.writeDocument(writer, "", value, EncoderContext.builder().build());
+
+      BsonValue resultValue = bsonResult.get("test");
+      assertEquals(BsonType.BINARY, resultValue.getBsonType());
+
+      BsonBinary bsonBinary = resultValue.asBinary();
+
+      ByteArrayInputStream bais = new ByteArrayInputStream(bsonBinary.getData());
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      OffsetDateTime reconstitutedNow = (OffsetDateTime) ois.readObject();
+
+      assertEquals(now, reconstitutedNow);
+    } catch (IOException | ClassNotFoundException e) {
+      e.printStackTrace();
+      assertTrue(false);
+    }
+
+  }
+
+  @Test
+  public void readDocument_supportBsonBinary() {
+    JsonObjectCodec codec = new JsonObjectCodec();
+
+    Instant now = Instant.now();
+    BsonDocument bson = new BsonDocument();
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+    try {
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(now);
+      oos.close();
+
+      bson.append("test", new BsonBinary(baos.toByteArray()));
+
+      BsonDocumentReader reader = new BsonDocumentReader(bson);
+
+      JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
+
+      JsonObject resultValue = result.getJsonObject("test");
+      byte[] bytes = resultValue.getBinary(JsonObjectCodec.BINARY_FIELD);
+
+      ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      Instant reconstitutedNow = (Instant) ois.readObject();
+
+      assertEquals(now, reconstitutedNow);
+    } catch (IOException | ClassNotFoundException e) {
+      e.printStackTrace();
+      assertTrue(false);
+    }
+  }
+
 }

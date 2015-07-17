@@ -22,6 +22,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
 
+import java.io.*;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -361,8 +363,8 @@ public class Examples {
   public void example13_0(MongoClient mongoService) {
 
     JsonObject document = new JsonObject().put("title", "The Hobbit")
-        //ISO-8601 date
-        .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
+            //ISO-8601 date
+            .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
 
     mongoService.save("publishedBooks", document, res -> {
 
@@ -371,11 +373,44 @@ public class Examples {
         String id = res.result();
 
         mongoService.findOne("publishedBooks", new JsonObject().put("_id", id), null, res2 -> {
-          if(res2.succeeded()) {
+          if (res2.succeeded()) {
 
             System.out.println("To retrieve ISO-8601 date : "
-                + res2.result().getJsonObject("publicationDate").getString("$date"));
+                    + res2.result().getJsonObject("publicationDate").getString("$date"));
 
+          } else {
+            res2.cause().printStackTrace();
+          }
+        });
+
+      } else {
+        res.cause().printStackTrace();
+      }
+
+    });
+
+  }
+  public void example14(MongoClient mongoService) throws Exception {
+
+    //This could be a serialized object in real life
+    //byte[] binaryArray = new byte[20];
+
+    JsonObject document = new JsonObject()
+            .put("name", "Alan Turing")
+            .put("binaryStuff", new JsonObject().put("$binary", new byte[20]));
+
+    mongoService.save("smartPeople", document, res -> {
+
+      if (res.succeeded()) {
+
+        String id = res.result();
+
+        mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
+          if(res2.succeeded()) {
+
+            res2.result().getJsonObject("binaryStuff").getBinary("$binary");
+            //byte[] reconstitutedBinaryArray = res2.result().getJsonObject("binaryStuff").getBinary("$binary");
+            //This could now be de-serialized into an object in real life
           } else {
             res2.cause().printStackTrace();
           }

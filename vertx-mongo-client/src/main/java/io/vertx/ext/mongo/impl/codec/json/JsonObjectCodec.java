@@ -2,13 +2,7 @@ package io.vertx.ext.mongo.impl.codec.json;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.bson.BsonDocument;
-import org.bson.BsonDocumentWriter;
-import org.bson.BsonReader;
-import org.bson.BsonString;
-import org.bson.BsonType;
-import org.bson.BsonValue;
-import org.bson.BsonWriter;
+import org.bson.*;
 import org.bson.codecs.CollectibleCodec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
@@ -28,6 +22,7 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> implements CollectibleCodec<JsonObject> {
   public static final String ID_FIELD = "_id";
   public static final String DATE_FIELD = "$date";
+  public static final String BINARY_FIELD = "$binary";
 
   @Override
   public JsonObject generateIdIfAbsentFromDocument(JsonObject json) {
@@ -129,11 +124,12 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
       JsonObject obj = (JsonObject) value;
       if (obj.containsKey(DATE_FIELD)) {
         return BsonType.DATE_TIME;
+      } else if (obj.containsKey(BINARY_FIELD)) {
+        return BsonType.BINARY;
       }
       //not supported yet
-      /*else if (obj.containsKey("$binary")) {
-        return BsonType.BINARY;
-      } else if (obj.containsKey("$maxKey")) {
+      /*
+      else if (obj.containsKey("$maxKey")) {
         return BsonType.MAX_KEY;
       } else if (obj.containsKey("$minKey")) {
         return BsonType.MIN_KEY;
@@ -174,5 +170,20 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected void writeDateTime(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     writer.writeDateTime(OffsetDateTime.parse(((JsonObject) value).getString(DATE_FIELD)).toInstant().toEpochMilli());
+  }
+
+  @Override
+  protected Object readBinary(BsonReader reader, DecoderContext ctx) {
+    System.out.println("READING BINARY");
+    final JsonObject result = new JsonObject();
+    result.put(BINARY_FIELD, reader.readBinaryData().getData());
+    return result;
+  }
+
+  @Override
+  protected void writeBinary(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    System.out.println("WRITING BINARY");
+    BsonBinary bson = new BsonBinary(((JsonObject) value).getBinary(BINARY_FIELD));
+    writer.writeBinaryData(bson);
   }
 }

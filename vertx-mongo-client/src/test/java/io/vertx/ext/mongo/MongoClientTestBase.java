@@ -8,6 +8,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 import org.junit.Test;
 
+import java.io.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,6 +17,8 @@ import java.util.function.Consumer;
 
 import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
 import static io.vertx.ext.mongo.WriteOption.UNACKNOWLEDGED;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -350,6 +354,46 @@ public abstract class MongoClientTestBase extends MongoTestBase {
         assertEquals(1, (int) result.getJsonArray("nestedList").getInteger(0));
         assertEquals(2, (int) result.getJsonArray("nestedList").getInteger(1));
         assertEquals(3, (int) result.getJsonArray("nestedList").getInteger(2));
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testSaveAndReadBinary() throws Exception {
+
+    String collection = randomCollection();
+
+    Instant now = Instant.now();
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+    ObjectOutputStream oos = new ObjectOutputStream(baos);
+    oos.writeObject(now);
+    oos.close();
+
+    JsonObject doc = new JsonObject();
+    doc.put("now", new JsonObject().put("$binary", baos.toByteArray()));
+
+    mongoClient.save(collection, doc, onSuccess(id -> {
+      assertNotNull(id);
+      mongoClient.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(result -> {
+        assertNotNull(result);
+        assertNotNull(result.getJsonObject("now"));
+        assertNotNull(result.getJsonObject("now").getBinary("$binary"));
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(result.getJsonObject("now").getBinary("$binary"));
+        ObjectInputStream ois = null;
+        try {
+          ois = new ObjectInputStream(bais);
+          Instant reconstitutedNow = (Instant) ois.readObject();
+
+          assertEquals(now, reconstitutedNow);
+        } catch (IOException | ClassNotFoundException e) {
+          e.printStackTrace();
+          assertTrue(false);
+        }
         testComplete();
       }));
     }));
