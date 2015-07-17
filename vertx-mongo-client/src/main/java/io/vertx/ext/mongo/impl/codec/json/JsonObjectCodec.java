@@ -2,7 +2,14 @@ package io.vertx.ext.mongo.impl.codec.json;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.bson.*;
+import org.bson.BsonBinary;
+import org.bson.BsonDocument;
+import org.bson.BsonDocumentWriter;
+import org.bson.BsonReader;
+import org.bson.BsonString;
+import org.bson.BsonType;
+import org.bson.BsonValue;
+import org.bson.BsonWriter;
 import org.bson.codecs.CollectibleCodec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
