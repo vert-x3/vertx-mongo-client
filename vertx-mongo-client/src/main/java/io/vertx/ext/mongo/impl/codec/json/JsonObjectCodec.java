@@ -174,7 +174,6 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected Object readBinary(BsonReader reader, DecoderContext ctx) {
-    System.out.println("READING BINARY");
     final JsonObject result = new JsonObject();
     result.put(BINARY_FIELD, reader.readBinaryData().getData());
     return result;
@@ -182,8 +181,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected void writeBinary(BsonWriter writer, String name, Object value, EncoderContext ctx) {
-    System.out.println("WRITING BINARY");
-    BsonBinary bson = new BsonBinary(((JsonObject) value).getBinary(BINARY_FIELD));
+    final BsonBinary bson = new BsonBinary(((JsonObject) value).getBinary(BINARY_FIELD));
     writer.writeBinaryData(bson);
   }
 }
