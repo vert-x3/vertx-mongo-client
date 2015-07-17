@@ -19,6 +19,7 @@ package examples;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.docgen.Source;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
 
@@ -390,14 +391,15 @@ public class Examples {
     });
 
   }
+  @Source(translate=false)
   public void example14(MongoClient mongoService) throws Exception {
 
     //This could be a serialized object in real life
-    //byte[] binaryArray = new byte[20];
+    byte[] binaryArray = new byte[20];
 
     JsonObject document = new JsonObject()
             .put("name", "Alan Turing")
-            .put("binaryStuff", new JsonObject().put("$binary", new byte[20]));
+            .put("binaryStuff", new JsonObject().put("$binary", binaryArray));
 
     mongoService.save("smartPeople", document, res -> {
 
@@ -408,8 +410,7 @@ public class Examples {
         mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
           if(res2.succeeded()) {
 
-            res2.result().getJsonObject("binaryStuff").getBinary("$binary");
-            //byte[] reconstitutedBinaryArray = res2.result().getJsonObject("binaryStuff").getBinary("$binary");
+            byte[] reconstitutedBinaryArray = res2.result().getJsonObject("binaryStuff").getBinary("$binary");
             //This could now be de-serialized into an object in real life
           } else {
             res2.cause().printStackTrace();

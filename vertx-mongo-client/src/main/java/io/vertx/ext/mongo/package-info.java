@@ -323,7 +323,7 @@
  * {@link examples.Examples#example13_0}
  * ----
  *
- * Here's an example of inserting a document with a binary field and reading it back
+ * Here's an example (in Java) of inserting a document with a binary field and reading it back
  *
  * [source,$lang]
  * ----
