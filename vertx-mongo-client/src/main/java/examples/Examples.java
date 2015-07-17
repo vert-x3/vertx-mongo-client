@@ -364,8 +364,8 @@ public class Examples {
   public void example13_0(MongoClient mongoService) {
 
     JsonObject document = new JsonObject().put("title", "The Hobbit")
-            //ISO-8601 date
-            .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
+      //ISO-8601 date
+      .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
 
     mongoService.save("publishedBooks", document, res -> {
 
@@ -377,7 +377,7 @@ public class Examples {
           if (res2.succeeded()) {
 
             System.out.println("To retrieve ISO-8601 date : "
-                    + res2.result().getJsonObject("publicationDate").getString("$date"));
+               + res2.result().getJsonObject("publicationDate").getString("$date"));
 
           } else {
             res2.cause().printStackTrace();
@@ -398,8 +398,8 @@ public class Examples {
     byte[] binaryArray = new byte[20];
 
     JsonObject document = new JsonObject()
-            .put("name", "Alan Turing")
-            .put("binaryStuff", new JsonObject().put("$binary", binaryArray));
+      .put("name", "Alan Turing")
+      .put("binaryStuff", new JsonObject().put("$binary", binaryArray));
 
     mongoService.save("smartPeople", document, res -> {
 
