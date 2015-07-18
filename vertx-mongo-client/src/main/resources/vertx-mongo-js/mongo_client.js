@@ -129,6 +129,102 @@ var MongoClient = function(j_val) {
   };
 
   /**
+   Insert documents in the specified collection
+
+   @public
+   @param collection {string} the collection 
+   @param documents {Array.<Object>} the documents 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.insertMany = function(collection, documents, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'function') {
+      j_mongoClient["insertMany(java.lang.String,java.util.List,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+   Insert documents in the specified collection with the specified write option
+
+   @public
+   @param collection {string} the collection 
+   @param documents {Array.<Object>} the documents 
+   @param writeOption {Object} the write option to use 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.insertManyWithWriteOption = function(collection, documents, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoClient["insertManyWithWriteOption(java.lang.String,java.util.List,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+   Insert documents in the specified collection with the specified many options
+
+   @public
+   @param collection {string} the collection 
+   @param documents {Array.<Object>} the documents 
+   @param ordered {boolean} the insert many options field to use 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.insertManyWithOrdered = function(collection, documents, ordered, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'function') {
+      j_mongoClient["insertManyWithOrdered(java.lang.String,java.util.List,boolean,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+   Insert documents in the specified collection with the specified write many options and write option
+
+   @public
+   @param collection {string} the collection 
+   @param documents {Array.<Object>} the documents 
+   @param ordered {boolean} the insert many options field to use 
+   @param writeOption {Object} the write option to use 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.insertManyWithOrderedAndWriteOption = function(collection, documents, ordered, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'string' && typeof __args[4] === 'function') {
+      j_mongoClient["insertManyWithOrderedAndWriteOption(java.lang.String,java.util.List,boolean,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, io.vertx.ext.mongo.WriteOption.valueOf(__args[3]), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
    Update matching documents in the specified collection
 
    @public

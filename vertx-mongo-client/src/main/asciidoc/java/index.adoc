@@ -190,6 +190,27 @@ mongoClient.insert("books", document, res -> {
 });
 ----
 
+To insert documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#insertMany-java.lang.String-java.util.List-io.vertx.core.Handler-[insertMany]`.
+
+[source,java]
+----
+List<JsonObject> documents = new ArrayList<JsonObject>();
+JsonObject document1 = new JsonObject().put("title", "The Hobbit");
+JsonObject document2 = new JsonObject().put("title", "The Lord of the Rings");
+documents.add(document1);
+documents.add(document2);
+
+mongoClient.insertMany("books", documents, res -> {
+
+  if (res.succeeded()) {
+    //...
+  } else {
+    //...
+  }
+    
+});
+----
+
 === Updating documents
 
 To update a documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#update-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[update]`.

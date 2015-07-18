@@ -107,6 +107,50 @@ public interface MongoClient {
   MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   /**
+   * Insert documents in the specified collection
+   *
+   * @param collection  the collection
+   * @param documents  the documents
+   * @param resultHandler  will be called when complete
+   */
+  @Fluent
+  MongoClient insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler);
+  
+  /**
+   * Insert documents in the specified collection with the specified write option
+   *
+   * @param collection  the collection
+   * @param documents  the documents
+   * @param writeOption  the write option to use
+   * @param resultHandler  will be called when complete
+   */
+  @Fluent
+  MongoClient insertManyWithWriteOption(String collection, List<JsonObject> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
+  
+  /**
+   * Insert documents in the specified collection with the specified many options
+   *
+   * @param collection  the collection
+   * @param documents  the documents
+   * @param ordered  the insert many options field to use
+   * @param resultHandler  will be called when complete
+   */
+  @Fluent
+  MongoClient insertManyWithOrdered(String collection, List<JsonObject> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler);
+  
+  /**
+   * Insert documents in the specified collection with the specified write many options and write option
+   *
+   * @param collection  the collection
+   * @param documents  the documents
+   * @param ordered  the insert many options field to use
+   * @param writeOption  the write option to use
+   * @param resultHandler  will be called when complete
+   */
+  @Fluent
+  MongoClient insertManyWithOrderedAndWriteOption(String collection, List<JsonObject> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
+  
+  /**
    * Update matching documents in the specified collection
    *
    * @param collection  the collection

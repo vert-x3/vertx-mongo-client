@@ -19,7 +19,7 @@ module VertxMongo
     # @return [::VertxMongo::MongoClient] the client
     def self.create_non_shared(vertx=nil,config=nil)
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
-        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMongo::MongoClient.java_method(:createNonShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config)),::VertxMongo::MongoClient)
+        return ::VertxMongo::MongoClient.new(Java::IoVertxExtMongo::MongoClient.java_method(:createNonShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config)))
       end
       raise ArgumentError, "Invalid arguments when calling create_non_shared(vertx,config)"
     end
@@ -31,9 +31,9 @@ module VertxMongo
     # @return [::VertxMongo::MongoClient] the client
     def self.create_shared(vertx=nil,config=nil,dataSourceName=nil)
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given? && dataSourceName == nil
-        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMongo::MongoClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config)),::VertxMongo::MongoClient)
+        return ::VertxMongo::MongoClient.new(Java::IoVertxExtMongo::MongoClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config)))
       elsif vertx.class.method_defined?(:j_del) && config.class == Hash && dataSourceName.class == String && !block_given?
-        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMongo::MongoClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config),dataSourceName),::VertxMongo::MongoClient)
+        return ::VertxMongo::MongoClient.new(Java::IoVertxExtMongo::MongoClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config),dataSourceName))
       end
       raise ArgumentError, "Invalid arguments when calling create_shared(vertx,config,dataSourceName)"
     end
@@ -86,6 +86,58 @@ module VertxMongo
         return self
       end
       raise ArgumentError, "Invalid arguments when calling insert_with_options(collection,document,writeOption)"
+    end
+    #  Insert documents in the specified collection
+    # @param [String] collection the collection
+    # @param [Array<Hash{String => Object}>] documents the documents
+    # @yield will be called when complete
+    # @return [self]
+    def insert_many(collection=nil,documents=nil)
+      if collection.class == String && documents.class == Array && block_given?
+        @j_del.java_method(:insertMany, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many(collection,documents)"
+    end
+    #  Insert documents in the specified collection with the specified write option
+    # @param [String] collection the collection
+    # @param [Array<Hash{String => Object}>] documents the documents
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption the write option to use
+    # @yield will be called when complete
+    # @return [self]
+    def insert_many_with_write_option(collection=nil,documents=nil,writeOption=nil)
+      if collection.class == String && documents.class == Array && writeOption.class == Symbol && block_given?
+        @j_del.java_method(:insertManyWithWriteOption, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_write_option(collection,documents,writeOption)"
+    end
+    #  Insert documents in the specified collection with the specified many options
+    # @param [String] collection the collection
+    # @param [Array<Hash{String => Object}>] documents the documents
+    # @param [true,false] ordered the insert many options field to use
+    # @yield will be called when complete
+    # @return [self]
+    def insert_many_with_ordered(collection=nil,documents=nil,ordered=nil)
+      if collection.class == String && documents.class == Array && (ordered.class == TrueClass || ordered.class == FalseClass) && block_given?
+        @j_del.java_method(:insertManyWithOrdered, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::boolean.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },ordered,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_ordered(collection,documents,ordered)"
+    end
+    #  Insert documents in the specified collection with the specified write many options and write option
+    # @param [String] collection the collection
+    # @param [Array<Hash{String => Object}>] documents the documents
+    # @param [true,false] ordered the insert many options field to use
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption the write option to use
+    # @yield will be called when complete
+    # @return [self]
+    def insert_many_with_ordered_and_write_option(collection=nil,documents=nil,ordered=nil,writeOption=nil)
+      if collection.class == String && documents.class == Array && (ordered.class == TrueClass || ordered.class == FalseClass) && writeOption.class == Symbol && block_given?
+        @j_del.java_method(:insertManyWithOrderedAndWriteOption, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::boolean.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },ordered,Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_ordered_and_write_option(collection,documents,ordered,writeOption)"
     end
     #  Update matching documents in the specified collection
     # @param [String] collection the collection

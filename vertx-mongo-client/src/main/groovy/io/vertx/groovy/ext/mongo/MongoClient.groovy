@@ -116,6 +116,54 @@ public class MongoClient {
     return this;
   }
   /**
+   * Insert documents in the specified collection
+   * @param collection the collection
+   * @param documents the documents
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertMany(String collection, List<Map<String, Object>> documents, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertMany(collection, documents.collect({underpants -> new JsonObject(underpants)}), resultHandler);
+    return this;
+  }
+  /**
+   * Insert documents in the specified collection with the specified write option
+   * @param collection the collection
+   * @param documents the documents
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithWriteOption(String collection, List<Map<String, Object>> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), writeOption, resultHandler);
+    return this;
+  }
+  /**
+   * Insert documents in the specified collection with the specified many options
+   * @param collection the collection
+   * @param documents the documents
+   * @param ordered the insert many options field to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithOrdered(String collection, List<Map<String, Object>> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithOrdered(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, resultHandler);
+    return this;
+  }
+  /**
+   * Insert documents in the specified collection with the specified write many options and write option
+   * @param collection the collection
+   * @param documents the documents
+   * @param ordered the insert many options field to use
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithOrderedAndWriteOption(String collection, List<Map<String, Object>> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithOrderedAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, writeOption, resultHandler);
+    return this;
+  }
+  /**
    * Update matching documents in the specified collection
    * @param collection the collection
    * @param query query used to match the documents

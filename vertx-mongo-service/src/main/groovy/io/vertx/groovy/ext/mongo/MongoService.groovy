@@ -64,6 +64,22 @@ public class MongoService extends MongoClient {
     this.delegate.insertWithOptions(collection, document != null ? new io.vertx.core.json.JsonObject(document) : null, writeOption, resultHandler);
     return this;
   }
+  public MongoService insertMany(String collection, List<Map<String, Object>> documents, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertMany(collection, documents.collect({underpants -> new JsonObject(underpants)}), resultHandler);
+    return this;
+  }
+  public MongoService insertManyWithWriteOption(String collection, List<Map<String, Object>> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), writeOption, resultHandler);
+    return this;
+  }
+  public MongoService insertManyWithOrdered(String collection, List<Map<String, Object>> documents, boolean ordered, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithOrdered(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, resultHandler);
+    return this;
+  }
+  public MongoService insertManyWithOrderedAndWriteOption(String collection, List<Map<String, Object>> documents, boolean ordered, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    this.delegate.insertManyWithOrderedAndWriteOption(collection, documents.collect({underpants -> new JsonObject(underpants)}), ordered, writeOption, resultHandler);
+    return this;
+  }
   public MongoService update(String collection, Map<String, Object> query, Map<String, Object> update, Handler<AsyncResult<Void>> resultHandler) {
     this.delegate.update(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, resultHandler);
     return this;

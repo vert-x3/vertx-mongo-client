@@ -232,6 +232,33 @@ mongoClient.insert("books", document, function (res, res_err) {
 
 ----
 
+To insert documents you use `link:jsdoc/mongo_client-MongoClient.html#insertMany[insertMany]`.
+
+[source,js]
+----
+var documents = [];
+var document1 = {
+  "title" : "The Hobbit"
+};
+var document2 = {
+  "title" : "The Lord of the Rings"
+};
+documents.push(document1);
+documents.push(document2);
+
+mongoClient.insertMany("books", documents, function (res, res_err) {
+
+  if (res_err == null) {
+    //...
+  } else {
+    //...
+  }
+
+});
+
+
+----
+
 === Updating documents
 
 To update a documents you use `link:jsdoc/mongo_client-MongoClient.html#update[update]`.

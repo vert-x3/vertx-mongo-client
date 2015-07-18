@@ -232,6 +232,33 @@ mongoClient.insert("books", document, { res ->
 
 ----
 
+To insert documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#insertMany(java.lang.String,%20java.util.List,%20io.vertx.core.Handler)[insertMany]`.
+
+[source,groovy]
+----
+def documents = []
+def document1 = [
+  title:"The Hobbit"
+]
+def document2 = [
+  title:"The Lord of the Rings"
+]
+documents.add(document1)
+documents.add(document2)
+
+mongoClient.insertMany("books", documents, { res ->
+
+  if (res.succeeded()) {
+    //...
+  } else {
+    //...
+  }
+
+})
+
+
+----
+
 === Updating documents
 
 To update a documents you use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#update(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[update]`.

@@ -19,9 +19,10 @@ package io.vertx.rxjava.ext.mongo;
 import java.util.Map;
 import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
-import java.util.List;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
+import java.util.List;
+import io.vertx.ext.mongo.InsertManyOptions;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
@@ -72,7 +73,7 @@ public class MongoClient {
   }
 
   /**
-   * Like {@link io.vertx.rxjava.ext.mongo.MongoClient#createShared} but with the default data source name
+   * Like {@link  #createShared(io.vertx.rxjava.core.Vertx, JsonObject, String)} but with the default data source name
    * @param vertx the Vert.x instance
    * @param config the configuration
    * @return the client
@@ -179,6 +180,110 @@ public class MongoClient {
   public Observable<String> insertWithOptionsObservable(String collection, JsonObject document, WriteOption writeOption) { 
     io.vertx.rx.java.ObservableFuture<String> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     insertWithOptions(collection, document, writeOption, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Insert a documents in the specified collection
+   * @param collection the collection
+   * @param documents the documents
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler) { 
+    this.delegate.insertMany(collection, documents, resultHandler);
+    return this;
+  }
+
+  /**
+   * Insert a documents in the specified collection
+   * @param collection the collection
+   * @param documents the documents
+   * @return 
+   */
+  public Observable<Void> insertManyObservable(String collection, List<JsonObject> documents) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    insertMany(collection, documents, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Insert a documents in the specified collection with the specified write option
+   * @param collection the collection
+   * @param documents the documents
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithWriteOption(String collection, List<JsonObject> documents, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
+    this.delegate.insertManyWithWriteOption(collection, documents, writeOption, resultHandler);
+    return this;
+  }
+
+  /**
+   * Insert a documents in the specified collection with the specified write option
+   * @param collection the collection
+   * @param documents the documents
+   * @param writeOption the write option to use
+   * @return 
+   */
+  public Observable<Void> insertManyWithWriteOptionObservable(String collection, List<JsonObject> documents, WriteOption writeOption) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    insertManyWithWriteOption(collection, documents, writeOption, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Insert a documents in the specified collection with the specified many options
+   * @param collection the collection
+   * @param documents the documents
+   * @param manyOptions the insert many options to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithManyOptions(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, Handler<AsyncResult<Void>> resultHandler) { 
+    this.delegate.insertManyWithManyOptions(collection, documents, manyOptions, resultHandler);
+    return this;
+  }
+
+  /**
+   * Insert a documents in the specified collection with the specified many options
+   * @param collection the collection
+   * @param documents the documents
+   * @param manyOptions the insert many options to use
+   * @return 
+   */
+  public Observable<Void> insertManyWithManyOptionsObservable(String collection, List<JsonObject> documents, InsertManyOptions manyOptions) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    insertManyWithManyOptions(collection, documents, manyOptions, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Insert a documents in the specified collection with the specified write many options and write option
+   * @param collection the collection
+   * @param documents the documents
+   * @param manyOptions the insert many options to use
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithManyOptionsAndWriteOption(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
+    this.delegate.insertManyWithManyOptionsAndWriteOption(collection, documents, manyOptions, writeOption, resultHandler);
+    return this;
+  }
+
+  /**
+   * Insert a documents in the specified collection with the specified write many options and write option
+   * @param collection the collection
+   * @param documents the documents
+   * @param manyOptions the insert many options to use
+   * @param writeOption the write option to use
+   * @return 
+   */
+  public Observable<Void> insertManyWithManyOptionsAndWriteOptionObservable(String collection, List<JsonObject> documents, InsertManyOptions manyOptions, WriteOption writeOption) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    insertManyWithManyOptionsAndWriteOption(collection, documents, manyOptions, writeOption, resultHandler.toHandler());
     return resultHandler;
   }
 
@@ -587,6 +692,6 @@ public class MongoClient {
 
 
   public static MongoClient newInstance(io.vertx.ext.mongo.MongoClient arg) {
-    return arg != null ? new MongoClient(arg) : null;
+    return new MongoClient(arg);
   }
 }

@@ -129,6 +129,98 @@ var MongoService = function(j_val) {
 
    @public
    @param collection {string} 
+   @param documents {Array.<Object>} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.insertMany = function(collection, documents, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'function') {
+      j_mongoService["insertMany(java.lang.String,java.util.List,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param documents {Array.<Object>} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.insertManyWithWriteOption = function(collection, documents, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoService["insertManyWithWriteOption(java.lang.String,java.util.List,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param documents {Array.<Object>} 
+   @param ordered {boolean} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.insertManyWithOrdered = function(collection, documents, ordered, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'function') {
+      j_mongoService["insertManyWithOrdered(java.lang.String,java.util.List,boolean,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param documents {Array.<Object>} 
+   @param ordered {boolean} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.insertManyWithOrderedAndWriteOption = function(collection, documents, ordered, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] ==='boolean' && typeof __args[3] === 'string' && typeof __args[4] === 'function') {
+      j_mongoService["insertManyWithOrderedAndWriteOption(java.lang.String,java.util.List,boolean,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), ordered, io.vertx.ext.mongo.WriteOption.valueOf(__args[3]), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
    @param query {Object} 
    @param update {Object} 
    @param resultHandler {function} 

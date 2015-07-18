@@ -153,6 +153,13 @@
  * ----
  * {@link examples.Examples#example4}
  * ----
+ * 
+ * To insert documents you use {@link io.vertx.ext.mongo.MongoClient#insertMany}.
+ * 
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example4_1}
+ * ----
  *
  * === Updating documents
  *

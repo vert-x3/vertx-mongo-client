@@ -232,6 +232,33 @@ mongoClient.insert("books", document) { |res_err,res|
 
 ----
 
+To insert documents you use `link:yardoc/VertxMongo/MongoClient.html#insert_many-instance_method[insertMany]`.
+
+[source,ruby]
+----
+documents = Array.new
+document1 = {
+  'title' => "The Hobbit"
+}
+document2 = {
+  'title' => "The Lord of the Rings"
+}
+documents.push(document1)
+documents.push(document2)
+
+mongoClient.insert_many("books", documents) { |res,res_err|
+
+  if (res_err == nil)
+    #...
+  else
+    #...
+  end
+
+}
+
+
+----
+
 === Updating documents
 
 To update a documents you use `link:yardoc/VertxMongo/MongoClient.html#update-instance_method[update]`.
