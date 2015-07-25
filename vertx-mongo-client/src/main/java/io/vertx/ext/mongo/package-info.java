@@ -327,7 +327,13 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example14}
+ * {@link examples.Examples#example14_01_dl}
+ *
+ * Here's an example of inserting a base 64 encoded string, typing it as binary a binary field, and reading it back
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example14_02_dl}
  * ----
  *
  * == Configuring the client
