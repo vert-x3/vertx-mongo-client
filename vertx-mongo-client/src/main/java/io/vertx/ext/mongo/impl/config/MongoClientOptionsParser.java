@@ -49,7 +49,7 @@ public class MongoClientOptionsParser {
     JsonObject hbConfig = config.getJsonObject("heartbeat.socket");
     if (hbConfig != null) {
       SocketSettings heartBetaSocketSettings = new SocketSettingsParser(null, hbConfig).settings();
-      options.socketSettings(heartBetaSocketSettings);
+      options.heartbeatSocketSettings(heartBetaSocketSettings);
     }
 
     // ServerSettings
