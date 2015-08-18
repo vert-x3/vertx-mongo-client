@@ -24,6 +24,7 @@ import io.vertx.core.spi.BufferFactory;
 import io.vertx.docgen.Source;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
+import org.bson.types.ObjectId;
 
 import java.io.*;
 import java.time.Instant;
@@ -446,6 +447,35 @@ public class Examples {
 
             String reconstitutedBase64EncodedString = res2.result().getJsonObject("binaryStuff").getString("$binary");
             //This could now converted back to bytes from the base 64 string
+          } else {
+            res2.cause().printStackTrace();
+          }
+        });
+
+      } else {
+        res.cause().printStackTrace();
+      }
+
+    });
+
+  }
+  public void example15_dl(MongoClient mongoService) throws Exception {
+
+    String individualId = new ObjectId().toHexString();
+
+    JsonObject document = new JsonObject()
+            .put("name", "Stephen Hawking")
+            .put("individualId", new JsonObject().put("$oid", individualId));
+
+    mongoService.save("smartPeople", document, res -> {
+
+      if (res.succeeded()) {
+
+        String id = res.result();
+
+        mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
+          if(res2.succeeded()) {
+            String reconstitutedIndividualId = res2.result().getJsonObject("individualId").getString("$oid");
           } else {
             res2.cause().printStackTrace();
           }

@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonObject;
 import org.bson.*;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
+import org.bson.types.ObjectId;
 import org.junit.Test;
 
 import java.io.*;
@@ -164,6 +165,47 @@ public class JsonObjectCodecTest {
       e.printStackTrace();
       assertTrue(false);
     }
+  }
+  @Test
+  public void readDocument_supportObjectId() {
+    JsonObjectCodec codec = new JsonObjectCodec();
+
+    BsonDocument bson = new BsonDocument();
+
+      ObjectId objectId = new ObjectId();
+      bson.append("test", new BsonObjectId(objectId));
+
+      BsonDocumentReader reader = new BsonDocumentReader(bson);
+
+      JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
+
+      String sObjectId = result.getJsonObject("test").getString("$oid");
+
+      assertEquals(objectId.toHexString(), sObjectId);
+  }
+
+  @Test
+  public void writeDocument_supportObjectId() {
+    JsonObjectCodec codec = new JsonObjectCodec();
+
+    ObjectId objectId = new ObjectId();
+    JsonObject oidJson = new JsonObject();
+    oidJson.put(JsonObjectCodec.OID_FIELD, objectId.toHexString());
+    JsonObject value = new JsonObject();
+    value.put("test", oidJson);
+
+    BsonDocument bsonResult = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+    codec.writeDocument(writer, "", value, EncoderContext.builder().build());
+
+    BsonValue resultValue = bsonResult.get("test");
+    assertEquals(BsonType.OBJECT_ID, resultValue.getBsonType());
+
+    BsonObjectId bsonObjectId = resultValue.asObjectId();
+
+    assertEquals(objectId.toHexString(), bsonObjectId.getValue().toHexString());
+
   }
 
 }

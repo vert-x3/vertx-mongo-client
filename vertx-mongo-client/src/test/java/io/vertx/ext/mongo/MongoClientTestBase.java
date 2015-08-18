@@ -6,6 +6,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
+import org.bson.types.ObjectId;
 import org.junit.Test;
 
 import java.io.*;
@@ -401,6 +402,27 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testSaveAndReadObjectId() throws Exception {
+
+    String collection = randomCollection();
+    ObjectId objectId = new ObjectId();
+
+    JsonObject doc = new JsonObject();
+    doc.put("otherId", new JsonObject().put("$oid", objectId.toHexString()));
+
+    mongoClient.save(collection, doc, onSuccess(id -> {
+      assertNotNull(id);
+      mongoClient.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(result -> {
+        assertNotNull(result);
+        assertNotNull(result.getJsonObject("otherId").getString("$oid"));
+        assertEquals(objectId.toHexString(), result.getJsonObject("otherId").getString("$oid"));
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testSaveWithOptions() throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
@@ -531,7 +553,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestFind(num, new JsonObject(), new FindOptions(), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(8, doc.size()); // Contains _id too
+        assertEquals(9, doc.size()); // Contains _id too
       }
     });
   }
@@ -699,7 +721,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(8, doc.size());
+        assertEquals(9, doc.size());
         assertEquals("fooed", doc.getString("foo"));
         assertNotNull(doc.getString("_id"));
       }
@@ -712,7 +734,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(false, true), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(8, doc.size());
+        assertEquals(9, doc.size());
         assertEquals("fooed", doc.getString("foo"));
         assertNotNull(doc.getString("_id"));
       }
@@ -813,6 +835,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
       put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
       put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
+      put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
       put("other", new JsonObject().put("quux", "flib").put("myarr",
         new JsonArray().add("blah").add(true).add(312)));
   }
@@ -821,6 +844,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     return new JsonObject().put("foo", "bar" + (num != -1 ? num : "")).put("num", 123).put("big", true).putNull("nullentry").
       put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
       put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
+      put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
       put("other", new JsonObject().put("quux", "flib").put("myarr",
         new JsonArray().add("blah").add(true).add(312)));
   }

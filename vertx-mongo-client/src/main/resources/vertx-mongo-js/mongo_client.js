@@ -16,13 +16,13 @@
 
 /** @module vertx-mongo-js/mongo_client */
 var utils = require('vertx-js/util/utils');
+var Vertx = require('vertx-js/vertx');
 
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoClient = io.vertx.ext.mongo.MongoClient;
-var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
-var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
+var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 
 /**
  A Vert.x service used to interact with MongoDB server instances.

@@ -1,3 +1,4 @@
+require 'vertx/vertx'
 require 'vertx/util/utils.rb'
 # Generated from io.vertx.ext.mongo.MongoClient
 module VertxMongo

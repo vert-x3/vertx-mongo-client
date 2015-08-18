@@ -612,7 +612,7 @@ mongoClient.runCommand("aggregate", command, { res ->
 
 === MongoDB Extended JSON support
 
-For now, only date type is supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
+For now, only date, oid and binary types are supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
 
 Here's an example of inserting a document with a date field
 
@@ -639,6 +639,118 @@ mongoService.save("publishedBooks", document, { res ->
 
         println("To retrieve ISO-8601 date : ${res2.result().publicationDate.$date}")
 
+      } else {
+        res2.cause().printStackTrace()
+      }
+    })
+
+  } else {
+    res.cause().printStackTrace()
+  }
+
+})
+
+
+----
+
+Here's an example (in Java) of inserting a document with a binary field and reading it back
+
+[source,groovy]
+----
+byte[] binaryObject = new byte[40];
+
+JsonObject document = new JsonObject()
+        .put("name", "Alan Turing")
+        .put("binaryStuff", new JsonObject().put("$binary", binaryObject));
+
+mongoService.save("smartPeople", document, res -> {
+
+  if (res.succeeded()) {
+
+    String id = res.result();
+
+    mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
+      if(res2.succeeded()) {
+
+        byte[] reconstitutedBinaryObject = res2.result().getJsonObject("binaryStuff").getBinary("$binary");
+        //This could now be de-serialized into an object in real life
+      } else {
+        res2.cause().printStackTrace();
+      }
+    });
+
+  } else {
+    res.cause().printStackTrace();
+  }
+
+});
+
+Here's an example of inserting a base 64 encoded string, typing it as binary a binary field, and reading it back
+
+[source,groovy]
+----
+
+//This could be a the byte contents of a pdf file, etc converted to base 64
+def base64EncodedString = "a2FpbHVhIGlzIHRoZSAjMSBiZWFjaCBpbiB0aGUgd29ybGQ="
+
+def document = [
+  name:"Alan Turing",
+  binaryStuff:[
+    $binary:base64EncodedString
+  ]
+]
+
+mongoService.save("smartPeople", document, { res ->
+
+  if (res.succeeded()) {
+
+    def id = res.result()
+
+    mongoService.findOne("smartPeople", [
+      _id:id
+    ], null, { res2 ->
+      if (res2.succeeded()) {
+
+        def reconstitutedBase64EncodedString = res2.result().binaryStuff.$binary
+        //This could now converted back to bytes from the base 64 string
+      } else {
+        res2.cause().printStackTrace()
+      }
+    })
+
+  } else {
+    res.cause().printStackTrace()
+  }
+
+})
+
+
+----
+Here's an example of inserting an object ID and reading it back
+
+[source,groovy]
+----
+
+def individualId = new org.bson.types.ObjectId().toHexString()
+
+def document = [
+  name:"Stephen Hawking",
+  individualId:[
+    $oid:individualId
+  ]
+]
+
+mongoService.save("smartPeople", document, { res ->
+
+  if (res.succeeded()) {
+
+    def id = res.result()
+
+    mongoService.findOne("smartPeople", [
+      _id:id
+    ], null, { res2 ->
+      if (res2.succeeded()) {
+        def reconstitutedIndividualId = res2.result().individualId.$oid
       } else {
         res2.cause().printStackTrace()
       }
