@@ -48,8 +48,8 @@ public class MongoClientOptionsParser {
     // Heartbeat SocketSettings
     JsonObject hbConfig = config.getJsonObject("heartbeat.socket");
     if (hbConfig != null) {
-      SocketSettings heartBetaSocketSettings = new SocketSettingsParser(null, hbConfig).settings();
-      options.heartbeatSocketSettings(heartBetaSocketSettings);
+      SocketSettings heartBeatSocketSettings = new SocketSettingsParser(null, hbConfig).settings();
+      options.heartbeatSocketSettings(heartBeatSocketSettings);
     }
 
     // ServerSettings
