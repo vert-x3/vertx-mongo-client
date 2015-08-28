@@ -17,11 +17,17 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.BufferFactory;
+import io.vertx.docgen.Source;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
+import org.bson.types.ObjectId;
 
+import java.io.*;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -361,8 +367,8 @@ public class Examples {
   public void example13_0(MongoClient mongoService) {
 
     JsonObject document = new JsonObject().put("title", "The Hobbit")
-        //ISO-8601 date
-        .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
+      //ISO-8601 date
+      .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
 
     mongoService.save("publishedBooks", document, res -> {
 
@@ -371,11 +377,105 @@ public class Examples {
         String id = res.result();
 
         mongoService.findOne("publishedBooks", new JsonObject().put("_id", id), null, res2 -> {
-          if(res2.succeeded()) {
+          if (res2.succeeded()) {
 
             System.out.println("To retrieve ISO-8601 date : "
-                + res2.result().getJsonObject("publicationDate").getString("$date"));
+                    + res2.result().getJsonObject("publicationDate").getString("$date"));
 
+          } else {
+            res2.cause().printStackTrace();
+          }
+        });
+
+      } else {
+        res.cause().printStackTrace();
+      }
+
+    });
+
+  }
+  @Source(translate=false)
+  public void example14_01_dl(MongoClient mongoService) throws Exception {
+
+    //This could be a serialized object or the contents of a pdf file, etc,  in real life
+    byte[] binaryObject = new byte[40];
+
+    JsonObject document = new JsonObject()
+            .put("name", "Alan Turing")
+            .put("binaryStuff", new JsonObject().put("$binary", binaryObject));
+
+    mongoService.save("smartPeople", document, res -> {
+
+      if (res.succeeded()) {
+
+        String id = res.result();
+
+        mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
+          if(res2.succeeded()) {
+
+            byte[] reconstitutedBinaryObject = res2.result().getJsonObject("binaryStuff").getBinary("$binary");
+            //This could now be de-serialized into an object in real life
+          } else {
+            res2.cause().printStackTrace();
+          }
+        });
+
+      } else {
+        res.cause().printStackTrace();
+      }
+
+    });
+
+  }
+  public void example14_02_dl(MongoClient mongoService) throws Exception {
+
+    //This could be a the byte contents of a pdf file, etc converted to base 64
+    String base64EncodedString = "a2FpbHVhIGlzIHRoZSAjMSBiZWFjaCBpbiB0aGUgd29ybGQ=";
+
+    JsonObject document = new JsonObject()
+            .put("name", "Alan Turing")
+            .put("binaryStuff", new JsonObject().put("$binary", base64EncodedString));
+
+    mongoService.save("smartPeople", document, res -> {
+
+      if (res.succeeded()) {
+
+        String id = res.result();
+
+        mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
+          if(res2.succeeded()) {
+
+            String reconstitutedBase64EncodedString = res2.result().getJsonObject("binaryStuff").getString("$binary");
+            //This could now converted back to bytes from the base 64 string
+          } else {
+            res2.cause().printStackTrace();
+          }
+        });
+
+      } else {
+        res.cause().printStackTrace();
+      }
+
+    });
+
+  }
+  public void example15_dl(MongoClient mongoService) throws Exception {
+
+    String individualId = new ObjectId().toHexString();
+
+    JsonObject document = new JsonObject()
+            .put("name", "Stephen Hawking")
+            .put("individualId", new JsonObject().put("$oid", individualId));
+
+    mongoService.save("smartPeople", document, res -> {
+
+      if (res.succeeded()) {
+
+        String id = res.result();
+
+        mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
+          if(res2.succeeded()) {
+            String reconstitutedIndividualId = res2.result().getJsonObject("individualId").getString("$oid");
           } else {
             res2.cause().printStackTrace();
           }

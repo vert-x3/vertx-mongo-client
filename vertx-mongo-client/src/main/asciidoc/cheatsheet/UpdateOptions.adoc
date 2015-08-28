@@ -10,13 +10,18 @@
 |===
 ^|Name | Type ^| Description
 
+|[[multi]]`multi`
+|`Boolean`
+|+++
+Set whether multi is enabled+++
+
 |[[upsert]]`upsert`
 |`Boolean`
 |+++
 Set whether upsert is enabled+++
 
-|[[multi]]`multi`
-|`Boolean`
+|[[writeOption]]`writeOption`
+|`Enum`
 |+++
-Set whether multi is enabled+++
+Set the write option+++
 |===

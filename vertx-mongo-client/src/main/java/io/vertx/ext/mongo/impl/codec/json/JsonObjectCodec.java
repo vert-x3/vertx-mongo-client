@@ -2,13 +2,7 @@ package io.vertx.ext.mongo.impl.codec.json;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.bson.BsonDocument;
-import org.bson.BsonDocumentWriter;
-import org.bson.BsonReader;
-import org.bson.BsonString;
-import org.bson.BsonType;
-import org.bson.BsonValue;
-import org.bson.BsonWriter;
+import org.bson.*;
 import org.bson.codecs.CollectibleCodec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
@@ -28,6 +22,8 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> implements CollectibleCodec<JsonObject> {
   public static final String ID_FIELD = "_id";
   public static final String DATE_FIELD = "$date";
+  public static final String BINARY_FIELD = "$binary";
+  public static final String OID_FIELD = "$oid";
 
   @Override
   public JsonObject generateIdIfAbsentFromDocument(JsonObject json) {
@@ -129,16 +125,17 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
       JsonObject obj = (JsonObject) value;
       if (obj.containsKey(DATE_FIELD)) {
         return BsonType.DATE_TIME;
+      } else if (obj.containsKey(OID_FIELD)) {
+        return BsonType.OBJECT_ID;
+      } else if (obj.containsKey(BINARY_FIELD)) {
+        return BsonType.BINARY;
       }
       //not supported yet
-      /*else if (obj.containsKey("$binary")) {
-        return BsonType.BINARY;
-      } else if (obj.containsKey("$maxKey")) {
+      /*
+      else if (obj.containsKey("$maxKey")) {
         return BsonType.MAX_KEY;
       } else if (obj.containsKey("$minKey")) {
         return BsonType.MIN_KEY;
-      } else if (obj.containsKey("$oid")) {
-        return BsonType.OBJECT_ID;
       } else if (obj.containsKey("$regex")) {
         return BsonType.REGULAR_EXPRESSION;
       } else if (obj.containsKey("$symbol")) {
@@ -160,19 +157,43 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected Object readObjectId(BsonReader reader, DecoderContext ctx) {
-    return reader.readObjectId().toHexString();
+    //return reader.readObjectId().toHexString();
+
+    final JsonObject result = new JsonObject();
+    result.put(OID_FIELD, reader.readObjectId().toHexString());
+    return  result;
+  }
+
+  @Override
+  protected void writeObjectId(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    JsonObject json = (JsonObject) value;
+    ObjectId objectId = new ObjectId(json.getString(OID_FIELD));
+    writer.writeObjectId(objectId);
   }
 
   @Override
   protected Object readDateTime(BsonReader reader, DecoderContext ctx) {
     final JsonObject result = new JsonObject();
     result.put(DATE_FIELD,
-        OffsetDateTime.ofInstant(Instant.ofEpochMilli(reader.readDateTime()), ZoneOffset.UTC).format(ISO_OFFSET_DATE_TIME));
+            OffsetDateTime.ofInstant(Instant.ofEpochMilli(reader.readDateTime()), ZoneOffset.UTC).format(ISO_OFFSET_DATE_TIME));
     return result;
   }
 
   @Override
   protected void writeDateTime(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     writer.writeDateTime(OffsetDateTime.parse(((JsonObject) value).getString(DATE_FIELD)).toInstant().toEpochMilli());
+  }
+
+  @Override
+  protected Object readBinary(BsonReader reader, DecoderContext ctx) {
+    final JsonObject result = new JsonObject();
+    result.put(BINARY_FIELD, reader.readBinaryData().getData());
+    return result;
+  }
+
+  @Override
+  protected void writeBinary(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    final BsonBinary bson = new BsonBinary(((JsonObject) value).getBinary(BINARY_FIELD));
+    writer.writeBinaryData(bson);
   }
 }

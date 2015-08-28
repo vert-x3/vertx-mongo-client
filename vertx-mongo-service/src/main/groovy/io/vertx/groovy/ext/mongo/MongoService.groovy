@@ -28,7 +28,7 @@ import io.vertx.ext.mongo.UpdateOptions
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
 */
-@CompileStatic
+//@CompileStatic
 public class MongoService extends MongoClient {
   final def io.vertx.ext.mongo.MongoService delegate;
   public MongoService(io.vertx.ext.mongo.MongoService delegate) {

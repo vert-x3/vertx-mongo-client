@@ -10,13 +10,23 @@
 |===
 ^|Name | Type ^| Description
 
+|[[fields]]`fields`
+|`Json object`
+|+++
+Set the fields+++
+
 |[[limit]]`limit`
-|`Number`
+|`Number (int)`
 |+++
 Set the limit+++
 
 |[[skip]]`skip`
-|`Number`
+|`Number (int)`
 |+++
 Set the skip+++
+
+|[[sort]]`sort`
+|`Json object`
+|+++
+Set the sort document+++
 |===

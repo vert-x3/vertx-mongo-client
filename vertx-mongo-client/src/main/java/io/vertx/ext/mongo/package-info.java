@@ -314,7 +314,7 @@
  *
  * === MongoDB Extended JSON support
  *
- * For now, only date type is supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
+ * For now, only date, oid and binary types are supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
  *
  * Here's an example of inserting a document with a date field
  *
@@ -322,7 +322,26 @@
  * ----
  * {@link examples.Examples#example13_0}
  * ----
- * 
+ *
+ * Here's an example (in Java) of inserting a document with a binary field and reading it back
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example14_01_dl}
+ *
+ * Here's an example of inserting a base 64 encoded string, typing it as binary a binary field, and reading it back
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example14_02_dl}
+ * ----
+ * Here's an example of inserting an object ID and reading it back
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example15_dl}
+ * ----
+ *
  * == Configuring the client
  *
  * The client is configured with a json object.
