@@ -14,6 +14,7 @@ import java.time.ZoneOffset;
 
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -21,9 +22,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class JsonObjectCodecTest {
 
+  private JsonObject options = new JsonObject();
+
   @Test
   public void getBsonType_returnsDateTimeType_WhenValueIsJsonObjectAndContainsDateField() {
-    JsonObjectCodec codec = new JsonObjectCodec();
+    JsonObjectCodec codec = new JsonObjectCodec(options);
 
     JsonObject value = new JsonObject();
     value.put(JsonObjectCodec.DATE_FIELD, "2015-05-30T22:50:02+02:00");
@@ -33,7 +36,7 @@ public class JsonObjectCodecTest {
 
   @Test
   public void writeDocument_supportBsonDateTime() {
-    JsonObjectCodec codec = new JsonObjectCodec();
+    JsonObjectCodec codec = new JsonObjectCodec(options);
 
     OffsetDateTime now = OffsetDateTime.now();
     JsonObject dateValue = new JsonObject();
@@ -53,7 +56,7 @@ public class JsonObjectCodecTest {
 
   @Test
   public void readDocument_supportBsonDateTime() {
-    JsonObjectCodec codec = new JsonObjectCodec();
+    JsonObjectCodec codec = new JsonObjectCodec(options);
 
     Instant now = Instant.now();
     BsonDocument bson = new BsonDocument();
@@ -69,7 +72,7 @@ public class JsonObjectCodecTest {
 
   @Test
   public void writeDocument_supportBsonDateTimeWithMillis() {
-    JsonObjectCodec codec = new JsonObjectCodec();
+    JsonObjectCodec codec = new JsonObjectCodec(options);
 
     JsonObject dateValue = new JsonObject();
     dateValue.put(JsonObjectCodec.DATE_FIELD, "2011-12-03T10:15:30.500+01:00");
@@ -96,7 +99,7 @@ public class JsonObjectCodecTest {
 
   @Test
   public void writeDocument_supportBsonBinary() {
-    JsonObjectCodec codec = new JsonObjectCodec();
+    JsonObjectCodec codec = new JsonObjectCodec(options);
 
     OffsetDateTime now = OffsetDateTime.now();
 
@@ -135,7 +138,7 @@ public class JsonObjectCodecTest {
 
   @Test
   public void readDocument_supportBsonBinary() {
-    JsonObjectCodec codec = new JsonObjectCodec();
+    JsonObjectCodec codec = new JsonObjectCodec(options);
 
     Instant now = Instant.now();
     BsonDocument bson = new BsonDocument();
@@ -168,7 +171,7 @@ public class JsonObjectCodecTest {
   }
   @Test
   public void readDocument_supportObjectId() {
-    JsonObjectCodec codec = new JsonObjectCodec();
+    JsonObjectCodec codec = new JsonObjectCodec(options);
 
     BsonDocument bson = new BsonDocument();
 
@@ -186,7 +189,7 @@ public class JsonObjectCodecTest {
 
   @Test
   public void writeDocument_supportObjectId() {
-    JsonObjectCodec codec = new JsonObjectCodec();
+    JsonObjectCodec codec = new JsonObjectCodec(options);
 
     ObjectId objectId = new ObjectId();
     JsonObject oidJson = new JsonObject();
@@ -205,6 +208,47 @@ public class JsonObjectCodecTest {
     BsonObjectId bsonObjectId = resultValue.asObjectId();
 
     assertEquals(objectId.toHexString(), bsonObjectId.getValue().toHexString());
+
+  }
+
+  @Test
+  public void hexStringAsKeyDefault() {
+
+    JsonObject document = new JsonObject();
+
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+    document = codec.generateIdIfAbsentFromDocument(document);
+
+    assertTrue(document.containsKey("_id"));
+    assertTrue(document.getValue("_id") instanceof String);
+
+  }
+
+  @Test
+  public void objectIdAsKeySpecified() {
+
+    JsonObject customOptions = new JsonObject().put("useObjectId", false);
+    JsonObject document = new JsonObject();
+
+    JsonObjectCodec codec = new JsonObjectCodec(customOptions);
+    document = codec.generateIdIfAbsentFromDocument(document);
+
+    assertTrue(document.containsKey("_id"));
+    assertTrue(document.getValue("_id") instanceof String);
+
+  }
+
+  @Test
+  public void objectIdAsKey() {
+
+    JsonObject customOptions = new JsonObject().put("useObjectId", true);
+    JsonObject document = new JsonObject();
+
+    JsonObjectCodec codec = new JsonObjectCodec(customOptions);
+    document = codec.generateIdIfAbsentFromDocument(document);
+
+    assertTrue(document.containsKey("_id"));
+    assertTrue(document.getValue("_id") instanceof JsonObject);
 
   }
 

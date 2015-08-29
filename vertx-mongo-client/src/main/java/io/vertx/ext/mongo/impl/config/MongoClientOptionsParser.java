@@ -23,7 +23,7 @@ public class MongoClientOptionsParser {
     Objects.requireNonNull(config);
 
     MongoClientSettings.Builder options = MongoClientSettings.builder();
-    options.codecRegistry(new VertxCodecRegistry());
+    options.codecRegistry(new VertxCodecRegistry(config));
 
     // All parsers should support connection_string first
     String cs = config.getString("connection_string");

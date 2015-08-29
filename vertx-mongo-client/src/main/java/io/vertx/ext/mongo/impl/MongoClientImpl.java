@@ -54,12 +54,14 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
   private static final String ID_FIELD = "_id";
+  private static final String OID_FIELD = "$oid";
 
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
 
   private final Vertx vertx;
   protected com.mongodb.async.client.MongoClient mongo;
   protected final MongoHolder holder;
+  protected boolean useObjectId;
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName) {
     Objects.requireNonNull(vertx);
@@ -68,6 +70,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     this.vertx = vertx;
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo();
+    useObjectId = config.getBoolean("useObjectId", false);
   }
 
   @Override
@@ -90,9 +93,17 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Object id = document.getValue(ID_FIELD);
     if (id == null) {
-      coll.insertOne(document, convertCallback(resultHandler, wr -> document.getString(ID_FIELD)));
+      coll.insertOne(document, convertCallback(resultHandler, wr -> useObjectId ? document.getJsonObject(ID_FIELD).getString(OID_FIELD) : document.getString(ID_FIELD)));
     } else {
-      coll.replaceOne(wrap(new JsonObject().put(ID_FIELD, document.getValue(ID_FIELD))), document, convertCallback(resultHandler, result -> null));
+      JsonObject filter = new JsonObject();
+      if (useObjectId) {
+        filter.put(ID_FIELD, new JsonObject().put(OID_FIELD, document.getValue(ID_FIELD)));
+        document.put(ID_FIELD, filter.getValue(ID_FIELD));
+      } else {
+        filter.put(ID_FIELD, document.getValue(ID_FIELD));
+      }
+
+      coll.replaceOne(wrap(filter), document, convertCallback(resultHandler, result -> null));
     }
     return this;
   }
@@ -111,12 +122,24 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     boolean id = document.containsKey(ID_FIELD);
 
+    if (id) {
+      if (useObjectId) {
+        if (document.getValue(ID_FIELD) instanceof String) {
+          document.put(ID_FIELD, new JsonObject().put(OID_FIELD, document.getString(ID_FIELD)));
+        }
+    }
+  }
+
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     coll.insertOne(document, convertCallback(resultHandler, wr -> {
       if (id) {
         return null;
       } else {
-        return document.getString(ID_FIELD);
+        if (useObjectId) {
+          return document.getJsonObject(ID_FIELD).getString(OID_FIELD);
+        } else {
+          return document.getString(ID_FIELD);
+        }
       }
     }));
     return this;
@@ -190,6 +213,14 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    if (useObjectId) {
+      if (query.containsKey(ID_FIELD)) {
+        if (query.getValue(ID_FIELD) instanceof String) {
+          query.put(ID_FIELD, new JsonObject().put(OID_FIELD, query.getString(ID_FIELD)));
+        }
+      }
+    }
 
     Bson bquery = wrap(query);
     Bson bfields = wrap(fields);

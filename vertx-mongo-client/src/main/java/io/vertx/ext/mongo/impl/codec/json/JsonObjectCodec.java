@@ -25,12 +25,20 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   public static final String BINARY_FIELD = "$binary";
   public static final String OID_FIELD = "$oid";
 
+  private boolean useObjectId = false;
+
+  public JsonObjectCodec(JsonObject config) {
+    useObjectId = config.getBoolean("useObjectId", false);
+  }
+
   @Override
   public JsonObject generateIdIfAbsentFromDocument(JsonObject json) {
-    //TODO: Is this faster/better then Java UUID ?
+
     if (!documentHasId(json)) {
       ObjectId id = new ObjectId();
-      json.put(ID_FIELD, id.toHexString());
+
+      if (useObjectId) json.put(ID_FIELD, new JsonObject().put("$oid", id.toHexString()));
+      else json.put(ID_FIELD, id.toHexString());
     }
     return json;
   }
@@ -157,11 +165,9 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected Object readObjectId(BsonReader reader, DecoderContext ctx) {
-    //return reader.readObjectId().toHexString();
 
-    final JsonObject result = new JsonObject();
-    result.put(OID_FIELD, reader.readObjectId().toHexString());
-    return  result;
+    if (reader.getCurrentName().equals(ID_FIELD)) return reader.readObjectId().toHexString();
+    return  new JsonObject().put(OID_FIELD, reader.readObjectId().toHexString());
   }
 
   @Override
