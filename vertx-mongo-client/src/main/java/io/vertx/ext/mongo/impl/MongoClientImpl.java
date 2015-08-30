@@ -96,10 +96,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       coll.insertOne(document, convertCallback(resultHandler, wr -> useObjectId ? document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) : document.getString(ID_FIELD)));
     } else {
       JsonObject filter = new JsonObject();
-      encodeKeyWhenUseObjectId(document);
-      filter.put(ID_FIELD, document.getValue(ID_FIELD));
+      JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
+      filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
 
-      coll.replaceOne(wrap(filter), document, convertCallback(resultHandler, result -> null));
+      coll.replaceOne(wrap(filter), encodedDocument, convertCallback(resultHandler, result -> null));
     }
     return this;
   }
@@ -118,15 +118,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     boolean id = document.containsKey(ID_FIELD);
 
-    encodeKeyWhenUseObjectId(document);
+    JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    coll.insertOne(document, convertCallback(resultHandler, wr -> {
+    coll.insertOne(encodedDocument, convertCallback(resultHandler, wr -> {
       if (id) {
         return null;
       } else {
-        decodeKeyWhenUseObjectId(document);
-        return document.getString(ID_FIELD);
+        JsonObject decodedDocument = decodeKeyWhenUseObjectId(encodedDocument);
+        return decodedDocument.getString(ID_FIELD);
       }
     }));
     return this;
@@ -172,7 +172,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     boolean id = query.containsKey(ID_FIELD);
-    encodeKeyWhenUseObjectId(query);
+    query = encodeKeyWhenUseObjectId(query);
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
     Bson bquery = wrap(query);
@@ -204,7 +204,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    encodeKeyWhenUseObjectId(query);
+    query = encodeKeyWhenUseObjectId(query);
 
     Bson bquery = wrap(query);
     Bson bfields = wrap(fields);
