@@ -34,6 +34,7 @@ import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
+import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.conversions.Bson;
 
@@ -54,7 +55,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
   private static final String ID_FIELD = "_id";
-  private static final String OID_FIELD = "$oid";
 
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
 
@@ -93,7 +93,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Object id = document.getValue(ID_FIELD);
     if (id == null) {
-      coll.insertOne(document, convertCallback(resultHandler, wr -> useObjectId ? document.getJsonObject(ID_FIELD).getString(OID_FIELD) : document.getString(ID_FIELD)));
+      coll.insertOne(document, convertCallback(resultHandler, wr -> useObjectId ? document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) : document.getString(ID_FIELD)));
     } else {
       JsonObject filter = new JsonObject();
       encodeKeyWhenUseObjectId(document);
@@ -320,14 +320,14 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
     if (useObjectId && json.containsKey(ID_FIELD) && json.getValue(ID_FIELD) instanceof String) {
-      json.put(ID_FIELD, new JsonObject().put(OID_FIELD, json.getString(ID_FIELD)));
+      json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, json.getString(ID_FIELD)));
     }
     return json;
   }
 
   private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
     if (useObjectId && json.containsKey(ID_FIELD)) {
-      json.put(ID_FIELD, json.getJsonObject(ID_FIELD).getString(OID_FIELD));
+      json.put(ID_FIELD, json.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD));
     }
     return json;
   }
