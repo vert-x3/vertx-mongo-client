@@ -34,6 +34,7 @@ import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
+import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.conversions.Bson;
 
@@ -60,6 +61,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   private final Vertx vertx;
   protected com.mongodb.async.client.MongoClient mongo;
   protected final MongoHolder holder;
+  protected boolean useObjectId;
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName) {
     Objects.requireNonNull(vertx);
@@ -68,6 +70,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     this.vertx = vertx;
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo();
+    this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
   @Override
@@ -90,9 +93,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Object id = document.getValue(ID_FIELD);
     if (id == null) {
-      coll.insertOne(document, convertCallback(resultHandler, wr -> document.getString(ID_FIELD)));
+      coll.insertOne(document, convertCallback(resultHandler, wr -> useObjectId ? document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) : document.getString(ID_FIELD)));
     } else {
-      coll.replaceOne(wrap(new JsonObject().put(ID_FIELD, document.getValue(ID_FIELD))), document, convertCallback(resultHandler, result -> null));
+      JsonObject filter = new JsonObject();
+      JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
+      filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
+
+      coll.replaceOne(wrap(filter), encodedDocument, convertCallback(resultHandler, result -> null));
     }
     return this;
   }
@@ -111,12 +118,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     boolean id = document.containsKey(ID_FIELD);
 
+    JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
+
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    coll.insertOne(document, convertCallback(resultHandler, wr -> {
+    coll.insertOne(encodedDocument, convertCallback(resultHandler, wr -> {
       if (id) {
         return null;
       } else {
-        return document.getString(ID_FIELD);
+        JsonObject decodedDocument = decodeKeyWhenUseObjectId(encodedDocument);
+        return decodedDocument.getString(ID_FIELD);
       }
     }));
     return this;
@@ -161,6 +171,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
+    boolean id = query.containsKey(ID_FIELD);
+    query = encodeKeyWhenUseObjectId(query);
+
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
     Bson bquery = wrap(query);
     coll.replaceOne(bquery, replace, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
@@ -190,6 +203,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    query = encodeKeyWhenUseObjectId(query);
 
     Bson bquery = wrap(query);
     Bson bfields = wrap(fields);
@@ -301,6 +316,20 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     holder.db.runCommand(wrap(json), JsonObject.class, wrapCallback(resultHandler));
     return this;
+  }
+
+  private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
+    if (useObjectId && json.containsKey(ID_FIELD) && json.getValue(ID_FIELD) instanceof String) {
+      json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, json.getString(ID_FIELD)));
+    }
+    return json;
+  }
+
+  private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
+    if (useObjectId && json.containsKey(ID_FIELD)) {
+      json.put(ID_FIELD, json.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD));
+    }
+    return json;
   }
 
   private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {

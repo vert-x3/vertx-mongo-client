@@ -351,7 +351,11 @@
  *
  *
  * `db_name`:: Name of the database in the mongoDB instance to use. Defaults to `default_db`
- * `useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. Defaults to `false`.
+ * `useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. If `true', hex-strings will
+ * be saved as native Mongodb ObjectId types in the document collection. This will allow the sorting of documents based on creation
+ * time. You can also derive the creation time from the hex-string using ObjectId::getDate(). Set to `false' for other types of your choosing.
+ * If set to false, or left to default, hex strings will be generated as the document _id if the _id is omitted from the document.
+ * Defaults to `false`.
  *
  * The mongo client tries to support most options that are allowed by the driver. There are two ways to configure mongo
  * for use by the driver, either by a connection string or by separate configuration options.

@@ -18,8 +18,6 @@ import java.util.function.Consumer;
 
 import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
 import static io.vertx.ext.mongo.WriteOption.UNACKNOWLEDGED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -147,7 +145,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      String genID  = TestUtils.randomAlphaString(100);
+      String genID = TestUtils.randomAlphaString(100);
       doc.put("_id", genID);
       mongoClient.insert(collection, doc, onSuccess(id -> {
         assertNull(id);
@@ -162,7 +160,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      Long genID  = TestUtils.randomLong();
+      Long genID = TestUtils.randomLong();
       doc.put("_id", genID);
       mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
         assertNull(id);
@@ -177,7 +175,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      Long genID  = TestUtils.randomLong();
+      Long genID = TestUtils.randomLong();
       doc.put("_id", genID);
       mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
         assertNull(id);
@@ -192,7 +190,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      JsonObject genID  = new JsonObject().put("id", TestUtils.randomAlphaString(100));
+      JsonObject genID = new JsonObject().put("id", TestUtils.randomAlphaString(100));
       doc.put("_id", genID);
       mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
         assertNull(id);
@@ -822,7 +820,6 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     document.put("foo", "bar");
 
     mongoClient.insert(collection, document, onSuccess(id -> {
-      System.out.println("Inserted with id " + id);
       mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
         assertEquals(document, retrieved);
         testComplete();
@@ -831,7 +828,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
-  private JsonObject createDoc() {
+  protected JsonObject createDoc() {
     return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
       put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
       put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
@@ -840,7 +837,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
         new JsonArray().add("blah").add(true).add(312)));
   }
 
-  private JsonObject createDoc(int num) {
+  protected JsonObject createDoc(int num) {
     return new JsonObject().put("foo", "bar" + (num != -1 ? num : "")).put("num", 123).put("big", true).putNull("nullentry").
       put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
       put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
@@ -900,7 +897,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
 
-  private String randomCollection() {
+  protected String randomCollection() {
     return "ext-mongo" + TestUtils.randomAlphaString(20);
   }
 
