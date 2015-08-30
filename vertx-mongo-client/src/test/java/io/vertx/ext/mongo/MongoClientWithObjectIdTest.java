@@ -143,16 +143,40 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
       JsonObject doc = createDoc();
       mongoClient.insert(collection, doc, onSuccess(id -> {
         assertNotNull(id);
-        System.out.println("Existing ID: " + id);
         doc.put("_id", id);
         mongoClient.insert(collection, doc, response -> {
-          System.out.println("Succeeded: " + response.succeeded());
-          System.out.println("Result: " + response.result());
-              assertFalse(response.succeeded());
-              testComplete();
+          assertFalse(response.succeeded());
+          testComplete();
         });
       }));
     }));
+    await();
+  }
+
+  @Test
+  public void testReplaceUpsert() {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+    mongoClient.insert(collection, doc, onSuccess(id -> {
+      assertNotNull(id);
+      JsonObject replacement = createDoc();
+      replacement.put("replacement", true);
+      mongoClient.replaceWithOptions(collection, new JsonObject().put("_id", new ObjectId().toHexString()), replacement, new UpdateOptions(true), onSuccess(v -> {
+        mongoClient.find(collection, new JsonObject(), onSuccess(list -> {
+          assertNotNull(list);
+          assertEquals(2, list.size());
+          JsonObject result = null;
+          for (JsonObject o : list) {
+            if (o.containsKey("replacement")) {
+              result = o;
+            }
+          }
+          assertNotNull(result);
+          testComplete();
+        }));
+      }));
+    }));
+
     await();
   }
 }

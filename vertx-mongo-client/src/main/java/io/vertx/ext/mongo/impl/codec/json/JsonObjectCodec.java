@@ -166,7 +166,9 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected Object readObjectId(BsonReader reader, DecoderContext ctx) {
 
-    if (reader.getCurrentName().equals(ID_FIELD)) return reader.readObjectId().toHexString();
+    if (reader.getCurrentName().equals(ID_FIELD)) {
+      return reader.readObjectId().toHexString();
+    }
     return  new JsonObject().put(OID_FIELD, reader.readObjectId().toHexString());
   }
 

@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 import org.bson.types.ObjectId;
+import org.jruby.RubyProcess;
 import org.junit.Test;
 
 import java.io.*;
@@ -627,7 +628,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
-  //@Test
+  @Test
   public void testReplace() {
     String collection = randomCollection();
     JsonObject doc = createDoc();
@@ -652,7 +653,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
-  //@Test
+  @Test
   public void testReplaceUpsert() {
     String collection = randomCollection();
     JsonObject doc = createDoc();
@@ -679,7 +680,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
-  //@Test
+  @Test
   public void testReplaceUpsert2() {
     String collection = randomCollection();
     JsonObject doc = createDoc();
@@ -713,7 +714,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     }));
   }
 
-  //@Test
+  @Test
   public void testUpdateOne() throws Exception {
     int num = 1;
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(), results -> {
@@ -726,7 +727,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     });
   }
 
-  //@Test
+  @Test
   public void testUpdateAll() throws Exception {
     int num = 10;
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(false, true), results -> {
