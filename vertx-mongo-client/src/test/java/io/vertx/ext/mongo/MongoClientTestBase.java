@@ -7,7 +7,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 import org.bson.types.ObjectId;
-import org.jruby.RubyProcess;
 import org.junit.Test;
 
 import java.io.*;
