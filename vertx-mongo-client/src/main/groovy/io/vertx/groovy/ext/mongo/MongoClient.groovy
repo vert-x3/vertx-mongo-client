@@ -17,7 +17,6 @@
 package io.vertx.groovy.ext.mongo;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
-import io.vertx.core.json.JsonObject
 import java.util.List
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
