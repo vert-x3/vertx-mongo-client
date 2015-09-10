@@ -37,12 +37,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
-import java.util.List;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.core.Vertx;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoService;
+import java.util.List;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoService;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.mongo.UpdateOptions;
@@ -62,10 +63,10 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
   private final long timeoutSeconds;
 
   public MongoServiceVertxProxyHandler(Vertx vertx, MongoService service) {
-    this(vertx, service, DEFAULT_CONNECTION_TIMEOUT);  }
+    this(vertx, service, DEFAULT_CONNECTION_TIMEOUT);
+  }
 
-  public MongoServiceVertxProxyHandler(Vertx vertx, MongoService service,
-    long timeoutInSecond) {
+  public MongoServiceVertxProxyHandler(Vertx vertx, MongoService service, long timeoutInSecond) {
     this(vertx, service, true, timeoutInSecond);
   }
 
@@ -208,6 +209,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
       }
     }
   }
+
   private <T> Handler<AsyncResult<T>> createHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -217,6 +219,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
+
   private <T> Handler<AsyncResult<List<T>>> createListHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -226,6 +229,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
+
   private <T> Handler<AsyncResult<Set<T>>> createSetHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -235,6 +239,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
+
   private Handler<AsyncResult<List<Character>>> createListCharHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -248,6 +253,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
+
   private Handler<AsyncResult<Set<Character>>> createSetCharHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -261,12 +267,15 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
+
   private <T> Map<String, T> convertMap(Map map) {
     return (Map<String, T>)map;
   }
+
   private <T> List<T> convertList(List list) {
     return (List<T>)list;
   }
+
   private <T> Set<T> convertSet(List list) {
     return new HashSet<T>((List<T>)list);
   }

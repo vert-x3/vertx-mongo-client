@@ -465,8 +465,8 @@
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 @Document(fileName = "index.adoc")
-@GenModule(name = "vertx-mongo")
+@ModuleGen(name = "vertx-mongo", groupPackage = "io.vertx")
 package io.vertx.ext.mongo;
 
-import io.vertx.codegen.annotations.GenModule;
+import io.vertx.codegen.annotations.ModuleGen;
 import io.vertx.docgen.Document;

@@ -16,14 +16,14 @@
 
 /** @module vertx-mongo-js/mongo_service */
 var utils = require('vertx-js/util/utils');
+var Vertx = require('vertx-js/vertx');
 var MongoClient = require('vertx-mongo-js/mongo_client');
 
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoService = io.vertx.ext.mongo.MongoService;
-var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
-var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
+var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 
 /**
 
