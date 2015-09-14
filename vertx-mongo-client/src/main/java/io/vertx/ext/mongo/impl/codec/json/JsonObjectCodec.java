@@ -1,5 +1,6 @@
 package io.vertx.ext.mongo.impl.codec.json;
 
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.bson.*;
@@ -37,7 +38,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
     if (!documentHasId(json)) {
       ObjectId id = new ObjectId();
 
-      if (useObjectId) json.put(ID_FIELD, new JsonObject().put("$oid", id.toHexString()));
+      if (useObjectId) json.put(ID_FIELD, new JsonObject().put(OID_FIELD, id.toHexString()));
       else json.put(ID_FIELD, id.toHexString());
     }
     return json;
@@ -71,6 +72,14 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   public Class<JsonObject> getEncoderClass() {
     return JsonObject.class;
+  }
+
+  @Override
+  protected boolean isObjectIdInstance(Object instance) {
+    if (instance instanceof JsonObject && ((JsonObject) instance).containsKey(OID_FIELD)) {
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -165,11 +174,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected Object readObjectId(BsonReader reader, DecoderContext ctx) {
-
-    if (reader.getCurrentName().equals(ID_FIELD)) {
-      return reader.readObjectId().toHexString();
-    }
-    return  new JsonObject().put(OID_FIELD, reader.readObjectId().toHexString());
+    return new JsonObject().put(OID_FIELD, reader.readObjectId().toHexString());
   }
 
   @Override

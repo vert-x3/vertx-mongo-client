@@ -235,7 +235,6 @@ public class JsonObjectCodecTest {
 
     assertTrue(document.containsKey("_id"));
     assertTrue(document.getValue("_id") instanceof String);
-
   }
 
   @Test
@@ -249,7 +248,7 @@ public class JsonObjectCodecTest {
 
     assertTrue(document.containsKey("_id"));
     assertTrue(document.getValue("_id") instanceof JsonObject);
-
+    assertTrue(document.getJsonObject("_id").containsKey(JsonObjectCodec.OID_FIELD));
   }
 
 }
