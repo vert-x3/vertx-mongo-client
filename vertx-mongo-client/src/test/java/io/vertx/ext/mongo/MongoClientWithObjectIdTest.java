@@ -58,8 +58,9 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
       mongoClient.insert(collection, doc, onSuccess(id -> {
         assertNotNull(id);
         mongoClient.findOne(collection, new JsonObject().put("foo", "bar"), null, onSuccess(obj -> {
-          assertTrue(obj.getValue("_id") instanceof String);
           assertTrue(obj.containsKey("_id"));
+          assertTrue(obj.getValue("_id") instanceof JsonObject);
+          assertTrue(((JsonObject) obj.getValue("_id")).containsKey("$oid"));
           obj.remove("_id");
           assertEquals(orig, obj);
           testComplete();

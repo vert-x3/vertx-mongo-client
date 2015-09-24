@@ -21,6 +21,11 @@ public class AbstractJsonCodecTest {
   private AbstractJsonCodec getCodec() {
     return new AbstractJsonCodec() {
       @Override
+      protected boolean isObjectIdInstance(Object instance) {
+        return false;
+      }
+
+      @Override
       protected Object newObject() {
         return null;
       }

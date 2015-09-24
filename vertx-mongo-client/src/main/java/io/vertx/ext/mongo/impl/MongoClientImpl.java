@@ -37,6 +37,7 @@ import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -320,14 +321,20 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
     if (useObjectId && json.containsKey(ID_FIELD) && json.getValue(ID_FIELD) instanceof String) {
-      json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, json.getString(ID_FIELD)));
+      String idString = json.getString(ID_FIELD);
+      if (ObjectId.isValid(idString)) {
+        json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, idString));
+      }
     }
     return json;
   }
 
   private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
     if (useObjectId && json.containsKey(ID_FIELD)) {
-      json.put(ID_FIELD, json.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD));
+      Object idValue = json.getValue(ID_FIELD);
+      if (idValue instanceof JsonObject && ((JsonObject) idValue).containsKey(JsonObjectCodec.OID_FIELD)) {
+        json.put(ID_FIELD, json.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD));
+      }
     }
     return json;
   }
@@ -422,7 +429,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     }
   }
 
-  private static class MongoHolder implements Shareable{
+  private static class MongoHolder implements Shareable {
     com.mongodb.async.client.MongoClient mongo;
     MongoDatabase db;
     JsonObject config;

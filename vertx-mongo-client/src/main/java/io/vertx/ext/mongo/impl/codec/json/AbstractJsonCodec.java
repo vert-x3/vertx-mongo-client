@@ -148,8 +148,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
   protected BsonType getBsonType(Object value) {
     if (value == null) {
       return BsonType.NULL;
-    } else
-    if (value instanceof Boolean) {
+    } else if (value instanceof Boolean) {
       return BsonType.BOOLEAN;
     } else if (value instanceof Double) {
       return BsonType.DOUBLE;
@@ -159,6 +158,8 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
       return BsonType.INT64;
     } else if (value instanceof String) {
       return BsonType.STRING;
+    } else if (isObjectIdInstance(value)) {
+      return BsonType.OBJECT_ID;
     } else if (isObjectInstance(value)) {
       return BsonType.DOCUMENT;
     } else if (isArrayInstance(value)) {
@@ -218,6 +219,8 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
   protected void writeString(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     writer.writeString((String) value);
   }
+
+  protected abstract boolean isObjectIdInstance(Object instance);
 
   //-------------- JSON Object
 
