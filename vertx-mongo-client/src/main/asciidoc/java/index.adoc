@@ -21,9 +21,9 @@ To use this project, add the following dependency to the _dependencies_ section 
 [source,xml,subs="+attributes"]
 ----
 <dependency>
-  <groupId>{maven-groupId}</groupId>
-  <artifactId>{maven-artifactId}</artifactId>
-  <version>{maven-version}</version>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-mongo-client</artifactId>
+  <version>3.1.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -31,7 +31,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile {maven-groupId}:{maven-artifactId}:{maven-version}
+compile io.vertx:vertx-mongo-client:3.1.0-SNAPSHOT
 ----
 
 

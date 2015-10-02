@@ -112,101 +112,106 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
   }
 
   public void handle(Message<JsonObject> msg) {
-    JsonObject json = msg.body();
-    String action = msg.headers().get("action");
-    if (action == null) {
-      throw new IllegalStateException("action not specified");
-    }
-    accessed();
-    switch (action) {
+    try {
+      JsonObject json = msg.body();
+      String action = msg.headers().get("action");
+      if (action == null) {
+        throw new IllegalStateException("action not specified");
+      }
+      accessed();
+      switch (action) {
 
-      case "save": {
-        service.save((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), createHandler(msg));
-        break;
+        case "save": {
+          service.save((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), createHandler(msg));
+          break;
+        }
+        case "saveWithOptions": {
+          service.saveWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
+          break;
+        }
+        case "insert": {
+          service.insert((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), createHandler(msg));
+          break;
+        }
+        case "insertWithOptions": {
+          service.insertWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
+          break;
+        }
+        case "update": {
+          service.update((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), createHandler(msg));
+          break;
+        }
+        case "updateWithOptions": {
+          service.updateWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), createHandler(msg));
+          break;
+        }
+        case "replace": {
+          service.replace((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("replace"), createHandler(msg));
+          break;
+        }
+        case "replaceWithOptions": {
+          service.replaceWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("replace"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), createHandler(msg));
+          break;
+        }
+        case "find": {
+          service.find((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createListHandler(msg));
+          break;
+        }
+        case "findWithOptions": {
+          service.findWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.FindOptions(json.getJsonObject("options")), createListHandler(msg));
+          break;
+        }
+        case "findOne": {
+          service.findOne((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("fields"), createHandler(msg));
+          break;
+        }
+        case "count": {
+          service.count((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createHandler(msg));
+          break;
+        }
+        case "remove": {
+          service.remove((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createHandler(msg));
+          break;
+        }
+        case "removeWithOptions": {
+          service.removeWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
+          break;
+        }
+        case "removeOne": {
+          service.removeOne((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createHandler(msg));
+          break;
+        }
+        case "removeOneWithOptions": {
+          service.removeOneWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
+          break;
+        }
+        case "createCollection": {
+          service.createCollection((java.lang.String)json.getValue("collectionName"), createHandler(msg));
+          break;
+        }
+        case "getCollections": {
+          service.getCollections(createListHandler(msg));
+          break;
+        }
+        case "dropCollection": {
+          service.dropCollection((java.lang.String)json.getValue("collection"), createHandler(msg));
+          break;
+        }
+        case "runCommand": {
+          service.runCommand((java.lang.String)json.getValue("commandName"), (io.vertx.core.json.JsonObject)json.getValue("command"), createHandler(msg));
+          break;
+        }
+        case "close": {
+          service.close();
+          break;
+        }
+        default: {
+          throw new IllegalStateException("Invalid action: " + action);
+        }
       }
-      case "saveWithOptions": {
-        service.saveWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
-        break;
-      }
-      case "insert": {
-        service.insert((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), createHandler(msg));
-        break;
-      }
-      case "insertWithOptions": {
-        service.insertWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
-        break;
-      }
-      case "update": {
-        service.update((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), createHandler(msg));
-        break;
-      }
-      case "updateWithOptions": {
-        service.updateWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), createHandler(msg));
-        break;
-      }
-      case "replace": {
-        service.replace((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("replace"), createHandler(msg));
-        break;
-      }
-      case "replaceWithOptions": {
-        service.replaceWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("replace"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), createHandler(msg));
-        break;
-      }
-      case "find": {
-        service.find((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createListHandler(msg));
-        break;
-      }
-      case "findWithOptions": {
-        service.findWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.FindOptions(json.getJsonObject("options")), createListHandler(msg));
-        break;
-      }
-      case "findOne": {
-        service.findOne((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("fields"), createHandler(msg));
-        break;
-      }
-      case "count": {
-        service.count((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createHandler(msg));
-        break;
-      }
-      case "remove": {
-        service.remove((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createHandler(msg));
-        break;
-      }
-      case "removeWithOptions": {
-        service.removeWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
-        break;
-      }
-      case "removeOne": {
-        service.removeOne((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createHandler(msg));
-        break;
-      }
-      case "removeOneWithOptions": {
-        service.removeOneWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
-        break;
-      }
-      case "createCollection": {
-        service.createCollection((java.lang.String)json.getValue("collectionName"), createHandler(msg));
-        break;
-      }
-      case "getCollections": {
-        service.getCollections(createListHandler(msg));
-        break;
-      }
-      case "dropCollection": {
-        service.dropCollection((java.lang.String)json.getValue("collection"), createHandler(msg));
-        break;
-      }
-      case "runCommand": {
-        service.runCommand((java.lang.String)json.getValue("commandName"), (io.vertx.core.json.JsonObject)json.getValue("command"), createHandler(msg));
-        break;
-      }
-      case "close": {
-        service.close();
-        break;
-      }
-      default: {
-        throw new IllegalStateException("Invalid action: " + action);
-      }
+    } catch (Throwable t) {
+      msg.fail(-1, t.getMessage());
+      throw t;
     }
   }
 

@@ -21,9 +21,9 @@ To use this project, add the following dependency to the _dependencies_ section 
 [source,xml,subs="+attributes"]
 ----
 <dependency>
-  <groupId>{maven-groupId}</groupId>
-  <artifactId>{maven-artifactId}</artifactId>
-  <version>{maven-version}</version>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-mongo-client</artifactId>
+  <version>3.1.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -31,7 +31,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile {maven-groupId}:{maven-artifactId}:{maven-version}
+compile io.vertx:vertx-mongo-client:3.1.0-SNAPSHOT
 ----
 
 
@@ -276,7 +276,7 @@ mongoClient.update("books", query, update, { res ->
 ----
 
 To specify if the update should upsert or update multiple documents, use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#updateWithOptions(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.ext.mongo.UpdateOptions,%20io.vertx.core.Handler)[updateWithOptions]`
-and pass in an instance of `link:../cheatsheet/UpdateOptions.html[UpdateOptions]`.
+and pass in an instance of `link:../dataobjects.html#UpdateOptions[UpdateOptions]`.
 
 This has the following fields:
 
@@ -426,7 +426,7 @@ mongoClient.find("books", query, { res ->
 The matching documents are returned as a list of json objects in the result handler.
 
 To specify things like what fields to return, how many results to return, etc use `link:groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#findWithOptions(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.ext.mongo.FindOptions,%20io.vertx.core.Handler)[findWithOptions]`
-and pass in the an instance of `link:../cheatsheet/FindOptions.html[FindOptions]`.
+and pass in the an instance of `link:../dataobjects.html#FindOptions[FindOptions]`.
 
 This has the following fields:
 
