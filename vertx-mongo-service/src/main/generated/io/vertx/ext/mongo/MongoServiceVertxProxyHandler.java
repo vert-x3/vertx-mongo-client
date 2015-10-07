@@ -252,7 +252,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
       } else {
         JsonArray arr = new JsonArray();
         for (Character chr: res.result()) {
-          arr.add((int)chr);
+          arr.add((int) chr);
         }
         msg.reply(arr);
       }
@@ -266,7 +266,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
       } else {
         JsonArray arr = new JsonArray();
         for (Character chr: res.result()) {
-          arr.add((int)chr);
+          arr.add((int) chr);
         }
         msg.reply(arr);
       }
