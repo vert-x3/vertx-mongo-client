@@ -83,9 +83,21 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
+  public MongoService findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.findBatch(collection, query, resultHandler);
+    return this;
+  }
+
+  @Override
   @Fluent
   public MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     client.findWithOptions(collection, query, options, resultHandler);
+    return this;
+  }
+
+  @Override
+  public MongoService findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.findBatchWithOptions(collection, query, options, resultHandler);
     return this;
   }
 

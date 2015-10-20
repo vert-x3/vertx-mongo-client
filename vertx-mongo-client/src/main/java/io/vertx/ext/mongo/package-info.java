@@ -231,6 +231,12 @@
  * `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
  * `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
  *
+ *  * ----
+ * {@link examples.Examples#example9_1}
+ * ----
+ *
+ * The matching document are returned unitary in the result handler.
+ *
  * === Finding a single document
  *
  * To find a single document you use {@link io.vertx.ext.mongo.MongoClient#findOne}.

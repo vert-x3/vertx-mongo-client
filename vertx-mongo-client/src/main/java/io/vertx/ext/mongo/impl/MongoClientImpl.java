@@ -16,6 +16,7 @@
 
 package io.vertx.ext.mongo.impl;
 
+import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.FindIterable;
@@ -188,6 +189,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
+  public io.vertx.ext.mongo.MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+    findBatchWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
+    return this;
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
@@ -196,6 +203,25 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     FindIterable<JsonObject> view = doFind(collection, query, options);
     List<JsonObject> results = new ArrayList<>();
     view.into(results, wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    FindIterable<JsonObject> view = doFind(collection, query, options);
+    Block<JsonObject> documentBlock = document -> wrapCallback(resultHandler).onResult(document, null);
+    SingleResultCallback<Void> callbackWhenFinished = (result, t) -> {
+      if (t != null) {
+        resultHandler.handle(Future.failedFuture(t));
+      } else {
+        resultHandler.handle(Future.succeededFuture());
+      }
+    };
+    view.forEach(documentBlock, callbackWhenFinished);
     return this;
   }
 
