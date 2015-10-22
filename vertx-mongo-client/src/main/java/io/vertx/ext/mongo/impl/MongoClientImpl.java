@@ -100,7 +100,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
       filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
 
-      coll.replaceOne(wrap(filter), encodedDocument, convertCallback(resultHandler, result -> null));
+      com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
+              .upsert(true);
+
+      coll.replaceOne(wrap(filter), encodedDocument, updateOptions, convertCallback(resultHandler, result -> null));
     }
     return this;
   }
