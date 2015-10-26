@@ -235,7 +235,7 @@
  * {@link examples.Examples#example9_1}
  * ----
  *
- * The matching document are returned unitary in the result handler.
+ * The matching documents are returned unitary in the result handler.
  *
  * === Finding a single document
  *
