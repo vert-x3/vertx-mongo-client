@@ -214,11 +214,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     FindIterable<JsonObject> view = doFind(collection, query, options);
     Block<JsonObject> documentBlock = document -> wrapCallback(resultHandler).onResult(document, null);
-    SingleResultCallback<Void> callbackWhenFinished = (result, t) -> {
-      if (t != null) {
-        resultHandler.handle(Future.failedFuture(t));
-      } else {
-        resultHandler.handle(Future.succeededFuture());
+    SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
+      if (throwable != null) {
+        resultHandler.handle(Future.failedFuture(throwable));
       }
     };
     view.forEach(documentBlock, callbackWhenFinished);
