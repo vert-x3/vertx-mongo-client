@@ -16,12 +16,10 @@
 
 package io.vertx.ext.mongo.impl;
 
+import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.FindIterable;
-import com.mongodb.async.client.MongoClients;
-import com.mongodb.async.client.MongoCollection;
-import com.mongodb.async.client.MongoDatabase;
+import com.mongodb.async.client.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -32,6 +30,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
@@ -316,6 +315,49 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     });
 
     holder.db.runCommand(wrap(json), JsonObject.class, wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<List>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(fieldName, "fieldName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    try {
+      DistinctIterable distinctValues = coll.distinct(fieldName, Class.forName(resultClassname));
+      List results = new ArrayList<>();
+      distinctValues.into(results, wrapCallback(resultHandler));
+    } catch (Exception e) {
+      resultHandler.handle(Future.failedFuture(e));
+    }
+    return this;
+  }
+
+  @Override
+  public MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<Object>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(fieldName, "fieldName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    try {
+      DistinctIterable distinctValues = coll.distinct(fieldName, Class.forName(resultClassname));
+      Block valueBlock = value -> {
+        vertx.runOnContext(v -> {
+          resultHandler.handle(Future.succeededFuture(value));
+        });
+      };
+      SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
+        if (throwable != null) {
+          resultHandler.handle(Future.failedFuture(throwable));
+        }
+      };
+      distinctValues.forEach(valueBlock, callbackWhenFinished);
+    } catch (Exception e) {
+      resultHandler.handle(Future.failedFuture(e));
+    }
     return this;
   }
 

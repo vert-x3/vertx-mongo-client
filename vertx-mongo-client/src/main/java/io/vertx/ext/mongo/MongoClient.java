@@ -273,6 +273,27 @@ public interface MongoClient {
   MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
+   * Gets the distinct values of the specified field name.
+   *
+   * @param collection  the collection
+   * @param fieldName  the field name
+   * @param resultHandler  will be provided with list of documents
+   */
+  @Fluent
+  MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<List>> resultHandler);
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * This method use batchCursor for returning each found value.
+   *
+   * @param collection  the collection
+   * @param fieldName  the field name
+   * @param resultHandler  will be provided with each found value
+   */
+  @Fluent
+  MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<Object>> resultHandler);
+
+  /**
    * Close the client and release its resources
    */
   void close();
