@@ -8,6 +8,10 @@ import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.connection.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.codec.VertxCodecRegistry;
+import org.bson.codecs.IntegerCodec;
+import org.bson.codecs.StringCodec;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,12 +22,13 @@ import java.util.Objects;
 public class MongoClientOptionsParser {
 
   private final MongoClientSettings settings;
+  private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec());
 
   public MongoClientOptionsParser(JsonObject config) {
     Objects.requireNonNull(config);
 
     MongoClientSettings.Builder options = MongoClientSettings.builder();
-    options.codecRegistry(new VertxCodecRegistry(config));
+    options.codecRegistry(CodecRegistries.fromRegistries(commonCodecRegistry, new VertxCodecRegistry(config)));
 
     // All parsers should support connection_string first
     String cs = config.getString("connection_string");
