@@ -56,7 +56,7 @@ public class DistinctTest extends MongoTestBase {
     insertDocs(collection, 10, onSuccess(inserted -> {
       mongoClient.distinct(collection, "num", Integer.class.getName(), onSuccess(distincted -> {
         assertEquals(1, distincted.size());
-        assertEquals(new Integer(123), (Integer) distincted.get(0));
+        assertEquals(new Integer(123), distincted.getInteger(0));
         testComplete();
       }));
     }));

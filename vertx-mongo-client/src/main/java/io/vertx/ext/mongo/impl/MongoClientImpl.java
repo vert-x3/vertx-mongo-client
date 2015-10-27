@@ -24,6 +24,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -38,9 +39,7 @@ import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
@@ -319,7 +318,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<List>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(fieldName, "fieldName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -327,8 +326,16 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     MongoCollection<JsonObject> coll = getCollection(collection);
     try {
       DistinctIterable distinctValues = coll.distinct(fieldName, Class.forName(resultClassname));
-      List results = new ArrayList<>();
-      distinctValues.into(results, wrapCallback(resultHandler));
+      List results = new ArrayList();
+      distinctValues.into(results, (result, error) -> {
+        vertx.runOnContext(v -> {
+          if (error != null) {
+            resultHandler.handle(Future.failedFuture(error));
+          } else {
+            resultHandler.handle(Future.succeededFuture(new JsonArray((List) result)));
+          }
+        });
+      });
     } catch (Exception e) {
       resultHandler.handle(Future.failedFuture(e));
     }
@@ -336,7 +343,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<Object>> resultHandler) {
+  public MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(fieldName, "fieldName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -346,7 +353,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       DistinctIterable distinctValues = coll.distinct(fieldName, Class.forName(resultClassname));
       Block valueBlock = value -> {
         vertx.runOnContext(v -> {
-          resultHandler.handle(Future.succeededFuture(value));
+          Map mapValue = new HashMap();
+          mapValue.put(fieldName, value);
+          resultHandler.handle(Future.succeededFuture(new JsonObject(mapValue)));
         });
       };
       SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {

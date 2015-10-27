@@ -5,6 +5,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.MongoClientImpl;
 
@@ -274,24 +275,26 @@ public interface MongoClient {
 
   /**
    * Gets the distinct values of the specified field name.
+   * Return a JsonArray contening distinct value (eg: [ 1 , 89 ])
    *
    * @param collection  the collection
    * @param fieldName  the field name
-   * @param resultHandler  will be provided with list of documents
+   * @param resultHandler  will be provided with array of values.
    */
   @Fluent
-  MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<List>> resultHandler);
+  MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
    * Gets the distinct values of the specified field name.
    * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}.
    *
    * @param collection  the collection
    * @param fieldName  the field name
    * @param resultHandler  will be provided with each found value
    */
   @Fluent
-  MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<Object>> resultHandler);
+  MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Close the client and release its resources
