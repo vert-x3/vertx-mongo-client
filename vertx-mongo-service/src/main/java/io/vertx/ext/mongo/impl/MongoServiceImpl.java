@@ -3,6 +3,7 @@ package io.vertx.ext.mongo.impl;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.*;
 
@@ -156,6 +157,21 @@ public class MongoServiceImpl implements MongoService {
   @Fluent
   public MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     client.runCommand(commandName, command, resultHandler);
+    return this;
+  }
+
+
+  @Override
+  @Fluent
+  public MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
+    client.distinct(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.distinctBatch(collection, fieldName, resultClassname, resultHandler);
     return this;
   }
 
