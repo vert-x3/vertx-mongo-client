@@ -275,7 +275,7 @@ public interface MongoClient {
 
   /**
    * Gets the distinct values of the specified field name.
-   * Return a JsonArray contening distinct value (eg: [ 1 , 89 ])
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
    *
    * @param collection  the collection
    * @param fieldName  the field name
@@ -287,7 +287,7 @@ public interface MongoClient {
   /**
    * Gets the distinct values of the specified field name.
    * This method use batchCursor for returning each found value.
-   * Each value is a json fragment with fieldName key (eg: {"num": 1}.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
    *
    * @param collection  the collection
    * @param fieldName  the field name
