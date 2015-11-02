@@ -342,6 +342,18 @@
  * ----
  * {@link examples.Examples#example15_dl}
  * ----
+ * Here's an example of getting disting value
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example16}
+ * ----
+ * Here's an example of getting distinct value in batch mode
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example16_d1}
+ * ----
  *
  * == Configuring the client
  *
