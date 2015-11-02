@@ -67,6 +67,45 @@ public class DistinctTest extends MongoTestBase {
   }
 
   @Test
+  public void testDistinctBoolean() {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
+      mongoClient.distinct(collection, "big", Boolean.class.getName(), onSuccess(distincted -> {
+        assertEquals(1, distincted.size());
+        assertEquals(true, distincted.getBoolean(0));
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testDistinctDouble() {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
+      mongoClient.distinct(collection, "dblval", Double.class.getName(), onSuccess(distincted -> {
+        assertEquals(1, distincted.size());
+        assertEquals(new Double(1.23), distincted.getDouble(0));
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testDistinctLong() {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
+      mongoClient.distinct(collection, "longval", Long.class.getName(), onSuccess(distincted -> {
+        assertEquals(1, distincted.size());
+        assertEquals(new Long(123456789L), distincted.getLong(0));
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testDistinctBadResultClass() {
     String collection = randomCollection();
     insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {

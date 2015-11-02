@@ -169,7 +169,8 @@ public abstract class MongoTestBase extends VertxTestBase {
             put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
             put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
             put("other", new JsonObject().put("quux", "flib").put("myarr",
-                    new JsonArray().add("blah").add(true).add(312)));
+                    new JsonArray().add("blah").add(true).add(312))).
+            put("longval", 123456789L).put("dblval", 1.23);
   }
 
 }
