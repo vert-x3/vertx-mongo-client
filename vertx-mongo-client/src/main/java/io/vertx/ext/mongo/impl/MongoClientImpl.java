@@ -323,12 +323,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(fieldName, "fieldName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollection<JsonObject> coll = getCollection(collection);
+    MongoCollection<JsonObject> mongoCollection = getCollection(collection);
     try {
-      DistinctIterable distinctValues = coll.distinct(fieldName, Class.forName(resultClassname));
+      DistinctIterable distinctValues = mongoCollection.distinct(fieldName, Class.forName(resultClassname));
       List results = new ArrayList();
       distinctValues.into(results, (result, error) -> {
-        vertx.runOnContext(v -> {
+        vertx.runOnContext(voidAction -> {
           if (error != null) {
             resultHandler.handle(Future.failedFuture(error));
           } else {
@@ -348,11 +348,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(fieldName, "fieldName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollection<JsonObject> coll = getCollection(collection);
+    MongoCollection<JsonObject> mongoCollection = getCollection(collection);
     try {
-      DistinctIterable distinctValues = coll.distinct(fieldName, Class.forName(resultClassname));
+      DistinctIterable distinctValues = mongoCollection.distinct(fieldName, Class.forName(resultClassname));
       Block valueBlock = value -> {
-        vertx.runOnContext(v -> {
+        vertx.runOnContext(voidAction -> {
           Map mapValue = new HashMap();
           mapValue.put(fieldName, value);
           resultHandler.handle(Future.succeededFuture(new JsonObject(mapValue)));
@@ -369,6 +369,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     }
     return this;
   }
+
 
   private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
     if (useObjectId && json.containsKey(ID_FIELD) && json.getValue(ID_FIELD) instanceof String) {
