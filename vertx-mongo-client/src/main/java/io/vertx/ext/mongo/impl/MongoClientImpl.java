@@ -319,16 +319,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   @Override
   public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(fieldName, "fieldName cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
+    DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
 
-    MongoCollection<JsonObject> mongoCollection = getCollection(collection);
-    try {
-      DistinctIterable distinctValues = mongoCollection.distinct(fieldName, Class.forName(resultClassname));
+    if (distinctValues != null) {
       List results = new ArrayList();
       distinctValues.into(results, (result, error) -> {
-        vertx.runOnContext(voidAction -> {
+        vertx.runOnContext(v -> {
           if (error != null) {
             resultHandler.handle(Future.failedFuture(error));
           } else {
@@ -336,23 +332,17 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
           }
         });
       });
-    } catch (Exception e) {
-      resultHandler.handle(Future.failedFuture(e));
     }
     return this;
   }
 
   @Override
-  public MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(fieldName, "fieldName cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
+  public io.vertx.ext.mongo.MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
+    DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
 
-    MongoCollection<JsonObject> mongoCollection = getCollection(collection);
-    try {
-      DistinctIterable distinctValues = mongoCollection.distinct(fieldName, Class.forName(resultClassname));
+    if (distinctValues != null) {
       Block valueBlock = value -> {
-        vertx.runOnContext(voidAction -> {
+        vertx.runOnContext(v -> {
           Map mapValue = new HashMap();
           mapValue.put(fieldName, value);
           resultHandler.handle(Future.succeededFuture(new JsonObject(mapValue)));
@@ -364,10 +354,24 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
         }
       };
       distinctValues.forEach(valueBlock, callbackWhenFinished);
-    } catch (Exception e) {
-      resultHandler.handle(Future.failedFuture(e));
     }
     return this;
+  }
+
+  private DistinctIterable findDistinctValues(String collection, String fieldName, String resultClassname, Handler resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(fieldName, "fieldName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    final Class resultClass;
+    try {
+      resultClass = Class.forName(resultClassname);
+    } catch (ClassNotFoundException e) {
+      resultHandler.handle(Future.failedFuture(e));
+      return null;
+    }
+    MongoCollection<JsonObject> mongoCollection = getCollection(collection);
+    return mongoCollection.distinct(fieldName, resultClass);
   }
 
 
