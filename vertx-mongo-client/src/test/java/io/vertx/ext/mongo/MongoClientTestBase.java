@@ -457,7 +457,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   public void testCount() throws Exception {
     int num = 10;
     String collection = randomCollection();
-    insertDocs(collection, num, onSuccess(res -> {
+    insertDocs(mongoClient, collection, num, onSuccess(res -> {
       mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
         assertNotNull(count);
         assertEquals(num, count.intValue());
@@ -617,7 +617,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   private void doTestFind(int numDocs, JsonObject query, FindOptions options, Consumer<List<JsonObject>> resultConsumer) throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
-      insertDocs(collection, numDocs, onSuccess(res2 -> {
+      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
         mongoClient.findWithOptions(collection, query, options, onSuccess(res3 -> {
           resultConsumer.accept(res3);
           testComplete();
@@ -753,7 +753,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
                             Consumer<List<JsonObject>> resultConsumer) throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
-      insertDocs(collection, numDocs, onSuccess(res2 -> {
+      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
         mongoClient.updateWithOptions(collection, query, update, options, onSuccess(res3 -> {
           mongoClient.find(collection, new JsonObject(), onSuccess(res4 -> {
             resultConsumer.accept(res4);
@@ -768,7 +768,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   @Test
   public void testRemoveOne() throws Exception {
     String collection = randomCollection();
-    insertDocs(collection, 6, onSuccess(res2 -> {
+    insertDocs(mongoClient, collection, 6, onSuccess(res2 -> {
       mongoClient.removeOne(collection, new JsonObject().put("num", 123), onSuccess(res3 -> {
         mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
           assertEquals(5, (long) count);
@@ -782,7 +782,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   @Test
   public void testRemoveOneWithOptions() throws Exception {
     String collection = randomCollection();
-    insertDocs(collection, 6, onSuccess(res2 -> {
+    insertDocs(mongoClient, collection, 6, onSuccess(res2 -> {
       mongoClient.removeOneWithOptions(collection, new JsonObject().put("num", 123), UNACKNOWLEDGED, onSuccess(res3 -> {
         mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
           assertEquals(5, (long) count);
@@ -796,7 +796,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   @Test
   public void testRemoveMultiple() throws Exception {
     String collection = randomCollection();
-    insertDocs(collection, 10, onSuccess(v -> {
+    insertDocs(mongoClient, collection, 10, onSuccess(v -> {
       mongoClient.remove(collection, new JsonObject(), onSuccess(v2 -> {
         mongoClient.find(collection, new JsonObject(), onSuccess(res2 -> {
           assertTrue(res2.isEmpty());
@@ -810,7 +810,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   @Test
   public void testRemoveWithOptions() throws Exception {
     String collection = randomCollection();
-    insertDocs(collection, 10, onSuccess(v -> {
+    insertDocs(mongoClient, collection, 10, onSuccess(v -> {
       mongoClient.removeWithOptions(collection, new JsonObject(), ACKNOWLEDGED, onSuccess(v2 -> {
         mongoClient.find(collection, new JsonObject(), onSuccess(res2 -> {
           assertTrue(res2.isEmpty());
@@ -837,82 +837,5 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     }));
     await();
   }
-
-  protected JsonObject createDoc() {
-    return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
-      put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
-      put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
-      put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
-      put("other", new JsonObject().put("quux", "flib").put("myarr",
-        new JsonArray().add("blah").add(true).add(312)));
-  }
-
-  protected JsonObject createDoc(int num) {
-    return new JsonObject().put("foo", "bar" + (num != -1 ? num : "")).put("num", 123).put("big", true).putNull("nullentry").
-      put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
-      put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
-      put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
-      put("other", new JsonObject().put("quux", "flib").put("myarr",
-        new JsonArray().add("blah").add(true).add(312)));
-  }
-
-  private void insertDocs(String collection, int num, Handler<AsyncResult<Void>> resultHandler) {
-    if (num != 0) {
-      AtomicInteger cnt = new AtomicInteger();
-      for (int i = 0; i < num; i++) {
-        JsonObject doc = createDoc(i);
-        mongoClient.insert(collection, doc, ar -> {
-          if (ar.succeeded()) {
-            if (cnt.incrementAndGet() == num) {
-              resultHandler.handle(Future.succeededFuture());
-            }
-          } else {
-            resultHandler.handle(Future.failedFuture(ar.cause()));
-          }
-        });
-      }
-    } else {
-      resultHandler.handle(Future.succeededFuture());
-    }
-  }
-
-  protected void dropCollections(CountDownLatch latch) {
-    // Drop all the collections in the db
-    mongoClient.getCollections(onSuccess(list -> {
-      AtomicInteger collCount = new AtomicInteger();
-      List<String> toDrop = getOurCollections(list);
-      int count = toDrop.size();
-      if (!toDrop.isEmpty()) {
-        for (String collection : toDrop) {
-          mongoClient.dropCollection(collection, onSuccess(v -> {
-            if (collCount.incrementAndGet() == count) {
-              latch.countDown();
-            }
-          }));
-        }
-      } else {
-        latch.countDown();
-      }
-    }));
-  }
-
-  protected List<String> getOurCollections(List<String> colls) {
-    List<String> ours = new ArrayList<>();
-    for (String coll : colls) {
-      if (coll.startsWith("ext-mongo")) {
-        ours.add(coll);
-      }
-    }
-    return ours;
-  }
-
-
-  protected String randomCollection() {
-    return "ext-mongo" + TestUtils.randomAlphaString(20);
-  }
-
-
-
-
 
 }

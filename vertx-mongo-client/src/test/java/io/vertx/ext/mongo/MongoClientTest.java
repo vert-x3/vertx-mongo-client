@@ -15,7 +15,7 @@ public class MongoClientTest extends MongoClientTestBase {
     JsonObject config = getConfig();
     mongoClient = MongoClient.createNonShared(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
-    dropCollections(latch);
+    dropCollections(mongoClient, latch);
     awaitLatch(latch);
   }
 
