@@ -323,15 +323,19 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     if (distinctValues != null) {
       List results = new ArrayList();
-      distinctValues.into(results, (result, error) -> {
-        vertx.runOnContext(v -> {
-          if (error != null) {
-            resultHandler.handle(Future.failedFuture(error));
-          } else {
-            resultHandler.handle(Future.succeededFuture(new JsonArray((List) result)));
-          }
+      try {
+        distinctValues.into(results, (result, throwable) -> {
+          vertx.runOnContext(v -> {
+            if (throwable != null) {
+              resultHandler.handle(Future.failedFuture(throwable));
+            } else {
+              resultHandler.handle(Future.succeededFuture(new JsonArray((List) result)));
+            }
+          });
         });
-      });
+      } catch (Exception unhandledEx) {
+        resultHandler.handle(Future.failedFuture(unhandledEx));
+      }
     }
     return this;
   }
@@ -353,7 +357,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
           resultHandler.handle(Future.failedFuture(throwable));
         }
       };
-      distinctValues.forEach(valueBlock, callbackWhenFinished);
+      try {
+        distinctValues.forEach(valueBlock, callbackWhenFinished);
+      } catch (Exception unhandledEx) {
+        resultHandler.handle(Future.failedFuture(unhandledEx));
+      }
     }
     return this;
   }
