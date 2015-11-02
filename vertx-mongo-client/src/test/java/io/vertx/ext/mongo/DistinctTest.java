@@ -16,19 +16,10 @@
 
 package io.vertx.ext.mongo;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.test.core.TestUtils;
-import org.bson.types.ObjectId;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class DistinctTest extends MongoTestBase {
 

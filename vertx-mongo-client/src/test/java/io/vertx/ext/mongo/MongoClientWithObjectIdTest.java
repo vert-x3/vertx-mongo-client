@@ -2,7 +2,6 @@ package io.vertx.ext.mongo;
 
 import io.vertx.core.json.JsonObject;
 import org.bson.types.ObjectId;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
