@@ -69,7 +69,15 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
+  MongoService findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  @Override
+  @Fluent
   MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Override
   @Fluent
