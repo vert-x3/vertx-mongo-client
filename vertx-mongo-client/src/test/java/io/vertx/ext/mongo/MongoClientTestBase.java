@@ -547,7 +547,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestFind(num, new JsonObject(), new FindOptions(), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(9, doc.size()); // Contains _id too
+        assertEquals(11, doc.size()); // Contains _id too
       }
     });
   }
@@ -725,7 +725,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(9, doc.size());
+        assertEquals(11, doc.size());
         assertEquals("fooed", doc.getString("foo"));
         assertNotNull(doc.getValue("_id"));
       }
@@ -738,7 +738,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(false, true), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
-        assertEquals(9, doc.size());
+        assertEquals(11, doc.size());
         assertEquals("fooed", doc.getString("foo"));
         assertNotNull(doc.getValue("_id"));
       }
