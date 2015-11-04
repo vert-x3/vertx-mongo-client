@@ -23,7 +23,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.1.0</version>
+  <version>3.2.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -31,7 +31,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile io.vertx:vertx-mongo-client:3.1.0
+compile io.vertx:vertx-mongo-client:3.2.0-SNAPSHOT
 ----
 
 
@@ -352,6 +352,24 @@ This has the following fields:
 `sort`:: The fields to sort by. Defaults to `null`.
 `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
 `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
+
+ * ----
+JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
+
+mongoClient.findBatch("book", query, res -> {
+  if (res.succeeded()) {
+
+    System.out.println(res.result().encodePrettily());
+
+  } else {
+
+    res.cause().printStackTrace();
+
+  }
+});
+----
+
+The matching documents are returned unitary in the result handler.
 
 === Finding a single document
 
@@ -752,3 +770,4 @@ For more information on the format of the connection string please consult the d
 
 NOTE: Most of the default values listed above use the default values of the MongoDB Java Driver.
 Please consult the driver documentation for up to date information.
+<a href="mailto:nscavell@redhat.com">Nick Scavelli</a><a href="mailto:julien@julienviet.com">Julien Viet</a><a href="http://tfox.org">Tim Fox</a>
