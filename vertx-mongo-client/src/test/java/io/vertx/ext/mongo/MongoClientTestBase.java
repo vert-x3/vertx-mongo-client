@@ -563,23 +563,6 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
-  public void testFindBatch() throws Exception {
-    int numDocs = 200;
-
-    String collection = randomCollection();
-    CountDownLatch latch = new CountDownLatch(numDocs);
-    mongoClient.createCollection(collection, onSuccess(res -> {
-      insertDocs(collection, numDocs, onSuccess(res2 -> {
-        mongoClient.findBatchWithOptions(collection, new JsonObject(), new FindOptions(), onSuccess(result -> {
-          assertNotNull(result);
-          latch.countDown();
-        }));
-      }));
-    }));
-    awaitLatch(latch);
-  }
-
-  @Test
   public void testFindWithFields() throws Exception {
     int num = 10;
     doTestFind(num, new JsonObject(), new FindOptions().setFields(new JsonObject().put("num", true)), results -> {
@@ -879,7 +862,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
         new JsonArray().add("blah").add(true).add(312)));
   }
 
-  private void insertDocs(String collection, int num, Handler<AsyncResult<Void>> resultHandler) {
+  protected void insertDocs(String collection, int num, Handler<AsyncResult<Void>> resultHandler) {
     if (num != 0) {
       AtomicInteger cnt = new AtomicInteger();
       for (int i = 0; i < num; i++) {
