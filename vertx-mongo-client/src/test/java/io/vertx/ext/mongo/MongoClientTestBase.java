@@ -1,8 +1,6 @@
 package io.vertx.ext.mongo;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
@@ -841,6 +839,27 @@ public abstract class MongoClientTestBase extends MongoTestBase {
         testComplete();
       }));
     }));
+    await();
+  }
+
+  @Test
+  public void testContexts() {
+    vertx.runOnContext(v -> {
+      Context currentContext = Vertx.currentContext();
+      assertNotNull(currentContext);
+
+      String collection = randomCollection();
+      JsonObject document = new JsonObject().put("title", "The Hobbit");
+      document.put("_id", 123456);
+      document.put("foo", "bar");
+
+      mongoClient.insert(collection, document, onSuccess(id -> {
+        Context resultContext = Vertx.currentContext();
+        assertSame(currentContext, resultContext);
+        testComplete();
+      }));
+
+    });
     await();
   }
 
