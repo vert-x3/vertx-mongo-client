@@ -355,8 +355,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     if (distinctValues != null) {
       List results = new ArrayList();
       try {
+        Context context = vertx.getOrCreateContext();
         distinctValues.into(results, (result, throwable) -> {
-          vertx.runOnContext(v -> {
+          context.runOnContext(v -> {
             if (throwable != null) {
               resultHandler.handle(Future.failedFuture(throwable));
             } else {
@@ -376,8 +377,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
 
     if (distinctValues != null) {
+      Context context = vertx.getOrCreateContext();
       Block valueBlock = value -> {
-        vertx.runOnContext(v -> {
+        context.runOnContext(v -> {
           Map mapValue = new HashMap();
           mapValue.put(fieldName, value);
           resultHandler.handle(Future.succeededFuture(new JsonObject(mapValue)));
