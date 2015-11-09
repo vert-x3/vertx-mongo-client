@@ -157,8 +157,16 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
           service.find((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createListHandler(msg));
           break;
         }
+        case "findBatch": {
+          service.findBatch((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createHandler(msg));
+          break;
+        }
         case "findWithOptions": {
           service.findWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.FindOptions(json.getJsonObject("options")), createListHandler(msg));
+          break;
+        }
+        case "findBatchWithOptions": {
+          service.findBatchWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.FindOptions(json.getJsonObject("options")), createHandler(msg));
           break;
         }
         case "findOne": {

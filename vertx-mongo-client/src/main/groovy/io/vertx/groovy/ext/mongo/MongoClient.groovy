@@ -191,6 +191,28 @@ public class MongoClient {
     return this;
   }
   /**
+   * Find matching documents in the specified collection.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param resultHandler will be provided with each found document
+   * @return 
+   */
+  public MongoClient findBatch(String collection, Map<String, Object> query, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    this.delegate.findBatch(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
+        AsyncResult<Map<String, Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()))
+        } else {
+          f = InternalHelper.<Map<String, Object>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
+    return this;
+  }
+  /**
    * Find matching documents in the specified collection, specifying options
    * @param collection the collection
    * @param query query used to match documents
@@ -209,6 +231,29 @@ public class MongoClient {
           }) as List)
         } else {
           f = InternalHelper.<List<Map<String, Object>>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
+    return this;
+  }
+  /**
+   * Find matching documents in the specified collection, specifying options.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param options options to configure the find (see <a href="../../../../../../../cheatsheet/FindOptions.html">FindOptions</a>)
+   * @param resultHandler will be provided with each found document
+   * @return 
+   */
+  public MongoClient findBatchWithOptions(String collection, Map<String, Object> query, Map<String, Object> options, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    this.delegate.findBatchWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, options != null ? new io.vertx.ext.mongo.FindOptions(new io.vertx.core.json.JsonObject(options)) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
+        AsyncResult<Map<String, Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()))
+        } else {
+          f = InternalHelper.<Map<String, Object>>failure(event.cause())
         }
         resultHandler.handle(f)
       }

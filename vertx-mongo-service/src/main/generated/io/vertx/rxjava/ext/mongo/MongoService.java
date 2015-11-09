@@ -21,6 +21,7 @@ import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import java.util.List;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
@@ -158,6 +159,17 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).findBatch(collection, query, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findBatchObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findBatch(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
     ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).findWithOptions(collection, query, options, resultHandler);
     return this;
@@ -166,6 +178,17 @@ public class MongoService extends MongoClient {
   public Observable<List<JsonObject>> findWithOptionsObservable(String collection, JsonObject query, FindOptions options) { 
     io.vertx.rx.java.ObservableFuture<List<JsonObject>> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     findWithOptions(collection, query, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).findBatchWithOptions(collection, query, options, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findBatchWithOptionsObservable(String collection, JsonObject query, FindOptions options) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findBatchWithOptions(collection, query, options, resultHandler.toHandler());
     return resultHandler;
   }
 
@@ -276,6 +299,28 @@ public class MongoService extends MongoClient {
   public Observable<JsonObject> runCommandObservable(String commandName, JsonObject command) { 
     io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     runCommand(commandName, command, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).distinct(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonArray> distinctObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonArray> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinct(collection, fieldName, resultClassname, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).distinctBatch(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> distinctBatchObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinctBatch(collection, fieldName, resultClassname, resultHandler.toHandler());
     return resultHandler;
   }
 

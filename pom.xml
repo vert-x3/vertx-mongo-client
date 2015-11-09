@@ -80,6 +80,13 @@
       </exclusions>
     </dependency>
     <dependency>
+      <!-- declare this dependency to force flapdoodle to use this one. It is the version used by vert.x -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.12</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-mongo-embedded-db</artifactId>
       <scope>test</scope>

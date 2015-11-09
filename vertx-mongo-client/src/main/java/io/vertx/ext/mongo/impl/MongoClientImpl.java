@@ -24,10 +24,7 @@ import com.mongodb.async.client.FindIterable;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -105,7 +102,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
       filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
 
-      coll.replaceOne(wrap(filter), encodedDocument, convertCallback(resultHandler, result -> null));
+      com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
+              .upsert(true);
+
+      coll.replaceOne(wrap(filter), encodedDocument, updateOptions, convertCallback(resultHandler, result -> null));
     }
     return this;
   }
@@ -193,6 +193,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
+  public io.vertx.ext.mongo.MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+    findBatchWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
+    return this;
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
@@ -201,6 +207,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     FindIterable<JsonObject> view = doFind(collection, query, options);
     List<JsonObject> results = new ArrayList<>();
     view.into(results, wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    FindIterable<JsonObject> view = doFind(collection, query, options);
+    Block<JsonObject> documentBlock = document -> wrapCallback(resultHandler).onResult(document, null);
+    SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
+      if (throwable != null) {
+        resultHandler.handle(Future.failedFuture(throwable));
+      }
+    };
+    view.forEach(documentBlock, callbackWhenFinished);
     return this;
   }
 
@@ -279,8 +302,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   public io.vertx.ext.mongo.MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
     requireNonNull(resultHandler, "resultHandler cannot be null");
     List<String> names = new ArrayList<>();
+    Context context = vertx.getOrCreateContext();
     holder.db.listCollectionNames().into(names, (res, error) -> {
-      vertx.runOnContext(v -> {
+      context.runOnContext(v -> {
         if (error != null) {
           resultHandler.handle(Future.failedFuture(error));
         } else {
@@ -411,8 +435,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
+    Context context = vertx.getOrCreateContext();
     return (result, error) -> {
-      vertx.runOnContext(v -> {
+      context.runOnContext(v -> {
         if (error != null) {
           resultHandler.handle(Future.failedFuture(error));
         } else {
@@ -423,8 +448,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   private <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
+    Context context = vertx.getOrCreateContext();
     return (result, error) -> {
-      vertx.runOnContext(v -> {
+      context.runOnContext(v -> {
         if (error != null) {
           resultHandler.handle(Future.failedFuture(error));
         } else {

@@ -23,12 +23,12 @@ public interface MongoClient {
   /**
    * The name of the default pool
    */
-  static final String DEFAULT_POOL_NAME = "DEFAULT_POOL";
+  String DEFAULT_POOL_NAME = "DEFAULT_POOL";
 
   /**
    * The name of the default database
    */
-  static final String DEFAULT_DB_NAME = "DEFAULT_DB";
+  String DEFAULT_DB_NAME = "DEFAULT_DB";
 
   /**
    * Create a Mongo client which maintains its own data source.
@@ -164,6 +164,17 @@ public interface MongoClient {
   MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   /**
+   * Find matching documents in the specified collection.
+   * This method use batchCursor for returning each found document.
+   *
+   * @param collection  the collection
+   * @param query  query used to match documents
+   * @param resultHandler  will be provided with each found document
+   */
+  @Fluent
+  MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
    * Find matching documents in the specified collection, specifying options
    *
    * @param collection  the collection
@@ -173,6 +184,18 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+
+  /**
+   * Find matching documents in the specified collection, specifying options.
+   * This method use batchCursor for returning each found document.
+   *
+   * @param collection  the collection
+   * @param query  query used to match documents
+   * @param options options to configure the find
+   * @param resultHandler  will be provided with each found document
+   */
+  @Fluent
+  MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection

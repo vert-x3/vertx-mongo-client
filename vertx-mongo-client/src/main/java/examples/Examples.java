@@ -258,6 +258,25 @@ public class Examples {
 
   }
 
+  public void example9_1(MongoClient mongoClient) {
+
+    // will match all Tolkien books
+    JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
+
+    mongoClient.findBatch("book", query, res -> {
+      if (res.succeeded()) {
+
+        System.out.println(res.result().encodePrettily());
+
+      } else {
+
+        res.cause().printStackTrace();
+
+      }
+    });
+  }
+
+
   public void example10(MongoClient mongoClient) {
 
     JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");

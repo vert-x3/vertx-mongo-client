@@ -316,6 +316,32 @@ public class MongoClient {
   }
 
   /**
+   * Find matching documents in the specified collection.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param resultHandler will be provided with each found document
+   * @return 
+   */
+  public MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    this.delegate.findBatch(collection, query, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find matching documents in the specified collection.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @return 
+   */
+  public Observable<JsonObject> findBatchObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findBatch(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
    * Find matching documents in the specified collection, specifying options
    * @param collection the collection
    * @param query query used to match documents
@@ -338,6 +364,34 @@ public class MongoClient {
   public Observable<List<JsonObject>> findWithOptionsObservable(String collection, JsonObject query, FindOptions options) { 
     io.vertx.rx.java.ObservableFuture<List<JsonObject>> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     findWithOptions(collection, query, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Find matching documents in the specified collection, specifying options.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param options options to configure the find
+   * @param resultHandler will be provided with each found document
+   * @return 
+   */
+  public MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    this.delegate.findBatchWithOptions(collection, query, options, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find matching documents in the specified collection, specifying options.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param options options to configure the find
+   * @return 
+   */
+  public Observable<JsonObject> findBatchWithOptionsObservable(String collection, JsonObject query, FindOptions options) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findBatchWithOptions(collection, query, options, resultHandler.toHandler());
     return resultHandler;
   }
 

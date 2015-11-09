@@ -135,6 +135,17 @@ module VertxMongo
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 
+    # @yield 
+    # @return [self]
+    def find_batch(collection=nil,query=nil)
+      if collection.class == String && query.class == Hash && block_given?
+        @j_del.java_method(:findBatch, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_batch(collection,query)"
+    end
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
     # @param [Hash] options 
     # @yield 
     # @return [self]
@@ -144,6 +155,18 @@ module VertxMongo
         return self
       end
       raise ArgumentError, "Invalid arguments when calling find_with_options(collection,query,options)"
+    end
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash] options 
+    # @yield 
+    # @return [self]
+    def find_batch_with_options(collection=nil,query=nil,options=nil)
+      if collection.class == String && query.class == Hash && options.class == Hash && block_given?
+        @j_del.java_method(:findBatchWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_batch_with_options(collection,query,options)"
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 

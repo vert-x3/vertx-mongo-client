@@ -1,5 +1,6 @@
 package io.vertx.ext.mongo;
 
+import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
@@ -10,6 +11,7 @@ import java.io.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
@@ -123,6 +125,16 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
+  public void assertDocumentWithIdIsPresent(String collection, Object id) {
+    mongoClient.find(collection,
+            new JsonObject()
+                    .put("_id", id),
+            onSuccess(result -> {
+              assertEquals(1, result.size());
+              testComplete();
+            }));
+  }
+
   @Test
   public void testInsertNoPreexistingID() throws Exception {
     String collection = randomCollection();
@@ -144,8 +156,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       String genID = TestUtils.randomAlphaString(100);
       doc.put("_id", genID);
       mongoClient.insert(collection, doc, onSuccess(id -> {
-        assertNull(id);
-        testComplete();
+        assertDocumentWithIdIsPresent(collection, genID);
       }));
     }));
     await();
@@ -159,8 +170,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       Long genID = TestUtils.randomLong();
       doc.put("_id", genID);
       mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
-        assertNull(id);
-        testComplete();
+        assertDocumentWithIdIsPresent(collection, genID);
       }));
     }));
     await();
@@ -174,8 +184,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       Long genID = TestUtils.randomLong();
       doc.put("_id", genID);
       mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
-        assertNull(id);
-        testComplete();
+        assertDocumentWithIdIsPresent(collection, genID);
       }));
     }));
     await();
@@ -189,8 +198,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       JsonObject genID = new JsonObject().put("id", TestUtils.randomAlphaString(100));
       doc.put("_id", genID);
       mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
-        assertNull(id);
-        testComplete();
+        assertDocumentWithIdIsPresent(collection, genID);
       }));
     }));
     await();
@@ -833,5 +841,28 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     }));
     await();
   }
+
+
+  @Test
+  public void testContexts() {
+    vertx.runOnContext(v -> {
+      Context currentContext = Vertx.currentContext();
+      assertNotNull(currentContext);
+
+      String collection = randomCollection();
+      JsonObject document = new JsonObject().put("title", "The Hobbit");
+      document.put("_id", 123456);
+      document.put("foo", "bar");
+
+      mongoClient.insert(collection, document, onSuccess(id -> {
+        Context resultContext = Vertx.currentContext();
+        assertSame(currentContext, resultContext);
+        testComplete();
+      }));
+
+    });
+    await();
+  }
+
 
 }
