@@ -22,12 +22,12 @@ public interface MongoClient {
   /**
    * The name of the default pool
    */
-  static final String DEFAULT_POOL_NAME = "DEFAULT_POOL";
+  String DEFAULT_POOL_NAME = "DEFAULT_POOL";
 
   /**
    * The name of the default database
    */
-  static final String DEFAULT_DB_NAME = "DEFAULT_DB";
+  String DEFAULT_DB_NAME = "DEFAULT_DB";
 
   /**
    * Create a Mongo client which maintains its own data source.
