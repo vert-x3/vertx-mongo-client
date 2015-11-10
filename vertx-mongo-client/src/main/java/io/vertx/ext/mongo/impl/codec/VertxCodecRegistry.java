@@ -23,6 +23,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
+ * @deprecated replaced with CodecRegistries facilities
  */
 public class VertxCodecRegistry implements CodecRegistry {
   private Codec<JsonObject> jsonObjectCodec;

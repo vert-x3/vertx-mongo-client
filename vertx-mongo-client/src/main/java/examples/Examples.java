@@ -507,5 +507,38 @@ public class Examples {
     });
 
   }
+  public void example16(MongoClient mongoClient) throws Exception{
+    JsonObject document = new JsonObject().put("title", "The Hobbit");
 
+    mongoClient.save("books", document, res -> {
+
+      if (res.succeeded()) {
+
+        mongoClient.distinct("books", "title", String.class.getName(), res2 -> {
+          System.out.println("Title is : " + res2.result().getJsonArray(0));
+        });
+
+      } else {
+        res.cause().printStackTrace();
+      }
+
+    });
+  }
+  public void example16_d1(MongoClient mongoClient) throws Exception{
+    JsonObject document = new JsonObject().put("title", "The Hobbit");
+
+    mongoClient.save("books", document, res -> {
+
+      if (res.succeeded()) {
+
+        mongoClient.distinctBatch("books", "title", String.class.getName(), res2 -> {
+          System.out.println("Title is : " + res2.result().getString("title"));
+        });
+
+      } else {
+        res.cause().printStackTrace();
+      }
+
+    });
+  }
 }

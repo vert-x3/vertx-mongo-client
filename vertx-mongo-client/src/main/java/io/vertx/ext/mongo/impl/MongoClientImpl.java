@@ -19,11 +19,13 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
+import com.mongodb.async.client.DistinctIterable;
 import com.mongodb.async.client.FindIterable;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
 import io.vertx.core.*;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -38,7 +40,9 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -343,6 +347,74 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     holder.db.runCommand(wrap(json), JsonObject.class, wrapCallback(resultHandler));
     return this;
   }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
+    DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
+
+    if (distinctValues != null) {
+      List results = new ArrayList();
+      try {
+        Context context = vertx.getOrCreateContext();
+        distinctValues.into(results, (result, throwable) -> {
+          context.runOnContext(v -> {
+            if (throwable != null) {
+              resultHandler.handle(Future.failedFuture(throwable));
+            } else {
+              resultHandler.handle(Future.succeededFuture(new JsonArray((List) result)));
+            }
+          });
+        });
+      } catch (Exception unhandledEx) {
+        resultHandler.handle(Future.failedFuture(unhandledEx));
+      }
+    }
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
+    DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
+
+    if (distinctValues != null) {
+      Context context = vertx.getOrCreateContext();
+      Block valueBlock = value -> {
+        context.runOnContext(v -> {
+          Map mapValue = new HashMap();
+          mapValue.put(fieldName, value);
+          resultHandler.handle(Future.succeededFuture(new JsonObject(mapValue)));
+        });
+      };
+      SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
+        if (throwable != null) {
+          resultHandler.handle(Future.failedFuture(throwable));
+        }
+      };
+      try {
+        distinctValues.forEach(valueBlock, callbackWhenFinished);
+      } catch (Exception unhandledEx) {
+        resultHandler.handle(Future.failedFuture(unhandledEx));
+      }
+    }
+    return this;
+  }
+
+  private DistinctIterable findDistinctValues(String collection, String fieldName, String resultClassname, Handler resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(fieldName, "fieldName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    final Class resultClass;
+    try {
+      resultClass = Class.forName(resultClassname);
+    } catch (ClassNotFoundException e) {
+      resultHandler.handle(Future.failedFuture(e));
+      return null;
+    }
+    MongoCollection<JsonObject> mongoCollection = getCollection(collection);
+    return mongoCollection.distinct(fieldName, resultClass);
+  }
+
 
   private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
     if (useObjectId && json.containsKey(ID_FIELD) && json.getValue(ID_FIELD) instanceof String) {

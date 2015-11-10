@@ -34,7 +34,7 @@ public class MongoServiceVerticleTest extends MongoClientTestBase {
     CountDownLatch latch = new CountDownLatch(1);
     vertx.deployVerticle("service:io.vertx.mongo-service", options, onSuccess(id -> {
       mongoClient = MongoService.createEventBusProxy(vertx, "vertx.mongo");
-      dropCollections(latch);
+      dropCollections(mongoClient, latch);
     }));
     awaitLatch(latch);
   }

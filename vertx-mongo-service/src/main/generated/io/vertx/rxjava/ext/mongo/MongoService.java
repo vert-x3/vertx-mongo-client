@@ -21,6 +21,7 @@ import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import java.util.List;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
@@ -298,6 +299,28 @@ public class MongoService extends MongoClient {
   public Observable<JsonObject> runCommandObservable(String commandName, JsonObject command) { 
     io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     runCommand(commandName, command, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).distinct(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonArray> distinctObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonArray> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinct(collection, fieldName, resultClassname, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).distinctBatch(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> distinctBatchObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinctBatch(collection, fieldName, resultClassname, resultHandler.toHandler());
     return resultHandler;
   }
 

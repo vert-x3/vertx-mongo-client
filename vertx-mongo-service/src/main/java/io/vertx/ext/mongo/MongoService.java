@@ -7,6 +7,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ProxyHelper;
 
@@ -118,6 +119,14 @@ public interface MongoService extends MongoClient {
   @Override
   @Fluent
   MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Override
   @ProxyIgnore

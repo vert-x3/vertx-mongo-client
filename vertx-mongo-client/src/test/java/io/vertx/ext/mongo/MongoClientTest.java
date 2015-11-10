@@ -16,7 +16,7 @@ public class MongoClientTest extends MongoClientTestBase {
     JsonObject config = getConfig();
     mongoClient = MongoClient.createNonShared(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
-    dropCollections(latch);
+    dropCollections(mongoClient, latch);
     awaitLatch(latch);
   }
 
@@ -34,7 +34,7 @@ public class MongoClientTest extends MongoClientTestBase {
     String collection = randomCollection();
     CountDownLatch latch = new CountDownLatch(numDocs);
     mongoClient.createCollection(collection, onSuccess(res -> {
-      insertDocs(collection, numDocs, onSuccess(res2 -> {
+      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
         mongoClient.findBatchWithOptions(collection, new JsonObject(), new FindOptions(), onSuccess(result -> {
           assertNotNull(result);
           latch.countDown();

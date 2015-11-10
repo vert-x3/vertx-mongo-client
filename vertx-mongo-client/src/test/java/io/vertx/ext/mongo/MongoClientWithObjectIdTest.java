@@ -2,7 +2,6 @@ package io.vertx.ext.mongo;
 
 import io.vertx.core.json.JsonObject;
 import org.bson.types.ObjectId;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -18,7 +17,7 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     config.put("useObjectId", true);
     mongoClient = MongoClient.createNonShared(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
-    dropCollections(latch);
+    dropCollections(mongoClient, latch);
     awaitLatch(latch);
   }
 

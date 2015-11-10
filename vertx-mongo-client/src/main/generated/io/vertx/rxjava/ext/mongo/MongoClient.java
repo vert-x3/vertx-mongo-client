@@ -19,9 +19,10 @@ package io.vertx.rxjava.ext.mongo;
 import java.util.Map;
 import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
-import java.util.List;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import java.util.List;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
@@ -629,6 +630,64 @@ public class MongoClient {
   public Observable<JsonObject> runCommandObservable(String commandName, JsonObject command) { 
     io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     runCommand(commandName, command, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @param resultHandler will be provided with array of values.
+   * @return 
+   */
+  public MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) { 
+    this.delegate.distinct(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @return 
+   */
+  public Observable<JsonArray> distinctObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonArray> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinct(collection, fieldName, resultClassname, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @param resultHandler will be provided with each found value
+   * @return 
+   */
+  public MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    this.delegate.distinctBatch(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @return 
+   */
+  public Observable<JsonObject> distinctBatchObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinctBatch(collection, fieldName, resultClassname, resultHandler.toHandler());
     return resultHandler;
   }
 
