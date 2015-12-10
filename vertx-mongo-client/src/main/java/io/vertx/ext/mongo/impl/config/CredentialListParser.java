@@ -4,6 +4,7 @@ import com.mongodb.AuthenticationMechanism;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoCredential;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.impl.MongoClientImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +30,10 @@ class CredentialListParser {
         credentials = new ArrayList<>();
         String passwd = config.getString("password");
         char[] password = (passwd == null) ? null : passwd.toCharArray();
-        String authSource = config.getString("authSource", "admin");
+        // See https://github.com/vert-x3/vertx-mongo-client/issues/46 - 'admin' as default is a security
+        // concern, use  the 'db_name' if none is set.
+        String authSource = config.getString("authSource",
+            config.getString("db_name", MongoClientImpl.DEFAULT_DB_NAME));
 
         // AuthMechanism
         AuthenticationMechanism mechanism = null;

@@ -3,6 +3,7 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.AuthenticationMechanism;
 import com.mongodb.MongoCredential;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.impl.MongoClientImpl;
 import io.vertx.test.core.TestUtils;
 import org.junit.Test;
 
@@ -16,7 +17,7 @@ import static org.junit.Assert.*;
 public class CredentialListParserTest {
   @Test
   public void testSimpleAuth() {
-    JsonObject config = new JsonObject();
+    JsonObject config = new JsonObject().put("db_name", "my-datasource");
     String username = TestUtils.randomAlphaString(8);
     String password = TestUtils.randomAlphaString(20);
     config.put("username", username);
@@ -28,8 +29,8 @@ public class CredentialListParserTest {
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
     assertArrayEquals(password.toCharArray(), credential.getPassword());
-    // default source should be admin
-    assertEquals("admin", credential.getSource());
+    // default source should be the database name - see https://github.com/vert-x3/vertx-mongo-client/issues/46.
+    assertEquals("my-datasource", credential.getSource());
   }
 
   @Test

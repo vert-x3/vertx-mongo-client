@@ -910,7 +910,7 @@ For more information on the format of the connection string please consult the d
 `maintenanceInitialDelayMS`:: The period of time to wait before running the first maintenance job on the connection pool. Default is `0`.
 `username`:: The username to authenticate. Default is `null` (meaning no authentication required)
 `password`:: The password to use to authenticate.
-`authSource`:: The database name associated with the user's credentials. Default value is `admin`
+`authSource`:: The database name associated with the user's credentials. Default value is the `db_name` value.
 `authMechanism`:: The authentication mechanism to use. See [Authentication](http://docs.mongodb.org/manual/core/authentication/) for more details.
 `gssapiServiceName`:: The Kerberos service name if `GSSAPI` is specified as the `authMechanism`.
 `connectTimeoutMS`:: The time in milliseconds to attempt a connection before timing out. Default is `10000` (10 seconds)
