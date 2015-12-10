@@ -79,6 +79,9 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
   @SuppressWarnings("unchecked")
   protected void writeValue(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     BsonType type = getBsonType(value);
+    if (type == null) {
+      throw new IllegalStateException("Unknown BsonType for '" + value + "'");
+    }
     switch (type) {
       case NULL:
         writeNull(writer, name, value, ctx);
