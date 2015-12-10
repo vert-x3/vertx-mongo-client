@@ -552,6 +552,57 @@ var MongoClient = function(j_val) {
   };
 
   /**
+   Gets the distinct values of the specified field name.
+   Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+
+   @public
+   @param collection {string} the collection 
+   @param fieldName {string} the field name 
+   @param resultClassname {string} 
+   @param resultHandler {function} will be provided with array of values. 
+   @return {MongoClient}
+   */
+  this.distinct = function(collection, fieldName, resultClassname, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'string' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoClient["distinct(java.lang.String,java.lang.String,java.lang.String,io.vertx.core.Handler)"](collection, fieldName, resultClassname, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Gets the distinct values of the specified field name.
+   This method use batchCursor for returning each found value.
+   Each value is a json fragment with fieldName key (eg: {"num": 1}).
+
+   @public
+   @param collection {string} the collection 
+   @param fieldName {string} the field name 
+   @param resultClassname {string} 
+   @param resultHandler {function} will be provided with each found value 
+   @return {MongoClient}
+   */
+  this.distinctBatch = function(collection, fieldName, resultClassname, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'string' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoClient["distinctBatch(java.lang.String,java.lang.String,java.lang.String,io.vertx.core.Handler)"](collection, fieldName, resultClassname, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
    Close the client and release its resources
 
    @public

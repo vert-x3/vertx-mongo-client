@@ -41,6 +41,7 @@ import io.vertx.ext.mongo.WriteOption;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoService;
+import io.vertx.core.json.JsonArray;
 import java.util.List;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
@@ -209,6 +210,14 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
           service.runCommand((java.lang.String)json.getValue("commandName"), (io.vertx.core.json.JsonObject)json.getValue("command"), createHandler(msg));
           break;
         }
+        case "distinct": {
+          service.distinct((java.lang.String)json.getValue("collection"), (java.lang.String)json.getValue("fieldName"), (java.lang.String)json.getValue("resultClassname"), createHandler(msg));
+          break;
+        }
+        case "distinctBatch": {
+          service.distinctBatch((java.lang.String)json.getValue("collection"), (java.lang.String)json.getValue("fieldName"), (java.lang.String)json.getValue("resultClassname"), createHandler(msg));
+          break;
+        }
         case "close": {
           service.close();
           break;
@@ -228,8 +237,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
       if (res.failed()) {
         msg.fail(-1, res.cause().getMessage());
       } else {
-        msg.reply(res.result());
-      }
+        if (res.result() != null  && res.result().getClass().isEnum()) {          msg.reply(((Enum) res.result()).name());        } else {          msg.reply(res.result());        }      }
     };
   }
 

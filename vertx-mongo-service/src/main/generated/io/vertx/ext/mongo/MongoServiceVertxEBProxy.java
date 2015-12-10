@@ -28,11 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.function.Function;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoService;
+import io.vertx.core.json.JsonArray;
 import java.util.List;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
@@ -510,6 +512,48 @@ public class MongoServiceVertxEBProxy implements MongoService {
     return this;
   }
 
+  public MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return this;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("collection", collection);
+    _json.put("fieldName", fieldName);
+    _json.put("resultClassname", resultClassname);
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "distinct");
+    _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+    return this;
+  }
+
+  public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return this;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("collection", collection);
+    _json.put("fieldName", fieldName);
+    _json.put("resultClassname", resultClassname);
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "distinctBatch");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+    return this;
+  }
+
   public void close() {
   }
 
@@ -533,12 +577,44 @@ public class MongoServiceVertxEBProxy implements MongoService {
   }
 
   private <T> Map<String, T> convertMap(Map map) {
-    return (Map<String, T>)map;
+    if (map.isEmpty()) { 
+      return (Map<String, T>) map; 
+    } 
+     
+    Object elem = map.values().stream().findFirst().get(); 
+    if (!(elem instanceof Map) && !(elem instanceof List)) { 
+      return (Map<String, T>) map; 
+    } else { 
+      Function<Object, T> converter; 
+      if (elem instanceof List) { 
+        converter = object -> (T) new JsonArray((List) object); 
+      } else { 
+        converter = object -> (T) new JsonObject((Map) object); 
+      } 
+      return ((Map<String, T>) map).entrySet() 
+       .stream() 
+       .collect(Collectors.toMap(Map.Entry::getKey, converter::apply)); 
+    } 
   }
   private <T> List<T> convertList(List list) {
-    return (List<T>)list;
+    if (list.isEmpty()) { 
+          return (List<T>) list; 
+        } 
+     
+    Object elem = list.get(0); 
+    if (!(elem instanceof Map) && !(elem instanceof List)) { 
+      return (List<T>) list; 
+    } else { 
+      Function<Object, T> converter; 
+      if (elem instanceof List) { 
+        converter = object -> (T) new JsonArray((List) object); 
+      } else { 
+        converter = object -> (T) new JsonObject((Map) object); 
+      } 
+      return (List<T>) list.stream().map(converter).collect(Collectors.toList()); 
+    } 
   }
   private <T> Set<T> convertSet(List list) {
-    return new HashSet<T>((List<T>)list);
+    return new HashSet<T>(convertList(list));
   }
 }

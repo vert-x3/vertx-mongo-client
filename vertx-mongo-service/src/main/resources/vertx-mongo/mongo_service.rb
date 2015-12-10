@@ -277,6 +277,30 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling run_command(commandName,command)"
     end
+    # @param [String] collection 
+    # @param [String] fieldName 
+    # @param [String] resultClassname 
+    # @yield 
+    # @return [self]
+    def distinct(collection=nil,fieldName=nil,resultClassname=nil)
+      if collection.class == String && fieldName.class == String && resultClassname.class == String && block_given?
+        @j_del.java_method(:distinct, [Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,fieldName,resultClassname,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling distinct(collection,fieldName,resultClassname)"
+    end
+    # @param [String] collection 
+    # @param [String] fieldName 
+    # @param [String] resultClassname 
+    # @yield 
+    # @return [self]
+    def distinct_batch(collection=nil,fieldName=nil,resultClassname=nil)
+      if collection.class == String && fieldName.class == String && resultClassname.class == String && block_given?
+        @j_del.java_method(:distinctBatch, [Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,fieldName,resultClassname,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling distinct_batch(collection,fieldName,resultClassname)"
+    end
     # @return [void]
     def close
       if !block_given?

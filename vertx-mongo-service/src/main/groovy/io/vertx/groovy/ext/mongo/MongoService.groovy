@@ -20,6 +20,7 @@ import io.vertx.lang.groovy.InternalHelper
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
+import io.vertx.core.json.JsonArray
 import java.util.List
 import io.vertx.ext.mongo.FindOptions
 import io.vertx.core.json.JsonObject
@@ -191,6 +192,34 @@ public class MongoService extends MongoClient {
   }
   public MongoService runCommand(String commandName, Map<String, Object> command, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
     ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) this.delegate).runCommand(commandName, command != null ? new io.vertx.core.json.JsonObject(command) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
+        AsyncResult<Map<String, Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()))
+        } else {
+          f = InternalHelper.<Map<String, Object>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
+    return this;
+  }
+  public MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<List<Object>>> resultHandler) {
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) this.delegate).distinct(collection, fieldName, resultClassname, new Handler<AsyncResult<io.vertx.core.json.JsonArray>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonArray> event) {
+        AsyncResult<List<Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<List<Object>>result((List<Object>)InternalHelper.wrapObject(event.result()))
+        } else {
+          f = InternalHelper.<List<Object>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
+    return this;
+  }
+  public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) this.delegate).distinctBatch(collection, fieldName, resultClassname, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
       public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
         AsyncResult<Map<String, Object>> f
         if (event.succeeded()) {

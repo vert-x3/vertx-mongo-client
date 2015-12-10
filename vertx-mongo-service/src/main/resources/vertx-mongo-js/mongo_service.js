@@ -531,6 +531,52 @@ var MongoService = function(j_val) {
   /**
 
    @public
+   @param collection {string} 
+   @param fieldName {string} 
+   @param resultClassname {string} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.distinct = function(collection, fieldName, resultClassname, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'string' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoService["distinct(java.lang.String,java.lang.String,java.lang.String,io.vertx.core.Handler)"](collection, fieldName, resultClassname, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param fieldName {string} 
+   @param resultClassname {string} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.distinctBatch = function(collection, fieldName, resultClassname, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && typeof __args[1] === 'string' && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoService["distinctBatch(java.lang.String,java.lang.String,java.lang.String,io.vertx.core.Handler)"](collection, fieldName, resultClassname, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
 
    */
   this.close = function() {
