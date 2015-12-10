@@ -19,11 +19,7 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.DistinctIterable;
-import com.mongodb.async.client.FindIterable;
-import com.mongodb.async.client.MongoClients;
-import com.mongodb.async.client.MongoCollection;
-import com.mongodb.async.client.MongoDatabase;
+import com.mongodb.async.client.*;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -39,16 +35,15 @@ import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
 /**
+ * The implementation of the {@link io.vertx.ext.mongo.MongoClient}. This implementation is based on the async driver
+ * provided by Mongo.
+ *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
@@ -103,7 +98,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
 
       com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
-              .upsert(true);
+          .upsert(true);
 
       coll.replaceOne(wrap(filter), encodedDocument, updateOptions, convertCallback(resultHandler, result -> null));
     }

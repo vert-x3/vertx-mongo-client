@@ -12,6 +12,9 @@ as it natively handles JSON (BSON) documents.
 * Custom codec to support fast serialization to/from Vert.x JSON
 * Supports a majority of the configuration options from the MongoDB Java Driver
 
+This client is based on the
+<a href="http://mongodb.github.io/mongo-java-driver/3.2/driver-async/getting-started/">MongoDB Async Driver</a>.
+
 == Using Vert.x MongoDB Client
 
 To use this project, add the following dependency to the _dependencies_ section of your build descriptor:
@@ -31,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile io.vertx:vertx-mongo-client:3.2.0-SNAPSHOT
+compile 'io.vertx:vertx-mongo-client:3.2.0-SNAPSHOT'
 ----
 
 
@@ -645,6 +648,46 @@ mongoService.save("smartPeople", document, res -> {
       } else {
         res2.cause().printStackTrace();
       }
+    });
+
+  } else {
+    res.cause().printStackTrace();
+  }
+
+});
+----
+Here's an example of getting disting value
+
+[source,java]
+----
+JsonObject document = new JsonObject().put("title", "The Hobbit");
+
+mongoClient.save("books", document, res -> {
+
+  if (res.succeeded()) {
+
+    mongoClient.distinct("books", "title", String.class.getName(), res2 -> {
+      System.out.println("Title is : " + res2.result().getJsonArray(0));
+    });
+
+  } else {
+    res.cause().printStackTrace();
+  }
+
+});
+----
+Here's an example of getting distinct value in batch mode
+
+[source,java]
+----
+JsonObject document = new JsonObject().put("title", "The Hobbit");
+
+mongoClient.save("books", document, res -> {
+
+  if (res.succeeded()) {
+
+    mongoClient.distinctBatch("books", "title", String.class.getName(), res2 -> {
+      System.out.println("Title is : " + res2.result().getString("title"));
     });
 
   } else {

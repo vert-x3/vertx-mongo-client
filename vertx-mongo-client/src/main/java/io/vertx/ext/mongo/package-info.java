@@ -27,6 +27,9 @@
  * * Custom codec to support fast serialization to/from Vert.x JSON
  * * Supports a majority of the configuration options from the MongoDB Java Driver
  *
+ * This client is based on the
+ * <a href="http://mongodb.github.io/mongo-java-driver/3.2/driver-async/getting-started/">MongoDB Async Driver</a>.
+ *
  * == Using Vert.x MongoDB Client
  *
  * To use this project, add the following dependency to the _dependencies_ section of your build descriptor:
@@ -46,7 +49,7 @@
  *
  * [source,groovy,subs="+attributes"]
  * ----
- * compile ${maven.groupId}:${maven.artifactId}:${maven.version}
+ * compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
  * ----
  *
  *
