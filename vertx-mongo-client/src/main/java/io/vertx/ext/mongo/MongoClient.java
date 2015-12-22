@@ -14,6 +14,8 @@ import java.util.UUID;
 
 /**
  * A Vert.x service used to interact with MongoDB server instances.
+ * <p>
+ * Some of the operations might change <i>_id</i> field of passed {@link JsonObject} document.
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
@@ -67,6 +69,8 @@ public interface MongoClient {
 
   /**
    * Save a document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    *
    * @param collection  the collection
    * @param document  the document
@@ -77,6 +81,8 @@ public interface MongoClient {
 
   /**
    * Save a document in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    *
    * @param collection  the collection
    * @param document  the document
@@ -88,6 +94,8 @@ public interface MongoClient {
 
   /**
    * Insert a document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    *
    * @param collection  the collection
    * @param document  the document
@@ -98,6 +106,8 @@ public interface MongoClient {
 
   /**
    * Insert a document in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    *
    * @param collection  the collection
    * @param document  the document
@@ -132,6 +142,8 @@ public interface MongoClient {
 
   /**
    * Replace matching documents in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>replace</i> parameter
    *
    * @param collection  the collection
    * @param query  query used to match the documents
@@ -143,6 +155,8 @@ public interface MongoClient {
 
   /**
    * Replace matching documents in the specified collection, specifying options
+   * <p>
+   * This operation might change <i>_id</i> field of <i>replace</i> parameter
    *
    * @param collection  the collection
    * @param query  query used to match the documents
@@ -199,6 +213,8 @@ public interface MongoClient {
 
   /**
    * Find a single matching document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
    *
    * @param collection  the collection
    * @param query  the query used to match the document
