@@ -13,7 +13,7 @@ as it natively handles JSON (BSON) documents.
 * Supports a majority of the configuration options from the MongoDB Java Driver
 
 This client is based on the
-<a href="http://mongodb.github.io/mongo-java-driver/3.2/driver-async/getting-started/">MongoDB Async Driver</a>.
+http://mongodb.github.io/mongo-java-driver/3.2/driver-async/getting-started[MongoDB Async Driver].
 
 == Using Vert.x MongoDB Client
 
@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.2.0</version>
+  <version>3.3.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -34,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mongo-client:3.2.0'
+compile 'io.vertx:vertx-mongo-client:3.3.0-SNAPSHOT'
 ----
 
 
@@ -438,7 +438,7 @@ This has the following fields:
 `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
 `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
 
- * ----
+----
 
 // will match all Tolkien books
 def query = [
@@ -920,4 +920,3 @@ For more information on the format of the connection string please consult the d
 
 NOTE: Most of the default values listed above use the default values of the MongoDB Java Driver.
 Please consult the driver documentation for up to date information.
-<a href="mailto:nscavell@redhat.com">Nick Scavelli</a><a href="mailto:julien@julienviet.com">Julien Viet</a><a href="http://tfox.org">Tim Fox</a>
