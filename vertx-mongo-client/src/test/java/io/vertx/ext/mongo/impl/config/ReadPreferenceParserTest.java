@@ -20,7 +20,7 @@ public class ReadPreferenceParserTest {
 
   @Test
   public void testNoReadPreference() {
-    ReadPreference rp = new ReadPreferenceParser(new JsonObject()).readPreference();
+    ReadPreference rp = new ReadPreferenceParser(null, new JsonObject()).readPreference();
     assertNull(rp);
   }
 
@@ -29,7 +29,7 @@ public class ReadPreferenceParserTest {
     JsonObject config = new JsonObject();
     config.put("readPreference", "primary");
 
-    ReadPreference rp = new ReadPreferenceParser(config).readPreference();
+    ReadPreference rp = new ReadPreferenceParser(null, config).readPreference();
     assertNotNull(rp);
     assertEquals(ReadPreference.primary(), rp);
   }
@@ -39,7 +39,7 @@ public class ReadPreferenceParserTest {
     JsonObject config = new JsonObject();
     config.put("readPreference", "PRIMARY");
 
-    ReadPreference rp = new ReadPreferenceParser(config).readPreference();
+    ReadPreference rp = new ReadPreferenceParser(null, config).readPreference();
     assertNotNull(rp);
     assertEquals(ReadPreference.primary(), rp);
   }
@@ -49,7 +49,7 @@ public class ReadPreferenceParserTest {
     JsonObject config = new JsonObject();
     config.put("readPreference", "foo");
 
-    new ReadPreferenceParser(config).readPreference();
+    new ReadPreferenceParser(null, config).readPreference();
   }
 
   @Test(expected = ClassCastException.class)
@@ -57,7 +57,7 @@ public class ReadPreferenceParserTest {
     JsonObject config = new JsonObject();
     config.put("readPreference", 123);
 
-    new ReadPreferenceParser(config).readPreference();
+    new ReadPreferenceParser(null, config).readPreference();
   }
 
   @Test
@@ -85,7 +85,7 @@ public class ReadPreferenceParserTest {
     array.add("ac1:ny,ac2:tx,ac3:ca");
     config.put("readPreferenceTags", array);
 
-    ReadPreference rp = new ReadPreferenceParser(config).readPreference();
+    ReadPreference rp = new ReadPreferenceParser(null, config).readPreference();
     assertNotNull(rp);
     assertEquals(expected, rp);
   }
@@ -98,7 +98,7 @@ public class ReadPreferenceParserTest {
     JsonArray array = new JsonArray();
     array.add("dc1:ny,foo,bar");
     config.put("readPreferenceTags", array);
-    new ReadPreferenceParser(config).readPreference();
+    new ReadPreferenceParser(null, config).readPreference();
   }
 
   @Test(expected = ClassCastException.class)
@@ -109,6 +109,6 @@ public class ReadPreferenceParserTest {
     JsonArray array = new JsonArray();
     array.add(1);
     config.put("readPreferenceTags", array);
-    new ReadPreferenceParser(config).readPreference();
+    new ReadPreferenceParser(null, config).readPreference();
   }
 }
