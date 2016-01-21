@@ -640,8 +640,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       if (mongo == null) {
         MongoClientOptionsParser parser = new MongoClientOptionsParser(config);
         mongo = MongoClients.create(parser.settings());
-        String dbName = config.getString("db_name", DEFAULT_DB_NAME);
-        db = mongo.getDatabase(dbName);
+        db = mongo.getDatabase(parser.database());
       }
       return mongo;
     }
