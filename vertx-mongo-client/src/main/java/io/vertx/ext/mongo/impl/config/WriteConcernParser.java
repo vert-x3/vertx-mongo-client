@@ -55,7 +55,7 @@ class WriteConcernParser {
         }
 
       } else if (safe != null) {
-        wc = (safe) ? WriteConcern.ACKNOWLEDGED : WriteConcern.UNACKNOWLEDGED;
+        wc = safe ? WriteConcern.ACKNOWLEDGED : WriteConcern.UNACKNOWLEDGED;
       } else {
         wc = null; // no write concern
       }
