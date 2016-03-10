@@ -39,11 +39,7 @@ class CredentialListParser {
         AuthenticationMechanism mechanism = null;
         String authMechanism = config.getString("authMechanism");
         if (authMechanism != null) {
-          try {
-            mechanism = AuthenticationMechanism.fromMechanismName(authMechanism);
-          } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid authMechanism '" + authMechanism + "'");
-          }
+          mechanism = getAuthenticationMechanism(authMechanism);
         }
 
         // MongoCredential
@@ -51,9 +47,7 @@ class CredentialListParser {
         MongoCredential credential;
         if (mechanism == GSSAPI) {
           credential = MongoCredential.createGSSAPICredential(username);
-          if (gssapiServiceName != null) {
-            credential = credential.withMechanismProperty("SERVICE_NAME", gssapiServiceName);
-          }
+          credential = getMongoCredential(gssapiServiceName, credential);
         } else if (mechanism == PLAIN) {
           credential = MongoCredential.createPlainCredential(username, authSource, password);
         } else if (mechanism == MONGODB_CR) {
@@ -71,6 +65,23 @@ class CredentialListParser {
         credentials.add(credential);
       }
     }
+  }
+
+  private MongoCredential getMongoCredential(String gssapiServiceName, MongoCredential credential) {
+    if (gssapiServiceName != null) {
+      credential = credential.withMechanismProperty("SERVICE_NAME", gssapiServiceName);
+    }
+    return credential;
+  }
+
+  private AuthenticationMechanism getAuthenticationMechanism(String authMechanism) {
+    AuthenticationMechanism mechanism;
+    try {
+      mechanism = AuthenticationMechanism.fromMechanismName(authMechanism);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid authMechanism '" + authMechanism + "'");
+    }
+    return mechanism;
   }
 
   public List<MongoCredential> credentials() {

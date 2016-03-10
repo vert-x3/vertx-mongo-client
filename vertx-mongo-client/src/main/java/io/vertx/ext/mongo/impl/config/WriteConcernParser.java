@@ -35,13 +35,7 @@ class WriteConcernParser {
         if (w == null) {
           wc = new WriteConcern(1);
         } else {
-          if (w instanceof String) {
-            wc = new WriteConcern((String) w);
-          } else if (w instanceof Integer) {
-            wc = new WriteConcern((int) w);
-          } else {
-            throw new IllegalArgumentException("Invalid type " + w.getClass() + " for w of WriteConcern");
-          }
+          wc = getWriteConcern(w);
         }
 
         if (wtimeout != null) {
@@ -55,13 +49,25 @@ class WriteConcernParser {
         }
 
       } else if (safe != null) {
-        wc = (safe) ? WriteConcern.ACKNOWLEDGED : WriteConcern.UNACKNOWLEDGED;
+        wc = safe ? WriteConcern.ACKNOWLEDGED : WriteConcern.UNACKNOWLEDGED;
       } else {
         wc = null; // no write concern
       }
     }
 
     writeConcern = wc;
+  }
+
+  private WriteConcern getWriteConcern(Object w) {
+    WriteConcern wc;
+    if (w instanceof String) {
+      wc = new WriteConcern((String) w);
+    } else if (w instanceof Integer) {
+      wc = new WriteConcern((int) w);
+    } else {
+      throw new IllegalArgumentException("Invalid type " + w.getClass() + " for w of WriteConcern");
+    }
+    return wc;
   }
 
   public WriteConcern writeConcern() {

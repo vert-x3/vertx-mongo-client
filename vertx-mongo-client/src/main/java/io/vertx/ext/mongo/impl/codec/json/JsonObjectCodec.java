@@ -147,25 +147,6 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
       } else if (obj.containsKey(BINARY_FIELD)) {
         return BsonType.BINARY;
       }
-      //not supported yet
-      /*
-      else if (obj.containsKey("$maxKey")) {
-        return BsonType.MAX_KEY;
-      } else if (obj.containsKey("$minKey")) {
-        return BsonType.MIN_KEY;
-      } else if (obj.containsKey("$regex")) {
-        return BsonType.REGULAR_EXPRESSION;
-      } else if (obj.containsKey("$symbol")) {
-        return BsonType.SYMBOL;
-      } else if (obj.containsKey("$timestamp")) {
-        return BsonType.TIMESTAMP;
-      } else if (obj.containsKey("$undefined")) {
-        return BsonType.UNDEFINED;
-      } else if (obj.containsKey("$numberLong")) {
-        return BsonType.INT64;
-      } else if (obj.containsKey("$code")) {
-        return JAVASCRIPT or JAVASCRIPT_WITH_SCOPE;
-      } */
     }
     return type;
   }
