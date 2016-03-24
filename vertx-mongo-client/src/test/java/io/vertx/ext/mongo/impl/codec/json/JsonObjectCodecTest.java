@@ -212,6 +212,57 @@ public class JsonObjectCodecTest {
   }
 
   @Test
+  public void readDocument_supportBsonTimeStamp(){
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    int time = (int)(System.currentTimeMillis() / 1000L);
+    int increment = 5;
+
+    BsonDocument bson = new BsonDocument();
+    bson.append("test", new BsonTimestamp(time, increment));
+
+    BsonDocumentReader reader = new BsonDocumentReader(bson);
+
+    JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
+
+    JsonObject timeStampValue = result.getJsonObject("test").getJsonObject(JsonObjectCodec.TIMESTAMP_FIELD);
+
+    assertEquals(time, timeStampValue.getInteger(JsonObjectCodec.TIMESTAMP_TIME_FIELD).intValue());
+    assertEquals(increment, timeStampValue.getInteger(JsonObjectCodec.TIMESTAMP_INCREMENT_FIELD).intValue());
+  }
+
+  @Test
+  public void writeDocument_supportBsonTimeStamp(){
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    int time = (int)(System.currentTimeMillis() / 1000L);
+    int increment = 5;
+
+    JsonObject timeStampComponent = new JsonObject();
+    timeStampComponent.put(JsonObjectCodec.TIMESTAMP_TIME_FIELD, time);
+    timeStampComponent.put(JsonObjectCodec.TIMESTAMP_INCREMENT_FIELD, increment);
+
+    JsonObject timeStamp = new JsonObject();
+    timeStamp.put(JsonObjectCodec.TIMESTAMP_FIELD, timeStampComponent);
+
+    JsonObject value = new JsonObject();
+    value.put("test", timeStamp);
+
+    BsonDocument bsonResult = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+    codec.writeDocument(writer, "", value, EncoderContext.builder().build());
+
+    BsonValue resultValue = bsonResult.get("test");
+
+    assertEquals(BsonType.TIMESTAMP, resultValue.getBsonType());
+    assertEquals(time, resultValue.asTimestamp().getTime());
+    assertEquals(increment, resultValue.asTimestamp().getInc());
+  }
+
+
+
+  @Test
   public void hexStringAsKeyDefault() {
 
     JsonObject document = new JsonObject();

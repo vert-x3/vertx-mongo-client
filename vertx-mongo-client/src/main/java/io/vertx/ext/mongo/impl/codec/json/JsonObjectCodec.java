@@ -1,6 +1,5 @@
 package io.vertx.ext.mongo.impl.codec.json;
 
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.bson.*;
@@ -25,6 +24,11 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   public static final String DATE_FIELD = "$date";
   public static final String BINARY_FIELD = "$binary";
   public static final String OID_FIELD = "$oid";
+
+  //https://docs.mongodb.org/manual/reference/mongodb-extended-json/#timestamp
+  public static final String TIMESTAMP_FIELD = "$timestamp";
+  public static final String TIMESTAMP_TIME_FIELD = "t";
+  public static final String TIMESTAMP_INCREMENT_FIELD = "i";
 
   private boolean useObjectId = false;
 
@@ -146,6 +150,8 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
         return BsonType.OBJECT_ID;
       } else if (obj.containsKey(BINARY_FIELD)) {
         return BsonType.BINARY;
+      } else if (obj.containsKey(TIMESTAMP_FIELD)) {
+        return BsonType.TIMESTAMP;
       }
     }
     return type;
@@ -190,4 +196,30 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
     final BsonBinary bson = new BsonBinary(((JsonObject) value).getBinary(BINARY_FIELD));
     writer.writeBinaryData(bson);
   }
+
+  @Override
+  protected Object readTimeStamp(BsonReader reader, DecoderContext ctx) {
+    final JsonObject result = new JsonObject();
+    final JsonObject timeStampComponent = new JsonObject();
+
+    final BsonTimestamp bson = reader.readTimestamp();
+
+    timeStampComponent.put(TIMESTAMP_TIME_FIELD, bson.getTime());
+    timeStampComponent.put(TIMESTAMP_INCREMENT_FIELD, bson.getInc());
+
+    result.put(TIMESTAMP_FIELD, timeStampComponent);
+
+    return result;
+  }
+
+  @Override
+  protected void writeTimeStamp(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    final JsonObject timeStamp = ((JsonObject) value).getJsonObject(TIMESTAMP_FIELD);
+
+    final BsonTimestamp bson = new BsonTimestamp(timeStamp.getInteger(TIMESTAMP_TIME_FIELD),
+      timeStamp.getInteger(TIMESTAMP_INCREMENT_FIELD));
+
+    writer.writeTimestamp(bson);
+  }
+
 }
