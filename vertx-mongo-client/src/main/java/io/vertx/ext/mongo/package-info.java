@@ -27,6 +27,9 @@
  * * Custom codec to support fast serialization to/from Vert.x JSON
  * * Supports a majority of the configuration options from the MongoDB Java Driver
  *
+ * This client is based on the
+ * http://mongodb.github.io/mongo-java-driver/3.2/driver-async/getting-started[MongoDB Async Driver].
+ *
  * == Using Vert.x MongoDB Client
  *
  * To use this project, add the following dependency to the _dependencies_ section of your build descriptor:
@@ -36,9 +39,9 @@
  * [source,xml,subs="+attributes"]
  * ----
  * <dependency>
- *   <groupId>{maven-groupId}</groupId>
- *   <artifactId>{maven-artifactId}</artifactId>
- *   <version>{maven-version}</version>
+ *   <groupId>${maven.groupId}</groupId>
+ *   <artifactId>${maven.artifactId}</artifactId>
+ *   <version>${maven.version}</version>
  * </dependency>
  * ----
  *
@@ -46,7 +49,7 @@
  *
  * [source,groovy,subs="+attributes"]
  * ----
- * compile {maven-groupId}:{maven-artifactId}:{maven-version}
+ * compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
  * ----
  *
  *
@@ -231,6 +234,12 @@
  * `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
  * `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
  *
+ * ----
+ * {@link examples.Examples#example9_1}
+ * ----
+ *
+ * The matching documents are returned unitary in the result handler.
+ *
  * === Finding a single document
  *
  * To find a single document you use {@link io.vertx.ext.mongo.MongoClient#findOne}.
@@ -342,6 +351,18 @@
  * ----
  * {@link examples.Examples#example15_dl}
  * ----
+ * Here's an example of getting disting value
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example16}
+ * ----
+ * Here's an example of getting distinct value in batch mode
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example16_d1}
+ * ----
  *
  * == Configuring the client
  *
@@ -351,7 +372,11 @@
  *
  *
  * `db_name`:: Name of the database in the mongoDB instance to use. Defaults to `default_db`
- * `useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. Defaults to `false`.
+ * `useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. If `true', hex-strings will
+ * be saved as native Mongodb ObjectId types in the document collection. This will allow the sorting of documents based on creation
+ * time. You can also derive the creation time from the hex-string using ObjectId::getDate(). Set to `false' for other types of your choosing.
+ * If set to false, or left to default, hex strings will be generated as the document _id if the _id is omitted from the document.
+ * Defaults to `false`.
  *
  * The mongo client tries to support most options that are allowed by the driver. There are two ways to configure mongo
  * for use by the driver, either by a connection string or by separate configuration options.
@@ -441,7 +466,7 @@
  * `maintenanceInitialDelayMS`:: The period of time to wait before running the first maintenance job on the connection pool. Default is `0`.
  * `username`:: The username to authenticate. Default is `null` (meaning no authentication required)
  * `password`:: The password to use to authenticate.
- * `authSource`:: The database name associated with the user's credentials. Default value is `admin`
+ * `authSource`:: The database name associated with the user's credentials. Default value is the `db_name` value.
  * `authMechanism`:: The authentication mechanism to use. See [Authentication](http://docs.mongodb.org/manual/core/authentication/) for more details.
  * `gssapiServiceName`:: The Kerberos service name if `GSSAPI` is specified as the `authMechanism`.
  * `connectTimeoutMS`:: The time in milliseconds to attempt a connection before timing out. Default is `10000` (10 seconds)
@@ -455,14 +480,10 @@
  *
  * NOTE: Most of the default values listed above use the default values of the MongoDB Java Driver.
  * Please consult the driver documentation for up to date information.
- *
- * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- * @author <a href="http://tfox.org">Tim Fox</a>
  */
 @Document(fileName = "index.adoc")
-@GenModule(name = "vertx-mongo")
+@ModuleGen(name = "vertx-mongo", groupPackage = "io.vertx")
 package io.vertx.ext.mongo;
 
-import io.vertx.codegen.annotations.GenModule;
+import io.vertx.codegen.annotations.ModuleGen;
 import io.vertx.docgen.Document;

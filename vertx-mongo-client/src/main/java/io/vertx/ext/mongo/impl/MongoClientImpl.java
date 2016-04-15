@@ -16,16 +16,12 @@
 
 package io.vertx.ext.mongo.impl;
 
+import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.FindIterable;
-import com.mongodb.async.client.MongoClients;
-import com.mongodb.async.client.MongoCollection;
-import com.mongodb.async.client.MongoDatabase;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import com.mongodb.async.client.*;
+import io.vertx.core.*;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -34,17 +30,20 @@ import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
+import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
 /**
+ * The implementation of the {@link io.vertx.ext.mongo.MongoClient}. This implementation is based on the async driver
+ * provided by Mongo.
+ *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
@@ -60,6 +59,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   private final Vertx vertx;
   protected com.mongodb.async.client.MongoClient mongo;
   protected final MongoHolder holder;
+  protected boolean useObjectId;
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName) {
     Objects.requireNonNull(vertx);
@@ -68,6 +68,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     this.vertx = vertx;
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo();
+    this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
   @Override
@@ -90,9 +91,16 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Object id = document.getValue(ID_FIELD);
     if (id == null) {
-      coll.insertOne(document, convertCallback(resultHandler, wr -> document.getString(ID_FIELD)));
+      coll.insertOne(document, convertCallback(resultHandler, wr -> useObjectId ? document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) : document.getString(ID_FIELD)));
     } else {
-      coll.replaceOne(wrap(new JsonObject().put(ID_FIELD, document.getValue(ID_FIELD))), document, convertCallback(resultHandler, result -> null));
+      JsonObject filter = new JsonObject();
+      JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
+      filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
+
+      com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
+          .upsert(true);
+
+      coll.replaceOne(wrap(filter), encodedDocument, updateOptions, convertCallback(resultHandler, result -> null));
     }
     return this;
   }
@@ -111,12 +119,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     boolean id = document.containsKey(ID_FIELD);
 
+    JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
+
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    coll.insertOne(document, convertCallback(resultHandler, wr -> {
+    coll.insertOne(encodedDocument, convertCallback(resultHandler, wr -> {
       if (id) {
         return null;
       } else {
-        return document.getString(ID_FIELD);
+        JsonObject decodedDocument = decodeKeyWhenUseObjectId(encodedDocument);
+        return decodedDocument.getString(ID_FIELD);
       }
     }));
     return this;
@@ -161,8 +172,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
+    boolean id = query.containsKey(ID_FIELD);
+    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    Bson bquery = wrap(query);
+    Bson bquery = wrap(encodedQuery);
     coll.replaceOne(bquery, replace, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
     return this;
   }
@@ -170,6 +184,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   @Override
   public io.vertx.ext.mongo.MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     findWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+    findBatchWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
     return this;
   }
 
@@ -186,12 +206,31 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
+  public io.vertx.ext.mongo.MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    FindIterable<JsonObject> view = doFind(collection, query, options);
+    Block<JsonObject> documentBlock = document -> wrapCallback(resultHandler).onResult(document, null);
+    SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
+      if (throwable != null) {
+        resultHandler.handle(Future.failedFuture(throwable));
+      }
+    };
+    view.forEach(documentBlock, callbackWhenFinished);
+    return this;
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    Bson bquery = wrap(query);
+    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+
+    Bson bquery = wrap(encodedQuery);
     Bson bfields = wrap(fields);
     getCollection(collection).find(bquery).projection(bfields).first(wrapCallback(resultHandler));
     return this;
@@ -258,8 +297,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   public io.vertx.ext.mongo.MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
     requireNonNull(resultHandler, "resultHandler cannot be null");
     List<String> names = new ArrayList<>();
+    Context context = vertx.getOrCreateContext();
     holder.db.listCollectionNames().into(names, (res, error) -> {
-      vertx.runOnContext(v -> {
+      context.runOnContext(v -> {
         if (error != null) {
           resultHandler.handle(Future.failedFuture(error));
         } else {
@@ -303,9 +343,98 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
+  @Override
+  public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
+    DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
+
+    if (distinctValues != null) {
+      List results = new ArrayList();
+      try {
+        Context context = vertx.getOrCreateContext();
+        distinctValues.into(results, (result, throwable) -> {
+          context.runOnContext(v -> {
+            if (throwable != null) {
+              resultHandler.handle(Future.failedFuture(throwable));
+            } else {
+              resultHandler.handle(Future.succeededFuture(new JsonArray((List) result)));
+            }
+          });
+        });
+      } catch (Exception unhandledEx) {
+        resultHandler.handle(Future.failedFuture(unhandledEx));
+      }
+    }
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
+    DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
+
+    if (distinctValues != null) {
+      Context context = vertx.getOrCreateContext();
+      Block valueBlock = value -> {
+        context.runOnContext(v -> {
+          Map mapValue = new HashMap();
+          mapValue.put(fieldName, value);
+          resultHandler.handle(Future.succeededFuture(new JsonObject(mapValue)));
+        });
+      };
+      SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
+        if (throwable != null) {
+          resultHandler.handle(Future.failedFuture(throwable));
+        }
+      };
+      try {
+        distinctValues.forEach(valueBlock, callbackWhenFinished);
+      } catch (Exception unhandledEx) {
+        resultHandler.handle(Future.failedFuture(unhandledEx));
+      }
+    }
+    return this;
+  }
+
+  private DistinctIterable findDistinctValues(String collection, String fieldName, String resultClassname, Handler resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(fieldName, "fieldName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    final Class resultClass;
+    try {
+      resultClass = Class.forName(resultClassname);
+    } catch (ClassNotFoundException e) {
+      resultHandler.handle(Future.failedFuture(e));
+      return null;
+    }
+    MongoCollection<JsonObject> mongoCollection = getCollection(collection);
+    return mongoCollection.distinct(fieldName, resultClass);
+  }
+
+
+  private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
+    if (useObjectId && json.containsKey(ID_FIELD) && json.getValue(ID_FIELD) instanceof String) {
+      String idString = json.getString(ID_FIELD);
+      if (ObjectId.isValid(idString)) {
+        json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, idString));
+      }
+    }
+    return json;
+  }
+
+  private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
+    if (useObjectId && json.containsKey(ID_FIELD)) {
+      Object idValue = json.getValue(ID_FIELD);
+      if (idValue instanceof JsonObject && ((JsonObject) idValue).containsKey(JsonObjectCodec.OID_FIELD)) {
+        json.put(ID_FIELD, json.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD));
+      }
+    }
+    return json;
+  }
+
   private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
+    Context context = vertx.getOrCreateContext();
     return (result, error) -> {
-      vertx.runOnContext(v -> {
+      context.runOnContext(v -> {
         if (error != null) {
           resultHandler.handle(Future.failedFuture(error));
         } else {
@@ -316,8 +445,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   private <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
+    Context context = vertx.getOrCreateContext();
     return (result, error) -> {
-      vertx.runOnContext(v -> {
+      context.runOnContext(v -> {
         if (error != null) {
           resultHandler.handle(Future.failedFuture(error));
         } else {
@@ -393,7 +523,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     }
   }
 
-  private static class MongoHolder implements Shareable{
+  private static class MongoHolder implements Shareable {
     com.mongodb.async.client.MongoClient mongo;
     MongoDatabase db;
     JsonObject config;

@@ -1,0 +1,58 @@
+= Cheatsheets
+
+[[FindOptions]]
+== FindOptions
+
+++++
+ Options used to configure find operations.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[fields]]`fields`|`Json object`|
++++
+Set the fields
++++
+|[[limit]]`limit`|`Number (int)`|
++++
+Set the limit
++++
+|[[skip]]`skip`|`Number (int)`|
++++
+Set the skip
++++
+|[[sort]]`sort`|`Json object`|
++++
+Set the sort document
++++
+|===
+
+[[UpdateOptions]]
+== UpdateOptions
+
+++++
+ Options for configuring updates.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[multi]]`multi`|`Boolean`|
++++
+Set whether multi is enabled
++++
+|[[upsert]]`upsert`|`Boolean`|
++++
+Set whether upsert is enabled
++++
+|[[writeOption]]`writeOption`|`link:enums.html#WriteOption[WriteOption]`|
++++
+Set the write option
++++
+|===
+

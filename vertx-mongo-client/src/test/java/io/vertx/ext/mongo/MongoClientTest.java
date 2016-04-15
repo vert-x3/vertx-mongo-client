@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.core.json.JsonObject;
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -15,7 +16,7 @@ public class MongoClientTest extends MongoClientTestBase {
     JsonObject config = getConfig();
     mongoClient = MongoClient.createNonShared(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
-    dropCollections(latch);
+    dropCollections(mongoClient, latch);
     awaitLatch(latch);
   }
 
@@ -25,4 +26,21 @@ public class MongoClientTest extends MongoClientTestBase {
     super.tearDown();
   }
 
+
+  @Test
+  public void testFindBatch() throws Exception {
+    int numDocs = 200;
+
+    String collection = randomCollection();
+    CountDownLatch latch = new CountDownLatch(numDocs);
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
+        mongoClient.findBatchWithOptions(collection, new JsonObject(), new FindOptions(), onSuccess(result -> {
+          assertNotNull(result);
+          latch.countDown();
+        }));
+      }));
+    }));
+    awaitLatch(latch);
+  }
 }

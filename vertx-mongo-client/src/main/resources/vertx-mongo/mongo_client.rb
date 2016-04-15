@@ -154,6 +154,19 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling find(collection,query)"
     end
+    #  Find matching documents in the specified collection.
+    #  This method use batchCursor for returning each found document.
+    # @param [String] collection the collection
+    # @param [Hash{String => Object}] query query used to match documents
+    # @yield will be provided with each found document
+    # @return [self]
+    def find_batch(collection=nil,query=nil)
+      if collection.class == String && query.class == Hash && block_given?
+        @j_del.java_method(:findBatch, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_batch(collection,query)"
+    end
     #  Find matching documents in the specified collection, specifying options
     # @param [String] collection the collection
     # @param [Hash{String => Object}] query query used to match documents
@@ -166,6 +179,20 @@ module VertxMongo
         return self
       end
       raise ArgumentError, "Invalid arguments when calling find_with_options(collection,query,options)"
+    end
+    #  Find matching documents in the specified collection, specifying options.
+    #  This method use batchCursor for returning each found document.
+    # @param [String] collection the collection
+    # @param [Hash{String => Object}] query query used to match documents
+    # @param [Hash] options options to configure the find
+    # @yield will be provided with each found document
+    # @return [self]
+    def find_batch_with_options(collection=nil,query=nil,options=nil)
+      if collection.class == String && query.class == Hash && options.class == Hash && block_given?
+        @j_del.java_method(:findBatchWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_batch_with_options(collection,query,options)"
     end
     #  Find a single matching document in the specified collection
     # @param [String] collection the collection
@@ -285,6 +312,35 @@ module VertxMongo
         return self
       end
       raise ArgumentError, "Invalid arguments when calling run_command(commandName,command)"
+    end
+    #  Gets the distinct values of the specified field name.
+    #  Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+    # @param [String] collection the collection
+    # @param [String] fieldName the field name
+    # @param [String] resultClassname 
+    # @yield will be provided with array of values.
+    # @return [self]
+    def distinct(collection=nil,fieldName=nil,resultClassname=nil)
+      if collection.class == String && fieldName.class == String && resultClassname.class == String && block_given?
+        @j_del.java_method(:distinct, [Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,fieldName,resultClassname,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling distinct(collection,fieldName,resultClassname)"
+    end
+    #  Gets the distinct values of the specified field name.
+    #  This method use batchCursor for returning each found value.
+    #  Each value is a json fragment with fieldName key (eg: {"num": 1}).
+    # @param [String] collection the collection
+    # @param [String] fieldName the field name
+    # @param [String] resultClassname 
+    # @yield will be provided with each found value
+    # @return [self]
+    def distinct_batch(collection=nil,fieldName=nil,resultClassname=nil)
+      if collection.class == String && fieldName.class == String && resultClassname.class == String && block_given?
+        @j_del.java_method(:distinctBatch, [Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,fieldName,resultClassname,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling distinct_batch(collection,fieldName,resultClassname)"
     end
     #  Close the client and release its resources
     # @return [void]

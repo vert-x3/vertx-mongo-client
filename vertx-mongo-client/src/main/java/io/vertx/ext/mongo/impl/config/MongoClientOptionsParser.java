@@ -5,9 +5,20 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.client.MongoClientSettings;
-import com.mongodb.connection.*;
+import com.mongodb.connection.ClusterSettings;
+import com.mongodb.connection.ConnectionPoolSettings;
+import com.mongodb.connection.ServerSettings;
+import com.mongodb.connection.SocketSettings;
+import com.mongodb.connection.SslSettings;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.impl.codec.VertxCodecRegistry;
+import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
+import org.bson.codecs.BooleanCodec;
+import org.bson.codecs.DoubleCodec;
+import org.bson.codecs.IntegerCodec;
+import org.bson.codecs.LongCodec;
+import org.bson.codecs.StringCodec;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,12 +29,14 @@ import java.util.Objects;
 public class MongoClientOptionsParser {
 
   private final MongoClientSettings settings;
+  private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
+          new BooleanCodec(), new DoubleCodec(), new LongCodec());
 
   public MongoClientOptionsParser(JsonObject config) {
     Objects.requireNonNull(config);
 
     MongoClientSettings.Builder options = MongoClientSettings.builder();
-    options.codecRegistry(new VertxCodecRegistry());
+    options.codecRegistry(CodecRegistries.fromRegistries(commonCodecRegistry, CodecRegistries.fromCodecs(new JsonObjectCodec(config))));
 
     // All parsers should support connection_string first
     String cs = config.getString("connection_string");

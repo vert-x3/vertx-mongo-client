@@ -17,9 +17,11 @@
 package io.vertx.groovy.ext.mongo;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
-import java.util.List
+import io.vertx.core.json.JsonObject
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
+import io.vertx.core.json.JsonArray
+import java.util.List
 import io.vertx.ext.mongo.FindOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
@@ -190,6 +192,28 @@ public class MongoClient {
     return this;
   }
   /**
+   * Find matching documents in the specified collection.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param resultHandler will be provided with each found document
+   * @return 
+   */
+  public MongoClient findBatch(String collection, Map<String, Object> query, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    this.delegate.findBatch(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
+        AsyncResult<Map<String, Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()))
+        } else {
+          f = InternalHelper.<Map<String, Object>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
+    return this;
+  }
+  /**
    * Find matching documents in the specified collection, specifying options
    * @param collection the collection
    * @param query query used to match documents
@@ -208,6 +232,29 @@ public class MongoClient {
           }) as List)
         } else {
           f = InternalHelper.<List<Map<String, Object>>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
+    return this;
+  }
+  /**
+   * Find matching documents in the specified collection, specifying options.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param options options to configure the find (see <a href="../../../../../../../cheatsheet/FindOptions.html">FindOptions</a>)
+   * @param resultHandler will be provided with each found document
+   * @return 
+   */
+  public MongoClient findBatchWithOptions(String collection, Map<String, Object> query, Map<String, Object> options, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    this.delegate.findBatchWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, options != null ? new io.vertx.ext.mongo.FindOptions(new io.vertx.core.json.JsonObject(options)) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
+        AsyncResult<Map<String, Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()))
+        } else {
+          f = InternalHelper.<Map<String, Object>>failure(event.cause())
         }
         resultHandler.handle(f)
       }
@@ -331,6 +378,53 @@ public class MongoClient {
    */
   public MongoClient runCommand(String commandName, Map<String, Object> command, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
     this.delegate.runCommand(commandName, command != null ? new io.vertx.core.json.JsonObject(command) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
+        AsyncResult<Map<String, Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()))
+        } else {
+          f = InternalHelper.<Map<String, Object>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
+    return this;
+  }
+  /**
+   * Gets the distinct values of the specified field name.
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @param resultHandler will be provided with array of values.
+   * @return 
+   */
+  public MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<List<Object>>> resultHandler) {
+    this.delegate.distinct(collection, fieldName, resultClassname, new Handler<AsyncResult<io.vertx.core.json.JsonArray>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonArray> event) {
+        AsyncResult<List<Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<List<Object>>result((List<Object>)InternalHelper.wrapObject(event.result()))
+        } else {
+          f = InternalHelper.<List<Object>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
+    return this;
+  }
+  /**
+   * Gets the distinct values of the specified field name.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @param resultHandler will be provided with each found value
+   * @return 
+   */
+  public MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    this.delegate.distinctBatch(collection, fieldName, resultClassname, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
       public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
         AsyncResult<Map<String, Object>> f
         if (event.succeeded()) {

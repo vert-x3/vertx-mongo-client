@@ -19,9 +19,10 @@ package io.vertx.rxjava.ext.mongo;
 import java.util.Map;
 import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
-import java.util.List;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import java.util.List;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
@@ -60,7 +61,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
-    this.delegate.save(collection, document, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).save(collection, document, resultHandler);
     return this;
   }
 
@@ -71,7 +72,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
-    this.delegate.saveWithOptions(collection, document, writeOption, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).saveWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
 
@@ -82,7 +83,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
-    this.delegate.insert(collection, document, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).insert(collection, document, resultHandler);
     return this;
   }
 
@@ -93,7 +94,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
-    this.delegate.insertWithOptions(collection, document, writeOption, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).insertWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
 
@@ -104,7 +105,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.update(collection, query, update, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).update(collection, query, update, resultHandler);
     return this;
   }
 
@@ -115,7 +116,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.updateWithOptions(collection, query, update, options, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).updateWithOptions(collection, query, update, options, resultHandler);
     return this;
   }
 
@@ -126,7 +127,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.replace(collection, query, replace, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).replace(collection, query, replace, resultHandler);
     return this;
   }
 
@@ -137,7 +138,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.replaceWithOptions(collection, query, replace, options, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).replaceWithOptions(collection, query, replace, options, resultHandler);
     return this;
   }
 
@@ -148,7 +149,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
-    this.delegate.find(collection, query, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).find(collection, query, resultHandler);
     return this;
   }
 
@@ -158,8 +159,19 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).findBatch(collection, query, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findBatchObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findBatch(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
-    this.delegate.findWithOptions(collection, query, options, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).findWithOptions(collection, query, options, resultHandler);
     return this;
   }
 
@@ -169,8 +181,19 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).findBatchWithOptions(collection, query, options, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findBatchWithOptionsObservable(String collection, JsonObject query, FindOptions options) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findBatchWithOptions(collection, query, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public MongoService findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    this.delegate.findOne(collection, query, fields, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).findOne(collection, query, fields, resultHandler);
     return this;
   }
 
@@ -181,7 +204,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) { 
-    this.delegate.count(collection, query, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).count(collection, query, resultHandler);
     return this;
   }
 
@@ -192,7 +215,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.remove(collection, query, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).remove(collection, query, resultHandler);
     return this;
   }
 
@@ -203,7 +226,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.removeWithOptions(collection, query, writeOption, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).removeWithOptions(collection, query, writeOption, resultHandler);
     return this;
   }
 
@@ -214,7 +237,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.removeOne(collection, query, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).removeOne(collection, query, resultHandler);
     return this;
   }
 
@@ -225,7 +248,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.removeOneWithOptions(collection, query, writeOption, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).removeOneWithOptions(collection, query, writeOption, resultHandler);
     return this;
   }
 
@@ -236,7 +259,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.createCollection(collectionName, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).createCollection(collectionName, resultHandler);
     return this;
   }
 
@@ -247,7 +270,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService getCollections(Handler<AsyncResult<List<String>>> resultHandler) { 
-    this.delegate.getCollections(resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).getCollections(resultHandler);
     return this;
   }
 
@@ -258,7 +281,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) { 
-    this.delegate.dropCollection(collection, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).dropCollection(collection, resultHandler);
     return this;
   }
 
@@ -269,7 +292,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    this.delegate.runCommand(commandName, command, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).runCommand(commandName, command, resultHandler);
     return this;
   }
 
@@ -279,8 +302,30 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).distinct(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonArray> distinctObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonArray> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinct(collection, fieldName, resultClassname, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).distinctBatch(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> distinctBatchObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinctBatch(collection, fieldName, resultClassname, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public void close() { 
-    this.delegate.close();
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mongo.MongoClient) delegate).close();
   }
 
 

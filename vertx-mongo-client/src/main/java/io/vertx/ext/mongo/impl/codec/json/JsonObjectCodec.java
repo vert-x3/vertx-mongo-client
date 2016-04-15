@@ -25,12 +25,25 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   public static final String BINARY_FIELD = "$binary";
   public static final String OID_FIELD = "$oid";
 
+  //https://docs.mongodb.org/manual/reference/mongodb-extended-json/#timestamp
+  public static final String TIMESTAMP_FIELD = "$timestamp";
+  public static final String TIMESTAMP_TIME_FIELD = "t";
+  public static final String TIMESTAMP_INCREMENT_FIELD = "i";
+
+  private boolean useObjectId = false;
+
+  public JsonObjectCodec(JsonObject config) {
+    useObjectId = config.getBoolean("useObjectId", false);
+  }
+
   @Override
   public JsonObject generateIdIfAbsentFromDocument(JsonObject json) {
-    //TODO: Is this faster/better then Java UUID ?
+
     if (!documentHasId(json)) {
       ObjectId id = new ObjectId();
-      json.put(ID_FIELD, id.toHexString());
+
+      if (useObjectId) json.put(ID_FIELD, new JsonObject().put(OID_FIELD, id.toHexString()));
+      else json.put(ID_FIELD, id.toHexString());
     }
     return json;
   }
@@ -63,6 +76,14 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   public Class<JsonObject> getEncoderClass() {
     return JsonObject.class;
+  }
+
+  @Override
+  protected boolean isObjectIdInstance(Object instance) {
+    if (instance instanceof JsonObject && ((JsonObject) instance).containsKey(OID_FIELD)) {
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -129,26 +150,9 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
         return BsonType.OBJECT_ID;
       } else if (obj.containsKey(BINARY_FIELD)) {
         return BsonType.BINARY;
-      }
-      //not supported yet
-      /*
-      else if (obj.containsKey("$maxKey")) {
-        return BsonType.MAX_KEY;
-      } else if (obj.containsKey("$minKey")) {
-        return BsonType.MIN_KEY;
-      } else if (obj.containsKey("$regex")) {
-        return BsonType.REGULAR_EXPRESSION;
-      } else if (obj.containsKey("$symbol")) {
-        return BsonType.SYMBOL;
-      } else if (obj.containsKey("$timestamp")) {
+      } else if (obj.containsKey(TIMESTAMP_FIELD)) {
         return BsonType.TIMESTAMP;
-      } else if (obj.containsKey("$undefined")) {
-        return BsonType.UNDEFINED;
-      } else if (obj.containsKey("$numberLong")) {
-        return BsonType.INT64;
-      } else if (obj.containsKey("$code")) {
-        return JAVASCRIPT or JAVASCRIPT_WITH_SCOPE;
-      } */
+      }
     }
     return type;
   }
@@ -157,11 +161,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected Object readObjectId(BsonReader reader, DecoderContext ctx) {
-    //return reader.readObjectId().toHexString();
-
-    final JsonObject result = new JsonObject();
-    result.put(OID_FIELD, reader.readObjectId().toHexString());
-    return  result;
+    return new JsonObject().put(OID_FIELD, reader.readObjectId().toHexString());
   }
 
   @Override
@@ -196,4 +196,30 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
     final BsonBinary bson = new BsonBinary(((JsonObject) value).getBinary(BINARY_FIELD));
     writer.writeBinaryData(bson);
   }
+
+  @Override
+  protected Object readTimeStamp(BsonReader reader, DecoderContext ctx) {
+    final JsonObject result = new JsonObject();
+    final JsonObject timeStampComponent = new JsonObject();
+
+    final BsonTimestamp bson = reader.readTimestamp();
+
+    timeStampComponent.put(TIMESTAMP_TIME_FIELD, bson.getTime());
+    timeStampComponent.put(TIMESTAMP_INCREMENT_FIELD, bson.getInc());
+
+    result.put(TIMESTAMP_FIELD, timeStampComponent);
+
+    return result;
+  }
+
+  @Override
+  protected void writeTimeStamp(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    final JsonObject timeStamp = ((JsonObject) value).getJsonObject(TIMESTAMP_FIELD);
+
+    final BsonTimestamp bson = new BsonTimestamp(timeStamp.getInteger(TIMESTAMP_TIME_FIELD),
+      timeStamp.getInteger(TIMESTAMP_INCREMENT_FIELD));
+
+    writer.writeTimestamp(bson);
+  }
+
 }

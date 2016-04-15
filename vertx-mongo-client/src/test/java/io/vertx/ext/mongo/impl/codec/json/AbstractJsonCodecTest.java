@@ -1,9 +1,12 @@
 package io.vertx.ext.mongo.impl.codec.json;
 
+import org.bson.BsonDocument;
+import org.bson.BsonDocumentWriter;
 import org.bson.BsonType;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -18,8 +21,20 @@ public class AbstractJsonCodecTest {
     Assert.assertEquals(BsonType.NULL, codec.getBsonType(null));
   }
 
+  @Test(expected = IllegalStateException.class)
+  public void testWhenGettingAnUnsupportedBsonType() {
+    AbstractJsonCodec codec = getCodec();
+    // This should not throw a NPE, but an ISE.
+    codec.writeValue(null, "foo", Collections.emptyList(), null);
+  }
+
   private AbstractJsonCodec getCodec() {
     return new AbstractJsonCodec() {
+      @Override
+      protected boolean isObjectIdInstance(Object instance) {
+        return false;
+      }
+
       @Override
       protected Object newObject() {
         return null;

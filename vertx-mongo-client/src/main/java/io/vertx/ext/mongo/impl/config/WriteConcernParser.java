@@ -3,6 +3,8 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.WriteConcern;
 import io.vertx.core.json.JsonObject;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
@@ -21,33 +23,51 @@ class WriteConcernParser {
       // and mongo docs [http://bit.ly/10SYO6x] but we'll be consistent with the driver for this.
       Boolean safe = config.getBoolean("safe");
       Object w = config.getValue("w");
-      int wtimeout = config.getInteger("wtimeoutMS", 0);
-      boolean fsync = config.getBoolean("fsync", false); // This doesn't exist in mongo docs, but you can specify it for driver...
-      boolean j = config.getBoolean("j", false);
-      if (!j) {
-        j = config.getBoolean("journal", false); //TODO: Inconsistency with driver and mongo docs, support both ?
+      Integer wtimeout = config.getInteger("wtimeoutMS", null);
+      Boolean fsync = config.getBoolean("fsync", null); // This doesn't exist in mongo docs, but you can specify it for driver...
+      Boolean j = config.getBoolean("j", null);
+      if (j == null) {
+        j = config.getBoolean("journal", null); //TODO: Inconsistency with driver and mongo docs, support both ?
       }
 
-      if (w != null || wtimeout != 0 || fsync || j) {
+
+      if (w != null || wtimeout != null || (fsync !=null  && fsync) || (j != null  && j)) {
         if (w == null) {
-          wc = new WriteConcern(1, wtimeout, fsync, j);
+          wc = new WriteConcern(1);
         } else {
-          if (w instanceof String) {
-            wc = new WriteConcern((String) w, wtimeout, fsync, j);
-          } else if (w instanceof Integer) {
-            wc = new WriteConcern((int) w, wtimeout, fsync, j);
-          } else {
-            throw new IllegalArgumentException("Invalid type " + w.getClass() + " for w of WriteConcern");
-          }
+          wc = getWriteConcern(w);
         }
+
+        if (wtimeout != null) {
+          wc = wc.withWTimeout(wtimeout, TimeUnit.MILLISECONDS);
+        }
+        if (j != null) {
+          wc = wc.withJournal(j);
+        }
+        if (fsync != null) {
+          wc = wc.withFsync(fsync);
+        }
+
       } else if (safe != null) {
-        wc = (safe) ? WriteConcern.ACKNOWLEDGED : WriteConcern.UNACKNOWLEDGED;
+        wc = safe ? WriteConcern.ACKNOWLEDGED : WriteConcern.UNACKNOWLEDGED;
       } else {
         wc = null; // no write concern
       }
     }
 
     writeConcern = wc;
+  }
+
+  private WriteConcern getWriteConcern(Object w) {
+    WriteConcern wc;
+    if (w instanceof String) {
+      wc = new WriteConcern((String) w);
+    } else if (w instanceof Integer) {
+      wc = new WriteConcern((int) w);
+    } else {
+      throw new IllegalArgumentException("Invalid type " + w.getClass() + " for w of WriteConcern");
+    }
+    return wc;
   }
 
   public WriteConcern writeConcern() {

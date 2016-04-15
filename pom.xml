@@ -23,7 +23,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-ext-parent</artifactId>
-    <version>16</version>
+    <version>20</version>
   </parent>
 
   <modules>
@@ -32,14 +32,14 @@
   </modules>
 
   <artifactId>vertx-mongo</artifactId>
-  <version>3.1.0-SNAPSHOT</version>
+  <version>3.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Vert.x Mongo</name>
 
   <properties>
-    <stack.version>3.1.0-SNAPSHOT</stack.version>
-    <mongo.async.version>3.0.2</mongo.async.version>
+    <stack.version>3.3.0-SNAPSHOT</stack.version>
+    <mongo.async.version>3.2.2</mongo.async.version>
     <doc.skip>true</doc.skip>
   </properties>
 
@@ -78,6 +78,13 @@
           <artifactId>netty-handler</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <!-- declare this dependency to force flapdoodle to use this one. It is the version used by vert.x -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.16</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -129,7 +136,7 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
-      <version>4.11</version>
+      <version>4.12</version>
     </dependency>
   </dependencies>
 

@@ -12,6 +12,9 @@ as it natively handles JSON (BSON) documents.
 * Custom codec to support fast serialization to/from Vert.x JSON
 * Supports a majority of the configuration options from the MongoDB Java Driver
 
+This client is based on the
+http://mongodb.github.io/mongo-java-driver/3.2/driver-async/getting-started[MongoDB Async Driver].
+
 == Using Vert.x MongoDB Client
 
 To use this project, add the following dependency to the _dependencies_ section of your build descriptor:
@@ -21,9 +24,9 @@ To use this project, add the following dependency to the _dependencies_ section 
 [source,xml,subs="+attributes"]
 ----
 <dependency>
-  <groupId>{maven-groupId}</groupId>
-  <artifactId>{maven-artifactId}</artifactId>
-  <version>{maven-version}</version>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-mongo-client</artifactId>
+  <version>3.3.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -31,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile {maven-groupId}:{maven-artifactId}:{maven-version}
+compile 'io.vertx:vertx-mongo-client:3.3.0-SNAPSHOT'
 ----
 
 
@@ -353,6 +356,24 @@ This has the following fields:
 `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
 `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
 
+----
+JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
+
+mongoClient.findBatch("book", query, res -> {
+  if (res.succeeded()) {
+
+    System.out.println(res.result().encodePrettily());
+
+  } else {
+
+    res.cause().printStackTrace();
+
+  }
+});
+----
+
+The matching documents are returned unitary in the result handler.
+
 === Finding a single document
 
 To find a single document you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#findOne-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[findOne]`.
@@ -571,6 +592,7 @@ mongoService.save("smartPeople", document, res -> {
   }
 
 });
+----
 
 Here's an example of inserting a base 64 encoded string, typing it as binary a binary field, and reading it back
 
@@ -634,6 +656,46 @@ mongoService.save("smartPeople", document, res -> {
 
 });
 ----
+Here's an example of getting disting value
+
+[source,java]
+----
+JsonObject document = new JsonObject().put("title", "The Hobbit");
+
+mongoClient.save("books", document, res -> {
+
+  if (res.succeeded()) {
+
+    mongoClient.distinct("books", "title", String.class.getName(), res2 -> {
+      System.out.println("Title is : " + res2.result().getJsonArray(0));
+    });
+
+  } else {
+    res.cause().printStackTrace();
+  }
+
+});
+----
+Here's an example of getting distinct value in batch mode
+
+[source,java]
+----
+JsonObject document = new JsonObject().put("title", "The Hobbit");
+
+mongoClient.save("books", document, res -> {
+
+  if (res.succeeded()) {
+
+    mongoClient.distinctBatch("books", "title", String.class.getName(), res2 -> {
+      System.out.println("Title is : " + res2.result().getString("title"));
+    });
+
+  } else {
+    res.cause().printStackTrace();
+  }
+
+});
+----
 
 == Configuring the client
 
@@ -643,7 +705,11 @@ The following configuration is supported by the mongo client:
 
 
 `db_name`:: Name of the database in the mongoDB instance to use. Defaults to `default_db`
-`useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. Defaults to `false`.
+`useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. If `true', hex-strings will
+be saved as native Mongodb ObjectId types in the document collection. This will allow the sorting of documents based on creation
+time. You can also derive the creation time from the hex-string using ObjectId::getDate(). Set to `false' for other types of your choosing.
+If set to false, or left to default, hex strings will be generated as the document _id if the _id is omitted from the document.
+Defaults to `false`.
 
 The mongo client tries to support most options that are allowed by the driver. There are two ways to configure mongo
 for use by the driver, either by a connection string or by separate configuration options.
@@ -733,7 +799,7 @@ For more information on the format of the connection string please consult the d
 `maintenanceInitialDelayMS`:: The period of time to wait before running the first maintenance job on the connection pool. Default is `0`.
 `username`:: The username to authenticate. Default is `null` (meaning no authentication required)
 `password`:: The password to use to authenticate.
-`authSource`:: The database name associated with the user's credentials. Default value is `admin`
+`authSource`:: The database name associated with the user's credentials. Default value is the `db_name` value.
 `authMechanism`:: The authentication mechanism to use. See [Authentication](http://docs.mongodb.org/manual/core/authentication/) for more details.
 `gssapiServiceName`:: The Kerberos service name if `GSSAPI` is specified as the `authMechanism`.
 `connectTimeoutMS`:: The time in milliseconds to attempt a connection before timing out. Default is `10000` (10 seconds)

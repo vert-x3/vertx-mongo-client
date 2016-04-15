@@ -23,9 +23,14 @@ import org.bson.codecs.configuration.CodecRegistry;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
+ * @deprecated replaced with CodecRegistries facilities
  */
 public class VertxCodecRegistry implements CodecRegistry {
-  private Codec<JsonObject> jsonObjectCodec = new JsonObjectCodec();
+  private Codec<JsonObject> jsonObjectCodec;
+
+  public VertxCodecRegistry(JsonObject config) {
+    jsonObjectCodec = new JsonObjectCodec(config);
+  }
 
   @Override
   @SuppressWarnings("unchecked")

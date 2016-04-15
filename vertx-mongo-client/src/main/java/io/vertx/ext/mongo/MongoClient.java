@@ -5,6 +5,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.MongoClientImpl;
 
@@ -22,12 +23,12 @@ public interface MongoClient {
   /**
    * The name of the default pool
    */
-  static final String DEFAULT_POOL_NAME = "DEFAULT_POOL";
+  String DEFAULT_POOL_NAME = "DEFAULT_POOL";
 
   /**
    * The name of the default database
    */
-  static final String DEFAULT_DB_NAME = "DEFAULT_DB";
+  String DEFAULT_DB_NAME = "DEFAULT_DB";
 
   /**
    * Create a Mongo client which maintains its own data source.
@@ -163,6 +164,17 @@ public interface MongoClient {
   MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   /**
+   * Find matching documents in the specified collection.
+   * This method use batchCursor for returning each found document.
+   *
+   * @param collection  the collection
+   * @param query  query used to match documents
+   * @param resultHandler  will be provided with each found document
+   */
+  @Fluent
+  MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
    * Find matching documents in the specified collection, specifying options
    *
    * @param collection  the collection
@@ -172,6 +184,18 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+
+  /**
+   * Find matching documents in the specified collection, specifying options.
+   * This method use batchCursor for returning each found document.
+   *
+   * @param collection  the collection
+   * @param query  query used to match documents
+   * @param options options to configure the find
+   * @param resultHandler  will be provided with each found document
+   */
+  @Fluent
+  MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection
@@ -271,6 +295,29 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+   *
+   * @param collection  the collection
+   * @param fieldName  the field name
+   * @param resultHandler  will be provided with array of values.
+   */
+  @Fluent
+  MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   *
+   * @param collection  the collection
+   * @param fieldName  the field name
+   * @param resultHandler  will be provided with each found value
+   */
+  @Fluent
+  MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Close the client and release its resources

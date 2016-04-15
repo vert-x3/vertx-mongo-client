@@ -19,9 +19,10 @@ package io.vertx.rxjava.ext.mongo;
 import java.util.Map;
 import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
-import java.util.List;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import java.util.List;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
@@ -315,6 +316,32 @@ public class MongoClient {
   }
 
   /**
+   * Find matching documents in the specified collection.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param resultHandler will be provided with each found document
+   * @return 
+   */
+  public MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    this.delegate.findBatch(collection, query, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find matching documents in the specified collection.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @return 
+   */
+  public Observable<JsonObject> findBatchObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findBatch(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
    * Find matching documents in the specified collection, specifying options
    * @param collection the collection
    * @param query query used to match documents
@@ -337,6 +364,34 @@ public class MongoClient {
   public Observable<List<JsonObject>> findWithOptionsObservable(String collection, JsonObject query, FindOptions options) { 
     io.vertx.rx.java.ObservableFuture<List<JsonObject>> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     findWithOptions(collection, query, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Find matching documents in the specified collection, specifying options.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param options options to configure the find
+   * @param resultHandler will be provided with each found document
+   * @return 
+   */
+  public MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    this.delegate.findBatchWithOptions(collection, query, options, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find matching documents in the specified collection, specifying options.
+   * This method use batchCursor for returning each found document.
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param options options to configure the find
+   * @return 
+   */
+  public Observable<JsonObject> findBatchWithOptionsObservable(String collection, JsonObject query, FindOptions options) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findBatchWithOptions(collection, query, options, resultHandler.toHandler());
     return resultHandler;
   }
 
@@ -575,6 +630,64 @@ public class MongoClient {
   public Observable<JsonObject> runCommandObservable(String commandName, JsonObject command) { 
     io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     runCommand(commandName, command, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @param resultHandler will be provided with array of values.
+   * @return 
+   */
+  public MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) { 
+    this.delegate.distinct(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @return 
+   */
+  public Observable<JsonArray> distinctObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonArray> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinct(collection, fieldName, resultClassname, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @param resultHandler will be provided with each found value
+   * @return 
+   */
+  public MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    this.delegate.distinctBatch(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   * @param collection the collection
+   * @param fieldName the field name
+   * @param resultClassname 
+   * @return 
+   */
+  public Observable<JsonObject> distinctBatchObservable(String collection, String fieldName, String resultClassname) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    distinctBatch(collection, fieldName, resultClassname, resultHandler.toHandler());
     return resultHandler;
   }
 

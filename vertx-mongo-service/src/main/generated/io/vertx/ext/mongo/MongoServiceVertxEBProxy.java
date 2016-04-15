@@ -28,13 +28,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.function.Function;
 import io.vertx.serviceproxy.ProxyHelper;
-import java.util.List;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.core.Vertx;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoService;
+import io.vertx.core.json.JsonArray;
+import java.util.List;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoService;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.mongo.UpdateOptions;
@@ -47,11 +50,17 @@ public class MongoServiceVertxEBProxy implements MongoService {
 
   private Vertx _vertx;
   private String _address;
+  private DeliveryOptions _options;
   private boolean closed;
 
   public MongoServiceVertxEBProxy(Vertx vertx, String address) {
+    this(vertx, address, null);
+  }
+
+  public MongoServiceVertxEBProxy(Vertx vertx, String address, DeliveryOptions options) {
     this._vertx = vertx;
     this._address = address;
+    this._options = options;
   }
 
   public MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
@@ -62,7 +71,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("document", document);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "save");
     _vertx.eventBus().<String>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -83,7 +92,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("document", document);
     _json.put("writeOption", writeOption == null ? null : writeOption.toString());
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "saveWithOptions");
     _vertx.eventBus().<String>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -103,7 +112,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("document", document);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "insert");
     _vertx.eventBus().<String>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -124,7 +133,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("document", document);
     _json.put("writeOption", writeOption == null ? null : writeOption.toString());
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "insertWithOptions");
     _vertx.eventBus().<String>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -145,7 +154,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("query", query);
     _json.put("update", update);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "update");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -167,7 +176,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("query", query);
     _json.put("update", update);
     _json.put("options", options == null ? null : options.toJson());
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "updateWithOptions");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -188,7 +197,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("query", query);
     _json.put("replace", replace);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "replace");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -210,7 +219,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("query", query);
     _json.put("replace", replace);
     _json.put("options", options == null ? null : options.toJson());
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "replaceWithOptions");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -230,13 +239,33 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("query", query);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "find");
     _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
         resultHandler.handle(Future.succeededFuture(convertList(res.result().body().getList())));
+      }
+    });
+    return this;
+  }
+
+  public MongoService findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return this;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("collection", collection);
+    _json.put("query", query);
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "findBatch");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
     return this;
@@ -251,13 +280,34 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("query", query);
     _json.put("options", options == null ? null : options.toJson());
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "findWithOptions");
     _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
         resultHandler.handle(Future.succeededFuture(convertList(res.result().body().getList())));
+      }
+    });
+    return this;
+  }
+
+  public MongoService findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) {
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return this;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("collection", collection);
+    _json.put("query", query);
+    _json.put("options", options == null ? null : options.toJson());
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "findBatchWithOptions");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
     return this;
@@ -272,7 +322,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("query", query);
     _json.put("fields", fields);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "findOne");
     _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -292,7 +342,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("query", query);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "count");
     _vertx.eventBus().<Long>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -312,7 +362,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("query", query);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "remove");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -333,7 +383,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("query", query);
     _json.put("writeOption", writeOption == null ? null : writeOption.toString());
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "removeWithOptions");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -353,7 +403,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
     _json.put("query", query);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "removeOne");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -374,7 +424,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     _json.put("collection", collection);
     _json.put("query", query);
     _json.put("writeOption", writeOption == null ? null : writeOption.toString());
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "removeOneWithOptions");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -393,7 +443,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     }
     JsonObject _json = new JsonObject();
     _json.put("collectionName", collectionName);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "createCollection");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -411,7 +461,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
       return this;
     }
     JsonObject _json = new JsonObject();
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "getCollections");
     _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -430,7 +480,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     }
     JsonObject _json = new JsonObject();
     _json.put("collection", collection);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "dropCollection");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
@@ -450,8 +500,50 @@ public class MongoServiceVertxEBProxy implements MongoService {
     JsonObject _json = new JsonObject();
     _json.put("commandName", commandName);
     _json.put("command", command);
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "runCommand");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+    return this;
+  }
+
+  public MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return this;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("collection", collection);
+    _json.put("fieldName", fieldName);
+    _json.put("resultClassname", resultClassname);
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "distinct");
+    _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+    return this;
+  }
+
+  public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return this;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("collection", collection);
+    _json.put("fieldName", fieldName);
+    _json.put("resultClassname", resultClassname);
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "distinctBatch");
     _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
@@ -470,7 +562,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     List<Character> list = new ArrayList<>();
     for (Object obj: arr) {
       Integer jobj = (Integer)obj;
-      list.add((char)jobj.intValue());
+      list.add((char)(int)jobj);
     }
     return list;
   }
@@ -479,18 +571,50 @@ public class MongoServiceVertxEBProxy implements MongoService {
     Set<Character> set = new HashSet<>();
     for (Object obj: arr) {
       Integer jobj = (Integer)obj;
-      set.add((char)jobj.intValue());
+      set.add((char)(int)jobj);
     }
     return set;
   }
 
   private <T> Map<String, T> convertMap(Map map) {
-    return (Map<String, T>)map;
+    if (map.isEmpty()) { 
+      return (Map<String, T>) map; 
+    } 
+     
+    Object elem = map.values().stream().findFirst().get(); 
+    if (!(elem instanceof Map) && !(elem instanceof List)) { 
+      return (Map<String, T>) map; 
+    } else { 
+      Function<Object, T> converter; 
+      if (elem instanceof List) { 
+        converter = object -> (T) new JsonArray((List) object); 
+      } else { 
+        converter = object -> (T) new JsonObject((Map) object); 
+      } 
+      return ((Map<String, T>) map).entrySet() 
+       .stream() 
+       .collect(Collectors.toMap(Map.Entry::getKey, converter::apply)); 
+    } 
   }
   private <T> List<T> convertList(List list) {
-    return (List<T>)list;
+    if (list.isEmpty()) { 
+          return (List<T>) list; 
+        } 
+     
+    Object elem = list.get(0); 
+    if (!(elem instanceof Map) && !(elem instanceof List)) { 
+      return (List<T>) list; 
+    } else { 
+      Function<Object, T> converter; 
+      if (elem instanceof List) { 
+        converter = object -> (T) new JsonArray((List) object); 
+      } else { 
+        converter = object -> (T) new JsonObject((Map) object); 
+      } 
+      return (List<T>) list.stream().map(converter).collect(Collectors.toList()); 
+    } 
   }
   private <T> Set<T> convertSet(List list) {
-    return new HashSet<T>((List<T>)list);
+    return new HashSet<T>(convertList(list));
   }
 }

@@ -23,10 +23,21 @@ import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.test.core.TestUtils;
 import io.vertx.test.core.VertxTestBase;
+import org.bson.types.ObjectId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -89,6 +100,77 @@ public abstract class MongoTestBase extends VertxTestBase {
     return config;
   }
 
+  protected void dropCollections(MongoClient mongoClient, CountDownLatch latch) {
+    // Drop all the collections in the db
+    mongoClient.getCollections(onSuccess(list -> {
+      AtomicInteger collCount = new AtomicInteger();
+      List<String> toDrop = getOurCollections((List) list);
+      int count = toDrop.size();
+      if (!toDrop.isEmpty()) {
+        for (String collection : toDrop) {
+          mongoClient.dropCollection(collection, onSuccess(v -> {
+            if (collCount.incrementAndGet() == count) {
+              latch.countDown();
+            }
+          }));
+        }
+      } else {
+        latch.countDown();
+      }
+    }));
+  }
 
+  protected List<String> getOurCollections(List<String> colls) {
+    List<String> ours = new ArrayList<>();
+    for (String coll : colls) {
+      if (coll.startsWith("ext-mongo")) {
+        ours.add(coll);
+      }
+    }
+    return ours;
+  }
+
+  protected String randomCollection() {
+    return "ext-mongo" + TestUtils.randomAlphaString(20);
+  }
+
+  protected void insertDocs(MongoClient mongoClient, String collection, int num, Handler<AsyncResult<Void>> resultHandler) {
+    if (num != 0) {
+      AtomicInteger cnt = new AtomicInteger();
+      for (int i = 0; i < num; i++) {
+        JsonObject doc = createDoc(i);
+        mongoClient.insert(collection, doc, ar -> {
+          if (ar.succeeded()) {
+            if (cnt.incrementAndGet() == num) {
+              resultHandler.handle(Future.succeededFuture());
+            }
+          } else {
+            resultHandler.handle(Future.failedFuture(ar.cause()));
+          }
+        });
+      }
+    } else {
+      resultHandler.handle(Future.succeededFuture());
+    }
+  }
+
+  protected JsonObject createDoc() {
+    return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
+            put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
+            put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
+            put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
+            put("other", new JsonObject().put("quux", "flib").put("myarr",
+                    new JsonArray().add("blah").add(true).add(312)));
+  }
+
+  protected JsonObject createDoc(int num) {
+    return new JsonObject().put("foo", "bar" + (num != -1 ? num : "")).put("num", 123).put("big", true).putNull("nullentry").
+            put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
+            put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
+            put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
+            put("other", new JsonObject().put("quux", "flib").put("myarr",
+                    new JsonArray().add("blah").add(true).add(312))).
+            put("longval", 123456789L).put("dblval", 1.23);
+  }
 
 }
