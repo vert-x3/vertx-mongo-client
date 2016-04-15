@@ -7,9 +7,6 @@ An asynchronous client for interacting with a MongoDB database
 Please see the in source asciidoc documentation or the main documentation on the web-site for a full description
 of Mongo service:
 
-* Underlying Drivers used
-* link:http://docs.mongodb.org/ecosystem/drivers/java/[Asynchronous Java Driver]
-
 * Web-site docs
 * link:vertx-mongo-client/src/main/asciidoc/java/index.adoc[Java in-source docs]
 * link:vertx-mongo-client/src/main/asciidoc/js/index.adoc[JavaScript in-source docs]
