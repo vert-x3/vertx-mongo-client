@@ -15,6 +15,7 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     super.setUp();
     JsonObject config = getConfig();
     config.put("useObjectId", true);
+    useObjectId = true;
     mongoClient = MongoClient.createNonShared(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);

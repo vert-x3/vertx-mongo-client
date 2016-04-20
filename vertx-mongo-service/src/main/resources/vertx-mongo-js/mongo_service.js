@@ -22,7 +22,9 @@ var MongoClient = require('vertx-mongo-js/mongo_client');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoService = io.vertx.ext.mongo.MongoService;
+var MongoClientDeleteResult = io.vertx.ext.mongo.MongoClientDeleteResult;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
+var MongoClientUpdateResult = io.vertx.ext.mongo.MongoClientUpdateResult;
 var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 
 /**
@@ -69,7 +71,7 @@ var MongoService = function(j_val) {
   this.saveWithOptions = function(collection, document, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService["saveWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(document), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
+      j_mongoService["saveWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(document), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
       } else {
@@ -114,7 +116,7 @@ var MongoService = function(j_val) {
   this.insertWithOptions = function(collection, document, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService["insertWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(document), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
+      j_mongoService["insertWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(document), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
       } else {
@@ -154,6 +156,29 @@ var MongoService = function(j_val) {
    @param collection {string} 
    @param query {Object} 
    @param update {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.updateWithMongoClientUpdateResult = function(collection, query, update, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
+      j_mongoService["updateWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param update {Object} 
    @param options {Object} 
    @param resultHandler {function} 
    @return {MongoService}
@@ -164,6 +189,30 @@ var MongoService = function(j_val) {
       j_mongoService["updateWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param update {Object} 
+   @param options {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.updateWithOptionsWithMongoClientUpdateResult = function(collection, query, update, options, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
+      j_mongoService["updateWithOptionsWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }
@@ -201,6 +250,29 @@ var MongoService = function(j_val) {
    @param collection {string} 
    @param query {Object} 
    @param replace {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.replaceWithMongoClientUpdateResult = function(collection, query, replace, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
+      j_mongoService["replaceWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param replace {Object} 
    @param options {Object} 
    @param resultHandler {function} 
    @return {MongoService}
@@ -211,6 +283,30 @@ var MongoService = function(j_val) {
       j_mongoService["replaceWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param replace {Object} 
+   @param options {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.replaceWithOptionsWithMongoClientUpdateResult = function(collection, query, replace, options, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
+      j_mongoService["replaceWithOptionsWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }
@@ -381,6 +477,28 @@ var MongoService = function(j_val) {
    @public
    @param collection {string} 
    @param query {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.removeWithMongoClientDeleteResult = function(collection, query, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
+      j_mongoService["removeWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
    @param writeOption {Object} 
    @param resultHandler {function} 
    @return {MongoService}
@@ -388,9 +506,32 @@ var MongoService = function(j_val) {
   this.removeWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService["removeWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
+      j_mongoService["removeWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.removeWithOptionsWithMongoClientDeleteResult = function(collection, query, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoService["removeWithOptionsWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }
@@ -426,6 +567,28 @@ var MongoService = function(j_val) {
    @public
    @param collection {string} 
    @param query {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.removeOneWithMongoClientDeleteResult = function(collection, query, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
+      j_mongoService["removeOneWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
    @param writeOption {Object} 
    @param resultHandler {function} 
    @return {MongoService}
@@ -433,9 +596,32 @@ var MongoService = function(j_val) {
   this.removeOneWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoService["removeOneWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(__args[2]), function(ar) {
+      j_mongoService["removeOneWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param query {Object} 
+   @param writeOption {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.removeOneWithOptionsWithMongoClientDeleteResult = function(collection, query, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoService["removeOneWithOptionsWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }
