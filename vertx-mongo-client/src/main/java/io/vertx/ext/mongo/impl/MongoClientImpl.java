@@ -493,7 +493,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
-    return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
+    return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert()).bypassDocumentValidation(options.isBypassDocumentValidation());
   }
 
   private JsonObjectBsonAdapter wrap(JsonObject jsonObject) {

@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 @DataObject
 public class UpdateOptions {
 
-  /**
+    /**
    * The default value of upsert = false
    */
   public static final boolean DEFAULT_UPSERT = false;
@@ -20,10 +20,12 @@ public class UpdateOptions {
    * The default value of multi = false
    */
   public static final boolean DEFAULT_MULTI = false;
+  public static final boolean DEFAULT_BYPASS_DOCUMENT_VALIDATION = true;
 
   private WriteOption writeOption;
   private boolean upsert;
   private boolean multi;
+  private boolean bypassDocumentValidation;
 
   /**
    * Default constructor
@@ -60,6 +62,7 @@ public class UpdateOptions {
     this.writeOption = other.writeOption;
     this.upsert = other.upsert;
     this.multi = other.multi;
+    this.bypassDocumentValidation = other.bypassDocumentValidation;
   }
 
   /**
@@ -74,6 +77,7 @@ public class UpdateOptions {
     }
     upsert = json.getBoolean("upsert", DEFAULT_UPSERT);
     multi = json.getBoolean("multi", DEFAULT_MULTI);
+    bypassDocumentValidation = json.getBoolean("bypassDocumentValidation", DEFAULT_BYPASS_DOCUMENT_VALIDATION);
   }
 
   /**
@@ -115,6 +119,15 @@ public class UpdateOptions {
     return this;
   }
 
+  public UpdateOptions setBypassDocumentValidation(boolean bypassDocumentValidation){
+    this.bypassDocumentValidation = bypassDocumentValidation;
+    return this;
+  }
+
+  public boolean isBypassDocumentValidation() {
+    return bypassDocumentValidation;
+  }
+
   /**
    * Get whether multi is enabled. Multi means more than one document can be updated.
    *
@@ -146,6 +159,9 @@ public class UpdateOptions {
     if (multi) {
       json.put("multi", true);
     }
+    if (bypassDocumentValidation){
+        json.put("bypassDocumentValidation", true);
+    }
 
     return json;
   }
@@ -160,6 +176,7 @@ public class UpdateOptions {
     if (multi != options.multi) return false;
     if (upsert != options.upsert) return false;
     if (writeOption != options.writeOption) return false;
+    if (bypassDocumentValidation != options.bypassDocumentValidation) return false;
 
     return true;
   }
@@ -169,6 +186,7 @@ public class UpdateOptions {
     int result = writeOption != null ? writeOption.hashCode() : 0;
     result = 31 * result + (upsert ? 1 : 0);
     result = 31 * result + (multi ? 1 : 0);
+    result = 31 * result + (bypassDocumentValidation ? 1 : 0);
     return result;
   }
 }
