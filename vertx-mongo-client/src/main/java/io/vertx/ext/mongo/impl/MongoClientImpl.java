@@ -20,6 +20,8 @@ import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.*;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -52,8 +54,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
-  private static final String ID_FIELD = "_id";
+  public static final IndexOptions DEFAULT_INDEX_OPTIONS = new IndexOptions();
 
+  private static final String ID_FIELD = "_id";
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
 
   private final Vertx vertx;
@@ -391,6 +394,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
         resultHandler.handle(Future.failedFuture(unhandledEx));
       }
     }
+    return this;
+  }
+
+  /**
+   * @see com.mongodb.client.model.Indexes
+   */
+  public io.vertx.ext.mongo.MongoClient createIndex(String collection, Bson index, Handler<AsyncResult<String>> resultHandler){
+    return createIndexWithOptions(collection, index, DEFAULT_INDEX_OPTIONS, resultHandler);
+  }
+
+  public io.vertx.ext.mongo.MongoClient createIndexWithOptions(String collection, Bson index, IndexOptions indexOptions, Handler<AsyncResult<String>> resultHandler){
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(collection, "index cannot be null");
+    requireNonNull(collection, "indexOptions cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.createIndex(index, indexOptions, wrapCallback(resultHandler));
     return this;
   }
 
