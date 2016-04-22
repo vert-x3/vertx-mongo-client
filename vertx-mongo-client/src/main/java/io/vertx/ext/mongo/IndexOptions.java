@@ -22,10 +22,12 @@ public class IndexOptions {
         wrap = other.unwrap();
     }
 
+    // TODO not implemented
     public IndexOptions(JsonObject json) {
         wrap = new com.mongodb.client.model.IndexOptions();
     }
 
+    // TODO not implemented
     public JsonObject toJson(){
         return new JsonObject();
     }
@@ -99,7 +101,7 @@ public class IndexOptions {
         return wrap.getWeights();
     }
 
-
+    // TODO migrate to json
     public IndexOptions weights(Bson weights) {
         wrap.weights(weights);
         return this;
@@ -198,7 +200,7 @@ public class IndexOptions {
         return wrap.getStorageEngine();
     }
 
-
+    // TODO migrate to json
     public IndexOptions storageEngine(Bson storageEngine) {
         wrap.storageEngine(storageEngine);
         return this;
@@ -209,7 +211,7 @@ public class IndexOptions {
         return wrap.getPartialFilterExpression();
     }
 
-
+    // TODO migrate to json
     public IndexOptions partialFilterExpression(Bson partialFilterExpression) {
         wrap.partialFilterExpression(partialFilterExpression);
         return this;
