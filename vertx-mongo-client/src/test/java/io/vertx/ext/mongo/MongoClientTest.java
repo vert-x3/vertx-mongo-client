@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -49,11 +50,26 @@ public class MongoClientTest extends MongoClientTestBase {
   public void testIndexes() throws Exception {
     String collection = randomCollection();
     JsonObject index = io.vertx.ext.mongo.Indexes.ascending(Collections.singletonList("test"));
-    CountDownLatch latch = new CountDownLatch(1);
+    CountDownLatch latch = new CountDownLatch(3);
     mongoClient.createIndex(collection, index, stringAsyncResult -> {
       assertNotNull(stringAsyncResult.result());
       assertEquals("test_1", stringAsyncResult.result());
       latch.countDown();
+      mongoClient.listIndexes(collection, result -> {
+          assertTrue(result.succeeded());
+          List<JsonObject> indexes = result.result();
+          assertTrue(
+                  indexes
+                    .stream()
+                    .filter( p -> p.getString("name").equals("test_1"))
+                    .count() == 1
+          );
+          latch.countDown();
+          mongoClient.dropIndex(collection, "test_1",  result2 -> {
+              assertTrue(result2.succeeded());
+              latch.countDown();
+          });
+        });
     });
     latch.await();
   }
