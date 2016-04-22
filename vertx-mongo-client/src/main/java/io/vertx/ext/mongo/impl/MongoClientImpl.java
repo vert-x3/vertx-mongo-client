@@ -54,7 +54,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
-  public static final IndexOptions DEFAULT_INDEX_OPTIONS = new IndexOptions();
+  private static final IndexOptions DEFAULT_INDEX_OPTIONS = new IndexOptions();
 
   private static final String ID_FIELD = "_id";
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";

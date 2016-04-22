@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 @DataObject
 public class UpdateOptions {
 
-    /**
+  /**
    * The default value of upsert = false
    */
   public static final boolean DEFAULT_UPSERT = false;
