@@ -414,6 +414,16 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
+  public io.vertx.ext.mongo.MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler){
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(collection, "indexName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.dropIndex(indexName, wrapCallback(resultHandler));
+    return this;
+  }
+
+
   private DistinctIterable findDistinctValues(String collection, String fieldName, String resultClassname, Handler resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(fieldName, "fieldName cannot be null");
