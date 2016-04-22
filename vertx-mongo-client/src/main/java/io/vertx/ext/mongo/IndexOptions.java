@@ -15,6 +15,9 @@ import java.util.concurrent.TimeUnit;
 public class IndexOptions {
 
   private final com.mongodb.client.model.IndexOptions wrap;
+  private JsonObject partialFilterExpression;
+  private JsonObject storageEngine;
+  private JsonObject weights;
 
   public IndexOptions() {
     wrap = new com.mongodb.client.model.IndexOptions();
@@ -39,7 +42,6 @@ public class IndexOptions {
     jsonObject = getBucketSize() != null ? jsonObject.put("bucketSize", getBucketSize()) : jsonObject;
     jsonObject = getExpireAfter(TimeUnit.SECONDS) != null ? jsonObject.put("expireAfterSeconds", getExpireAfter(TimeUnit.SECONDS)) : jsonObject;
     jsonObject = getDefaultLanguage() != null ? jsonObject.put("defaultLanguage", getDefaultLanguage()): jsonObject;
-
     return jsonObject;
   }
 
@@ -97,11 +99,12 @@ public class IndexOptions {
     return this;
   }
 
-  public Bson getWeights() {
-    return wrap.getWeights();
+  public JsonObject getWeights() {
+    return weights;
   }
 
   public IndexOptions weights(JsonObject weights) {
+    this.weights = weights;
     wrap.weights(wrap(weights));
     return this;
   }
@@ -178,20 +181,22 @@ public class IndexOptions {
     return this;
   }
 
-  public Bson getStorageEngine() {
-    return wrap.getStorageEngine();
+  public JsonObject getStorageEngine() {
+    return storageEngine;
   }
 
   public IndexOptions storageEngine(JsonObject storageEngine) {
+    this.storageEngine = storageEngine;
     wrap.storageEngine(wrap(storageEngine));
     return this;
   }
 
-  public Bson getPartialFilterExpression() {
-    return wrap.getPartialFilterExpression();
+  public JsonObject getPartialFilterExpression() {
+    return partialFilterExpression;
   }
 
   public IndexOptions partialFilterExpression(JsonObject partialFilterExpression) {
+    this.partialFilterExpression = partialFilterExpression;
     wrap.partialFilterExpression(wrap(partialFilterExpression));
     return this;
   }
