@@ -33,6 +33,7 @@ public class UpdateOptions {
   public UpdateOptions() {
     this.upsert = DEFAULT_UPSERT;
     this.multi = DEFAULT_MULTI;
+    this.bypassDocumentValidation = DEFAULT_BYPASS_DOCUMENT_VALIDATION;
   }
 
   /**
@@ -42,6 +43,7 @@ public class UpdateOptions {
   public UpdateOptions(boolean upsert) {
     this.upsert = upsert;
     this.multi = DEFAULT_MULTI;
+    this.bypassDocumentValidation = DEFAULT_BYPASS_DOCUMENT_VALIDATION;
   }
 
   /**
@@ -52,6 +54,7 @@ public class UpdateOptions {
   public UpdateOptions(boolean upsert, boolean multi) {
     this.upsert = upsert;
     this.multi = multi;
+    this.bypassDocumentValidation = DEFAULT_BYPASS_DOCUMENT_VALIDATION;
   }
 
   /**
