@@ -51,9 +51,10 @@ public class MongoClientTest extends MongoClientTestBase {
     String collection = randomCollection();
     JsonObject index = io.vertx.ext.mongo.Indexes.ascending(Collections.singletonList("test"));
     CountDownLatch latch = new CountDownLatch(3);
-    mongoClient.createIndex(collection, index, stringAsyncResult -> {
+    IndexOptions testOptions = new IndexOptions().unique(true).name("testName");
+    mongoClient.createIndexWithOptions(collection, index, testOptions,  stringAsyncResult -> {
       assertNotNull(stringAsyncResult.result());
-      assertEquals("test_1", stringAsyncResult.result());
+      assertEquals("testName", stringAsyncResult.result());
       latch.countDown();
       mongoClient.listIndexes(collection, result -> {
           assertTrue(result.succeeded());
@@ -61,11 +62,11 @@ public class MongoClientTest extends MongoClientTestBase {
           assertTrue(
                   indexes
                     .stream()
-                    .filter( p -> p.getString("name").equals("test_1"))
+                    .filter( p -> p.getString("name").equals("testName"))
                     .count() == 1
           );
           latch.countDown();
-          mongoClient.dropIndex(collection, "test_1",  result2 -> {
+          mongoClient.dropIndex(collection, "testName",  result2 -> {
               assertTrue(result2.succeeded());
               latch.countDown();
           });
