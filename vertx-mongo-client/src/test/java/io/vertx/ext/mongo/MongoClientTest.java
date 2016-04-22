@@ -3,6 +3,7 @@ package io.vertx.ext.mongo;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -42,5 +43,18 @@ public class MongoClientTest extends MongoClientTestBase {
       }));
     }));
     awaitLatch(latch);
+  }
+
+  @Test
+  public void testIndexes() throws Exception {
+    String collection = randomCollection();
+    JsonObject index = io.vertx.ext.mongo.Indexes.ascending(Collections.singletonList("test"));
+    CountDownLatch latch = new CountDownLatch(1);
+    mongoClient.createIndex(collection, index, stringAsyncResult -> {
+      assertNotNull(stringAsyncResult.result());
+      assertEquals("test_1", stringAsyncResult.result());
+      latch.countDown();
+    });
+    latch.await();
   }
 }

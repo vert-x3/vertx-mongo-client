@@ -20,8 +20,6 @@ import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.*;
-import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.Indexes;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -30,6 +28,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.IndexOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
@@ -397,29 +396,37 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
-  /**
-   * @see com.mongodb.client.model.Indexes
-   */
-  public io.vertx.ext.mongo.MongoClient createIndex(String collection, Bson index, Handler<AsyncResult<String>> resultHandler){
+  @Override
+  public io.vertx.ext.mongo.MongoClient createIndex(String collection, JsonObject index, Handler<AsyncResult<String>> resultHandler){
     return createIndexWithOptions(collection, index, DEFAULT_INDEX_OPTIONS, resultHandler);
   }
 
-  public io.vertx.ext.mongo.MongoClient createIndexWithOptions(String collection, Bson index, IndexOptions indexOptions, Handler<AsyncResult<String>> resultHandler){
+  @Override
+  public io.vertx.ext.mongo.MongoClient createIndexWithOptions(String collection, JsonObject index, IndexOptions indexOptions, Handler<AsyncResult<String>> resultHandler){
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(collection, "index cannot be null");
     requireNonNull(collection, "indexOptions cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
     MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.createIndex(index, indexOptions, wrapCallback(resultHandler));
+    coll.createIndex(wrap(index), indexOptions.unwrap(), wrapCallback(resultHandler));
     return this;
   }
 
+  @Override
   public io.vertx.ext.mongo.MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler){
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(collection, "indexName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
     MongoCollection<JsonObject> coll = getCollection(collection);
     coll.dropIndex(indexName, wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient listIndexes(String collection, Handler<AsyncResult<List<JsonObject>>> resultHandler){
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.listIndexes(JsonObject.class)
+            .into(new ArrayList<>(), wrapCallback(resultHandler));
     return this;
   }
 
