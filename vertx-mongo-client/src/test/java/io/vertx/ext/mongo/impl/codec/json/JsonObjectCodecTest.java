@@ -84,14 +84,14 @@ public class JsonObjectCodecTest {
 
     codec.writeDocument(writer, "", value, EncoderContext.builder().build());
 
-    long millis = 1322903730500l;
+    long millis = 1322903730500L;
 
     BsonValue resultValue = bsonResult.get("test");
     assertEquals(BsonType.DATE_TIME, resultValue.getBsonType());
     assertEquals(millis, resultValue.asDateTime().getValue());
 
     String back =
-        OffsetDateTime.ofInstant(Instant.ofEpochMilli(1322903730500l), ZoneOffset.UTC).format(ISO_OFFSET_DATE_TIME);
+        OffsetDateTime.ofInstant(Instant.ofEpochMilli(1322903730500L), ZoneOffset.UTC).format(ISO_OFFSET_DATE_TIME);
 
     // we encode always in UTC
     assertEquals("2011-12-03T09:15:30.5Z", back);
