@@ -862,7 +862,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
-  private <IDTYPE> void updateDataBasedOnId(String collection, IDTYPE docIdToBeUpdated) {
+  private <T> void updateDataBasedOnId(String collection, T docIdToBeUpdated) {
     mongoClient.update(collection, new JsonObject().put("_id", docIdToBeUpdated), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), onSuccess(res -> {
       mongoClient.findOne(collection, new JsonObject().put("_id", docIdToBeUpdated), null, onSuccess(doc -> {
         assertEquals("fooed", doc.getString("foo"));
@@ -888,7 +888,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
-  private <IDTYPE> void updateDataBasedOnIdWithMongoClientUpdateResult(String collection, IDTYPE id) {
+  private <T> void updateDataBasedOnIdWithMongoClientUpdateResult(String collection, T id) {
     mongoClient.updateWithMongoClientUpdateResult(collection, new JsonObject().put("_id", id), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), onSuccess(res -> {
       assertEquals(1, res.getDocModified());
       assertEquals(1, res.getDocMatched());
@@ -983,7 +983,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
-  private <IDTYPE> void updateWithOptionWithMongoClientUpdateResultBasedOnIdAcknowledged(String collection, IDTYPE id) {
+  private <T> void updateWithOptionWithMongoClientUpdateResultBasedOnIdAcknowledged(String collection, T id) {
     mongoClient.updateWithOptionsWithMongoClientUpdateResult(collection, new JsonObject().put("_id", id), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")),
       new UpdateOptions().setWriteOption(ACKNOWLEDGED),onSuccess(res -> {
         assertEquals(1, res.getDocModified());
