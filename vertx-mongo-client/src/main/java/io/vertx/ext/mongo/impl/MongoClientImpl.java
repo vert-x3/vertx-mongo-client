@@ -210,10 +210,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     boolean id = query.containsKey(ID_FIELD);
-    query = encodeKeyWhenUseObjectId(query);
+    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    Bson bquery = wrap(query);
+    Bson bquery = wrap(encodedQuery);
     coll.replaceOne(bquery, replace, mongoUpdateOptions(options), convertCallback(resultHandler, result -> null));
     return this;
   }
@@ -283,9 +283,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    query = encodeKeyWhenUseObjectId(query);
+    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
 
-    Bson bquery = wrap(query);
+    Bson bquery = wrap(encodedQuery);
     Bson bfields = wrap(fields);
     getCollection(collection).find(bquery).projection(bfields).first(wrapCallback(resultHandler));
     return this;
