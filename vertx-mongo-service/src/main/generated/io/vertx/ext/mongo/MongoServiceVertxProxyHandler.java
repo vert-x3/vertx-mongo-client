@@ -153,7 +153,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "updateWithMongoClientUpdateResult": {
           service.updateWithMongoClientUpdateResult((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), res -> {
             if (res.failed()) {
-              msg.fail(-1, res.cause().getMessage());
+              if (res.cause() instanceof ServiceException) {
+                msg.reply(res.cause());
+              } else {
+                msg.reply(new ServiceException(-1, res.cause().getMessage()));
+              }
             } else {
               msg.reply(res.result() == null ? null : res.result().toJson());
             }
@@ -167,7 +171,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "updateWithOptionsWithMongoClientUpdateResult": {
           service.updateWithOptionsWithMongoClientUpdateResult((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), res -> {
             if (res.failed()) {
-              msg.fail(-1, res.cause().getMessage());
+              if (res.cause() instanceof ServiceException) {
+                msg.reply(res.cause());
+              } else {
+                msg.reply(new ServiceException(-1, res.cause().getMessage()));
+              }
             } else {
               msg.reply(res.result() == null ? null : res.result().toJson());
             }
@@ -181,7 +189,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "replaceWithMongoClientUpdateResult": {
           service.replaceWithMongoClientUpdateResult((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("replace"), res -> {
             if (res.failed()) {
-              msg.fail(-1, res.cause().getMessage());
+              if (res.cause() instanceof ServiceException) {
+                msg.reply(res.cause());
+              } else {
+                msg.reply(new ServiceException(-1, res.cause().getMessage()));
+              }
             } else {
               msg.reply(res.result() == null ? null : res.result().toJson());
             }
@@ -195,7 +207,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "replaceWithOptionsWithMongoClientUpdateResult": {
           service.replaceWithOptionsWithMongoClientUpdateResult((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("replace"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("options")), res -> {
             if (res.failed()) {
-              msg.fail(-1, res.cause().getMessage());
+              if (res.cause() instanceof ServiceException) {
+                msg.reply(res.cause());
+              } else {
+                msg.reply(new ServiceException(-1, res.cause().getMessage()));
+              }
             } else {
               msg.reply(res.result() == null ? null : res.result().toJson());
             }
@@ -233,7 +249,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "removeWithMongoClientDeleteResult": {
           service.removeWithMongoClientDeleteResult((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), res -> {
             if (res.failed()) {
-              msg.fail(-1, res.cause().getMessage());
+              if (res.cause() instanceof ServiceException) {
+                msg.reply(res.cause());
+              } else {
+                msg.reply(new ServiceException(-1, res.cause().getMessage()));
+              }
             } else {
               msg.reply(res.result() == null ? null : res.result().toJson());
             }
@@ -247,7 +267,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "removeWithOptionsWithMongoClientDeleteResult": {
           service.removeWithOptionsWithMongoClientDeleteResult((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), res -> {
             if (res.failed()) {
-              msg.fail(-1, res.cause().getMessage());
+              if (res.cause() instanceof ServiceException) {
+                msg.reply(res.cause());
+              } else {
+                msg.reply(new ServiceException(-1, res.cause().getMessage()));
+              }
             } else {
               msg.reply(res.result() == null ? null : res.result().toJson());
             }
@@ -261,7 +285,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "removeOneWithMongoClientDeleteResult": {
           service.removeOneWithMongoClientDeleteResult((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), res -> {
             if (res.failed()) {
-              msg.fail(-1, res.cause().getMessage());
+              if (res.cause() instanceof ServiceException) {
+                msg.reply(res.cause());
+              } else {
+                msg.reply(new ServiceException(-1, res.cause().getMessage()));
+              }
             } else {
               msg.reply(res.result() == null ? null : res.result().toJson());
             }
@@ -275,7 +303,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "removeOneWithOptionsWithMongoClientDeleteResult": {
           service.removeOneWithOptionsWithMongoClientDeleteResult((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), res -> {
             if (res.failed()) {
-              msg.fail(-1, res.cause().getMessage());
+              if (res.cause() instanceof ServiceException) {
+                msg.reply(res.cause());
+              } else {
+                msg.reply(new ServiceException(-1, res.cause().getMessage()));
+              }
             } else {
               msg.reply(res.result() == null ? null : res.result().toJson());
             }
