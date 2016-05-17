@@ -18,6 +18,7 @@ package io.vertx.rxjava.ext.mongo;
 
 import java.util.Map;
 import rx.Observable;
+import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -26,6 +27,7 @@ import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.ext.mongo.MongoClientUpdateResult;
 import io.vertx.ext.mongo.UpdateOptions;
 
 /**
@@ -217,6 +219,40 @@ public class MongoClient {
   }
 
   /**
+   * Update matching documents in the specified collection and return the handler with MongoClientUpdateResult result
+   * @param collection the collection
+   * @param query query used to match the documents
+   * @param update used to describe how the documents will be updated
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient updateWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
+    delegate.updateWithMongoClientUpdateResult(collection, query, update, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Update matching documents in the specified collection and return the handler with MongoClientUpdateResult result
+   * @param collection the collection
+   * @param query query used to match the documents
+   * @param update used to describe how the documents will be updated
+   * @return 
+   */
+  public Observable<MongoClientUpdateResult> updateWithMongoClientUpdateResultObservable(String collection, JsonObject query, JsonObject update) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientUpdateResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    updateWithMongoClientUpdateResult(collection, query, update, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
    * Update matching documents in the specified collection, specifying options
    * @param collection the collection
    * @param query query used to match the documents
@@ -249,6 +285,42 @@ public class MongoClient {
   public Observable<Void> updateWithOptionsObservable(String collection, JsonObject query, JsonObject update, UpdateOptions options) { 
     io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     updateWithOptions(collection, query, update, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Update matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+   * @param collection the collection
+   * @param query query used to match the documents
+   * @param update used to describe how the documents will be updated
+   * @param options options to configure the update
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient updateWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
+    delegate.updateWithOptionsWithMongoClientUpdateResult(collection, query, update, options, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Update matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+   * @param collection the collection
+   * @param query query used to match the documents
+   * @param update used to describe how the documents will be updated
+   * @param options options to configure the update
+   * @return 
+   */
+  public Observable<MongoClientUpdateResult> updateWithOptionsWithMongoClientUpdateResultObservable(String collection, JsonObject query, JsonObject update, UpdateOptions options) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientUpdateResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    updateWithOptionsWithMongoClientUpdateResult(collection, query, update, options, resultHandler.toHandler());
     return resultHandler;
   }
 
@@ -287,6 +359,40 @@ public class MongoClient {
   }
 
   /**
+   * Replace matching documents in the specified collection and return the handler with MongoClientUpdateResult result
+   * @param collection the collection
+   * @param query query used to match the documents
+   * @param replace all matching documents will be replaced with this
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient replaceWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
+    delegate.replaceWithMongoClientUpdateResult(collection, query, replace, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Replace matching documents in the specified collection and return the handler with MongoClientUpdateResult result
+   * @param collection the collection
+   * @param query query used to match the documents
+   * @param replace all matching documents will be replaced with this
+   * @return 
+   */
+  public Observable<MongoClientUpdateResult> replaceWithMongoClientUpdateResultObservable(String collection, JsonObject query, JsonObject replace) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientUpdateResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    replaceWithMongoClientUpdateResult(collection, query, replace, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
    * Replace matching documents in the specified collection, specifying options
    * @param collection the collection
    * @param query query used to match the documents
@@ -319,6 +425,42 @@ public class MongoClient {
   public Observable<Void> replaceWithOptionsObservable(String collection, JsonObject query, JsonObject replace, UpdateOptions options) { 
     io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     replaceWithOptions(collection, query, replace, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Replace matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+   * @param collection the collection
+   * @param query query used to match the documents
+   * @param replace all matching documents will be replaced with this
+   * @param options options to configure the replace
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient replaceWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
+    delegate.replaceWithOptionsWithMongoClientUpdateResult(collection, query, replace, options, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Replace matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+   * @param collection the collection
+   * @param query query used to match the documents
+   * @param replace all matching documents will be replaced with this
+   * @param options options to configure the replace
+   * @return 
+   */
+  public Observable<MongoClientUpdateResult> replaceWithOptionsWithMongoClientUpdateResultObservable(String collection, JsonObject query, JsonObject replace, UpdateOptions options) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientUpdateResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    replaceWithOptionsWithMongoClientUpdateResult(collection, query, replace, options, resultHandler.toHandler());
     return resultHandler;
   }
 
@@ -509,6 +651,38 @@ public class MongoClient {
   }
 
   /**
+   * Remove matching documents from a collection and return the handler with MongoClientDeleteResult result
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient removeWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
+    delegate.removeWithMongoClientDeleteResult(collection, query, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Remove matching documents from a collection and return the handler with MongoClientDeleteResult result
+   * @param collection the collection
+   * @param query query used to match documents
+   * @return 
+   */
+  public Observable<MongoClientDeleteResult> removeWithMongoClientDeleteResultObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientDeleteResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    removeWithMongoClientDeleteResult(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
    * Remove matching documents from a collection with the specified write option
    * @param collection the collection
    * @param query query used to match documents
@@ -539,6 +713,40 @@ public class MongoClient {
   public Observable<Void> removeWithOptionsObservable(String collection, JsonObject query, WriteOption writeOption) { 
     io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     removeWithOptions(collection, query, writeOption, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Remove matching documents from a collection with the specified write option and return the handler with MongoClientDeleteResult result
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient removeWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
+    delegate.removeWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Remove matching documents from a collection with the specified write option and return the handler with MongoClientDeleteResult result
+   * @param collection the collection
+   * @param query query used to match documents
+   * @param writeOption the write option to use
+   * @return 
+   */
+  public Observable<MongoClientDeleteResult> removeWithOptionsWithMongoClientDeleteResultObservable(String collection, JsonObject query, WriteOption writeOption) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientDeleteResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    removeWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, resultHandler.toHandler());
     return resultHandler;
   }
 
@@ -575,6 +783,38 @@ public class MongoClient {
   }
 
   /**
+   * Remove a single matching document from a collection and return the handler with MongoClientDeleteResult result
+   * @param collection the collection
+   * @param query query used to match document
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient removeOneWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
+    delegate.removeOneWithMongoClientDeleteResult(collection, query, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Remove a single matching document from a collection and return the handler with MongoClientDeleteResult result
+   * @param collection the collection
+   * @param query query used to match document
+   * @return 
+   */
+  public Observable<MongoClientDeleteResult> removeOneWithMongoClientDeleteResultObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientDeleteResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    removeOneWithMongoClientDeleteResult(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
    * Remove a single matching document from a collection with the specified write option
    * @param collection the collection
    * @param query query used to match document
@@ -605,6 +845,40 @@ public class MongoClient {
   public Observable<Void> removeOneWithOptionsObservable(String collection, JsonObject query, WriteOption writeOption) { 
     io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     removeOneWithOptions(collection, query, writeOption, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Remove a single matching document from a collection with the specified write option and return the handler with MongoClientDeleteResult result
+   * @param collection the collection
+   * @param query query used to match document
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient removeOneWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
+    delegate.removeOneWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Remove a single matching document from a collection with the specified write option and return the handler with MongoClientDeleteResult result
+   * @param collection the collection
+   * @param query query used to match document
+   * @param writeOption the write option to use
+   * @return 
+   */
+  public Observable<MongoClientDeleteResult> removeOneWithOptionsWithMongoClientDeleteResultObservable(String collection, JsonObject query, WriteOption writeOption) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientDeleteResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    removeOneWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, resultHandler.toHandler());
     return resultHandler;
   }
 
