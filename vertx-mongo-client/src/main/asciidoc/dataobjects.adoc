@@ -30,6 +30,50 @@ Set the sort document
 +++
 |===
 
+[[MongoClientDeleteResult]]
+== MongoClientDeleteResult
+
+++++
+ Result propagated from mongodb driver delete result.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[removedCount]]`removedCount`|`Number (long)`|
++++
+Get the number of removed documents
++++
+|===
+
+[[MongoClientUpdateResult]]
+== MongoClientUpdateResult
+
+++++
+ Result propagated from mongodb driver update result.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[docMatched]]`docMatched`|`Number (long)`|
++++
+Get the number of documents that're matched
++++
+|[[docModified]]`docModified`|`Number (long)`|
++++
+Get the number of documents that're modified
++++
+|[[docUpsertedId]]`docUpsertedId`|`Json object`|
++++
+Get the document id that's upserted
++++
+|===
+
 [[UpdateOptions]]
 == UpdateOptions
 

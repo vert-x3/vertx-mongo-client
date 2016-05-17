@@ -21,7 +21,9 @@ var Vertx = require('vertx-js/vertx');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoClient = io.vertx.ext.mongo.MongoClient;
+var MongoClientDeleteResult = io.vertx.ext.mongo.MongoClientDeleteResult;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
+var MongoClientUpdateResult = io.vertx.ext.mongo.MongoClientUpdateResult;
 var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 
 /**
@@ -153,6 +155,30 @@ var MongoClient = function(j_val) {
   };
 
   /**
+   Update matching documents in the specified collection and return the handler with MongoClientUpdateResult result
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} query used to match the documents 
+   @param update {Object} used to describe how the documents will be updated 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.updateWithMongoClientUpdateResult = function(collection, query, update, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
+      j_mongoClient["updateWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
    Update matching documents in the specified collection, specifying options
 
    @public
@@ -169,6 +195,31 @@ var MongoClient = function(j_val) {
       j_mongoClient["updateWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Update matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} query used to match the documents 
+   @param update {Object} used to describe how the documents will be updated 
+   @param options {Object} options to configure the update 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.updateWithOptionsWithMongoClientUpdateResult = function(collection, query, update, options, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
+      j_mongoClient["updateWithOptionsWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }
@@ -202,6 +253,30 @@ var MongoClient = function(j_val) {
   };
 
   /**
+   Replace matching documents in the specified collection and return the handler with MongoClientUpdateResult result
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} query used to match the documents 
+   @param replace {Object} all matching documents will be replaced with this 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.replaceWithMongoClientUpdateResult = function(collection, query, replace, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
+      j_mongoClient["replaceWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
    Replace matching documents in the specified collection, specifying options
 
    @public
@@ -218,6 +293,31 @@ var MongoClient = function(j_val) {
       j_mongoClient["replaceWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Replace matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} query used to match the documents 
+   @param replace {Object} all matching documents will be replaced with this 
+   @param options {Object} options to configure the replace 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.replaceWithOptionsWithMongoClientUpdateResult = function(collection, query, replace, options, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
+      j_mongoClient["replaceWithOptionsWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }
@@ -393,6 +493,29 @@ var MongoClient = function(j_val) {
   };
 
   /**
+   Remove matching documents from a collection and return the handler with MongoClientDeleteResult result
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} query used to match documents 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.removeWithMongoClientDeleteResult = function(collection, query, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
+      j_mongoClient["removeWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
    Remove matching documents from a collection with the specified write option
 
    @public
@@ -408,6 +531,30 @@ var MongoClient = function(j_val) {
       j_mongoClient["removeWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Remove matching documents from a collection with the specified write option and return the handler with MongoClientDeleteResult result
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} query used to match documents 
+   @param writeOption {Object} the write option to use 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.removeWithOptionsWithMongoClientDeleteResult = function(collection, query, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoClient["removeWithOptionsWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }
@@ -440,6 +587,29 @@ var MongoClient = function(j_val) {
   };
 
   /**
+   Remove a single matching document from a collection and return the handler with MongoClientDeleteResult result
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} query used to match document 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.removeOneWithMongoClientDeleteResult = function(collection, query, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
+      j_mongoClient["removeOneWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
    Remove a single matching document from a collection with the specified write option
 
    @public
@@ -455,6 +625,30 @@ var MongoClient = function(j_val) {
       j_mongoClient["removeOneWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Remove a single matching document from a collection with the specified write option and return the handler with MongoClientDeleteResult result
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} query used to match document 
+   @param writeOption {Object} the write option to use 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.removeOneWithOptionsWithMongoClientDeleteResult = function(collection, query, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
+      j_mongoClient["removeOneWithOptionsWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }
