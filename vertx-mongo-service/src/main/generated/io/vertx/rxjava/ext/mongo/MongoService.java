@@ -62,15 +62,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).save(collection, document, new Handler<AsyncResult<java.lang.String>>() {
-      public void handle(AsyncResult<java.lang.String> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).save(collection, document, resultHandler);
     return this;
   }
 
@@ -81,15 +73,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).saveWithOptions(collection, document, writeOption, new Handler<AsyncResult<java.lang.String>>() {
-      public void handle(AsyncResult<java.lang.String> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).saveWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
 
@@ -100,15 +84,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).insert(collection, document, new Handler<AsyncResult<java.lang.String>>() {
-      public void handle(AsyncResult<java.lang.String> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).insert(collection, document, resultHandler);
     return this;
   }
 
@@ -119,15 +95,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).insertWithOptions(collection, document, writeOption, new Handler<AsyncResult<java.lang.String>>() {
-      public void handle(AsyncResult<java.lang.String> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).insertWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
 
@@ -157,15 +125,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService updateWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).updateWithMongoClientUpdateResult(collection, query, update, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).updateWithMongoClientUpdateResult(collection, query, update, resultHandler);
     return this;
   }
 
@@ -195,15 +155,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService updateWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).updateWithOptionsWithMongoClientUpdateResult(collection, query, update, options, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).updateWithOptionsWithMongoClientUpdateResult(collection, query, update, options, resultHandler);
     return this;
   }
 
@@ -233,15 +185,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService replaceWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).replaceWithMongoClientUpdateResult(collection, query, replace, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).replaceWithMongoClientUpdateResult(collection, query, replace, resultHandler);
     return this;
   }
 
@@ -271,15 +215,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService replaceWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).replaceWithOptionsWithMongoClientUpdateResult(collection, query, replace, options, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).replaceWithOptionsWithMongoClientUpdateResult(collection, query, replace, options, resultHandler);
     return this;
   }
 
@@ -290,15 +226,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).find(collection, query, new Handler<AsyncResult<java.util.List<io.vertx.core.json.JsonObject>>>() {
-      public void handle(AsyncResult<java.util.List<io.vertx.core.json.JsonObject>> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).find(collection, query, resultHandler);
     return this;
   }
 
@@ -309,15 +237,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).findBatch(collection, query, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).findBatch(collection, query, resultHandler);
     return this;
   }
 
@@ -328,15 +248,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).findWithOptions(collection, query, options, new Handler<AsyncResult<java.util.List<io.vertx.core.json.JsonObject>>>() {
-      public void handle(AsyncResult<java.util.List<io.vertx.core.json.JsonObject>> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).findWithOptions(collection, query, options, resultHandler);
     return this;
   }
 
@@ -347,15 +259,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).findBatchWithOptions(collection, query, options, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).findBatchWithOptions(collection, query, options, resultHandler);
     return this;
   }
 
@@ -366,15 +270,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).findOne(collection, query, fields, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOne(collection, query, fields, resultHandler);
     return this;
   }
 
@@ -385,15 +281,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).count(collection, query, new Handler<AsyncResult<java.lang.Long>>() {
-      public void handle(AsyncResult<java.lang.Long> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).count(collection, query, resultHandler);
     return this;
   }
 
@@ -423,15 +311,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService removeWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).removeWithMongoClientDeleteResult(collection, query, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).removeWithMongoClientDeleteResult(collection, query, resultHandler);
     return this;
   }
 
@@ -461,15 +341,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService removeWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).removeWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).removeWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, resultHandler);
     return this;
   }
 
@@ -499,15 +371,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService removeOneWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).removeOneWithMongoClientDeleteResult(collection, query, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).removeOneWithMongoClientDeleteResult(collection, query, resultHandler);
     return this;
   }
 
@@ -537,15 +401,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService removeOneWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).removeOneWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).removeOneWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, resultHandler);
     return this;
   }
 
@@ -575,15 +431,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService getCollections(Handler<AsyncResult<List<String>>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).getCollections(new Handler<AsyncResult<java.util.List<java.lang.String>>>() {
-      public void handle(AsyncResult<java.util.List<java.lang.String>> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).getCollections(resultHandler);
     return this;
   }
 
@@ -613,15 +461,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).runCommand(commandName, command, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).runCommand(commandName, command, resultHandler);
     return this;
   }
 
@@ -632,15 +472,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).distinct(collection, fieldName, resultClassname, new Handler<AsyncResult<io.vertx.core.json.JsonArray>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonArray> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).distinct(collection, fieldName, resultClassname, resultHandler);
     return this;
   }
 
@@ -651,15 +483,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).distinctBatch(collection, fieldName, resultClassname, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).distinctBatch(collection, fieldName, resultClassname, resultHandler);
     return this;
   }
 
