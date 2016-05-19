@@ -127,8 +127,8 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient updateWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update,
-                                                Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoClient updateCollection(String collection, JsonObject query, JsonObject update,
+                               Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   /**
    * Update matching documents in the specified collection, specifying options
@@ -152,8 +152,8 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient updateWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update, UpdateOptions options,
-                                                           Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options,
+                                          Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   /**
    * Replace matching documents in the specified collection
@@ -175,7 +175,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient replaceWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   /**
    * Replace matching documents in the specified collection, specifying options
@@ -199,7 +199,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient replaceWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   /**
    * Find matching documents in the specified collection
@@ -284,7 +284,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   /**
    * Remove matching documents from a collection with the specified write option
@@ -306,7 +306,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocumentsWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   /**
    * Remove a single matching document from a collection
@@ -326,7 +326,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeOneWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   /**
    * Remove a single matching document from a collection with the specified write option
@@ -348,7 +348,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeOneWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocumentWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   /**
    * Create a new collection

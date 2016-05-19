@@ -139,8 +139,8 @@ public class MongoClient {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient updateWithMongoClientUpdateResult(String collection, Map<String, Object> query, Map<String, Object> update, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.updateWithMongoClientUpdateResult(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+  public MongoClient updateCollection(String collection, Map<String, Object> query, Map<String, Object> update, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.updateCollection(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
@@ -173,8 +173,8 @@ public class MongoClient {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient updateWithOptionsWithMongoClientUpdateResult(String collection, Map<String, Object> query, Map<String, Object> update, Map<String, Object> options, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.updateWithOptionsWithMongoClientUpdateResult(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+  public MongoClient updateCollectionWithOptions(String collection, Map<String, Object> query, Map<String, Object> update, Map<String, Object> options, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.updateCollectionWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
@@ -205,8 +205,8 @@ public class MongoClient {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient replaceWithMongoClientUpdateResult(String collection, Map<String, Object> query, Map<String, Object> replace, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.replaceWithMongoClientUpdateResult(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+  public MongoClient replaceDocuments(String collection, Map<String, Object> query, Map<String, Object> replace, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.replaceDocuments(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
@@ -239,8 +239,8 @@ public class MongoClient {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient replaceWithOptionsWithMongoClientUpdateResult(String collection, Map<String, Object> query, Map<String, Object> replace, Map<String, Object> options, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.replaceWithOptionsWithMongoClientUpdateResult(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+  public MongoClient replaceDocumentsWithOptions(String collection, Map<String, Object> query, Map<String, Object> replace, Map<String, Object> options, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.replaceDocumentsWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
@@ -380,8 +380,8 @@ public class MongoClient {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient removeWithMongoClientDeleteResult(String collection, Map<String, Object> query, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.removeWithMongoClientDeleteResult(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
+  public MongoClient removeDocuments(String collection, Map<String, Object> query, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.removeDocuments(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
@@ -412,8 +412,8 @@ public class MongoClient {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient removeWithOptionsWithMongoClientDeleteResult(String collection, Map<String, Object> query, WriteOption writeOption, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.removeWithOptionsWithMongoClientDeleteResult(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, writeOption, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
+  public MongoClient removeDocumentsWithOptions(String collection, Map<String, Object> query, WriteOption writeOption, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.removeDocumentsWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, writeOption, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
@@ -442,8 +442,8 @@ public class MongoClient {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient removeOneWithMongoClientDeleteResult(String collection, Map<String, Object> query, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.removeOneWithMongoClientDeleteResult(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
+  public MongoClient removeDocument(String collection, Map<String, Object> query, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.removeDocument(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
@@ -474,8 +474,8 @@ public class MongoClient {
    * @param resultHandler will be called when complete
    * @return 
    */
-  public MongoClient removeOneWithOptionsWithMongoClientDeleteResult(String collection, Map<String, Object> query, WriteOption writeOption, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.removeOneWithOptionsWithMongoClientDeleteResult(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, writeOption, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
+  public MongoClient removeDocumentWithOptions(String collection, Map<String, Object> query, WriteOption writeOption, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.removeDocumentWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, writeOption, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientDeleteResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));

@@ -58,8 +58,8 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService updateWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
-    client.updateWithMongoClientUpdateResult(collection, query, update, resultHandler);
+  public MongoService updateCollection(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+    client.updateCollection(collection, query, update, resultHandler);
     return this;
   }
 
@@ -73,8 +73,8 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService updateWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
-    client.updateWithOptionsWithMongoClientUpdateResult(collection, query, update, options, resultHandler);
+  public MongoService updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+    client.updateCollectionWithOptions(collection, query, update, options, resultHandler);
     return this;
   }
 
@@ -88,8 +88,8 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService replaceWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
-    client.replaceWithMongoClientUpdateResult(collection, query, replace, resultHandler);
+  public MongoService replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+    client.replaceDocuments(collection, query, replace, resultHandler);
     return this;
   }
 
@@ -103,8 +103,8 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService replaceWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
-    client.replaceWithOptionsWithMongoClientUpdateResult(collection, query, replace, options, resultHandler);
+  public MongoService replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+    client.replaceDocumentsWithOptions(collection, query, replace, options, resultHandler);
     return this;
   }
 
@@ -157,8 +157,8 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public MongoService removeWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
-    client.removeWithMongoClientDeleteResult(collection, query, resultHandler);
+  public MongoService removeDocuments(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
+    client.removeDocuments(collection, query, resultHandler);
     return this;
   }
 
@@ -172,8 +172,8 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService removeWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
-    client.removeWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, resultHandler);
+  public MongoService removeDocumentsWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
+    client.removeDocumentsWithOptions(collection, query, writeOption, resultHandler);
     return this;
   }
 
@@ -187,8 +187,8 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService removeOneWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
-    client.removeOneWithMongoClientDeleteResult(collection, query, resultHandler);
+  public MongoService removeDocument(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
+    client.removeDocument(collection, query, resultHandler);
     return this;
   }
 
@@ -202,8 +202,8 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService removeOneWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
-    client.removeOneWithOptionsWithMongoClientDeleteResult(collection, query, writeOption, resultHandler);
+  public MongoService removeDocumentWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
+    client.removeDocumentWithOptions(collection, query, writeOption, resultHandler);
     return this;
   }
 
