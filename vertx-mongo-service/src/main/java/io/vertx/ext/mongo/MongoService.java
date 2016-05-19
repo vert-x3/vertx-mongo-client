@@ -55,7 +55,7 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService updateWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoService updateCollection(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   @Deprecated
   @Override
@@ -64,7 +64,7 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService updateWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoService updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   @Deprecated
   @Override
@@ -73,7 +73,7 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService replaceWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoService replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   @Deprecated
   @Override
@@ -82,7 +82,7 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService replaceWithOptionsWithMongoClientUpdateResult(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoService replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   @Override
   @Fluent
@@ -115,7 +115,7 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService removeWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoService removeDocuments(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   @Deprecated
   @Override
@@ -124,7 +124,7 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService removeWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoService removeDocumentsWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   @Deprecated
   @Override
@@ -133,7 +133,7 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService removeOneWithMongoClientDeleteResult(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoService removeDocument(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   @Deprecated
   @Override
@@ -142,7 +142,7 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService removeOneWithOptionsWithMongoClientDeleteResult(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoService removeDocumentWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   @Override
   @Fluent

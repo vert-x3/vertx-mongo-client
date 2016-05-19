@@ -164,10 +164,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.updateWithMongoClientUpdateResult = function(collection, query, update, resultHandler) {
+  this.updateCollection = function(collection, query, update, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
-      j_mongoClient["updateWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), function(ar) {
+      j_mongoClient["updateCollection(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -214,10 +214,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.updateWithOptionsWithMongoClientUpdateResult = function(collection, query, update, options, resultHandler) {
+  this.updateCollectionWithOptions = function(collection, query, update, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
-      j_mongoClient["updateWithOptionsWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoClient["updateCollectionWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -262,10 +262,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.replaceWithMongoClientUpdateResult = function(collection, query, replace, resultHandler) {
+  this.replaceDocuments = function(collection, query, replace, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
-      j_mongoClient["replaceWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), function(ar) {
+      j_mongoClient["replaceDocuments(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -312,10 +312,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.replaceWithOptionsWithMongoClientUpdateResult = function(collection, query, replace, options, resultHandler) {
+  this.replaceDocumentsWithOptions = function(collection, query, replace, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
-      j_mongoClient["replaceWithOptionsWithMongoClientUpdateResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoClient["replaceDocumentsWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -501,10 +501,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.removeWithMongoClientDeleteResult = function(collection, query, resultHandler) {
+  this.removeDocuments = function(collection, query, resultHandler) {
     var __args = arguments;
     if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
-      j_mongoClient["removeWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
+      j_mongoClient["removeDocuments(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -549,10 +549,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.removeWithOptionsWithMongoClientDeleteResult = function(collection, query, writeOption, resultHandler) {
+  this.removeDocumentsWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoClient["removeWithOptionsWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
+      j_mongoClient["removeDocumentsWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -595,10 +595,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.removeOneWithMongoClientDeleteResult = function(collection, query, resultHandler) {
+  this.removeDocument = function(collection, query, resultHandler) {
     var __args = arguments;
     if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
-      j_mongoClient["removeOneWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
+      j_mongoClient["removeDocument(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -643,10 +643,10 @@ var MongoClient = function(j_val) {
    @param resultHandler {function} will be called when complete 
    @return {MongoClient}
    */
-  this.removeOneWithOptionsWithMongoClientDeleteResult = function(collection, query, writeOption, resultHandler) {
+  this.removeDocumentWithOptions = function(collection, query, writeOption, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string' && typeof __args[3] === 'function') {
-      j_mongoClient["removeOneWithOptionsWithMongoClientDeleteResult(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
+      j_mongoClient["removeDocumentWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {

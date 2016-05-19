@@ -89,12 +89,12 @@ module VertxMongo
     # @param [Hash{String => Object}] update 
     # @yield 
     # @return [self]
-    def update_with_mongo_client_update_result(collection=nil,query=nil,update=nil)
+    def update_collection(collection=nil,query=nil,update=nil)
       if collection.class == String && query.class == Hash && update.class == Hash && block_given?
-        @j_del.java_method(:updateWithMongoClientUpdateResult, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:updateCollection, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling update_with_mongo_client_update_result(collection,query,update)"
+      raise ArgumentError, "Invalid arguments when calling update_collection(collection,query,update)"
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 
@@ -115,12 +115,12 @@ module VertxMongo
     # @param [Hash] options 
     # @yield 
     # @return [self]
-    def update_with_options_with_mongo_client_update_result(collection=nil,query=nil,update=nil,options=nil)
+    def update_collection_with_options(collection=nil,query=nil,update=nil,options=nil)
       if collection.class == String && query.class == Hash && update.class == Hash && options.class == Hash && block_given?
-        @j_del.java_method(:updateWithOptionsWithMongoClientUpdateResult, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:updateCollectionWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling update_with_options_with_mongo_client_update_result(collection,query,update,options)"
+      raise ArgumentError, "Invalid arguments when calling update_collection_with_options(collection,query,update,options)"
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 
@@ -139,12 +139,12 @@ module VertxMongo
     # @param [Hash{String => Object}] replace 
     # @yield 
     # @return [self]
-    def replace_with_mongo_client_update_result(collection=nil,query=nil,replace=nil)
+    def replace_documents(collection=nil,query=nil,replace=nil)
       if collection.class == String && query.class == Hash && replace.class == Hash && block_given?
-        @j_del.java_method(:replaceWithMongoClientUpdateResult, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:replaceDocuments, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling replace_with_mongo_client_update_result(collection,query,replace)"
+      raise ArgumentError, "Invalid arguments when calling replace_documents(collection,query,replace)"
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 
@@ -165,12 +165,12 @@ module VertxMongo
     # @param [Hash] options 
     # @yield 
     # @return [self]
-    def replace_with_options_with_mongo_client_update_result(collection=nil,query=nil,replace=nil,options=nil)
+    def replace_documents_with_options(collection=nil,query=nil,replace=nil,options=nil)
       if collection.class == String && query.class == Hash && replace.class == Hash && options.class == Hash && block_given?
-        @j_del.java_method(:replaceWithOptionsWithMongoClientUpdateResult, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:replaceDocumentsWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling replace_with_options_with_mongo_client_update_result(collection,query,replace,options)"
+      raise ArgumentError, "Invalid arguments when calling replace_documents_with_options(collection,query,replace,options)"
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 
@@ -256,12 +256,12 @@ module VertxMongo
     # @param [Hash{String => Object}] query 
     # @yield 
     # @return [self]
-    def remove_with_mongo_client_delete_result(collection=nil,query=nil)
+    def remove_documents(collection=nil,query=nil)
       if collection.class == String && query.class == Hash && block_given?
-        @j_del.java_method(:removeWithMongoClientDeleteResult, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:removeDocuments, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_with_mongo_client_delete_result(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling remove_documents(collection,query)"
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 
@@ -280,12 +280,12 @@ module VertxMongo
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption 
     # @yield 
     # @return [self]
-    def remove_with_options_with_mongo_client_delete_result(collection=nil,query=nil,writeOption=nil)
+    def remove_documents_with_options(collection=nil,query=nil,writeOption=nil)
       if collection.class == String && query.class == Hash && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:removeWithOptionsWithMongoClientDeleteResult, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:removeDocumentsWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_with_options_with_mongo_client_delete_result(collection,query,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling remove_documents_with_options(collection,query,writeOption)"
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 
@@ -302,12 +302,12 @@ module VertxMongo
     # @param [Hash{String => Object}] query 
     # @yield 
     # @return [self]
-    def remove_one_with_mongo_client_delete_result(collection=nil,query=nil)
+    def remove_document(collection=nil,query=nil)
       if collection.class == String && query.class == Hash && block_given?
-        @j_del.java_method(:removeOneWithMongoClientDeleteResult, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:removeDocument, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_one_with_mongo_client_delete_result(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling remove_document(collection,query)"
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 
@@ -326,12 +326,12 @@ module VertxMongo
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption 
     # @yield 
     # @return [self]
-    def remove_one_with_options_with_mongo_client_delete_result(collection=nil,query=nil,writeOption=nil)
+    def remove_document_with_options(collection=nil,query=nil,writeOption=nil)
       if collection.class == String && query.class == Hash && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:removeOneWithOptionsWithMongoClientDeleteResult, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:removeDocumentWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_one_with_options_with_mongo_client_delete_result(collection,query,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling remove_document_with_options(collection,query,writeOption)"
     end
     # @param [String] collectionName 
     # @yield 
