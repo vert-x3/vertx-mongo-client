@@ -3,6 +3,8 @@ package io.vertx.ext.mongo;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -42,5 +44,34 @@ public class MongoClientTest extends MongoClientTestBase {
       }));
     }));
     awaitLatch(latch);
+  }
+
+  @Test
+  public void testIndexes() throws Exception {
+    String collection = randomCollection();
+    JsonObject index = io.vertx.ext.mongo.Indexes.ascending(Collections.singletonList("test"));
+    CountDownLatch latch = new CountDownLatch(3);
+    IndexOptions testOptions = new IndexOptions().unique(true).name("testName");
+    mongoClient.createIndexWithOptions(collection, index, testOptions,  stringAsyncResult -> {
+      assertNotNull(stringAsyncResult.result());
+      assertEquals("testName", stringAsyncResult.result());
+      latch.countDown();
+      mongoClient.listIndexes(collection, result -> {
+          assertTrue(result.succeeded());
+          List<JsonObject> indexes = result.result();
+          assertTrue(
+                  indexes
+                    .stream()
+                    .filter( p -> p.getString("name").equals("testName"))
+                    .count() == 1
+          );
+          latch.countDown();
+          mongoClient.dropIndex(collection, "testName",  result2 -> {
+              assertTrue(result2.succeeded());
+              latch.countDown();
+          });
+        });
+    });
+    latch.await();
   }
 }

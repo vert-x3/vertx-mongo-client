@@ -28,6 +28,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.IndexOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
@@ -52,8 +53,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
-  private static final String ID_FIELD = "_id";
+  private static final IndexOptions DEFAULT_INDEX_OPTIONS = new IndexOptions();
 
+  private static final String ID_FIELD = "_id";
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
 
   private final Vertx vertx;
@@ -394,6 +396,41 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
+  @Override
+  public io.vertx.ext.mongo.MongoClient createIndex(String collection, JsonObject index, Handler<AsyncResult<String>> resultHandler){
+    return createIndexWithOptions(collection, index, DEFAULT_INDEX_OPTIONS, resultHandler);
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient createIndexWithOptions(String collection, JsonObject index, IndexOptions indexOptions, Handler<AsyncResult<String>> resultHandler){
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(collection, "index cannot be null");
+    requireNonNull(collection, "indexOptions cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.createIndex(wrap(index), indexOptions.unwrap(), wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler){
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(collection, "indexName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.dropIndex(indexName, wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient listIndexes(String collection, Handler<AsyncResult<List<JsonObject>>> resultHandler){
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.listIndexes(JsonObject.class)
+            .into(new ArrayList<>(), wrapCallback(resultHandler));
+    return this;
+  }
+
+
   private DistinctIterable findDistinctValues(String collection, String fieldName, String resultClassname, Handler resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(fieldName, "fieldName cannot be null");
@@ -493,7 +530,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
-    return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
+    return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert()).bypassDocumentValidation(options.isBypassDocumentValidation());
   }
 
   private JsonObjectBsonAdapter wrap(JsonObject jsonObject) {

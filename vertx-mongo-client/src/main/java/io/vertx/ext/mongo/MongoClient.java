@@ -319,9 +319,20 @@ public interface MongoClient {
   @Fluent
   MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
 
+  @Fluent
+  MongoClient createIndex(String collection, JsonObject index, Handler<AsyncResult<String>> resultHandler);
+
+  @Fluent
+  MongoClient createIndexWithOptions(String collection, JsonObject index, IndexOptions indexOptions, Handler<AsyncResult<String>> resultHandler);
+
+  @Fluent
+  MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler);
+
+  @Fluent
+  MongoClient listIndexes(String collection, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+
   /**
    * Close the client and release its resources
    */
   void close();
-
 }
