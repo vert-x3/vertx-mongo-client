@@ -18,6 +18,7 @@ package io.vertx.rxjava.ext.mongo;
 
 import java.util.Map;
 import rx.Observable;
+import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -26,6 +27,7 @@ import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.ext.mongo.MongoClientUpdateResult;
 import io.vertx.ext.mongo.UpdateOptions;
 
 /**
@@ -60,15 +62,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).save(collection, document, new Handler<AsyncResult<java.lang.String>>() {
-      public void handle(AsyncResult<java.lang.String> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).save(collection, document, resultHandler);
     return this;
   }
 
@@ -79,15 +73,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).saveWithOptions(collection, document, writeOption, new Handler<AsyncResult<java.lang.String>>() {
-      public void handle(AsyncResult<java.lang.String> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).saveWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
 
@@ -98,15 +84,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).insert(collection, document, new Handler<AsyncResult<java.lang.String>>() {
-      public void handle(AsyncResult<java.lang.String> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).insert(collection, document, resultHandler);
     return this;
   }
 
@@ -117,15 +95,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).insertWithOptions(collection, document, writeOption, new Handler<AsyncResult<java.lang.String>>() {
-      public void handle(AsyncResult<java.lang.String> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).insertWithOptions(collection, document, writeOption, resultHandler);
     return this;
   }
 
@@ -154,6 +124,17 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService updateCollection(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).updateCollection(collection, query, update, resultHandler);
+    return this;
+  }
+
+  public Observable<MongoClientUpdateResult> updateCollectionObservable(String collection, JsonObject query, JsonObject update) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientUpdateResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    updateCollection(collection, query, update, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public MongoService updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) { 
     ((io.vertx.ext.mongo.MongoClient) delegate).updateWithOptions(collection, query, update, options, new Handler<AsyncResult<java.lang.Void>>() {
       public void handle(AsyncResult<java.lang.Void> ar) {
@@ -170,6 +151,17 @@ public class MongoService extends MongoClient {
   public Observable<Void> updateWithOptionsObservable(String collection, JsonObject query, JsonObject update, UpdateOptions options) { 
     io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     updateWithOptions(collection, query, update, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).updateCollectionWithOptions(collection, query, update, options, resultHandler);
+    return this;
+  }
+
+  public Observable<MongoClientUpdateResult> updateCollectionWithOptionsObservable(String collection, JsonObject query, JsonObject update, UpdateOptions options) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientUpdateResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    updateCollectionWithOptions(collection, query, update, options, resultHandler.toHandler());
     return resultHandler;
   }
 
@@ -192,6 +184,17 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).replaceDocuments(collection, query, replace, resultHandler);
+    return this;
+  }
+
+  public Observable<MongoClientUpdateResult> replaceDocumentsObservable(String collection, JsonObject query, JsonObject replace) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientUpdateResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    replaceDocuments(collection, query, replace, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public MongoService replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) { 
     ((io.vertx.ext.mongo.MongoClient) delegate).replaceWithOptions(collection, query, replace, options, new Handler<AsyncResult<java.lang.Void>>() {
       public void handle(AsyncResult<java.lang.Void> ar) {
@@ -211,16 +214,19 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).replaceDocumentsWithOptions(collection, query, replace, options, resultHandler);
+    return this;
+  }
+
+  public Observable<MongoClientUpdateResult> replaceDocumentsWithOptionsObservable(String collection, JsonObject query, JsonObject replace, UpdateOptions options) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientUpdateResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    replaceDocumentsWithOptions(collection, query, replace, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public MongoService find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).find(collection, query, new Handler<AsyncResult<java.util.List<io.vertx.core.json.JsonObject>>>() {
-      public void handle(AsyncResult<java.util.List<io.vertx.core.json.JsonObject>> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).find(collection, query, resultHandler);
     return this;
   }
 
@@ -231,15 +237,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).findBatch(collection, query, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).findBatch(collection, query, resultHandler);
     return this;
   }
 
@@ -250,15 +248,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).findWithOptions(collection, query, options, new Handler<AsyncResult<java.util.List<io.vertx.core.json.JsonObject>>>() {
-      public void handle(AsyncResult<java.util.List<io.vertx.core.json.JsonObject>> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).findWithOptions(collection, query, options, resultHandler);
     return this;
   }
 
@@ -269,15 +259,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).findBatchWithOptions(collection, query, options, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).findBatchWithOptions(collection, query, options, resultHandler);
     return this;
   }
 
@@ -288,15 +270,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).findOne(collection, query, fields, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOne(collection, query, fields, resultHandler);
     return this;
   }
 
@@ -307,15 +281,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).count(collection, query, new Handler<AsyncResult<java.lang.Long>>() {
-      public void handle(AsyncResult<java.lang.Long> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).count(collection, query, resultHandler);
     return this;
   }
 
@@ -344,6 +310,17 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService removeDocuments(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).removeDocuments(collection, query, resultHandler);
+    return this;
+  }
+
+  public Observable<MongoClientDeleteResult> removeDocumentsObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientDeleteResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    removeDocuments(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public MongoService removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
     ((io.vertx.ext.mongo.MongoClient) delegate).removeWithOptions(collection, query, writeOption, new Handler<AsyncResult<java.lang.Void>>() {
       public void handle(AsyncResult<java.lang.Void> ar) {
@@ -360,6 +337,17 @@ public class MongoService extends MongoClient {
   public Observable<Void> removeWithOptionsObservable(String collection, JsonObject query, WriteOption writeOption) { 
     io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     removeWithOptions(collection, query, writeOption, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService removeDocumentsWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).removeDocumentsWithOptions(collection, query, writeOption, resultHandler);
+    return this;
+  }
+
+  public Observable<MongoClientDeleteResult> removeDocumentsWithOptionsObservable(String collection, JsonObject query, WriteOption writeOption) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientDeleteResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    removeDocumentsWithOptions(collection, query, writeOption, resultHandler.toHandler());
     return resultHandler;
   }
 
@@ -382,6 +370,17 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService removeDocument(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).removeDocument(collection, query, resultHandler);
+    return this;
+  }
+
+  public Observable<MongoClientDeleteResult> removeDocumentObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientDeleteResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    removeDocument(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public MongoService removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
     ((io.vertx.ext.mongo.MongoClient) delegate).removeOneWithOptions(collection, query, writeOption, new Handler<AsyncResult<java.lang.Void>>() {
       public void handle(AsyncResult<java.lang.Void> ar) {
@@ -398,6 +397,17 @@ public class MongoService extends MongoClient {
   public Observable<Void> removeOneWithOptionsObservable(String collection, JsonObject query, WriteOption writeOption) { 
     io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     removeOneWithOptions(collection, query, writeOption, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService removeDocumentWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).removeDocumentWithOptions(collection, query, writeOption, resultHandler);
+    return this;
+  }
+
+  public Observable<MongoClientDeleteResult> removeDocumentWithOptionsObservable(String collection, JsonObject query, WriteOption writeOption) { 
+    io.vertx.rx.java.ObservableFuture<MongoClientDeleteResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    removeDocumentWithOptions(collection, query, writeOption, resultHandler.toHandler());
     return resultHandler;
   }
 
@@ -421,15 +431,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService getCollections(Handler<AsyncResult<List<String>>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).getCollections(new Handler<AsyncResult<java.util.List<java.lang.String>>>() {
-      public void handle(AsyncResult<java.util.List<java.lang.String>> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).getCollections(resultHandler);
     return this;
   }
 
@@ -459,15 +461,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).runCommand(commandName, command, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).runCommand(commandName, command, resultHandler);
     return this;
   }
 
@@ -478,15 +472,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).distinct(collection, fieldName, resultClassname, new Handler<AsyncResult<io.vertx.core.json.JsonArray>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonArray> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).distinct(collection, fieldName, resultClassname, resultHandler);
     return this;
   }
 
@@ -497,15 +483,7 @@ public class MongoService extends MongoClient {
   }
 
   public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) { 
-    ((io.vertx.ext.mongo.MongoClient) delegate).distinctBatch(collection, fieldName, resultClassname, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mongo.MongoClient) delegate).distinctBatch(collection, fieldName, resultClassname, resultHandler);
     return this;
   }
 

@@ -3,6 +3,7 @@ package io.vertx.ext.mongo;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.test.core.TestUtils;
 import org.bson.types.ObjectId;
 import org.junit.Test;
@@ -11,7 +12,6 @@ import java.io.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
@@ -23,6 +23,7 @@ import static io.vertx.ext.mongo.WriteOption.UNACKNOWLEDGED;
 public abstract class MongoClientTestBase extends MongoTestBase {
 
   protected MongoClient mongoClient;
+  protected boolean useObjectId;//since this class will be inherited by other tests, some tests will toggle useObjectId in their client config. This will keep trakc of it and run the affected test accordingly.
 
   @Test
   public void testCreateAndGetCollection() throws Exception {
@@ -662,6 +663,75 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testReplaceWithMongoClientUpddateResult() {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+    mongoClient.insert(collection, doc, onSuccess(id -> {
+      assertNotNull(id);
+      JsonObject replacement = createDoc();
+      replacement.put("replacement", true);
+      mongoClient.replaceDocuments(collection, new JsonObject().put("_id", id), replacement, onSuccess(v -> {
+        mongoClient.find(collection, new JsonObject(), onSuccess(list -> {
+          assertNull(v.getDocUpsertedId());
+          assertEquals(1, v.getDocMatched());
+          assertEquals(1, v.getDocModified());
+
+          assertNotNull(list);
+          assertEquals(1, list.size());
+          JsonObject result = list.get(0);
+          Object id_value = result.getValue("_id");
+          if (id_value instanceof JsonObject) {
+            assertEquals(id, ((JsonObject) id_value).getString("$oid"));
+          } else {
+            assertEquals(id, (String) id_value);
+          }
+          result.remove("_id");
+          replacement.remove("_id"); // id won't be there for event bus
+          assertEquals(replacement, result);
+          testComplete();
+        }));
+      }));
+    }));
+
+    await();
+  }
+
+  @Test
+  public void testReplaceMongoClientUpdateResultUnacknowledge() throws Exception {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+    mongoClient.insert(collection, doc, onSuccess(id -> {
+      JsonObject replacement = createDoc();
+      replacement.put("replacement", true);
+      mongoClient.replaceDocumentsWithOptions(collection, new JsonObject().put("_id", id), replacement,
+        new UpdateOptions().setWriteOption(UNACKNOWLEDGED), onSuccess(v -> {
+          assertNull(v);
+          testComplete();
+      }));
+    }));
+
+    await();
+  }
+
+  @Test
+  public void testReplaceMongoClientUpdateResultAcknowledge() throws Exception {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+    mongoClient.insert(collection, doc, onSuccess(id -> {
+      JsonObject replacement = createDoc();
+      replacement.put("replacement", true);
+      mongoClient.replaceDocumentsWithOptions(collection, new JsonObject().put("_id", id), replacement,
+        new UpdateOptions().setWriteOption(ACKNOWLEDGED), onSuccess(v -> {
+          assertNull(v.getDocUpsertedId());
+          assertEquals(1, v.getDocMatched());
+          assertEquals(1, v.getDocModified());
+          testComplete();
+        }));
+    }));
+    await();
+  }
+
+  @Test
   public void testReplaceUpsert() {
     String collection = randomCollection();
     JsonObject doc = createDoc();
@@ -671,6 +741,38 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       replacement.put("replacement", true);
       mongoClient.replaceWithOptions(collection, new JsonObject().put("_id", "foo"), replacement, new UpdateOptions(true), onSuccess(v -> {
         mongoClient.find(collection, new JsonObject(), onSuccess(list -> {
+          assertNotNull(list);
+          assertEquals(2, list.size());
+          JsonObject result = null;
+          for (JsonObject o : list) {
+            if (o.containsKey("replacement")) {
+              result = o;
+            }
+          }
+          assertNotNull(result);
+          testComplete();
+        }));
+      }));
+    }));
+
+    await();
+  }
+
+  @Test
+  public void testReplaceUpsertWithMongoClientUpdateResult() {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+    String upsertTestId = "foo";
+    mongoClient.insert(collection, doc, onSuccess(id -> {
+      assertNotNull(id);
+      JsonObject replacement = createDoc();
+      replacement.put("replacement", true);
+      mongoClient.replaceDocumentsWithOptions(collection, new JsonObject().put("_id", upsertTestId), replacement, new UpdateOptions(true), onSuccess(v -> {
+        mongoClient.find(collection, new JsonObject(), onSuccess(list -> {
+          assertEquals(upsertTestId, v.getDocUpsertedId().getString(MongoClientUpdateResult.ID_FIELD));
+          assertEquals(0, v.getDocMatched());
+          assertEquals(0, v.getDocModified());
+
           assertNotNull(list);
           assertEquals(2, list.size());
           JsonObject result = null;
@@ -715,14 +817,85 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testReplaceUpsertWithNoNewIdWithMongoClientUpdateResult() {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+    mongoClient.insert(collection, doc, onSuccess(id -> {
+      assertNotNull(id);
+      JsonObject replacement = createDoc();
+      replacement.put("replacement", true);
+      mongoClient.replaceDocumentsWithOptions(collection, new JsonObject().put("_id", id), replacement, new UpdateOptions(true), onSuccess(v -> {
+        mongoClient.find(collection, new JsonObject(), onSuccess(list -> {
+          assertNull(v.getDocUpsertedId());
+          assertEquals(1, v.getDocMatched());
+          assertEquals(1, v.getDocModified());
+
+          assertNotNull(list);
+          assertEquals(1, list.size());
+          Object id_value = list.get(0).getValue("_id");
+          if (id_value instanceof JsonObject) {
+            assertEquals(id, ((JsonObject) id_value).getString("$oid"));
+          } else {
+            assertEquals(id, (String) id_value);
+          }
+          testComplete();
+        }));
+      }));
+    }));
+
+    await();
+  }
+  //TODO: Technical debt. Later may have to re-factor so that the tests that extend this does not cause different execution path because of the conditional tests.
+  @Test
   public void testUpdate() throws Exception {
     String collection = randomCollection();
     mongoClient.insert(collection, createDoc(), onSuccess(id -> {
-      mongoClient.update(collection, new JsonObject().put("_id", id), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), onSuccess(res -> {
-        mongoClient.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(doc -> {
-          assertEquals("fooed", doc.getString("foo"));
-          testComplete();
-        }));
+      if(useObjectId) {
+        JsonObject docIdToBeUpdatedObjectId = new JsonObject().put(JsonObjectCodec.OID_FIELD, id);
+        updateDataBasedOnId(collection, docIdToBeUpdatedObjectId);
+      } else {
+        String docIdToBeUpdatedString = id;
+        updateDataBasedOnId(collection, docIdToBeUpdatedString);
+      }
+
+    }));
+    await();
+  }
+
+  private <T> void updateDataBasedOnId(String collection, T docIdToBeUpdated) {
+    mongoClient.update(collection, new JsonObject().put("_id", docIdToBeUpdated), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), onSuccess(res -> {
+      mongoClient.findOne(collection, new JsonObject().put("_id", docIdToBeUpdated), null, onSuccess(doc -> {
+        assertEquals("fooed", doc.getString("foo"));
+        testComplete();
+      }));
+    }));
+  }
+
+
+
+  @Test
+  public void testUpdateWithMongoClientUpdateResult() throws Exception {
+    String collection = randomCollection();
+    mongoClient.insert(collection, createDoc(), onSuccess(id -> {
+      if(useObjectId) {
+        JsonObject docIdToBeUpdatedObjectId = new JsonObject().put(JsonObjectCodec.OID_FIELD, id);
+        updateDataBasedOnIdWithMongoClientUpdateResult(collection, docIdToBeUpdatedObjectId);
+      } else {
+        String docIdToBeUpdatedString = id;
+        updateDataBasedOnIdWithMongoClientUpdateResult(collection, docIdToBeUpdatedString);
+      }
+    }));
+    await();
+  }
+
+  private <T> void updateDataBasedOnIdWithMongoClientUpdateResult(String collection, T id) {
+    mongoClient.updateCollection(collection, new JsonObject().put("_id", id), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), onSuccess(res -> {
+      assertEquals(1, res.getDocModified());
+      assertEquals(1, res.getDocMatched());
+      assertNull(res.getDocUpsertedId());
+      mongoClient.findOne(collection, new JsonObject().put("_id", id), null, onSuccess(doc -> {
+        assertEquals("fooed", doc.getString("foo"));
+        testComplete();
       }));
     }));
   }
@@ -731,6 +904,19 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   public void testUpdateOne() throws Exception {
     int num = 1;
     doTestUpdate(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(), results -> {
+      assertEquals(num, results.size());
+      for (JsonObject doc : results) {
+        assertEquals(11, doc.size());
+        assertEquals("fooed", doc.getString("foo"));
+        assertNotNull(doc.getValue("_id"));
+      }
+    });
+  }
+
+  @Test
+  public void testUpdateOneWithMongoClientUpdateResult() throws Exception {
+    int num = 1;
+    doTestUpdateWithMongoClientUpdateResult(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(), results -> {
       assertEquals(num, results.size());
       for (JsonObject doc : results) {
         assertEquals(11, doc.size());
@@ -753,12 +939,96 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     });
   }
 
+  @Test
+  public void testUpdateAllWithMongoClientUpdateResult() throws Exception {
+    int num = 10;
+    doTestUpdateWithMongoClientUpdateResult(num, new JsonObject().put("num", 123), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")), new UpdateOptions(false, true), results -> {
+      assertEquals(num, results.size());
+      for (JsonObject doc : results) {
+        assertEquals(11, doc.size());
+        assertEquals("fooed", doc.getString("foo"));
+        assertNotNull(doc.getValue("_id"));
+      }
+    });
+  }
+
+  @Test
+  public void testUpdateMongoClientUpdateResultUpsertIdResponse() throws Exception {
+    String collection = randomCollection();
+    String upsertedId = TestUtils.randomAlphaString(20);
+    mongoClient.insert(collection, createDoc(), onSuccess(id -> {
+      mongoClient.updateCollectionWithOptions(collection, new JsonObject().put("_id", upsertedId), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")),
+        new UpdateOptions().setUpsert(true),onSuccess(res -> {
+          assertEquals(0, res.getDocModified());
+          assertEquals(0, res.getDocMatched());
+          assertEquals(upsertedId,res.getDocUpsertedId().getString(MongoClientUpdateResult.ID_FIELD));
+          testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testMongoClientUpdateResultAcknowledge() throws Exception {
+    String collection = randomCollection();
+    mongoClient.insert(collection, createDoc(), onSuccess(id -> {
+      if(useObjectId) {
+        JsonObject docIdToBeUpdatedObjectId = new JsonObject().put(JsonObjectCodec.OID_FIELD, id);
+        updateWithOptionWithMongoClientUpdateResultBasedOnIdAcknowledged(collection, docIdToBeUpdatedObjectId);
+      } else {
+        String docIdToBeUpdatedString = id;
+        updateWithOptionWithMongoClientUpdateResultBasedOnIdAcknowledged(collection, docIdToBeUpdatedString);
+      }
+    }));
+    await();
+  }
+
+  private <T> void updateWithOptionWithMongoClientUpdateResultBasedOnIdAcknowledged(String collection, T id) {
+    mongoClient.updateCollectionWithOptions(collection, new JsonObject().put("_id", id), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")),
+      new UpdateOptions().setWriteOption(ACKNOWLEDGED),onSuccess(res -> {
+        assertEquals(1, res.getDocModified());
+        assertEquals(1, res.getDocMatched());
+        assertNull(res.getDocUpsertedId());
+        testComplete();
+      }));
+  }
+
+  @Test
+  public void testMongoClientUpdateResultUnacknowledge() throws Exception {
+    String collection = randomCollection();
+    String upsertedId = TestUtils.randomAlphaString(20);
+    mongoClient.insert(collection, createDoc(), onSuccess(id -> {
+      mongoClient.updateCollectionWithOptions(collection, new JsonObject().put("_id", upsertedId), new JsonObject().put("$set", new JsonObject().put("foo", "fooed")),
+        new UpdateOptions().setWriteOption(UNACKNOWLEDGED),onSuccess(res -> {
+          assertNull(res);
+          testComplete();
+        }));
+    }));
+    await();
+  }
+
   private void doTestUpdate(int numDocs, JsonObject query, JsonObject update, UpdateOptions options,
                             Consumer<List<JsonObject>> resultConsumer) throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
         mongoClient.updateWithOptions(collection, query, update, options, onSuccess(res3 -> {
+          mongoClient.find(collection, new JsonObject(), onSuccess(res4 -> {
+            resultConsumer.accept(res4);
+            testComplete();
+          }));
+        }));
+      }));
+    }));
+    await();
+  }
+
+  private void doTestUpdateWithMongoClientUpdateResult(int numDocs, JsonObject query, JsonObject update, UpdateOptions options,
+                            Consumer<List<JsonObject>> resultConsumer) throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
+        mongoClient.updateCollectionWithOptions(collection, query, update, options, onSuccess(res3 -> {
           mongoClient.find(collection, new JsonObject(), onSuccess(res4 -> {
             resultConsumer.accept(res4);
             testComplete();
@@ -784,14 +1054,57 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testRemoveOneWithMongoClientDeleteResult() throws Exception {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 6, onSuccess(res2 -> {
+      mongoClient.removeDocument(collection, new JsonObject().put("num", 123), onSuccess(res3 -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(1, res3.getRemovedCount());
+          assertEquals(5, (long) count);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testRemoveOneWithOptions() throws Exception {
     String collection = randomCollection();
     insertDocs(mongoClient, collection, 6, onSuccess(res2 -> {
       mongoClient.removeOneWithOptions(collection, new JsonObject().put("num", 123), UNACKNOWLEDGED, onSuccess(res3 -> {
         mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertNull(res3);
+
           assertEquals(5, (long) count);
           testComplete();
         }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testRemoveOneWithOptionsWithMongoClientDeleteResultAcknowledged() throws Exception {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 6, onSuccess(res2 -> {
+      mongoClient.removeDocumentWithOptions(collection, new JsonObject().put("num", 123), ACKNOWLEDGED, onSuccess(res3 -> {
+        assertEquals(1, res3.getRemovedCount());
+
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testRemoveOneWithOptionsWithMongoClientDeleteResultUnacknowledged() throws Exception {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 6, onSuccess(res2 -> {
+      mongoClient.removeDocumentWithOptions(collection, new JsonObject().put("num", 123), UNACKNOWLEDGED, onSuccess(res3 -> {
+        assertNull(res3);
+
+        testComplete();
       }));
     }));
     await();
@@ -812,14 +1125,57 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testRemoveMultipleWithMongoClientDeleteResult() throws Exception {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 10, onSuccess(v -> {
+      mongoClient.removeDocuments(collection, new JsonObject(), onSuccess(v2 -> {
+        mongoClient.find(collection, new JsonObject(), onSuccess(res2 -> {
+          assertEquals(10, v2.getRemovedCount());
+
+          assertTrue(res2.isEmpty());
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testRemoveWithOptions() throws Exception {
     String collection = randomCollection();
     insertDocs(mongoClient, collection, 10, onSuccess(v -> {
       mongoClient.removeWithOptions(collection, new JsonObject(), ACKNOWLEDGED, onSuccess(v2 -> {
         mongoClient.find(collection, new JsonObject(), onSuccess(res2 -> {
           assertTrue(res2.isEmpty());
+
           testComplete();
         }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testRemoveWithOptionsWithMongoClientDeleteResultAcknowledge() throws Exception {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 10, onSuccess(v -> {
+      mongoClient.removeDocumentsWithOptions(collection, new JsonObject(), ACKNOWLEDGED, onSuccess(v2 -> {
+        assertEquals(10, v2.getRemovedCount());
+
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testRemoveWithOptionsWithMongoClientDeleteResultUnacknowledge() throws Exception {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 10, onSuccess(v -> {
+      mongoClient.removeDocumentsWithOptions(collection, new JsonObject(), UNACKNOWLEDGED, onSuccess(v2 -> {
+        assertNull(v2);
+
+        testComplete();
       }));
     }));
     await();
