@@ -18,9 +18,11 @@ import java.util.stream.Stream;
 class ReadPreferenceParser {
   private final ReadPreference readPreference;
 
-  public ReadPreferenceParser(ConnectionString connectionString, JsonObject config) {
-    if (connectionString != null) {
-      this.readPreference = connectionString.getReadPreference();
+  ReadPreferenceParser(ConnectionString connectionString, JsonObject config) {
+    ReadPreference connStringReadPreference = connectionString != null ? connectionString.getReadPreference() : null;
+    if (connStringReadPreference != null) {
+      // Prefer connection string's read preference
+      readPreference = connStringReadPreference;
     } else {
       ReadPreference rp;
       String rps = config.getString("readPreference");
@@ -51,11 +53,11 @@ class ReadPreferenceParser {
         rp = null;
       }
 
-      this.readPreference = rp;
+      readPreference = rp;
     }
   }
 
-  public ReadPreference readPreference() {
+  ReadPreference readPreference() {
     return readPreference;
   }
 }

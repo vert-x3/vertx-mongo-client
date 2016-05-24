@@ -12,9 +12,15 @@ import java.util.concurrent.TimeUnit;
 class WriteConcernParser {
   private final WriteConcern writeConcern;
 
-  public WriteConcernParser(ConnectionString connectionString, JsonObject config) {
+  WriteConcernParser(ConnectionString connectionString, JsonObject config) {
+    WriteConcern connStringWriteConcern = null;
     if (connectionString != null) {
-      writeConcern = connectionString.getWriteConcern();
+      // WRITE_CONCERN_KEYS("safe", "w", "wtimeoutms", "fsync", "journal");
+      connStringWriteConcern = connectionString.getWriteConcern();
+    }
+    if (connStringWriteConcern != null) {
+      // Prefer connection string's write concern
+      writeConcern = connStringWriteConcern;
     } else {
       // Allow convenient string value for writeConcern e.g. ACKNOWLEDGED, SAFE, MAJORITY, etc
       WriteConcern wc;
@@ -74,7 +80,7 @@ class WriteConcernParser {
     return wc;
   }
 
-  public WriteConcern writeConcern() {
+  WriteConcern writeConcern() {
     return writeConcern;
   }
 }
