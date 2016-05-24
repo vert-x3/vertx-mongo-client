@@ -44,7 +44,7 @@ public class MongoClientOptionsParser {
     String cs = config.getString("connection_string");
     ConnectionString connectionString = (cs == null) ? null : new ConnectionString(cs);
     String csDatabase = (connectionString != null) ? connectionString.getDatabase() : null;
-    this.database = csDatabase == null ? config.getString("db_name", MongoClient.DEFAULT_DB_NAME) : null;
+    this.database = csDatabase != null ? csDatabase : config.getString("db_name", MongoClient.DEFAULT_DB_NAME);
 
     // ClusterSettings
     ClusterSettings clusterSettings = new ClusterSettingsParser(connectionString, config).settings();
