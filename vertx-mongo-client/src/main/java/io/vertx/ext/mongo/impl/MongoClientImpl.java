@@ -212,13 +212,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     FindIterable<JsonObject> view = doFind(collection, query, options);
-    Block<JsonObject> documentBlock = document -> wrapCallback(resultHandler).onResult(document, null);
+    Block<JsonObject> documentBlock = document -> resultHandler.handle(Future.succeededFuture(document));
     SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
       if (throwable != null) {
         resultHandler.handle(Future.failedFuture(throwable));
+      } else {
+        resultHandler.handle(Future.succeededFuture());
       }
     };
-    view.forEach(documentBlock, callbackWhenFinished);
+    vertx.runOnContext(v -> view.forEach(documentBlock, callbackWhenFinished));
     return this;
   }
 
