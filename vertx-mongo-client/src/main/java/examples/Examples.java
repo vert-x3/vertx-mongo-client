@@ -269,7 +269,7 @@ public class Examples {
 
         } else {
 
-          System.out.println("Found doc:" + res.result().encodePrettily());
+          System.out.println("Found doc: " + res.result().encodePrettily());
 
         }
 
