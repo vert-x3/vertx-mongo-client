@@ -17,17 +17,13 @@
 package examples;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.BufferFactory;
 import io.vertx.docgen.Source;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
 import org.bson.types.ObjectId;
 
-import java.io.*;
-import java.time.Instant;
 import java.util.List;
 
 /**
@@ -264,9 +260,18 @@ public class Examples {
     JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
 
     mongoClient.findBatch("book", query, res -> {
+
       if (res.succeeded()) {
 
-        System.out.println(res.result().encodePrettily());
+        if (res.result() == null) {
+
+          System.out.println("End of research");
+
+        } else {
+
+          System.out.println("Found doc:" + res.result().encodePrettily());
+
+        }
 
       } else {
 
@@ -274,6 +279,7 @@ public class Examples {
 
       }
     });
+
   }
 
 
