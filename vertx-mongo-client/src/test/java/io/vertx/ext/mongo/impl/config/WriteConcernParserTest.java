@@ -1,8 +1,11 @@
 package io.vertx.ext.mongo.impl.config;
 
+import com.mongodb.ConnectionString;
 import com.mongodb.WriteConcern;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -13,7 +16,7 @@ public class WriteConcernParserTest {
 
   @Test
   public void testNoWriteConcern() {
-    WriteConcern wc = new WriteConcernParser(new JsonObject()).writeConcern();
+    WriteConcern wc = new WriteConcernParser(null, new JsonObject()).writeConcern();
     assertNull(wc);
   }
 
@@ -22,7 +25,7 @@ public class WriteConcernParserTest {
     JsonObject config = new JsonObject();
     config.put("writeConcern", "SAFE");
 
-    WriteConcern wc = new WriteConcernParser(config).writeConcern();
+    WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
     assertNotNull(wc);
     assertEquals(WriteConcern.SAFE, wc);
   }
@@ -32,7 +35,7 @@ public class WriteConcernParserTest {
     JsonObject config = new JsonObject();
     config.put("writeConcern", "safe");
 
-    WriteConcern wc = new WriteConcernParser(config).writeConcern();
+    WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
     assertNotNull(wc);
     assertEquals(WriteConcern.SAFE, wc);
   }
@@ -42,7 +45,7 @@ public class WriteConcernParserTest {
     JsonObject config = new JsonObject();
     config.put("writeConcern", "foo");
 
-    new WriteConcernParser(config).writeConcern();
+    new WriteConcernParser(null, config).writeConcern();
   }
 
   @Test(expected = ClassCastException.class)
@@ -50,7 +53,7 @@ public class WriteConcernParserTest {
     JsonObject config = new JsonObject();
     config.put("writeConcern", 123);
 
-    new WriteConcernParser(config).writeConcern();
+    new WriteConcernParser(null, config).writeConcern();
   }
 
   @Test
@@ -62,7 +65,7 @@ public class WriteConcernParserTest {
     config.put("fsync", true);
     config.put("j", true);
 
-    WriteConcern wc = new WriteConcernParser(config).writeConcern();
+    WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
     assertNotNull(wc);
     assertEquals(expected, wc);
   }
@@ -76,7 +79,7 @@ public class WriteConcernParserTest {
     config.put("fsync", false);
     config.put("j", true);
 
-    WriteConcern wc = new WriteConcernParser(config).writeConcern();
+    WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
     assertNotNull(wc);
     assertEquals(expected, wc);
   }
@@ -87,7 +90,7 @@ public class WriteConcernParserTest {
     JsonObject config = new JsonObject();
     config.put("w", 123);
 
-    WriteConcern wc = new WriteConcernParser(config).writeConcern();
+    WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
     assertNotNull(wc);
     assertEquals(expected, wc);
   }
@@ -98,7 +101,7 @@ public class WriteConcernParserTest {
     JsonObject config = new JsonObject();
     config.put("w", "foo");
 
-    WriteConcern wc = new WriteConcernParser(config).writeConcern();
+    WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
     assertNotNull(wc);
     assertEquals(expected, wc);
   }
@@ -114,7 +117,7 @@ public class WriteConcernParserTest {
     // this overwrites the other options
     config.put("writeConcern", "journaled");
 
-    WriteConcern wc = new WriteConcernParser(config).writeConcern();
+    WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
     assertNotNull(wc);
     assertEquals(expected, wc);
   }
@@ -124,6 +127,32 @@ public class WriteConcernParserTest {
     JsonObject config = new JsonObject();
     config.put("w", true);
 
-    new WriteConcernParser(config).writeConcern();
+    new WriteConcernParser(null, config).writeConcern();
+  }
+
+  @Test
+  public void testConnStringNoWriteConcern() {
+    final ConnectionString connString = new ConnectionString("mongodb://localhost:27017/mydb?replicaSet=myapp");
+    WriteConcern rp = new WriteConcernParser(connString, new JsonObject()).writeConcern();
+    assertNull(rp);
+  }
+
+  @Test
+  public void testConnStringWriteConcern() {
+    final ConnectionString connString = new ConnectionString("mongodb://localhost:27017/mydb?replicaSet=myapp&safe=true");
+    WriteConcern wc = new WriteConcernParser(connString, new JsonObject()).writeConcern();
+
+    assertNotNull(wc);
+    assertEquals(WriteConcern.ACKNOWLEDGED, wc);
+  }
+
+  @Test
+  public void testConnStringSimpleAndAdvancedWriteConcern() {
+    final ConnectionString connString = new ConnectionString("mongodb://localhost:27017/mydb?replicaSet=myapp" +
+        "&w=majority&wtimeoutms=20&journal=false");
+    WriteConcern expected = new WriteConcern("majority").withWTimeout(20, TimeUnit.MILLISECONDS).withJournal(false);
+    WriteConcern wc = new WriteConcernParser(connString, new JsonObject()).writeConcern();
+    assertNotNull(wc);
+    assertEquals(expected, wc);
   }
 }

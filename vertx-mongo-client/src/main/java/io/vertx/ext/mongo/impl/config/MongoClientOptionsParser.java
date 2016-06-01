@@ -11,6 +11,7 @@ import com.mongodb.connection.ServerSettings;
 import com.mongodb.connection.SocketSettings;
 import com.mongodb.connection.SslSettings;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import org.bson.codecs.BooleanCodec;
 import org.bson.codecs.DoubleCodec;
@@ -29,6 +30,7 @@ import java.util.Objects;
 public class MongoClientOptionsParser {
 
   private final MongoClientSettings settings;
+  private final String database;
   private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
           new BooleanCodec(), new DoubleCodec(), new LongCodec());
 
@@ -41,6 +43,8 @@ public class MongoClientOptionsParser {
     // All parsers should support connection_string first
     String cs = config.getString("connection_string");
     ConnectionString connectionString = (cs == null) ? null : new ConnectionString(cs);
+    String csDatabase = (connectionString != null) ? connectionString.getDatabase() : null;
+    this.database = csDatabase != null ? csDatabase : config.getString("db_name", MongoClient.DEFAULT_DB_NAME);
 
     // ClusterSettings
     ClusterSettings clusterSettings = new ClusterSettingsParser(connectionString, config).settings();
@@ -58,6 +62,22 @@ public class MongoClientOptionsParser {
     SocketSettings socketSettings = new SocketSettingsParser(connectionString, config).settings();
     options.socketSettings(socketSettings);
 
+    // SSLSettings
+    SslSettings sslSettings = new SSLSettingsParser(connectionString, config).settings();
+    options.sslSettings(sslSettings);
+
+    // WriteConcern
+    WriteConcern writeConcern = new WriteConcernParser(connectionString, config).writeConcern();
+    if (writeConcern != null) {
+      options.writeConcern(writeConcern);
+    }
+
+    // ReadPreference
+    ReadPreference readPreference = new ReadPreferenceParser(connectionString, config).readPreference();
+    if (readPreference != null) {
+      options.readPreference(readPreference);
+    }
+
     // Heartbeat SocketSettings
     JsonObject hbConfig = config.getJsonObject("heartbeat.socket");
     if (hbConfig != null) {
@@ -69,26 +89,14 @@ public class MongoClientOptionsParser {
     ServerSettings serverSettings = new ServerSettingsParser(config).settings();
     options.serverSettings(serverSettings);
 
-    // SSLSettings
-    SslSettings sslSettings = new SSLSettingsParser(connectionString, config).settings();
-    options.sslSettings(sslSettings);
-
-    // WriteConcern
-    WriteConcern writeConcern = new WriteConcernParser(config).writeConcern();
-    if (writeConcern != null) {
-      options.writeConcern(writeConcern);
-    }
-
-    // ReadPreference
-    ReadPreference readPreference = new ReadPreferenceParser(config).readPreference();
-    if (readPreference != null) {
-      options.readPreference(readPreference);
-    }
-
     this.settings = options.build();
   }
 
   public MongoClientSettings settings() {
     return settings;
+  }
+
+  public String database() {
+    return database;
   }
 }

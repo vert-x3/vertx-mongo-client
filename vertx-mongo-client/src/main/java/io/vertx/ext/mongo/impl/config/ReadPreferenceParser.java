@@ -1,5 +1,6 @@
 package io.vertx.ext.mongo.impl.config;
 
+import com.mongodb.ConnectionString;
 import com.mongodb.ReadPreference;
 import com.mongodb.Tag;
 import com.mongodb.TagSet;
@@ -17,40 +18,46 @@ import java.util.stream.Stream;
 class ReadPreferenceParser {
   private final ReadPreference readPreference;
 
-  public ReadPreferenceParser(JsonObject config) {
-    ReadPreference rp;
-    String rps = config.getString("readPreference");
-    if (rps != null) {
-      JsonArray readPreferenceTags = config.getJsonArray("readPreferenceTags");
-      if (readPreferenceTags == null) {
-        rp = ReadPreference.valueOf(rps);
-        if (rp == null) throw new IllegalArgumentException("Invalid ReadPreference " + rps);
-      } else {
-        // Support advanced ReadPreference Tags
-        List<TagSet> tagSet = new ArrayList<>();
-        readPreferenceTags.forEach(o -> {
-          String tagString = (String) o;
-          List<Tag> tags = Stream.of(tagString.trim().split(","))
-            .map(s -> s.split(":"))
-            .filter(array -> {
-              if (array.length != 2) {
-                throw new IllegalArgumentException("Invalid readPreferenceTags value '" + tagString + "'");
-              }
-              return true;
-            }).map(array -> new Tag(array[0], array[1])).collect(Collectors.toList());
-
-          tagSet.add(new TagSet(tags));
-        });
-        rp = ReadPreference.valueOf(rps, tagSet);
-      }
+  ReadPreferenceParser(ConnectionString connectionString, JsonObject config) {
+    ReadPreference connStringReadPreference = connectionString != null ? connectionString.getReadPreference() : null;
+    if (connStringReadPreference != null) {
+      // Prefer connection string's read preference
+      readPreference = connStringReadPreference;
     } else {
-      rp = null;
-    }
+      ReadPreference rp;
+      String rps = config.getString("readPreference");
+      if (rps != null) {
+        JsonArray readPreferenceTags = config.getJsonArray("readPreferenceTags");
+        if (readPreferenceTags == null) {
+          rp = ReadPreference.valueOf(rps);
+          if (rp == null) throw new IllegalArgumentException("Invalid ReadPreference " + rps);
+        } else {
+          // Support advanced ReadPreference Tags
+          List<TagSet> tagSet = new ArrayList<>();
+          readPreferenceTags.forEach(o -> {
+            String tagString = (String) o;
+            List<Tag> tags = Stream.of(tagString.trim().split(","))
+                .map(s -> s.split(":"))
+                .filter(array -> {
+                  if (array.length != 2) {
+                    throw new IllegalArgumentException("Invalid readPreferenceTags value '" + tagString + "'");
+                  }
+                  return true;
+                }).map(array -> new Tag(array[0], array[1])).collect(Collectors.toList());
 
-    this.readPreference = rp;
+            tagSet.add(new TagSet(tags));
+          });
+          rp = ReadPreference.valueOf(rps, tagSet);
+        }
+      } else {
+        rp = null;
+      }
+
+      readPreference = rp;
+    }
   }
 
-  public ReadPreference readPreference() {
+  ReadPreference readPreference() {
     return readPreference;
   }
 }

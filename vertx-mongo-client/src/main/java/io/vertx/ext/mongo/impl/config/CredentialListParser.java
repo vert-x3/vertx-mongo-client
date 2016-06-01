@@ -20,8 +20,12 @@ class CredentialListParser {
   private final List<MongoCredential> credentials;
 
   public CredentialListParser(ConnectionString connectionString, JsonObject config) {
+    List<MongoCredential> connStringCredentials = null;
     if (connectionString != null) {
-      credentials = connectionString.getCredentialList();
+      connStringCredentials = connectionString.getCredentialList();
+    }
+    if (connStringCredentials != null && !connStringCredentials.isEmpty()) {
+      credentials = connStringCredentials;
     } else {
       String username = config.getString("username");
       if (username == null) {
