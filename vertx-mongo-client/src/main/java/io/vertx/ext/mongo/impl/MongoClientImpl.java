@@ -352,15 +352,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(resultHandler, "resultHandler cannot be null");
     List<String> names = new ArrayList<>();
     Context context = vertx.getOrCreateContext();
-    holder.db.listCollectionNames().into(names, (res, error) -> {
+    holder.db.listCollectionNames().into(names, (res, error) ->
       context.runOnContext(v -> {
         if (error != null) {
           resultHandler.handle(Future.failedFuture(error));
         } else {
           resultHandler.handle(Future.succeededFuture(names));
         }
-      });
-    });
+      })
+    );
     return this;
   }
 
@@ -405,15 +405,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       List results = new ArrayList();
       try {
         Context context = vertx.getOrCreateContext();
-        distinctValues.into(results, (result, throwable) -> {
+        distinctValues.into(results, (result, throwable) ->
           context.runOnContext(v -> {
             if (throwable != null) {
               resultHandler.handle(Future.failedFuture(throwable));
             } else {
               resultHandler.handle(Future.succeededFuture(new JsonArray((List) result)));
             }
-          });
-        });
+          })
+        );
       } catch (Exception unhandledEx) {
         resultHandler.handle(Future.failedFuture(unhandledEx));
       }
@@ -427,13 +427,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     if (distinctValues != null) {
       Context context = vertx.getOrCreateContext();
-      Block valueBlock = value -> {
+      Block valueBlock = value ->
         context.runOnContext(v -> {
           Map mapValue = new HashMap();
           mapValue.put(fieldName, value);
           resultHandler.handle(Future.succeededFuture(new JsonObject(mapValue)));
         });
-      };
       SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
         if (throwable != null) {
           resultHandler.handle(Future.failedFuture(throwable));
@@ -530,7 +529,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
     Context context = vertx.getOrCreateContext();
-    return (result, error) -> {
+    return (result, error) ->
       context.runOnContext(v -> {
         if (error != null) {
           resultHandler.handle(Future.failedFuture(error));
@@ -538,7 +537,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
           resultHandler.handle(Future.succeededFuture(result));
         }
       });
-    };
   }
 
   private FindIterable<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {
