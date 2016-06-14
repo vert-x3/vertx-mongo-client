@@ -31,6 +31,8 @@ import io.vertx.ext.mongo.MongoClientUpdateResult
 import io.vertx.ext.mongo.UpdateOptions
 /**
  * A Vert.x service used to interact with MongoDB server instances.
+ * <p>
+ * Some of the operations might change <i>_id</i> field of passed  document.
 */
 @CompileStatic
 public class MongoClient {
@@ -75,6 +77,8 @@ public class MongoClient {
   }
   /**
    * Save a document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param resultHandler result handler will be provided with the id if document didn't already have one
@@ -86,6 +90,8 @@ public class MongoClient {
   }
   /**
    * Save a document in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param writeOption the write option to use
@@ -98,6 +104,8 @@ public class MongoClient {
   }
   /**
    * Insert a document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param resultHandler result handler will be provided with the id if document didn't already have one
@@ -109,6 +117,8 @@ public class MongoClient {
   }
   /**
    * Insert a document in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param writeOption the write option to use
@@ -161,7 +171,7 @@ public class MongoClient {
    * @return 
    */
   public MongoClient updateWithOptions(String collection, Map<String, Object> query, Map<String, Object> update, Map<String, Object> options, Handler<AsyncResult<Void>> resultHandler) {
-    delegate.updateWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler);
+    delegate.updateWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(options)) : null, resultHandler);
     return this;
   }
   /**
@@ -174,7 +184,7 @@ public class MongoClient {
    * @return 
    */
   public MongoClient updateCollectionWithOptions(String collection, Map<String, Object> query, Map<String, Object> update, Map<String, Object> options, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.updateCollectionWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+    delegate.updateCollectionWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
@@ -187,6 +197,8 @@ public class MongoClient {
   }
   /**
    * Replace matching documents in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>replace</i> parameter
    * @param collection the collection
    * @param query query used to match the documents
    * @param replace all matching documents will be replaced with this
@@ -219,6 +231,8 @@ public class MongoClient {
   }
   /**
    * Replace matching documents in the specified collection, specifying options
+   * <p>
+   * This operation might change <i>_id</i> field of <i>replace</i> parameter
    * @param collection the collection
    * @param query query used to match the documents
    * @param replace all matching documents will be replaced with this
@@ -227,7 +241,7 @@ public class MongoClient {
    * @return 
    */
   public MongoClient replaceWithOptions(String collection, Map<String, Object> query, Map<String, Object> replace, Map<String, Object> options, Handler<AsyncResult<Void>> resultHandler) {
-    delegate.replaceWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler);
+    delegate.replaceWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(options)) : null, resultHandler);
     return this;
   }
   /**
@@ -240,7 +254,7 @@ public class MongoClient {
    * @return 
    */
   public MongoClient replaceDocumentsWithOptions(String collection, Map<String, Object> query, Map<String, Object> replace, Map<String, Object> options, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.replaceDocumentsWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
+    delegate.replaceDocumentsWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, options != null ? new io.vertx.ext.mongo.UpdateOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mongo.MongoClientUpdateResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
@@ -299,7 +313,7 @@ public class MongoClient {
    * @return 
    */
   public MongoClient findWithOptions(String collection, Map<String, Object> query, Map<String, Object> options, Handler<AsyncResult<List<Map<String, Object>>>> resultHandler) {
-    delegate.findWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, options != null ? new io.vertx.ext.mongo.FindOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<java.util.List<io.vertx.core.json.JsonObject>>>() {
+    delegate.findWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, options != null ? new io.vertx.ext.mongo.FindOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<java.util.List<io.vertx.core.json.JsonObject>>>() {
       public void handle(AsyncResult<java.util.List<io.vertx.core.json.JsonObject>> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((List)ar.result()?.collect({(Map<String, Object>)InternalHelper.wrapObject(it)})));
@@ -320,7 +334,7 @@ public class MongoClient {
    * @return 
    */
   public MongoClient findBatchWithOptions(String collection, Map<String, Object> query, Map<String, Object> options, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    delegate.findBatchWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, options != null ? new io.vertx.ext.mongo.FindOptions(new io.vertx.core.json.JsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+    delegate.findBatchWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, options != null ? new io.vertx.ext.mongo.FindOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(options)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
       public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
@@ -333,6 +347,8 @@ public class MongoClient {
   }
   /**
    * Find a single matching document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
    * @param collection the collection
    * @param query the query used to match the document
    * @param fields the fields

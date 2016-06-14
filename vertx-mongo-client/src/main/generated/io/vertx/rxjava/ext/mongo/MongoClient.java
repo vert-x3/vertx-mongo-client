@@ -32,6 +32,8 @@ import io.vertx.ext.mongo.UpdateOptions;
 
 /**
  * A Vert.x service used to interact with MongoDB server instances.
+ * <p>
+ * Some of the operations might change <i>_id</i> field of passed  document.
  *
  * <p/>
  * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.MongoClient original} non RX-ified interface using Vert.x codegen.
@@ -86,6 +88,8 @@ public class MongoClient {
 
   /**
    * Save a document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param resultHandler result handler will be provided with the id if document didn't already have one
@@ -98,6 +102,8 @@ public class MongoClient {
 
   /**
    * Save a document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @return 
@@ -110,6 +116,8 @@ public class MongoClient {
 
   /**
    * Save a document in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param writeOption the write option to use
@@ -123,6 +131,8 @@ public class MongoClient {
 
   /**
    * Save a document in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param writeOption the write option to use
@@ -136,6 +146,8 @@ public class MongoClient {
 
   /**
    * Insert a document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param resultHandler result handler will be provided with the id if document didn't already have one
@@ -148,6 +160,8 @@ public class MongoClient {
 
   /**
    * Insert a document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @return 
@@ -160,6 +174,8 @@ public class MongoClient {
 
   /**
    * Insert a document in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param writeOption the write option to use
@@ -173,6 +189,8 @@ public class MongoClient {
 
   /**
    * Insert a document in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
    * @param collection the collection
    * @param document the document
    * @param writeOption the write option to use
@@ -310,6 +328,8 @@ public class MongoClient {
 
   /**
    * Replace matching documents in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>replace</i> parameter
    * @param collection the collection
    * @param query query used to match the documents
    * @param replace all matching documents will be replaced with this
@@ -331,6 +351,8 @@ public class MongoClient {
 
   /**
    * Replace matching documents in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>replace</i> parameter
    * @param collection the collection
    * @param query query used to match the documents
    * @param replace all matching documents will be replaced with this
@@ -370,6 +392,8 @@ public class MongoClient {
 
   /**
    * Replace matching documents in the specified collection, specifying options
+   * <p>
+   * This operation might change <i>_id</i> field of <i>replace</i> parameter
    * @param collection the collection
    * @param query query used to match the documents
    * @param replace all matching documents will be replaced with this
@@ -392,6 +416,8 @@ public class MongoClient {
 
   /**
    * Replace matching documents in the specified collection, specifying options
+   * <p>
+   * This operation might change <i>_id</i> field of <i>replace</i> parameter
    * @param collection the collection
    * @param query query used to match the documents
    * @param replace all matching documents will be replaced with this
@@ -538,6 +564,8 @@ public class MongoClient {
 
   /**
    * Find a single matching document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
    * @param collection the collection
    * @param query the query used to match the document
    * @param fields the fields
@@ -551,6 +579,8 @@ public class MongoClient {
 
   /**
    * Find a single matching document in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
    * @param collection the collection
    * @param query the query used to match the document
    * @param fields the fields

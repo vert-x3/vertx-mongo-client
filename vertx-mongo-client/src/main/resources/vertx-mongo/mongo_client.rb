@@ -3,6 +3,8 @@ require 'vertx/util/utils.rb'
 # Generated from io.vertx.ext.mongo.MongoClient
 module VertxMongo
   #  A Vert.x service used to interact with MongoDB server instances.
+  #  <p>
+  #  Some of the operations might change <i>_id</i> field of passed  document.
   class MongoClient
     # @private
     # @param j_del [::VertxMongo::MongoClient] the java delegate
@@ -39,6 +41,8 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling create_shared(vertx,config,dataSourceName)"
     end
     #  Save a document in the specified collection
+    #  <p>
+    #  This operation might change <i>_id</i> field of <i>document</i> parameter
     # @param [String] collection the collection
     # @param [Hash{String => Object}] document the document
     # @yield result handler will be provided with the id if document didn't already have one
@@ -51,6 +55,8 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling save(collection,document)"
     end
     #  Save a document in the specified collection with the specified write option
+    #  <p>
+    #  This operation might change <i>_id</i> field of <i>document</i> parameter
     # @param [String] collection the collection
     # @param [Hash{String => Object}] document the document
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption the write option to use
@@ -64,6 +70,8 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling save_with_options(collection,document,writeOption)"
     end
     #  Insert a document in the specified collection
+    #  <p>
+    #  This operation might change <i>_id</i> field of <i>document</i> parameter
     # @param [String] collection the collection
     # @param [Hash{String => Object}] document the document
     # @yield result handler will be provided with the id if document didn't already have one
@@ -76,6 +84,8 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling insert(collection,document)"
     end
     #  Insert a document in the specified collection with the specified write option
+    #  <p>
+    #  This operation might change <i>_id</i> field of <i>document</i> parameter
     # @param [String] collection the collection
     # @param [Hash{String => Object}] document the document
     # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption the write option to use
@@ -143,6 +153,8 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling update_collection_with_options(collection,query,update,options)"
     end
     #  Replace matching documents in the specified collection
+    #  <p>
+    #  This operation might change <i>_id</i> field of <i>replace</i> parameter
     # @param [String] collection the collection
     # @param [Hash{String => Object}] query query used to match the documents
     # @param [Hash{String => Object}] replace all matching documents will be replaced with this
@@ -169,6 +181,8 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling replace_documents(collection,query,replace)"
     end
     #  Replace matching documents in the specified collection, specifying options
+    #  <p>
+    #  This operation might change <i>_id</i> field of <i>replace</i> parameter
     # @param [String] collection the collection
     # @param [Hash{String => Object}] query query used to match the documents
     # @param [Hash{String => Object}] replace all matching documents will be replaced with this
@@ -249,6 +263,8 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling find_batch_with_options(collection,query,options)"
     end
     #  Find a single matching document in the specified collection
+    #  <p>
+    #  This operation might change <i>_id</i> field of <i>query</i> parameter
     # @param [String] collection the collection
     # @param [Hash{String => Object}] query the query used to match the document
     # @param [Hash{String => Object}] fields the fields
