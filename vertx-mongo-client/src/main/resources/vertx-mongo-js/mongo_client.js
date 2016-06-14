@@ -28,7 +28,7 @@ var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
 
 /**
  A Vert.x service used to interact with MongoDB server instances.
-
+ <p>
  @class
 */
 var MongoClient = function(j_val) {
@@ -38,6 +38,8 @@ var MongoClient = function(j_val) {
 
   /**
    Save a document in the specified collection
+   <p>
+   This operation might change <i>_id</i> field of <i>document</i> parameter
 
    @public
    @param collection {string} the collection 
@@ -61,6 +63,8 @@ var MongoClient = function(j_val) {
 
   /**
    Save a document in the specified collection with the specified write option
+   <p>
+   This operation might change <i>_id</i> field of <i>document</i> parameter
 
    @public
    @param collection {string} the collection 
@@ -85,6 +89,8 @@ var MongoClient = function(j_val) {
 
   /**
    Insert a document in the specified collection
+   <p>
+   This operation might change <i>_id</i> field of <i>document</i> parameter
 
    @public
    @param collection {string} the collection 
@@ -108,6 +114,8 @@ var MongoClient = function(j_val) {
 
   /**
    Insert a document in the specified collection with the specified write option
+   <p>
+   This operation might change <i>_id</i> field of <i>document</i> parameter
 
    @public
    @param collection {string} the collection 
@@ -230,6 +238,8 @@ var MongoClient = function(j_val) {
 
   /**
    Replace matching documents in the specified collection
+   <p>
+   This operation might change <i>_id</i> field of <i>replace</i> parameter
 
    @public
    @param collection {string} the collection 
@@ -278,6 +288,8 @@ var MongoClient = function(j_val) {
 
   /**
    Replace matching documents in the specified collection, specifying options
+   <p>
+   This operation might change <i>_id</i> field of <i>replace</i> parameter
 
    @public
    @param collection {string} the collection 
@@ -424,6 +436,8 @@ var MongoClient = function(j_val) {
 
   /**
    Find a single matching document in the specified collection
+   <p>
+   This operation might change <i>_id</i> field of <i>query</i> parameter
 
    @public
    @param collection {string} the collection 
