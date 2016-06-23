@@ -474,7 +474,7 @@ var MongoClient = function(j_val) {
     if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
       j_mongoClient["count(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
       if (ar.succeeded()) {
-        resultHandler(ar.result(), null);
+        resultHandler(utils.convReturnLong(ar.result()), null);
       } else {
         resultHandler(null, ar.cause());
       }
