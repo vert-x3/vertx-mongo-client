@@ -23,6 +23,7 @@ import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
 import io.vertx.core.json.JsonArray
 import java.util.List
+import io.vertx.ext.mongo.IndexOptions
 import io.vertx.ext.mongo.FindOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
@@ -537,6 +538,58 @@ public class MongoClient {
    */
   public MongoClient dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
     delegate.dropCollection(collection, resultHandler);
+    return this;
+  }
+  /**
+   * Creates an index.
+   * @param collection the collection
+   * @param key A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient createIndex(String collection, Map<String, Object> key, Handler<AsyncResult<Void>> resultHandler) {
+    delegate.createIndex(collection, key != null ? new io.vertx.core.json.JsonObject(key) : null, resultHandler);
+    return this;
+  }
+  /**
+   * Creates an index.
+   * @param collection the collection
+   * @param key A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+   * @param options the options for the index (see <a href="../../../../../../../cheatsheet/IndexOptions.html">IndexOptions</a>)
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient createIndexWithOptions(String collection, Map<String, Object> key, Map<String, Object> options, Handler<AsyncResult<Void>> resultHandler) {
+    delegate.createIndexWithOptions(collection, key != null ? new io.vertx.core.json.JsonObject(key) : null, options != null ? new io.vertx.ext.mongo.IndexOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(options)) : null, resultHandler);
+    return this;
+  }
+  /**
+   * Get all the indexes in this collection.
+   * @param collection the collection
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient listIndexes(String collection, Handler<AsyncResult<List<Object>>> resultHandler) {
+    delegate.listIndexes(collection, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonArray>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonArray> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((List<Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  /**
+   * Drops the index given its name.
+   * @param collection the collection
+   * @param indexName the name of the index to remove
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler) {
+    delegate.dropIndex(collection, indexName, resultHandler);
     return this;
   }
   /**

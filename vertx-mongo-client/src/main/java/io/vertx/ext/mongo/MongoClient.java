@@ -393,6 +393,50 @@ public interface MongoClient {
   MongoClient dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
 
   /**
+   * Creates an index.
+   *
+   * @param collection  the collection
+   * @param key  A document that contains the field and value pairs where the field is the index key and the value
+   *             describes the type of index for that field. For an ascending index on a field,
+   *             specify a value of 1; for descending index, specify a value of -1.
+   * @param resultHandler will be called when complete
+   */
+  @Fluent
+  MongoClient createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Creates an index.
+   *
+   * @param collection  the collection
+   * @param key  A document that contains the field and value pairs where the field is the index key and the value
+   *             describes the type of index for that field. For an ascending index on a field,
+   *             specify a value of 1; for descending index, specify a value of -1.
+   * @param options  the options for the index
+   * @param resultHandler will be called when complete
+   */
+  @Fluent
+  MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Get all the indexes in this collection.
+   *
+   * @param collection  the collection
+   * @param resultHandler will be called when complete
+   */
+  @Fluent
+  MongoClient listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  /**
+   * Drops the index given its name.
+   *
+   * @param collection  the collection
+   * @param indexName the name of the index to remove
+   * @param resultHandler will be called when complete
+   */
+  @Fluent
+  MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
    * Run an arbitrary MongoDB command.
    *
    * @param commandName  the name of the command
