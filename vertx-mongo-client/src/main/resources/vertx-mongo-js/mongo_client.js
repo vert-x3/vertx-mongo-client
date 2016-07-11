@@ -22,6 +22,7 @@ var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoClient = io.vertx.ext.mongo.MongoClient;
 var MongoClientDeleteResult = io.vertx.ext.mongo.MongoClientDeleteResult;
+var IndexOptions = io.vertx.ext.mongo.IndexOptions;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
 var MongoClientUpdateResult = io.vertx.ext.mongo.MongoClientUpdateResult;
 var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
@@ -726,6 +727,98 @@ var MongoClient = function(j_val) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
       j_mongoClient["dropCollection(java.lang.String,io.vertx.core.Handler)"](collection, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Creates an index.
+
+   @public
+   @param collection {string} the collection 
+   @param key {Object} A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1. 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.createIndex = function(collection, key, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
+      j_mongoClient["createIndex(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(key), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Creates an index.
+
+   @public
+   @param collection {string} the collection 
+   @param key {Object} A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1. 
+   @param options {Object} the options for the index 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.createIndexWithOptions = function(collection, key, options, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
+      j_mongoClient["createIndexWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.IndexOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(key), options != null ? new IndexOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Get all the indexes in this collection.
+
+   @public
+   @param collection {string} the collection 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.listIndexes = function(collection, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
+      j_mongoClient["listIndexes(java.lang.String,io.vertx.core.Handler)"](collection, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Drops the index given its name.
+
+   @public
+   @param collection {string} the collection 
+   @param indexName {string} the name of the index to remove 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.dropIndex = function(collection, indexName, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'string' && typeof __args[2] === 'function') {
+      j_mongoClient["dropIndex(java.lang.String,java.lang.String,io.vertx.core.Handler)"](collection, indexName, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
