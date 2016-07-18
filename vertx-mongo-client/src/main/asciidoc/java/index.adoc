@@ -382,7 +382,7 @@ This works just like `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#fin
 
 === Removing documents
 
-To remove documents use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#remove-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[remove]`.
+To remove documents use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#remove-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[removeDocuments]`.
 
 The `query` parameter is used to match the documents in the collection to determine which ones to remove.
 
@@ -392,7 +392,7 @@ Here's an example of removing all Tolkien books:
 ----
 JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
 
-mongoClient.remove("books", query, res -> {
+mongoClient.removeDocuments("books", query, res -> {
 
   if (res.succeeded()) {
 
@@ -408,9 +408,9 @@ mongoClient.remove("books", query, res -> {
 
 === Removing a single document
 
-To remove a single document you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#removeOne-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[removeOne]`.
+To remove a single document you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#removeOne-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[removeDocument]`.
 
-This works just like `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#remove-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[remove]` but it removes just the first matching document.
+This works just like `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#remove-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[removeDocuments]` but it removes just the first matching document.
 
 === Counting documents
 
