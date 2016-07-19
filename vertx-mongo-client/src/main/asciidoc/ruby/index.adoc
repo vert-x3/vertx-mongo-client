@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.3.2</version>
+  <version>3.4.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -34,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mongo-client:3.3.2'
+compile 'io.vertx:vertx-mongo-client:3.4.0-SNAPSHOT'
 ----
 
 
@@ -473,7 +473,7 @@ This works just like `link:../../yardoc/VertxMongo/MongoClient.html#find-instanc
 
 === Removing documents
 
-To remove documents use `link:../../yardoc/VertxMongo/MongoClient.html#remove-instance_method[remove]`.
+To remove documents use `link:../../yardoc/VertxMongo/MongoClient.html#remove_documents-instance_method[removeDocuments]`.
 
 The `query` parameter is used to match the documents in the collection to determine which ones to remove.
 
@@ -504,9 +504,9 @@ mongoClient.remove("books", query) { |res_err,res|
 
 === Removing a single document
 
-To remove a single document you use `link:../../yardoc/VertxMongo/MongoClient.html#remove_one-instance_method[removeOne]`.
+To remove a single document you use `link:../../yardoc/VertxMongo/MongoClient.html#remove_document-instance_method[removeDocument]`.
 
-This works just like `link:../../yardoc/VertxMongo/MongoClient.html#remove-instance_method[remove]` but it removes just the first matching document.
+This works just like `link:../../yardoc/VertxMongo/MongoClient.html#remove_documents-instance_method[removeDocuments]` but it removes just the first matching document.
 
 === Counting documents
 
