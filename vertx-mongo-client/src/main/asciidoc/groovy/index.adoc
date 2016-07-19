@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.3.2</version>
+  <version>3.4.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -34,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mongo-client:3.3.2'
+compile 'io.vertx:vertx-mongo-client:3.4.0-SNAPSHOT'
 ----
 
 
@@ -469,7 +469,7 @@ This works just like `link:../../groovydoc/io/vertx/groovy/ext/mongo/MongoClient
 
 === Removing documents
 
-To remove documents use `link:../../groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#remove(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[remove]`.
+To remove documents use `link:../../groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#removeDocuments(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[removeDocuments]`.
 
 The `query` parameter is used to match the documents in the collection to determine which ones to remove.
 
@@ -500,9 +500,9 @@ mongoClient.remove("books", query, { res ->
 
 === Removing a single document
 
-To remove a single document you use `link:../../groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#removeOne(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[removeOne]`.
+To remove a single document you use `link:../../groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#removeDocument(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[removeDocument]`.
 
-This works just like `link:../../groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#remove(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[remove]` but it removes just the first matching document.
+This works just like `link:../../groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#removeDocuments(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.Handler)[removeDocuments]` but it removes just the first matching document.
 
 === Counting documents
 
