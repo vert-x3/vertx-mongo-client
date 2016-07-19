@@ -248,7 +248,7 @@
  *
  * === Removing documents
  *
- * To remove documents use {@link io.vertx.ext.mongo.MongoClient#remove}.
+ * To remove documents use {@link io.vertx.ext.mongo.MongoClient#removeDocuments}.
  *
  * The `query` parameter is used to match the documents in the collection to determine which ones to remove.
  *
@@ -261,9 +261,9 @@
  *
  * === Removing a single document
  *
- * To remove a single document you use {@link io.vertx.ext.mongo.MongoClient#removeOne}.
+ * To remove a single document you use {@link io.vertx.ext.mongo.MongoClient#removeDocument}.
  *
- * This works just like {@link io.vertx.ext.mongo.MongoClient#remove} but it removes just the first matching document.
+ * This works just like {@link io.vertx.ext.mongo.MongoClient#removeDocuments} but it removes just the first matching document.
  *
  * === Counting documents
  *
