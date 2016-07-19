@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.3.2</version>
+  <version>3.4.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -34,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mongo-client:3.3.2'
+compile 'io.vertx:vertx-mongo-client:3.4.0-SNAPSHOT'
 ----
 
 
@@ -470,7 +470,7 @@ This works just like `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoC
 
 === Removing documents
 
-To remove documents use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#remove[remove]`.
+To remove documents use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#removeDocuments[removeDocuments]`.
 
 The `query` parameter is used to match the documents in the collection to determine which ones to remove.
 
@@ -501,9 +501,9 @@ mongoClient.remove("books", query, function (res, res_err) {
 
 === Removing a single document
 
-To remove a single document you use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#removeOne[removeOne]`.
+To remove a single document you use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#removeDocument[removeDocument]`.
 
-This works just like `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#remove[remove]` but it removes just the first matching document.
+This works just like `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#removeDocuments[removeDocuments]` but it removes just the first matching document.
 
 === Counting documents
 
