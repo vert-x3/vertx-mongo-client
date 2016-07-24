@@ -46,6 +46,7 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.core.json.JsonArray;
 import java.util.List;
+import io.vertx.ext.mongo.IndexOptions;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
@@ -324,6 +325,22 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         }
         case "dropCollection": {
           service.dropCollection((java.lang.String)json.getValue("collection"), createHandler(msg));
+          break;
+        }
+        case "createIndex": {
+          service.createIndex((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("key"), createHandler(msg));
+          break;
+        }
+        case "createIndexWithOptions": {
+          service.createIndexWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("key"), json.getJsonObject("options") == null ? null : new io.vertx.ext.mongo.IndexOptions(json.getJsonObject("options")), createHandler(msg));
+          break;
+        }
+        case "listIndexes": {
+          service.listIndexes((java.lang.String)json.getValue("collection"), createHandler(msg));
+          break;
+        }
+        case "dropIndex": {
+          service.dropIndex((java.lang.String)json.getValue("collection"), (java.lang.String)json.getValue("indexName"), createHandler(msg));
           break;
         }
         case "runCommand": {

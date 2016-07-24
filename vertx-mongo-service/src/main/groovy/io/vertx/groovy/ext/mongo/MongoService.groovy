@@ -23,6 +23,7 @@ import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
 import io.vertx.core.json.JsonArray
 import java.util.List
+import io.vertx.ext.mongo.IndexOptions
 import io.vertx.ext.mongo.FindOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
@@ -278,6 +279,30 @@ public class MongoService extends MongoClient {
   }
   public MongoService dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
     ((io.vertx.ext.mongo.MongoClient) delegate).dropCollection(collection, resultHandler);
+    return this;
+  }
+  public MongoService createIndex(String collection, Map<String, Object> key, Handler<AsyncResult<Void>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).createIndex(collection, key != null ? new io.vertx.core.json.JsonObject(key) : null, resultHandler);
+    return this;
+  }
+  public MongoService createIndexWithOptions(String collection, Map<String, Object> key, Map<String, Object> options, Handler<AsyncResult<Void>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).createIndexWithOptions(collection, key != null ? new io.vertx.core.json.JsonObject(key) : null, options != null ? new io.vertx.ext.mongo.IndexOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(options)) : null, resultHandler);
+    return this;
+  }
+  public MongoService listIndexes(String collection, Handler<AsyncResult<List<Object>>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).listIndexes(collection, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonArray>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonArray> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((List<Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  public MongoService dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).dropIndex(collection, indexName, resultHandler);
     return this;
   }
   public MongoService runCommand(String commandName, Map<String, Object> command, Handler<AsyncResult<Map<String, Object>>> resultHandler) {

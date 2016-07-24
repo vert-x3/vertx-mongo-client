@@ -421,6 +421,54 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling drop_collection(collection)"
     end
+    #  Creates an index.
+    # @param [String] collection the collection
+    # @param [Hash{String => Object}] key A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+    # @yield will be called when complete
+    # @return [self]
+    def create_index(collection=nil,key=nil)
+      if collection.class == String && key.class == Hash && block_given?
+        @j_del.java_method(:createIndex, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(key),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling create_index(collection,key)"
+    end
+    #  Creates an index.
+    # @param [String] collection the collection
+    # @param [Hash{String => Object}] key A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+    # @param [Hash] options the options for the index
+    # @yield will be called when complete
+    # @return [self]
+    def create_index_with_options(collection=nil,key=nil,options=nil)
+      if collection.class == String && key.class == Hash && options.class == Hash && block_given?
+        @j_del.java_method(:createIndexWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::IndexOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(key),Java::IoVertxExtMongo::IndexOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling create_index_with_options(collection,key,options)"
+    end
+    #  Get all the indexes in this collection.
+    # @param [String] collection the collection
+    # @yield will be called when complete
+    # @return [self]
+    def list_indexes(collection=nil)
+      if collection.class == String && block_given?
+        @j_del.java_method(:listIndexes, [Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling list_indexes(collection)"
+    end
+    #  Drops the index given its name.
+    # @param [String] collection the collection
+    # @param [String] indexName the name of the index to remove
+    # @yield will be called when complete
+    # @return [self]
+    def drop_index(collection=nil,indexName=nil)
+      if collection.class == String && indexName.class == String && block_given?
+        @j_del.java_method(:dropIndex, [Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,indexName,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling drop_index(collection,indexName)"
+    end
     #  Run an arbitrary MongoDB command.
     # @param [String] commandName the name of the command
     # @param [Hash{String => Object}] command the command

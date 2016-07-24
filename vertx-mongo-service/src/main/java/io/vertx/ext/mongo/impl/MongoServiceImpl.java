@@ -230,6 +230,32 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
+  public MongoService createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler) {
+    client.createIndex(collection, key, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler) {
+    client.createIndexWithOptions(collection, key, options, resultHandler);
+    return this;
+  }
+
+  @Override
+  public MongoService listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler) {
+    client.listIndexes(collection, resultHandler);
+    return this;
+  }
+
+  @Override
+  public MongoService dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler) {
+    client.dropIndex(collection, indexName, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
   public MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     client.runCommand(commandName, command, resultHandler);
     return this;

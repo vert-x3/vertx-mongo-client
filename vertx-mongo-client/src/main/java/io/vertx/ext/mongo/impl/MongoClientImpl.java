@@ -42,6 +42,7 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
@@ -377,6 +378,65 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
+  public io.vertx.ext.mongo.MongoClient createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler) {
+    return createIndexWithOptions(collection, key, new IndexOptions(), resultHandler);
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(key, "fieldName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    com.mongodb.client.model.IndexOptions driverOpts = new com.mongodb.client.model.IndexOptions()
+            .background(options.isBackground())
+            .unique(options.isUnique())
+            .name(options.getName())
+            .sparse(options.isSparse())
+            .expireAfter(options.getExpireAfter(TimeUnit.SECONDS), TimeUnit.SECONDS)
+            .version(options.getVersion())
+            .weights(toBson(options.getWeights()))
+            .defaultLanguage(options.getDefaultLanguage())
+            .languageOverride(options.getLanguageOverride())
+            .textVersion(options.getTextVersion())
+            .sphereVersion(options.getSphereVersion())
+            .bits(options.getBits())
+            .min(options.getMin())
+            .max(options.getMax())
+            .bucketSize(options.getBucketSize())
+            .storageEngine(toBson(options.getStorageEngine()))
+            .partialFilterExpression(toBson(options.getPartialFilterExpression()));
+    coll.createIndex(wrap(key), driverOpts, wrapCallback(toVoidAsyncResult(resultHandler)));
+    return this;
+  }
+
+  private static Bson toBson(JsonObject json) {
+    return json == null ? null : BsonDocument.parse(json.encode());
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    ListIndexesIterable indexes = coll.listIndexes(JsonObject.class);
+    if (indexes != null) {
+      convertMongoIterable(indexes, resultHandler);
+    }
+    return this;
+  }
+
+  @Override
+  public MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(indexName, "indexName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.dropIndex(indexName, wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(commandName, "commandName cannot be null");
     requireNonNull(command, "command cannot be null");
@@ -404,21 +464,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
 
     if (distinctValues != null) {
-      List results = new ArrayList();
-      try {
-        Context context = vertx.getOrCreateContext();
-        distinctValues.into(results, (result, throwable) -> {
-          context.runOnContext(v -> {
-            if (throwable != null) {
-              resultHandler.handle(Future.failedFuture(throwable));
-            } else {
-              resultHandler.handle(Future.succeededFuture(new JsonArray((List) result)));
-            }
-          });
-        });
-      } catch (Exception unhandledEx) {
-        resultHandler.handle(Future.failedFuture(unhandledEx));
-      }
+      convertMongoIterable(distinctValues, resultHandler);
     }
     return this;
   }
@@ -448,6 +494,25 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       }
     }
     return this;
+  }
+
+  private void convertMongoIterable(MongoIterable iterable, Handler<AsyncResult<JsonArray>> resultHandler) {
+    List results = new ArrayList();
+    try {
+      Context context = vertx.getOrCreateContext();
+      iterable.into(results, (result, throwable) -> {
+        context.runOnContext(v -> {
+          if (throwable != null) {
+            resultHandler.handle(Future.failedFuture(throwable));
+          } else {
+            resultHandler.handle(Future.succeededFuture(new JsonArray((List) result)));
+          }
+        });
+      });
+    } catch (Exception unhandledEx) {
+      resultHandler.handle(Future.failedFuture(unhandledEx));
+    }
+
   }
 
   private DistinctIterable findDistinctValues(String collection, String fieldName, String resultClassname, Handler resultHandler) {

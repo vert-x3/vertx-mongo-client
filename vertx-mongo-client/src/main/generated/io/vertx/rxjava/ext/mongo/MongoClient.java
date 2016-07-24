@@ -23,6 +23,7 @@ import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import java.util.List;
+import io.vertx.ext.mongo.IndexOptions;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
@@ -845,6 +846,102 @@ public class MongoClient {
   public Observable<Void> dropCollectionObservable(String collection) { 
     io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     dropCollection(collection, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Creates an index.
+   * @param collection the collection
+   * @param key A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.createIndex(collection, key, resultHandler);
+    return this;
+  }
+
+  /**
+   * Creates an index.
+   * @param collection the collection
+   * @param key A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+   * @return 
+   */
+  public Observable<Void> createIndexObservable(String collection, JsonObject key) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    createIndex(collection, key, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Creates an index.
+   * @param collection the collection
+   * @param key A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+   * @param options the options for the index
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.createIndexWithOptions(collection, key, options, resultHandler);
+    return this;
+  }
+
+  /**
+   * Creates an index.
+   * @param collection the collection
+   * @param key A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field. For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+   * @param options the options for the index
+   * @return 
+   */
+  public Observable<Void> createIndexWithOptionsObservable(String collection, JsonObject key, IndexOptions options) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    createIndexWithOptions(collection, key, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Get all the indexes in this collection.
+   * @param collection the collection
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler) { 
+    delegate.listIndexes(collection, resultHandler);
+    return this;
+  }
+
+  /**
+   * Get all the indexes in this collection.
+   * @param collection the collection
+   * @return 
+   */
+  public Observable<JsonArray> listIndexesObservable(String collection) { 
+    io.vertx.rx.java.ObservableFuture<JsonArray> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    listIndexes(collection, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Drops the index given its name.
+   * @param collection the collection
+   * @param indexName the name of the index to remove
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.dropIndex(collection, indexName, resultHandler);
+    return this;
+  }
+
+  /**
+   * Drops the index given its name.
+   * @param collection the collection
+   * @param indexName the name of the index to remove
+   * @return 
+   */
+  public Observable<Void> dropIndexObservable(String collection, String indexName) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    dropIndex(collection, indexName, resultHandler.toHandler());
     return resultHandler;
   }
 

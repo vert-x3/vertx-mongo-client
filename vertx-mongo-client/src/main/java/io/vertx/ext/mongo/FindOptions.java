@@ -37,25 +37,25 @@ public class FindOptions {
   /**
    * Copy constructor
    *
-   * @param other  the one to copy
+   * @param options  the one to copy
    */
-  public FindOptions(FindOptions other) {
-    this.fields = other.fields;
-    this.sort = other.sort;
-    this.limit = other.limit;
-    this.skip = other.skip;
+  public FindOptions(FindOptions options) {
+    this.fields = options.fields;
+    this.sort = options.sort;
+    this.limit = options.limit;
+    this.skip = options.skip;
   }
 
   /**
    * Constructor from JSON
    *
-   * @param json  the JSON
+   * @param options  the JSON
    */
-  public FindOptions(JsonObject json) {
-    this.fields = json.getJsonObject("fields");
-    this.sort = json.getJsonObject("sort");
-    this.limit = json.getInteger("limit", DEFAULT_LIMIT);
-    this.skip = json.getInteger("skip", DEFAULT_SKIP);
+  public FindOptions(JsonObject options) {
+    this.fields = options.getJsonObject("fields");
+    this.sort = options.getJsonObject("sort");
+    this.limit = options.getInteger("limit", DEFAULT_LIMIT);
+    this.skip = options.getInteger("skip", DEFAULT_SKIP);
   }
 
   /**
