@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
 import static io.vertx.ext.mongo.WriteOption.UNACKNOWLEDGED;
@@ -68,6 +69,44 @@ public abstract class MongoClientTestBase extends MongoTestBase {
           List<String> ours = getOurCollections(list);
           assertTrue(ours.isEmpty());
           testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testCreateIndex() {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject key = new JsonObject().put("field", 1);
+      mongoClient.createIndex(collection, key, onSuccess(res2 -> {
+        mongoClient.listIndexes(collection, onSuccess(res3 -> {
+          long cnt = res3.stream()
+                  .filter(o -> ((JsonObject) o).getJsonObject("key").containsKey("field"))
+                  .count();
+          assertEquals(cnt, 1);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testCreateAndDropIndex() {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject key = new JsonObject().put("field", 1);
+      mongoClient.createIndex(collection, key, onSuccess(res2 -> {
+        mongoClient.dropIndex(collection, "field_1", onSuccess(res3 -> {
+          mongoClient.listIndexes(collection, onSuccess(res4 -> {
+            long cnt = res4.stream()
+                    .filter(o -> ((JsonObject) o).getJsonObject("key").containsKey("field"))
+                    .count();
+            assertEquals(cnt, 0);
+            testComplete();
+          }));
         }));
       }));
     }));

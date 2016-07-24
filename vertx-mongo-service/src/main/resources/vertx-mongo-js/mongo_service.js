@@ -23,6 +23,7 @@ var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoService = io.vertx.ext.mongo.MongoService;
 var MongoClientDeleteResult = io.vertx.ext.mongo.MongoClientDeleteResult;
+var IndexOptions = io.vertx.ext.mongo.IndexOptions;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
 var MongoClientUpdateResult = io.vertx.ext.mongo.MongoClientUpdateResult;
 var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
@@ -682,6 +683,94 @@ var MongoService = function(j_val) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
       j_mongoService["dropCollection(java.lang.String,io.vertx.core.Handler)"](collection, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param key {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.createIndex = function(collection, key, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
+      j_mongoService["createIndex(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(key), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param key {Object} 
+   @param options {Object} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.createIndexWithOptions = function(collection, key, options, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
+      j_mongoService["createIndexWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.IndexOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(key), options != null ? new IndexOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.listIndexes = function(collection, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
+      j_mongoService["listIndexes(java.lang.String,io.vertx.core.Handler)"](collection, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+
+   @public
+   @param collection {string} 
+   @param indexName {string} 
+   @param resultHandler {function} 
+   @return {MongoService}
+   */
+  this.dropIndex = function(collection, indexName, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'string' && typeof __args[2] === 'function') {
+      j_mongoService["dropIndex(java.lang.String,java.lang.String,io.vertx.core.Handler)"](collection, indexName, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {

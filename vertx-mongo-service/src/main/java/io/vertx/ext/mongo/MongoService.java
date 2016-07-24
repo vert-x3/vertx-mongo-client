@@ -158,6 +158,22 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
+  MongoService createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler);
+
+  @Override
+  @Fluent
   MongoService runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Override

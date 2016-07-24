@@ -23,6 +23,7 @@ import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import java.util.List;
+import io.vertx.ext.mongo.IndexOptions;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
@@ -377,6 +378,50 @@ public class MongoService extends MongoClient {
   public Observable<Void> dropCollectionObservable(String collection) { 
     io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     dropCollection(collection, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).createIndex(collection, key, resultHandler);
+    return this;
+  }
+
+  public Observable<Void> createIndexObservable(String collection, JsonObject key) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    createIndex(collection, key, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).createIndexWithOptions(collection, key, options, resultHandler);
+    return this;
+  }
+
+  public Observable<Void> createIndexWithOptionsObservable(String collection, JsonObject key, IndexOptions options) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    createIndexWithOptions(collection, key, options, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).listIndexes(collection, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonArray> listIndexesObservable(String collection) { 
+    io.vertx.rx.java.ObservableFuture<JsonArray> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    listIndexes(collection, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).dropIndex(collection, indexName, resultHandler);
+    return this;
+  }
+
+  public Observable<Void> dropIndexObservable(String collection, String indexName) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    dropIndex(collection, indexName, resultHandler.toHandler());
     return resultHandler;
   }
 
