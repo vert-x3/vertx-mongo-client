@@ -18,6 +18,7 @@ package io.vertx.groovy.ext.mongo;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.mongo.InsertOptions
 import io.vertx.ext.mongo.MongoClientDeleteResult
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
@@ -128,6 +129,34 @@ public class MongoClient {
    */
   public MongoClient insertWithOptions(String collection, Map<String, Object> document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     delegate.insertWithOptions(collection, document != null ? new io.vertx.core.json.JsonObject(document) : null, writeOption, resultHandler);
+    return this;
+  }
+  /**
+   * Insert documents in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
+   * @param collection the collection
+   * @param documents the documents
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertMany(String collection, List<Map<String, Object>> documents, Handler<AsyncResult<Void>> resultHandler) {
+    delegate.insertMany(collection, documents != null ? (List)documents.collect({new io.vertx.core.json.JsonObject(it)}) : null, resultHandler);
+    return this;
+  }
+  /**
+   * Insert documents in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
+   * @param collection the collection
+   * @param documents the documents
+   * @param insertOptions the options for insertion to use (see <a href="../../../../../../../cheatsheet/InsertOptions.html">InsertOptions</a>)
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithOptions(String collection, List<Map<String, Object>> documents, Map<String, Object> insertOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    delegate.insertManyWithOptions(collection, documents != null ? (List)documents.collect({new io.vertx.core.json.JsonObject(it)}) : null, insertOptions != null ? new io.vertx.ext.mongo.InsertOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(insertOptions)) : null, writeOption, resultHandler);
     return this;
   }
   /**

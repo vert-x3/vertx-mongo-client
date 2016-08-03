@@ -18,6 +18,7 @@ package io.vertx.rxjava.ext.mongo;
 
 import java.util.Map;
 import rx.Observable;
+import io.vertx.ext.mongo.InsertOptions;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
@@ -103,6 +104,28 @@ public class MongoService extends MongoClient {
   public Observable<String> insertWithOptionsObservable(String collection, JsonObject document, WriteOption writeOption) { 
     io.vertx.rx.java.ObservableFuture<String> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     insertWithOptions(collection, document, writeOption, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).insertMany(collection, documents, resultHandler);
+    return this;
+  }
+
+  public Observable<Void> insertManyObservable(String collection, List<JsonObject> documents) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    insertMany(collection, documents, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService insertManyWithOptions(String collection, List<JsonObject> documents, InsertOptions insertOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).insertManyWithOptions(collection, documents, insertOptions, writeOption, resultHandler);
+    return this;
+  }
+
+  public Observable<Void> insertManyWithOptionsObservable(String collection, List<JsonObject> documents, InsertOptions insertOptions, WriteOption writeOption) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    insertManyWithOptions(collection, documents, insertOptions, writeOption, resultHandler.toHandler());
     return resultHandler;
   }
 

@@ -39,6 +39,7 @@ import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
 import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
+import io.vertx.ext.mongo.InsertOptions;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.core.Vertx;
@@ -145,6 +146,14 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         }
         case "insertWithOptions": {
           service.insertWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("document"), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
+          break;
+        }
+        case "insertMany": {
+          service.insertMany((java.lang.String)json.getValue("collection"), convertList(json.getJsonArray("documents").getList()), createHandler(msg));
+          break;
+        }
+        case "insertManyWithOptions": {
+          service.insertManyWithOptions((java.lang.String)json.getValue("collection"), convertList(json.getJsonArray("documents").getList()), json.getJsonObject("insertOptions") == null ? null : new io.vertx.ext.mongo.InsertOptions(json.getJsonObject("insertOptions")), json.getString("writeOption") == null ? null : io.vertx.ext.mongo.WriteOption.valueOf(json.getString("writeOption")), createHandler(msg));
           break;
         }
         case "update": {

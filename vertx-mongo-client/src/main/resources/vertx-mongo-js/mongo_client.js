@@ -21,6 +21,7 @@ var Vertx = require('vertx-js/vertx');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMongoClient = io.vertx.ext.mongo.MongoClient;
+var InsertOptions = io.vertx.ext.mongo.InsertOptions;
 var MongoClientDeleteResult = io.vertx.ext.mongo.MongoClientDeleteResult;
 var IndexOptions = io.vertx.ext.mongo.IndexOptions;
 var FindOptions = io.vertx.ext.mongo.FindOptions;
@@ -131,6 +132,58 @@ var MongoClient = function(j_val) {
       j_mongoClient["insertWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(document), io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
       if (ar.succeeded()) {
         resultHandler(ar.result(), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Insert documents in the specified collection
+   <p>
+   This operation might change <i>_id</i> field of <i>document</i> parameter
+
+   @public
+   @param collection {string} the collection 
+   @param documents {Array.<Object>} the documents 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.insertMany = function(collection, documents, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && typeof __args[2] === 'function') {
+      j_mongoClient["insertMany(java.lang.String,java.util.List,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Insert documents in the specified collection with the specified write option
+   <p>
+   This operation might change <i>_id</i> field of <i>document</i> parameter
+
+   @public
+   @param collection {string} the collection 
+   @param documents {Array.<Object>} the documents 
+   @param insertOptions {Object} the options for insertion to use 
+   @param writeOption {Object} the write option to use 
+   @param resultHandler {function} will be called when complete 
+   @return {MongoClient}
+   */
+  this.insertManyWithOptions = function(collection, documents, insertOptions, writeOption, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 5 && typeof __args[0] === 'string' && typeof __args[1] === 'object' && __args[1] instanceof Array && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'string' && typeof __args[4] === 'function') {
+      j_mongoClient["insertManyWithOptions(java.lang.String,java.util.List,io.vertx.ext.mongo.InsertOptions,io.vertx.ext.mongo.WriteOption,io.vertx.core.Handler)"](collection, utils.convParamListJsonObject(documents), insertOptions != null ? new InsertOptions(new JsonObject(JSON.stringify(insertOptions))) : null, io.vertx.ext.mongo.WriteOption.valueOf(writeOption), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(null, null);
       } else {
         resultHandler(null, ar.cause());
       }

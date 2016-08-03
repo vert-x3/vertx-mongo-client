@@ -98,6 +98,36 @@ module VertxMongo
       end
       raise ArgumentError, "Invalid arguments when calling insert_with_options(collection,document,writeOption)"
     end
+    #  Insert documents in the specified collection
+    #  <p>
+    #  This operation might change <i>_id</i> field of <i>document</i> parameter
+    # @param [String] collection the collection
+    # @param [Array<Hash{String => Object}>] documents the documents
+    # @yield will be called when complete
+    # @return [self]
+    def insert_many(collection=nil,documents=nil)
+      if collection.class == String && documents.class == Array && block_given?
+        @j_del.java_method(:insertMany, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many(collection,documents)"
+    end
+    #  Insert documents in the specified collection with the specified write option
+    #  <p>
+    #  This operation might change <i>_id</i> field of <i>document</i> parameter
+    # @param [String] collection the collection
+    # @param [Array<Hash{String => Object}>] documents the documents
+    # @param [Hash] insertOptions the options for insertion to use
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption the write option to use
+    # @yield will be called when complete
+    # @return [self]
+    def insert_many_with_options(collection=nil,documents=nil,insertOptions=nil,writeOption=nil)
+      if collection.class == String && documents.class == Array && insertOptions.class == Hash && writeOption.class == Symbol && block_given?
+        @j_del.java_method(:insertManyWithOptions, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxExtMongo::InsertOptions.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },Java::IoVertxExtMongo::InsertOptions.new(::Vertx::Util::Utils.to_json_object(insertOptions)),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_options(collection,documents,insertOptions,writeOption)"
+    end
     #  Update matching documents in the specified collection
     # @param [String] collection the collection
     # @param [Hash{String => Object}] query query used to match the documents

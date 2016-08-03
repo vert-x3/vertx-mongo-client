@@ -18,6 +18,7 @@ package io.vertx.rxjava.ext.mongo;
 
 import java.util.Map;
 import rx.Observable;
+import io.vertx.ext.mongo.InsertOptions;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.rxjava.core.Vertx;
@@ -200,6 +201,66 @@ public class MongoClient {
   public Observable<String> insertWithOptionsObservable(String collection, JsonObject document, WriteOption writeOption) { 
     io.vertx.rx.java.ObservableFuture<String> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     insertWithOptions(collection, document, writeOption, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Insert documents in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
+   * @param collection the collection
+   * @param documents the documents
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.insertMany(collection, documents, resultHandler);
+    return this;
+  }
+
+  /**
+   * Insert documents in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
+   * @param collection the collection
+   * @param documents the documents
+   * @return 
+   */
+  public Observable<Void> insertManyObservable(String collection, List<JsonObject> documents) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    insertMany(collection, documents, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Insert documents in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
+   * @param collection the collection
+   * @param documents the documents
+   * @param insertOptions the options for insertion to use
+   * @param writeOption the write option to use
+   * @param resultHandler will be called when complete
+   * @return 
+   */
+  public MongoClient insertManyWithOptions(String collection, List<JsonObject> documents, InsertOptions insertOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.insertManyWithOptions(collection, documents, insertOptions, writeOption, resultHandler);
+    return this;
+  }
+
+  /**
+   * Insert documents in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
+   * @param collection the collection
+   * @param documents the documents
+   * @param insertOptions the options for insertion to use
+   * @param writeOption the write option to use
+   * @return 
+   */
+  public Observable<Void> insertManyWithOptionsObservable(String collection, List<JsonObject> documents, InsertOptions insertOptions, WriteOption writeOption) { 
+    io.vertx.rx.java.ObservableFuture<Void> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    insertManyWithOptions(collection, documents, insertOptions, writeOption, resultHandler.toHandler());
     return resultHandler;
   }
 

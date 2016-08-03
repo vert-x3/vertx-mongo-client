@@ -1,13 +1,21 @@
 package io.vertx.ext.mongo.impl;
 
+import java.util.List;
+
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.*;
-
-import java.util.List;
+import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.IndexOptions;
+import io.vertx.ext.mongo.InsertOptions;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoClientDeleteResult;
+import io.vertx.ext.mongo.MongoClientUpdateResult;
+import io.vertx.ext.mongo.MongoService;
+import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.WriteOption;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -45,6 +53,20 @@ public class MongoServiceImpl implements MongoService {
   @Fluent
   public MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     client.insertWithOptions(collection, document, writeOption, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler) {
+    client.insertMany(collection, documents, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService insertManyWithOptions(String collection, List<JsonObject> documents, InsertOptions insertOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    client.insertManyWithOptions(collection, documents, insertOptions, writeOption, resultHandler);
     return this;
   }
 

@@ -207,7 +207,7 @@ mongoClient.insert("books", document, { res ->
 
 ----
 
-If a document is inserted with an id, and a document with that id already eists, the insert will fail:
+If a document is inserted with an id, and a document with that id already exists, the insert will fail:
 
 [source,groovy]
 ----
@@ -228,6 +228,33 @@ mongoClient.insert("books", document, { res ->
   } else {
 
     // Will fail if the book with that id already exists.
+  }
+
+})
+
+
+----
+
+If a document is inserted with an id, and a document with that id already exists, the insert will fail:
+
+[source,groovy]
+----
+def documents = []
+def document1 = [
+  title:"Guardians of the West"
+]
+def document2 = [
+  title:"The Belgariad"
+]
+documents.add(document1)
+documents.add(document2)
+
+mongoClient.insertMany("books", documents, { res ->
+
+  if (res.succeeded()) {
+    //...
+  } else {
+    //...
   }
 
 })
@@ -446,9 +473,18 @@ def query = [
 ]
 
 mongoClient.findBatch("book", query, { res ->
+
   if (res.succeeded()) {
 
-    println(groovy.json.JsonOutput.toJson(res.result()))
+    if (res.result() == null) {
+
+      println("End of research")
+
+    } else {
+
+      println("Found doc: ${groovy.json.JsonOutput.toJson(res.result())}")
+
+    }
 
   } else {
 
@@ -456,6 +492,7 @@ mongoClient.findBatch("book", query, { res ->
 
   }
 })
+
 
 ----
 
