@@ -21,9 +21,15 @@ public class UpdateOptions {
    */
   public static final boolean DEFAULT_MULTI = false;
 
+  /**
+   * The default value of returning new document = false
+   */
+  public static final boolean DEFAULT_RETURN_NEW_DOCUMENT = false;
+
   private WriteOption writeOption;
   private boolean upsert;
   private boolean multi;
+  private boolean returnNewDocument; // uniquely valid on findOneAnd* methods
 
   /**
    * Default constructor
@@ -31,6 +37,7 @@ public class UpdateOptions {
   public UpdateOptions() {
     this.upsert = DEFAULT_UPSERT;
     this.multi = DEFAULT_MULTI;
+    this.returnNewDocument = DEFAULT_RETURN_NEW_DOCUMENT;
   }
 
   /**
@@ -40,6 +47,7 @@ public class UpdateOptions {
   public UpdateOptions(boolean upsert) {
     this.upsert = upsert;
     this.multi = DEFAULT_MULTI;
+    this.returnNewDocument = DEFAULT_RETURN_NEW_DOCUMENT;
   }
 
   /**
@@ -60,6 +68,7 @@ public class UpdateOptions {
     this.writeOption = other.writeOption;
     this.upsert = other.upsert;
     this.multi = other.multi;
+    this.returnNewDocument = other.returnNewDocument;
   }
 
   /**
@@ -74,6 +83,7 @@ public class UpdateOptions {
     }
     upsert = json.getBoolean("upsert", DEFAULT_UPSERT);
     multi = json.getBoolean("multi", DEFAULT_MULTI);
+    returnNewDocument = json.getBoolean("return_new_document", DEFAULT_RETURN_NEW_DOCUMENT);
   }
 
   /**
@@ -116,6 +126,27 @@ public class UpdateOptions {
   }
 
   /**
+   * Get whether returning new document property is enabled. Valid only on findOneAnd* methods.
+   *
+   * @return new document property is enabled?
+   */
+  public boolean isReturningNewDocument() {
+    return returnNewDocument;
+  }
+
+  /**
+   * Set whether new document property is enabled. Valid only on findOneAnd* methods.
+   *
+   * @param returnNewDocument  true if enabled
+   *
+   * @return reference to this, for fluency
+   */
+  public UpdateOptions setReturningNewDocument(boolean returnNewDocument) {
+    this.returnNewDocument = returnNewDocument;
+    return this;
+  }
+
+  /**
    * Get whether multi is enabled. Multi means more than one document can be updated.
    *
    * @return multi is enabled?
@@ -146,6 +177,9 @@ public class UpdateOptions {
     if (multi) {
       json.put("multi", true);
     }
+    if (returnNewDocument) {
+      json.put("return_new_document", true);
+    }
 
     return json;
   }
@@ -160,6 +194,7 @@ public class UpdateOptions {
     if (multi != options.multi) return false;
     if (upsert != options.upsert) return false;
     if (writeOption != options.writeOption) return false;
+    if (returnNewDocument != options.returnNewDocument) return false;
 
     return true;
   }
@@ -169,6 +204,7 @@ public class UpdateOptions {
     int result = writeOption != null ? writeOption.hashCode() : 0;
     result = 31 * result + (upsert ? 1 : 0);
     result = 31 * result + (multi ? 1 : 0);
+    result = 31 * result + (returnNewDocument ? 1 : 0);
     return result;
   }
 }

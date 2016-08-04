@@ -450,9 +450,18 @@ query = {
 }
 
 mongoClient.find_batch("book", query) { |res_err,res|
+
   if (res_err == nil)
 
-    puts JSON.generate(res)
+    if (res == nil)
+
+      puts "End of research"
+
+    else
+
+      puts "Found doc: #{JSON.generate(res)}"
+
+    end
 
   else
 
@@ -460,6 +469,7 @@ mongoClient.find_batch("book", query) { |res_err,res|
 
   end
 }
+
 
 ----
 

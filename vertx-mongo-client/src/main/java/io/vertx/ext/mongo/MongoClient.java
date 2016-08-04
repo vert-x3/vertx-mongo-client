@@ -1,5 +1,8 @@
 package io.vertx.ext.mongo;
 
+import java.util.List;
+import java.util.UUID;
+
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -8,9 +11,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.MongoClientImpl;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * A Vert.x service used to interact with MongoDB server instances.
@@ -271,6 +271,87 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Find a single matching document in the specified collection and update it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   *
+   * @param collection  the collection
+   * @param query  the query used to match the document
+   * @param update used to describe how the documents will be updated
+   * @param resultHandler will be provided with the document, if any
+   */
+  @Fluent
+  MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Find a single matching document in the specified collection and update it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   *
+   * @param collection  the collection
+   * @param query  the query used to match the document
+   * @param update used to describe how the documents will be updated
+   * @param findOptions options to configure the find
+   * @param updateOptions options to configure the update
+   * @param resultHandler will be provided with the document, if any
+   */
+  @Fluent
+  MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Find a single matching document in the specified collection and replace it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   *
+   * @param collection  the collection
+   * @param query  the query used to match the document
+   * @param replace  the replacement document
+   * @param resultHandler will be provided with the document, if any
+   */
+  @Fluent
+  MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Find a single matching document in the specified collection and replace it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   *
+   * @param collection  the collection
+   * @param query  the query used to match the document
+   * @param replace  the replacement document
+   * @param findOptions options to configure the find
+   * @param updateOptions options to configure the update
+   * @param resultHandler will be provided with the document, if any
+   */
+  @Fluent
+  MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Find a single matching document in the specified collection and delete it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   *
+   * @param collection  the collection
+   * @param query  the query used to match the document
+   * @param resultHandler will be provided with the deleted document, if any
+   */
+  @Fluent
+  MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Find a single matching document in the specified collection and delete it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   *
+   * @param collection  the collection
+   * @param query  the query used to match the document
+   * @param findOptions options to configure the find
+   * @param resultHandler will be provided with the deleted document, if any
+   */
+  @Fluent
+  MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Count matching documents in a collection.

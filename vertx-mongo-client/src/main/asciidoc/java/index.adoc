@@ -360,9 +360,18 @@ This has the following fields:
 JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
 
 mongoClient.findBatch("book", query, res -> {
+
   if (res.succeeded()) {
 
-    System.out.println(res.result().encodePrettily());
+    if (res.result() == null) {
+
+      System.out.println("End of research");
+
+    } else {
+
+      System.out.println("Found doc: " + res.result().encodePrettily());
+
+    }
 
   } else {
 

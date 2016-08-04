@@ -462,6 +462,165 @@ var MongoClient = function(j_val) {
   };
 
   /**
+   Find a single matching document in the specified collection and update it.
+   <p>
+   This operation might change <i>_id</i> field of <i>query</i> parameter
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} the query used to match the document 
+   @param update {Object} used to describe how the documents will be updated 
+   @param resultHandler {function} will be provided with the document, if any 
+   @return {MongoClient}
+   */
+  this.findOneAndUpdate = function(collection, query, update, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
+      j_mongoClient["findOneAndUpdate(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Find a single matching document in the specified collection and update it.
+   <p>
+   This operation might change <i>_id</i> field of <i>query</i> parameter
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} the query used to match the document 
+   @param update {Object} used to describe how the documents will be updated 
+   @param findOptions {Object} options to configure the find 
+   @param updateOptions {Object} options to configure the update 
+   @param resultHandler {function} will be provided with the document, if any 
+   @return {MongoClient}
+   */
+  this.findOneAndUpdateWithOptions = function(collection, query, update, findOptions, updateOptions, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 6 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && (typeof __args[4] === 'object' && __args[4] != null) && typeof __args[5] === 'function') {
+      j_mongoClient["findOneAndUpdateWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), findOptions != null ? new FindOptions(new JsonObject(JSON.stringify(findOptions))) : null, updateOptions != null ? new UpdateOptions(new JsonObject(JSON.stringify(updateOptions))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Find a single matching document in the specified collection and replace it.
+   <p>
+   This operation might change <i>_id</i> field of <i>query</i> parameter
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} the query used to match the document 
+   @param replace {Object} the replacement document 
+   @param resultHandler {function} will be provided with the document, if any 
+   @return {MongoClient}
+   */
+  this.findOneAndReplace = function(collection, query, replace, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
+      j_mongoClient["findOneAndReplace(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Find a single matching document in the specified collection and replace it.
+   <p>
+   This operation might change <i>_id</i> field of <i>query</i> parameter
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} the query used to match the document 
+   @param replace {Object} the replacement document 
+   @param findOptions {Object} options to configure the find 
+   @param updateOptions {Object} options to configure the update 
+   @param resultHandler {function} will be provided with the document, if any 
+   @return {MongoClient}
+   */
+  this.findOneAndReplaceWithOptions = function(collection, query, replace, findOptions, updateOptions, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 6 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && (typeof __args[4] === 'object' && __args[4] != null) && typeof __args[5] === 'function') {
+      j_mongoClient["findOneAndReplaceWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), findOptions != null ? new FindOptions(new JsonObject(JSON.stringify(findOptions))) : null, updateOptions != null ? new UpdateOptions(new JsonObject(JSON.stringify(updateOptions))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Find a single matching document in the specified collection and delete it.
+   <p>
+   This operation might change <i>_id</i> field of <i>query</i> parameter
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} the query used to match the document 
+   @param resultHandler {function} will be provided with the deleted document, if any 
+   @return {MongoClient}
+   */
+  this.findOneAndDelete = function(collection, query, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 3 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'function') {
+      j_mongoClient["findOneAndDelete(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
+   Find a single matching document in the specified collection and delete it.
+   <p>
+   This operation might change <i>_id</i> field of <i>query</i> parameter
+
+   @public
+   @param collection {string} the collection 
+   @param query {Object} the query used to match the document 
+   @param findOptions {Object} options to configure the find 
+   @param resultHandler {function} will be provided with the deleted document, if any 
+   @return {MongoClient}
+   */
+  this.findOneAndDeleteWithOptions = function(collection, query, findOptions, resultHandler) {
+    var __args = arguments;
+    if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
+      j_mongoClient["findOneAndDeleteWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), findOptions != null ? new FindOptions(new JsonObject(JSON.stringify(findOptions))) : null, function(ar) {
+      if (ar.succeeded()) {
+        resultHandler(utils.convReturnJson(ar.result()), null);
+      } else {
+        resultHandler(null, ar.cause());
+      }
+    });
+      return that;
+    } else throw new TypeError('function invoked with invalid arguments');
+  };
+
+  /**
    Count matching documents in a collection.
 
    @public

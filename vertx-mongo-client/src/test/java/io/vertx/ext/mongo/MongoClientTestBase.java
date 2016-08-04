@@ -1,19 +1,29 @@
 package io.vertx.ext.mongo;
 
-import io.vertx.core.*;
+import org.bson.types.ObjectId;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
+
+import io.vertx.core.Context;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.test.core.TestUtils;
-import org.bson.types.ObjectId;
-import org.junit.Test;
-
-import java.io.*;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
 import static io.vertx.ext.mongo.WriteOption.UNACKNOWLEDGED;
@@ -481,6 +491,146 @@ public abstract class MongoClientTestBase extends MongoTestBase {
             testComplete();
           }));
         }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindOneAndUpdateDefault() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNotNull(id);
+        mongoClient.findOneAndUpdate(collection, new JsonObject().put("num", 123), new JsonObject().put("$inc", new JsonObject().put("num", 7)), onSuccess(obj -> {
+          assertEquals(123, (long) obj.getLong("num", -1L));
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindOneAndUpdateNoRecord() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNotNull(id);
+        mongoClient.findOneAndUpdate(collection, new JsonObject().put("num", 0), new JsonObject().put("$inc", new JsonObject().put("num", 7)), onSuccess(obj -> {
+          assertNull(obj);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindOneAndUpdateWithOptions() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNotNull(id);
+        mongoClient.findOneAndUpdateWithOptions(collection,
+                new JsonObject().put("num", 123),
+                new JsonObject().put("$inc", new JsonObject().put("num", 7)),
+                new FindOptions().setFields(new JsonObject().put("num", 1)),
+                new UpdateOptions().setReturningNewDocument(true),
+                onSuccess(obj -> {
+                  assertEquals(130, (long) obj.getLong("num", -1L));
+                  assertFalse(obj.containsKey("foo"));
+                  testComplete();
+                }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindOneAndReplaceDefault() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNotNull(id);
+        doc.remove("_id");
+        mongoClient.findOneAndReplace(collection, new JsonObject().put("num", 123), doc.put("num", 130), onSuccess(obj -> {
+          assertEquals(123, (long) obj.getLong("num", -1L));
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindOneAndReplaceWithOptions() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNotNull(id);
+        doc.remove("_id");
+        mongoClient.findOneAndReplaceWithOptions(collection,
+                new JsonObject().put("num", 123),
+                doc.put("num", 130),
+                new FindOptions().setFields(new JsonObject().put("num", 1)),
+                new UpdateOptions().setReturningNewDocument(true),
+                onSuccess(obj -> {
+                  assertEquals(130, (long) obj.getLong("num", -1L));
+                  assertFalse(obj.containsKey("foo"));
+                  testComplete();
+                }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindOneAndDeleteDefault() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNotNull(id);
+        mongoClient.findOneAndDelete(collection, new JsonObject().put("num", 123), onSuccess(obj -> {
+          assertEquals(123, (long) obj.getLong("num", -1L));
+
+          mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+            assertNotNull(count);
+            assertEquals(0, count.intValue());
+            testComplete();
+          }));
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindOneAndDeleteWithOptions() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNotNull(id);
+        mongoClient.findOneAndDeleteWithOptions(collection,
+                new JsonObject().put("num", 123),
+                new FindOptions().setFields(new JsonObject().put("num", 1)),
+                onSuccess(obj -> {
+                  assertEquals(123, (long) obj.getLong("num", -1L));
+                  assertFalse(obj.containsKey("foo"));
+
+                  mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+                    assertNotNull(count);
+                    assertEquals(0, count.intValue());
+                    testComplete();
+                  }));
+                }));
       }));
     }));
     await();

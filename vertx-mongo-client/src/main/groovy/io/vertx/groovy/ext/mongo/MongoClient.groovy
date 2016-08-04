@@ -369,6 +369,141 @@ public class MongoClient {
     return this;
   }
   /**
+   * Find a single matching document in the specified collection and update it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param update used to describe how the documents will be updated
+   * @param resultHandler will be provided with the document, if any
+   * @return 
+   */
+  public MongoClient findOneAndUpdate(String collection, Map<String, Object> query, Map<String, Object> update, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.findOneAndUpdate(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  /**
+   * Find a single matching document in the specified collection and update it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param update used to describe how the documents will be updated
+   * @param findOptions options to configure the find (see <a href="../../../../../../../cheatsheet/FindOptions.html">FindOptions</a>)
+   * @param updateOptions options to configure the update (see <a href="../../../../../../../cheatsheet/UpdateOptions.html">UpdateOptions</a>)
+   * @param resultHandler will be provided with the document, if any
+   * @return 
+   */
+  public MongoClient findOneAndUpdateWithOptions(String collection, Map<String, Object> query, Map<String, Object> update, Map<String, Object> findOptions, Map<String, Object> updateOptions, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.findOneAndUpdateWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, findOptions != null ? new io.vertx.ext.mongo.FindOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(findOptions)) : null, updateOptions != null ? new io.vertx.ext.mongo.UpdateOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(updateOptions)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  /**
+   * Find a single matching document in the specified collection and replace it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param replace the replacement document
+   * @param resultHandler will be provided with the document, if any
+   * @return 
+   */
+  public MongoClient findOneAndReplace(String collection, Map<String, Object> query, Map<String, Object> replace, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.findOneAndReplace(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  /**
+   * Find a single matching document in the specified collection and replace it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param replace the replacement document
+   * @param findOptions options to configure the find (see <a href="../../../../../../../cheatsheet/FindOptions.html">FindOptions</a>)
+   * @param updateOptions options to configure the update (see <a href="../../../../../../../cheatsheet/UpdateOptions.html">UpdateOptions</a>)
+   * @param resultHandler will be provided with the document, if any
+   * @return 
+   */
+  public MongoClient findOneAndReplaceWithOptions(String collection, Map<String, Object> query, Map<String, Object> replace, Map<String, Object> findOptions, Map<String, Object> updateOptions, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.findOneAndReplaceWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, findOptions != null ? new io.vertx.ext.mongo.FindOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(findOptions)) : null, updateOptions != null ? new io.vertx.ext.mongo.UpdateOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(updateOptions)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  /**
+   * Find a single matching document in the specified collection and delete it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param resultHandler will be provided with the deleted document, if any
+   * @return 
+   */
+  public MongoClient findOneAndDelete(String collection, Map<String, Object> query, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.findOneAndDelete(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  /**
+   * Find a single matching document in the specified collection and delete it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param findOptions options to configure the find (see <a href="../../../../../../../cheatsheet/FindOptions.html">FindOptions</a>)
+   * @param resultHandler will be provided with the deleted document, if any
+   * @return 
+   */
+  public MongoClient findOneAndDeleteWithOptions(String collection, Map<String, Object> query, Map<String, Object> findOptions, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    delegate.findOneAndDeleteWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, findOptions != null ? new io.vertx.ext.mongo.FindOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(findOptions)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  /**
    * Count matching documents in a collection.
    * @param collection the collection
    * @param query query used to match documents

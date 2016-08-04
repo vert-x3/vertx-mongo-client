@@ -19,21 +19,20 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.*;
+import com.mongodb.async.client.DistinctIterable;
+import com.mongodb.async.client.FindIterable;
+import com.mongodb.async.client.ListIndexesIterable;
+import com.mongodb.async.client.MongoClients;
+import com.mongodb.async.client.MongoCollection;
+import com.mongodb.async.client.MongoDatabase;
+import com.mongodb.async.client.MongoIterable;
+import com.mongodb.client.model.FindOneAndDeleteOptions;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import io.vertx.core.*;
-import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
-import io.vertx.core.shareddata.Shareable;
-import io.vertx.ext.mongo.*;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
-import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
+
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentReader;
 import org.bson.BsonValue;
@@ -41,9 +40,34 @@ import org.bson.codecs.DecoderContext;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.Shareable;
+import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.IndexOptions;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoClientDeleteResult;
+import io.vertx.ext.mongo.MongoClientUpdateResult;
+import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.WriteOption;
+import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
+import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 
 import static java.util.Objects.requireNonNull;
 
@@ -266,6 +290,88 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     Bson bquery = wrap(encodedQuery);
     Bson bfields = wrap(fields);
     getCollection(collection).find(bquery).projection(bfields).first(wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) {
+    findOneAndUpdateWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS, resultHandler);
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(findOptions, "find options cannot be null");
+    requireNonNull(updateOptions, "update options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+
+    Bson bquery = wrap(encodedQuery);
+    Bson bupdate = wrap(update);
+    FindOneAndUpdateOptions foauOptions = new FindOneAndUpdateOptions();
+    foauOptions.sort(wrap(findOptions.getSort()));
+    foauOptions.projection(wrap(findOptions.getFields()));
+    foauOptions.upsert(updateOptions.isUpsert());
+    foauOptions.returnDocument(updateOptions.isReturningNewDocument() ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
+
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.findOneAndUpdate(bquery, bupdate, foauOptions, wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) {
+    findOneAndReplaceWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS, resultHandler);
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(findOptions, "find options cannot be null");
+    requireNonNull(updateOptions, "update options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+
+    Bson bquery = wrap(encodedQuery);
+    FindOneAndReplaceOptions foarOptions = new FindOneAndReplaceOptions();
+    foarOptions.sort(wrap(findOptions.getSort()));
+    foarOptions.projection(wrap(findOptions.getFields()));
+    foarOptions.upsert(updateOptions.isUpsert());
+    foarOptions.returnDocument(updateOptions.isReturningNewDocument() ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
+
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.findOneAndReplace(bquery, replace, foarOptions, wrapCallback(resultHandler));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+    findOneAndDeleteWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(findOptions, "find options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+
+    Bson bquery = wrap(encodedQuery);
+    FindOneAndDeleteOptions foadOptions = new FindOneAndDeleteOptions();
+    foadOptions.sort(wrap(findOptions.getSort()));
+    foadOptions.projection(wrap(findOptions.getFields()));
+
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    coll.findOneAndDelete(bquery, foadOptions, wrapCallback(resultHandler));
     return this;
   }
 
