@@ -174,8 +174,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(documents, "documents cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    for (JsonObject document : documents) {
-      encodeKeyWhenUseObjectId(document);
+    if (useObjectId) {
+      for (JsonObject document : documents) {
+        encodeKeyWhenUseObjectId(document);
+      }
     }
 
     InsertManyOptions options = new InsertManyOptions();
