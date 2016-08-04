@@ -1,19 +1,29 @@
 package io.vertx.ext.mongo;
 
-import io.vertx.core.*;
+import org.bson.types.ObjectId;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
+
+import io.vertx.core.Context;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.test.core.TestUtils;
-import org.bson.types.ObjectId;
-import org.junit.Test;
-
-import java.io.*;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
 import static io.vertx.ext.mongo.WriteOption.UNACKNOWLEDGED;
@@ -601,6 +611,18 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testFindWithId() throws Exception {
+    int num = 10;
+    doTestFind(num, new JsonObject(), new FindOptions().setFields(new JsonObject().put("_id", 1)), results -> {
+      assertEquals(num, results.size());
+      for (JsonObject doc : results) {
+        assertEquals(1, doc.size()); // _id field only
+        assertTrue(doc.getValue("_id", null) instanceof String); // and always unwrapped
+      }
+    });
+  }
+
+  @Test
   public void testFindWithFields() throws Exception {
     int num = 10;
     doTestFind(num, new JsonObject(), new FindOptions().setFields(new JsonObject().put("num", true)), results -> {
@@ -807,8 +829,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       JsonObject replacement = createDoc();
       replacement.put("replacement", true);
       mongoClient.replaceDocumentsWithOptions(collection, new JsonObject().put("_id", upsertTestId), replacement, new UpdateOptions(true), onSuccess(v -> {
-        mongoClient.find(collection, new JsonObject(), onSuccess(list -> {
-          assertEquals(upsertTestId, v.getDocUpsertedId().getString(MongoClientUpdateResult.ID_FIELD));
+        mongoClient.find(collection, new JsonObject(), onSuccess(list -> {assertEquals(upsertTestId, v.getDocUpsertedId().getString(MongoClientUpdateResult.ID_FIELD));
           assertEquals(0, v.getDocMatched());
           assertEquals(0, v.getDocModified());
 
