@@ -193,6 +193,78 @@ public class MongoService extends MongoClient {
     } : null);
     return this;
   }
+  public MongoService findOneAndUpdate(String collection, Map<String, Object> query, Map<String, Object> update, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndUpdate(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  public MongoService findOneAndUpdateWithOptions(String collection, Map<String, Object> query, Map<String, Object> update, Map<String, Object> findOptions, Map<String, Object> updateOptions, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndUpdateWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, findOptions != null ? new io.vertx.ext.mongo.FindOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(findOptions)) : null, updateOptions != null ? new io.vertx.ext.mongo.UpdateOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(updateOptions)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  public MongoService findOneAndReplace(String collection, Map<String, Object> query, Map<String, Object> replace, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndReplace(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, replace != null ? new io.vertx.core.json.JsonObject(replace) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  public MongoService findOneAndReplaceWithOptions(String collection, Map<String, Object> query, Map<String, Object> update, Map<String, Object> findOptions, Map<String, Object> updateOptions, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndReplaceWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, update != null ? new io.vertx.core.json.JsonObject(update) : null, findOptions != null ? new io.vertx.ext.mongo.FindOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(findOptions)) : null, updateOptions != null ? new io.vertx.ext.mongo.UpdateOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(updateOptions)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  public MongoService findOneAndDelete(String collection, Map<String, Object> query, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndDelete(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
+  public MongoService findOneAndDeleteWithOptions(String collection, Map<String, Object> query, Map<String, Object> findOptions, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndDeleteWithOptions(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, findOptions != null ? new io.vertx.ext.mongo.FindOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(findOptions)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result())));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    } : null);
+    return this;
+  }
   public MongoService count(String collection, Map<String, Object> query, Handler<AsyncResult<Long>> resultHandler) {
     ((io.vertx.ext.mongo.MongoClient) delegate).count(collection, query != null ? new io.vertx.core.json.JsonObject(query) : null, resultHandler);
     return this;

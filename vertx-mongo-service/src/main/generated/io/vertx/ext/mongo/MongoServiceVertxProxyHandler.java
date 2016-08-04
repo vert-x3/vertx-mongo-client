@@ -239,6 +239,30 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
           service.findOne((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("fields"), createHandler(msg));
           break;
         }
+        case "findOneAndUpdate": {
+          service.findOneAndUpdate((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), createHandler(msg));
+          break;
+        }
+        case "findOneAndUpdateWithOptions": {
+          service.findOneAndUpdateWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), json.getJsonObject("findOptions") == null ? null : new io.vertx.ext.mongo.FindOptions(json.getJsonObject("findOptions")), json.getJsonObject("updateOptions") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("updateOptions")), createHandler(msg));
+          break;
+        }
+        case "findOneAndReplace": {
+          service.findOneAndReplace((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("replace"), createHandler(msg));
+          break;
+        }
+        case "findOneAndReplaceWithOptions": {
+          service.findOneAndReplaceWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), (io.vertx.core.json.JsonObject)json.getValue("update"), json.getJsonObject("findOptions") == null ? null : new io.vertx.ext.mongo.FindOptions(json.getJsonObject("findOptions")), json.getJsonObject("updateOptions") == null ? null : new io.vertx.ext.mongo.UpdateOptions(json.getJsonObject("updateOptions")), createHandler(msg));
+          break;
+        }
+        case "findOneAndDelete": {
+          service.findOneAndDelete((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createHandler(msg));
+          break;
+        }
+        case "findOneAndDeleteWithOptions": {
+          service.findOneAndDeleteWithOptions((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), json.getJsonObject("findOptions") == null ? null : new io.vertx.ext.mongo.FindOptions(json.getJsonObject("findOptions")), createHandler(msg));
+          break;
+        }
         case "count": {
           service.count((java.lang.String)json.getValue("collection"), (io.vertx.core.json.JsonObject)json.getValue("query"), createHandler(msg));
           break;

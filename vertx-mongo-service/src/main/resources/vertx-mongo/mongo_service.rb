@@ -232,6 +232,81 @@ module VertxMongo
     end
     # @param [String] collection 
     # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] update 
+    # @yield 
+    # @return [self]
+    def find_one_and_update(collection=nil,query=nil,update=nil)
+      if collection.class == String && query.class == Hash && update.class == Hash && block_given?
+        @j_del.java_method(:findOneAndUpdate, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_one_and_update(collection,query,update)"
+    end
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] update 
+    # @param [Hash] findOptions 
+    # @param [Hash] updateOptions 
+    # @yield 
+    # @return [self]
+    def find_one_and_update_with_options(collection=nil,query=nil,update=nil,findOptions=nil,updateOptions=nil)
+      if collection.class == String && query.class == Hash && update.class == Hash && findOptions.class == Hash && updateOptions.class == Hash && block_given?
+        @j_del.java_method(:findOneAndUpdateWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(findOptions)),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(updateOptions)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_one_and_update_with_options(collection,query,update,findOptions,updateOptions)"
+    end
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] replace 
+    # @yield 
+    # @return [self]
+    def find_one_and_replace(collection=nil,query=nil,replace=nil)
+      if collection.class == String && query.class == Hash && replace.class == Hash && block_given?
+        @j_del.java_method(:findOneAndReplace, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_one_and_replace(collection,query,replace)"
+    end
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash{String => Object}] update 
+    # @param [Hash] findOptions 
+    # @param [Hash] updateOptions 
+    # @yield 
+    # @return [self]
+    def find_one_and_replace_with_options(collection=nil,query=nil,update=nil,findOptions=nil,updateOptions=nil)
+      if collection.class == String && query.class == Hash && update.class == Hash && findOptions.class == Hash && updateOptions.class == Hash && block_given?
+        @j_del.java_method(:findOneAndReplaceWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(findOptions)),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(updateOptions)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_one_and_replace_with_options(collection,query,update,findOptions,updateOptions)"
+    end
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @yield 
+    # @return [self]
+    def find_one_and_delete(collection=nil,query=nil)
+      if collection.class == String && query.class == Hash && block_given?
+        @j_del.java_method(:findOneAndDelete, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_one_and_delete(collection,query)"
+    end
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
+    # @param [Hash] findOptions 
+    # @yield 
+    # @return [self]
+    def find_one_and_delete_with_options(collection=nil,query=nil,findOptions=nil)
+      if collection.class == String && query.class == Hash && findOptions.class == Hash && block_given?
+        @j_del.java_method(:findOneAndDeleteWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(findOptions)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling find_one_and_delete_with_options(collection,query,findOptions)"
+    end
+    # @param [String] collection 
+    # @param [Hash{String => Object}] query 
     # @yield 
     # @return [self]
     def count(collection=nil,query=nil)
