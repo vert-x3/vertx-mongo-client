@@ -446,9 +446,18 @@ def query = [
 ]
 
 mongoClient.findBatch("book", query, { res ->
+
   if (res.succeeded()) {
 
-    println(groovy.json.JsonOutput.toJson(res.result()))
+    if (res.result() == null) {
+
+      println("End of research")
+
+    } else {
+
+      println("Found doc: ${groovy.json.JsonOutput.toJson(res.result())}")
+
+    }
 
   } else {
 
@@ -456,6 +465,7 @@ mongoClient.findBatch("book", query, { res ->
 
   }
 })
+
 
 ----
 

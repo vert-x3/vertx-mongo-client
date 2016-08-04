@@ -447,9 +447,18 @@ var query = {
 };
 
 mongoClient.findBatch("book", query, function (res, res_err) {
+
   if (res_err == null) {
 
-    console.log(JSON.stringify(res));
+    if (res === null) {
+
+      console.log("End of research");
+
+    } else {
+
+      console.log("Found doc: " + JSON.stringify(res));
+
+    }
 
   } else {
 
@@ -457,6 +466,7 @@ mongoClient.findBatch("book", query, function (res, res_err) {
 
   }
 });
+
 
 ----
 
