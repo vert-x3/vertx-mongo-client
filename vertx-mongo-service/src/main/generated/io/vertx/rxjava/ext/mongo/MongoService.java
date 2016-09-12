@@ -32,7 +32,6 @@ import io.vertx.ext.mongo.MongoClientUpdateResult;
 import io.vertx.ext.mongo.UpdateOptions;
 
 /**
- * @author <a href="http://tfox.org">Tim Fox</a>
  *
  * <p/>
  * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.MongoService original} non RX-ified interface using Vert.x codegen.

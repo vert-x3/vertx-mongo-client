@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.4.0-SNAPSHOT</version>
+  <version>3.3.3</version>
 </dependency>
 ----
 
@@ -34,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mongo-client:3.4.0-SNAPSHOT'
+compile 'io.vertx:vertx-mongo-client:3.3.3'
 ----
 
 
@@ -360,9 +360,18 @@ This has the following fields:
 JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
 
 mongoClient.findBatch("book", query, res -> {
+
   if (res.succeeded()) {
 
-    System.out.println(res.result().encodePrettily());
+    if (res.result() == null) {
+
+      System.out.println("End of research");
+
+    } else {
+
+      System.out.println("Found doc: " + res.result().encodePrettily());
+
+    }
 
   } else {
 
