@@ -31,7 +31,6 @@ import io.vertx.core.Handler
 import io.vertx.ext.mongo.MongoClientUpdateResult
 import io.vertx.ext.mongo.UpdateOptions
 /**
- * @author <a href="http://tfox.org">Tim Fox</a>
 */
 @CompileStatic
 public class MongoService extends MongoClient {

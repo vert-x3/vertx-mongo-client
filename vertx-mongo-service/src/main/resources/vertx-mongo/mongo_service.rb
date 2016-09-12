@@ -3,7 +3,6 @@ require 'vertx-mongo/mongo_client'
 require 'vertx/util/utils.rb'
 # Generated from io.vertx.ext.mongo.MongoService
 module VertxMongo
-  #  @author <a href="http://tfox.org">Tim Fox</a>
   class MongoService < ::VertxMongo::MongoClient
     # @private
     # @param j_del [::VertxMongo::MongoService] the java delegate

@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.4.0-SNAPSHOT</version>
+  <version>3.3.3</version>
 </dependency>
 ----
 
@@ -34,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mongo-client:3.4.0-SNAPSHOT'
+compile 'io.vertx:vertx-mongo-client:3.3.3'
 ----
 
 
@@ -446,9 +446,18 @@ def query = [
 ]
 
 mongoClient.findBatch("book", query, { res ->
+
   if (res.succeeded()) {
 
-    println(groovy.json.JsonOutput.toJson(res.result()))
+    if (res.result() == null) {
+
+      println("End of research")
+
+    } else {
+
+      println("Found doc: ${groovy.json.JsonOutput.toJson(res.result())}")
+
+    }
 
   } else {
 
@@ -456,6 +465,7 @@ mongoClient.findBatch("book", query, { res ->
 
   }
 })
+
 
 ----
 
