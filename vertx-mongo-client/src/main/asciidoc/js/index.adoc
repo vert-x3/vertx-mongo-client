@@ -207,7 +207,7 @@ mongoClient.insert("books", document, function (res, res_err) {
 
 ----
 
-If a document is inserted with an id, and a document with that id already eists, the insert will fail:
+If a document is inserted with an id, and a document with that id already exists, the insert will fail:
 
 [source,js]
 ----
@@ -228,6 +228,33 @@ mongoClient.insert("books", document, function (res, res_err) {
   } else {
 
     // Will fail if the book with that id already exists.
+  }
+
+});
+
+
+----
+
+If a document is inserted with an id, and a document with that id already exists, the insert will fail:
+
+[source,js]
+----
+var documents = [];
+var document1 = {
+  "title" : "Guardians of the West"
+};
+var document2 = {
+  "title" : "The Belgariad"
+};
+documents.push(document1);
+documents.push(document2);
+
+mongoClient.insertMany("books", documents, function (res, res_err) {
+
+  if (res_err == null) {
+    //...
+  } else {
+    //...
   }
 
 });

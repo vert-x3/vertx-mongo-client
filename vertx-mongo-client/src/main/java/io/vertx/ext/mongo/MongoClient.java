@@ -1,5 +1,8 @@
 package io.vertx.ext.mongo;
 
+import java.util.List;
+import java.util.UUID;
+
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -8,9 +11,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.MongoClientImpl;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * A Vert.x service used to interact with MongoDB server instances.
@@ -116,6 +116,32 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+
+  /**
+   * Insert documents in the specified collection
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
+   *
+   * @param collection  the collection
+   * @param documents  the documents
+   * @param resultHandler  will be called when complete
+   */
+  @Fluent
+  MongoClient insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Insert documents in the specified collection with the specified write option
+   * <p>
+   * This operation might change <i>_id</i> field of <i>document</i> parameter
+   *
+   * @param collection  the collection
+   * @param documents  the documents
+   * @param insertOptions  the options for insertion to use
+   * @param writeOption  the write option to use
+   * @param resultHandler  will be called when complete
+   */
+  @Fluent
+  MongoClient insertManyWithOptions(String collection, List<JsonObject> documents, InsertOptions insertOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Update matching documents in the specified collection

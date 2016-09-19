@@ -150,11 +150,18 @@
  * {@link examples.Examples#example3}
  * ----
  *
- * If a document is inserted with an id, and a document with that id already eists, the insert will fail:
+ * If a document is inserted with an id, and a document with that id already exists, the insert will fail:
  *
  * [source,$lang]
  * ----
  * {@link examples.Examples#example4}
+ * ----
+ *
+ * If a document is inserted with an id, and a document with that id already exists, the insert will fail:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example4_1}
  * ----
  *
  * === Updating documents

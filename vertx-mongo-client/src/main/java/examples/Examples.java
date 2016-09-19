@@ -16,15 +16,17 @@
 
 package examples;
 
+import org.bson.types.ObjectId;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
-import org.bson.types.ObjectId;
-
-import java.util.List;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -128,6 +130,25 @@ public class Examples {
       } else {
 
         // Will fail if the book with that id already exists.
+      }
+
+    });
+
+  }
+
+  public void example4_1(MongoClient mongoClient) {
+    List<JsonObject> documents = new ArrayList<JsonObject>();
+    JsonObject document1 = new JsonObject().put("title", "Guardians of the West");
+    JsonObject document2 = new JsonObject().put("title", "The Belgariad");
+    documents.add(document1);
+    documents.add(document2);
+
+    mongoClient.insertMany("books", documents, res -> {
+
+      if (res.succeeded()) {
+        //...
+      } else {
+        //...
       }
 
     });

@@ -115,6 +115,22 @@ Gets the weighting object for use with a text index
 +++
 |===
 
+[[InsertOptions]]
+== InsertOptions
+
+++++
+ Options for configuring insertions.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[bypassDocumentValidation]]`bypassDocumentValidation`|`Boolean`|-
+|[[ordered]]`ordered`|`Boolean`|-
+|===
+
 [[MongoClientDeleteResult]]
 == MongoClientDeleteResult
 

@@ -16,6 +16,15 @@
 
 package io.vertx.ext.mongo;
 
+import org.bson.types.ObjectId;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.IMongodConfig;
@@ -30,14 +39,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 import io.vertx.test.core.VertxTestBase;
-import org.bson.types.ObjectId;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -173,4 +174,11 @@ public abstract class MongoTestBase extends VertxTestBase {
             put("longval", 123456789L).put("dblval", 1.23);
   }
 
+  protected List<JsonObject> createDocs(int num) {
+    List<JsonObject> documents = new ArrayList<JsonObject>();
+    for (int i = 0; i < num; ++i) {
+      documents.add(createDoc(i));
+    }
+    return documents;
+  }
 }

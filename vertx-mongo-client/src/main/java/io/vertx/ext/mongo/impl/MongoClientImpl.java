@@ -19,21 +19,17 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.*;
+import com.mongodb.async.client.DistinctIterable;
+import com.mongodb.async.client.FindIterable;
+import com.mongodb.async.client.ListIndexesIterable;
+import com.mongodb.async.client.MongoClients;
+import com.mongodb.async.client.MongoCollection;
+import com.mongodb.async.client.MongoDatabase;
+import com.mongodb.async.client.MongoIterable;
+import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import io.vertx.core.*;
-import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
-import io.vertx.core.shareddata.Shareable;
-import io.vertx.ext.mongo.*;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
-import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
+
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentReader;
 import org.bson.BsonValue;
@@ -41,9 +37,35 @@ import org.bson.codecs.DecoderContext;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.Shareable;
+import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.IndexOptions;
+import io.vertx.ext.mongo.InsertOptions;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoClientDeleteResult;
+import io.vertx.ext.mongo.MongoClientUpdateResult;
+import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.WriteOption;
+import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
+import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 
 import static java.util.Objects.requireNonNull;
 
@@ -137,6 +159,35 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
         return decodedDocument.getString(ID_FIELD);
       }
     }));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler) {
+    insertManyWithOptions(collection, documents, null, null, resultHandler);
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient insertManyWithOptions(String collection, List<JsonObject> documents, InsertOptions insertOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(documents, "documents cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    if (useObjectId) {
+      for (JsonObject document : documents) {
+        encodeKeyWhenUseObjectId(document);
+      }
+    }
+
+    InsertManyOptions options = new InsertManyOptions();
+    if (insertOptions != null) {
+      options.ordered(insertOptions.isOrdered());
+      options.bypassDocumentValidation(insertOptions.getBypassDocumentValidation());
+    }
+
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    coll.insertMany(documents, options, convertCallback(resultHandler, result -> null));
     return this;
   }
 

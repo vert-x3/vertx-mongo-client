@@ -207,7 +207,7 @@ mongoClient.insert("books", document) { |res_err,res|
 
 ----
 
-If a document is inserted with an id, and a document with that id already eists, the insert will fail:
+If a document is inserted with an id, and a document with that id already exists, the insert will fail:
 
 [source,ruby]
 ----
@@ -228,6 +228,33 @@ mongoClient.insert("books", document) { |res_err,res|
   else
 
     # Will fail if the book with that id already exists.
+  end
+
+}
+
+
+----
+
+If a document is inserted with an id, and a document with that id already exists, the insert will fail:
+
+[source,ruby]
+----
+documents = Array.new
+document1 = {
+  'title' => "Guardians of the West"
+}
+document2 = {
+  'title' => "The Belgariad"
+}
+documents.push(document1)
+documents.push(document2)
+
+mongoClient.insert_many("books", documents) { |res_err,res|
+
+  if (res_err == nil)
+    #...
+  else
+    #...
   end
 
 }

@@ -18,6 +18,7 @@ package io.vertx.groovy.ext.mongo;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.mongo.InsertOptions
 import io.vertx.ext.mongo.MongoClientDeleteResult
 import io.vertx.ext.mongo.WriteOption
 import io.vertx.groovy.core.Vertx
@@ -66,6 +67,14 @@ public class MongoService extends MongoClient {
   }
   public MongoService insertWithOptions(String collection, Map<String, Object> document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     ((io.vertx.ext.mongo.MongoClient) delegate).insertWithOptions(collection, document != null ? new io.vertx.core.json.JsonObject(document) : null, writeOption, resultHandler);
+    return this;
+  }
+  public MongoService insertMany(String collection, List<Map<String, Object>> documents, Handler<AsyncResult<Void>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).insertMany(collection, documents != null ? (List)documents.collect({new io.vertx.core.json.JsonObject(it)}) : null, resultHandler);
+    return this;
+  }
+  public MongoService insertManyWithOptions(String collection, List<Map<String, Object>> documents, Map<String, Object> insertOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+    ((io.vertx.ext.mongo.MongoClient) delegate).insertManyWithOptions(collection, documents != null ? (List)documents.collect({new io.vertx.core.json.JsonObject(it)}) : null, insertOptions != null ? new io.vertx.ext.mongo.InsertOptions(io.vertx.lang.groovy.InternalHelper.toJsonObject(insertOptions)) : null, writeOption, resultHandler);
     return this;
   }
   public MongoService update(String collection, Map<String, Object> query, Map<String, Object> update, Handler<AsyncResult<Void>> resultHandler) {

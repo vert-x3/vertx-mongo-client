@@ -1,19 +1,29 @@
 package io.vertx.ext.mongo;
 
-import io.vertx.core.*;
+import org.bson.types.ObjectId;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
+
+import io.vertx.core.Context;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.test.core.TestUtils;
-import org.bson.types.ObjectId;
-import org.junit.Test;
-
-import java.io.*;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
 import static io.vertx.ext.mongo.WriteOption.UNACKNOWLEDGED;
@@ -348,6 +358,74 @@ public abstract class MongoClientTestBase extends MongoTestBase {
         assertNull(id);
         mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
           assertEquals(doc, retrieved);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testInsertManyDefault() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      List<JsonObject> docs = createDocs(6);
+      mongoClient.insertMany(collection, docs, onSuccess(res2 -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(6, (long) count);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testInsertManyAlreadyExists() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      JsonObject genID  = new JsonObject().put("id", TestUtils.randomAlphaString(100));
+      doc.put("_id", genID);
+      JsonObject doc2 = doc.copy();
+      List<JsonObject> docs = new ArrayList<JsonObject>();
+      docs.add(doc);
+      docs.add(doc2);
+      mongoClient.insertMany(collection, docs, onFailure(ex -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(1, (long) count); // 1st record is OK not the second
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testInsertManyWithWriteOption() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      List<JsonObject> docs = createDocs(6);
+      mongoClient.insertManyWithOptions(collection, docs, null, UNACKNOWLEDGED, onSuccess(res2 -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(6, (long) count);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testInsertManyWithInsertOption() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      List<JsonObject> docs = createDocs(6);
+      InsertOptions insertOptions = new InsertOptions();
+      insertOptions.ordered(false);
+      mongoClient.insertManyWithOptions(collection, docs, insertOptions, null, onSuccess(res2 -> {
+        mongoClient.count(collection, new JsonObject(), onSuccess(count -> {
+          assertEquals(6, (long) count);
           testComplete();
         }));
       }));

@@ -72,6 +72,30 @@ module VertxMongo
       raise ArgumentError, "Invalid arguments when calling insert_with_options(collection,document,writeOption)"
     end
     # @param [String] collection 
+    # @param [Array<Hash{String => Object}>] documents 
+    # @yield 
+    # @return [self]
+    def insert_many(collection=nil,documents=nil)
+      if collection.class == String && documents.class == Array && block_given?
+        @j_del.java_method(:insertMany, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many(collection,documents)"
+    end
+    # @param [String] collection 
+    # @param [Array<Hash{String => Object}>] documents 
+    # @param [Hash] insertOptions 
+    # @param [:ACKNOWLEDGED,:UNACKNOWLEDGED,:FSYNCED,:JOURNALED,:REPLICA_ACKNOWLEDGED,:MAJORITY] writeOption 
+    # @yield 
+    # @return [self]
+    def insert_many_with_options(collection=nil,documents=nil,insertOptions=nil,writeOption=nil)
+      if collection.class == String && documents.class == Array && insertOptions.class == Hash && writeOption.class == Symbol && block_given?
+        @j_del.java_method(:insertManyWithOptions, [Java::java.lang.String.java_class,Java::JavaUtil::List.java_class,Java::IoVertxExtMongo::InsertOptions.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,documents.map { |element| ::Vertx::Util::Utils.to_json_object(element) },Java::IoVertxExtMongo::InsertOptions.new(::Vertx::Util::Utils.to_json_object(insertOptions)),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling insert_many_with_options(collection,documents,insertOptions,writeOption)"
+    end
+    # @param [String] collection 
     # @param [Hash{String => Object}] query 
     # @param [Hash{String => Object}] update 
     # @yield 

@@ -1,5 +1,7 @@
 package io.vertx.ext.mongo;
 
+import java.util.List;
+
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.ProxyIgnore;
@@ -10,8 +12,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ProxyHelper;
-
-import java.util.List;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -47,6 +47,14 @@ public interface MongoService extends MongoClient {
   @Override
   @Fluent
   MongoService insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService insertManyWithOptions(String collection, List<JsonObject> documents, InsertOptions insertOptions, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
 
   @Deprecated
   @Override
