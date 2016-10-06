@@ -1,13 +1,20 @@
 package io.vertx.ext.mongo.impl;
 
+import java.util.List;
+
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.*;
-
-import java.util.List;
+import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.IndexOptions;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoClientDeleteResult;
+import io.vertx.ext.mongo.MongoClientUpdateResult;
+import io.vertx.ext.mongo.MongoService;
+import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.WriteOption;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -138,6 +145,48 @@ public class MongoServiceImpl implements MongoService {
   @Fluent
   public MongoService findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) {
     client.findOne(collection, query, fields, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.findOneAndUpdate(collection, query, update, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.findOneAndUpdateWithOptions(collection, query, update, findOptions, updateOptions, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.findOneAndReplace(collection, query, replace, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.findOneAndReplaceWithOptions(collection, query, update, findOptions, updateOptions, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.findOneAndDelete(collection, query, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.findOneAndDeleteWithOptions(collection, query, findOptions, resultHandler);
     return this;
   }
 

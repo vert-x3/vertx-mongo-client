@@ -562,6 +562,192 @@ public class MongoClient {
   }
 
   /**
+   * Find a single matching document in the specified collection and update it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param update used to describe how the documents will be updated
+   * @param resultHandler will be provided with the document, if any
+   * @return 
+   */
+  public MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    delegate.findOneAndUpdate(collection, query, update, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and update it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param update used to describe how the documents will be updated
+   * @return 
+   */
+  public Observable<JsonObject> findOneAndUpdateObservable(String collection, JsonObject query, JsonObject update) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndUpdate(collection, query, update, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and update it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param update used to describe how the documents will be updated
+   * @param findOptions options to configure the find
+   * @param updateOptions options to configure the update
+   * @param resultHandler will be provided with the document, if any
+   * @return 
+   */
+  public MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    delegate.findOneAndUpdateWithOptions(collection, query, update, findOptions, updateOptions, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and update it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param update used to describe how the documents will be updated
+   * @param findOptions options to configure the find
+   * @param updateOptions options to configure the update
+   * @return 
+   */
+  public Observable<JsonObject> findOneAndUpdateWithOptionsObservable(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndUpdateWithOptions(collection, query, update, findOptions, updateOptions, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and replace it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param replace the replacement document
+   * @param resultHandler will be provided with the document, if any
+   * @return 
+   */
+  public MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    delegate.findOneAndReplace(collection, query, replace, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and replace it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param replace the replacement document
+   * @return 
+   */
+  public Observable<JsonObject> findOneAndReplaceObservable(String collection, JsonObject query, JsonObject replace) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndReplace(collection, query, replace, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and replace it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param replace the replacement document
+   * @param findOptions options to configure the find
+   * @param updateOptions options to configure the update
+   * @param resultHandler will be provided with the document, if any
+   * @return 
+   */
+  public MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    delegate.findOneAndReplaceWithOptions(collection, query, replace, findOptions, updateOptions, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and replace it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param replace the replacement document
+   * @param findOptions options to configure the find
+   * @param updateOptions options to configure the update
+   * @return 
+   */
+  public Observable<JsonObject> findOneAndReplaceWithOptionsObservable(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndReplaceWithOptions(collection, query, replace, findOptions, updateOptions, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and delete it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param resultHandler will be provided with the deleted document, if any
+   * @return 
+   */
+  public MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    delegate.findOneAndDelete(collection, query, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and delete it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @return 
+   */
+  public Observable<JsonObject> findOneAndDeleteObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndDelete(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and delete it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param findOptions options to configure the find
+   * @param resultHandler will be provided with the deleted document, if any
+   * @return 
+   */
+  public MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    delegate.findOneAndDeleteWithOptions(collection, query, findOptions, resultHandler);
+    return this;
+  }
+
+  /**
+   * Find a single matching document in the specified collection and delete it.
+   * <p>
+   * This operation might change <i>_id</i> field of <i>query</i> parameter
+   * @param collection the collection
+   * @param query the query used to match the document
+   * @param findOptions options to configure the find
+   * @return 
+   */
+  public Observable<JsonObject> findOneAndDeleteWithOptionsObservable(String collection, JsonObject query, FindOptions findOptions) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndDeleteWithOptions(collection, query, findOptions, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  /**
    * Count matching documents in a collection.
    * @param collection the collection
    * @param query query used to match documents
