@@ -175,6 +175,10 @@ Get the document id that's upserted
 +++
 Set whether multi is enabled
 +++
+|[[returningNewDocument]]`returningNewDocument`|`Boolean`|
++++
+Set whether new document property is enabled. Valid only on findOneAnd* methods.
++++
 |[[upsert]]`upsert`|`Boolean`|
 +++
 Set whether upsert is enabled

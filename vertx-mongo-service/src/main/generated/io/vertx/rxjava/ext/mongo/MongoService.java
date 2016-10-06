@@ -248,6 +248,72 @@ public class MongoService extends MongoClient {
     return resultHandler;
   }
 
+  public MongoService findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndUpdate(collection, query, update, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findOneAndUpdateObservable(String collection, JsonObject query, JsonObject update) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndUpdate(collection, query, update, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndUpdateWithOptions(collection, query, update, findOptions, updateOptions, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findOneAndUpdateWithOptionsObservable(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndUpdateWithOptions(collection, query, update, findOptions, updateOptions, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndReplace(collection, query, replace, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findOneAndReplaceObservable(String collection, JsonObject query, JsonObject replace) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndReplace(collection, query, replace, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndReplaceWithOptions(collection, query, update, findOptions, updateOptions, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findOneAndReplaceWithOptionsObservable(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndReplaceWithOptions(collection, query, update, findOptions, updateOptions, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndDelete(collection, query, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findOneAndDeleteObservable(String collection, JsonObject query) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndDelete(collection, query, resultHandler.toHandler());
+    return resultHandler;
+  }
+
+  public MongoService findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    ((io.vertx.ext.mongo.MongoClient) delegate).findOneAndDeleteWithOptions(collection, query, findOptions, resultHandler);
+    return this;
+  }
+
+  public Observable<JsonObject> findOneAndDeleteWithOptionsObservable(String collection, JsonObject query, FindOptions findOptions) { 
+    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+    findOneAndDeleteWithOptions(collection, query, findOptions, resultHandler.toHandler());
+    return resultHandler;
+  }
+
   public MongoService count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) { 
     ((io.vertx.ext.mongo.MongoClient) delegate).count(collection, query, resultHandler);
     return this;
