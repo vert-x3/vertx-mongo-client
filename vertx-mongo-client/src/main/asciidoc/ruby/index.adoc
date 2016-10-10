@@ -279,7 +279,7 @@ mongoClient.update("books", query, update) { |res_err,res|
 ----
 
 To specify if the update should upsert or update multiple documents, use `link:../../yardoc/VertxMongo/MongoClient.html#update_with_options-instance_method[updateWithOptions]`
-and pass in an instance of `link:../../null/dataobjects.html#UpdateOptions[UpdateOptions]`.
+and pass in an instance of `link:../dataobjects.html#UpdateOptions[UpdateOptions]`.
 
 This has the following fields:
 
@@ -432,7 +432,7 @@ mongoClient.find("books", query) { |res_err,res|
 The matching documents are returned as a list of json objects in the result handler.
 
 To specify things like what fields to return, how many results to return, etc use `link:../../yardoc/VertxMongo/MongoClient.html#find_with_options-instance_method[findWithOptions]`
-and pass in the an instance of `link:../../null/dataobjects.html#FindOptions[FindOptions]`.
+and pass in the an instance of `link:../dataobjects.html#FindOptions[FindOptions]`.
 
 This has the following fields:
 

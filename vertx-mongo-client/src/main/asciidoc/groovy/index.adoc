@@ -279,7 +279,7 @@ mongoClient.update("books", query, update, { res ->
 ----
 
 To specify if the update should upsert or update multiple documents, use `link:../../groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#updateWithOptions(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.core.json.JsonObject,%20io.vertx.ext.mongo.UpdateOptions,%20io.vertx.core.Handler)[updateWithOptions]`
-and pass in an instance of `link:../../null/dataobjects.html#UpdateOptions[UpdateOptions]`.
+and pass in an instance of `link:../dataobjects.html#UpdateOptions[UpdateOptions]`.
 
 This has the following fields:
 
@@ -429,7 +429,7 @@ mongoClient.find("books", query, { res ->
 The matching documents are returned as a list of json objects in the result handler.
 
 To specify things like what fields to return, how many results to return, etc use `link:../../groovydoc/io/vertx/groovy/ext/mongo/MongoClient.html#findWithOptions(java.lang.String,%20io.vertx.core.json.JsonObject,%20io.vertx.ext.mongo.FindOptions,%20io.vertx.core.Handler)[findWithOptions]`
-and pass in the an instance of `link:../../null/dataobjects.html#FindOptions[FindOptions]`.
+and pass in the an instance of `link:../dataobjects.html#FindOptions[FindOptions]`.
 
 This has the following fields:
 
