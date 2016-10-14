@@ -279,7 +279,7 @@ mongoClient.update("books", query, update, function (res, res_err) {
 ----
 
 To specify if the update should upsert or update multiple documents, use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#updateWithOptions[updateWithOptions]`
-and pass in an instance of `link:../dataobjects.html#UpdateOptions[UpdateOptions]`.
+and pass in an instance of `link:../../null/dataobjects.html#UpdateOptions[UpdateOptions]`.
 
 This has the following fields:
 
@@ -430,7 +430,7 @@ mongoClient.find("books", query, function (res, res_err) {
 The matching documents are returned as a list of json objects in the result handler.
 
 To specify things like what fields to return, how many results to return, etc use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#findWithOptions[findWithOptions]`
-and pass in the an instance of `link:../dataobjects.html#FindOptions[FindOptions]`.
+and pass in the an instance of `link:../../null/dataobjects.html#FindOptions[FindOptions]`.
 
 This has the following fields:
 
