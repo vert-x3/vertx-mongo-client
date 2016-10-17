@@ -148,18 +148,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    boolean id = document.containsKey(ID_FIELD);
-
     JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
+    boolean hasCustomId = document.containsKey(ID_FIELD);
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     coll.insertOne(encodedDocument, convertCallback(resultHandler, wr -> {
-      if (id) {
-        return null;
-      } else {
-        JsonObject decodedDocument = decodeKeyWhenUseObjectId(encodedDocument);
-        return decodedDocument.getString(ID_FIELD);
-      }
+      if (hasCustomId) return null;
+
+      JsonObject decodedDocument = decodeKeyWhenUseObjectId(encodedDocument);
+      return decodedDocument.getString(ID_FIELD);
     }));
     return this;
   }
@@ -192,8 +189,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    Bson bquery = wrap(query);
-    Bson bupdate = wrap(update);
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Bson bupdate = wrap(encodeKeyWhenUseObjectId(update));
     if (options.isMulti()) {
       coll.updateMany(bquery, bupdate, mongoUpdateOptions(options), toMongoClientUpdateResult(resultHandler));
     } else {
@@ -227,12 +224,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    boolean id = query.containsKey(ID_FIELD);
-    query = encodeKeyWhenUseObjectId(query);  //TODO: Need to write test for this and delete
-
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    Bson bquery = wrap(query);
-    coll.replaceOne(bquery, replace, mongoUpdateOptions(options), toMongoClientUpdateResult(resultHandler));
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    coll.replaceOne(bquery, encodeKeyWhenUseObjectId(replace), mongoUpdateOptions(options), toMongoClientUpdateResult(resultHandler));
     return this;
   }
 
@@ -254,9 +248,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    FindIterable<JsonObject> view = doFind(collection, query, options);
+    FindIterable<JsonObject> view = doFind(collection, encodeKeyWhenUseObjectId(query), options);
     List<JsonObject> results = new ArrayList<>();
-    view.into(results, wrapCallback(resultHandler));
+    view.into(results, convertCallback(resultHandler, wr -> {
+      results.forEach(this::decodeKeyWhenUseObjectId);
+      return results;
+    }));
     return this;
   }
 
@@ -381,7 +378,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    Bson bquery = wrap(query);
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     MongoCollection<JsonObject> coll = getCollection(collection);
     coll.count(bquery, wrapCallback(resultHandler));
     return this;
@@ -412,7 +409,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    Bson bquery = wrap(query);
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     coll.deleteMany(bquery, toMongoClientDeleteResult(resultHandler));
     return this;
   }
@@ -442,7 +439,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    Bson bquery = wrap(query);
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     coll.deleteOne(bquery, toMongoClientDeleteResult(resultHandler));
     return this;
   }
@@ -639,22 +636,27 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
 
   private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
-    if (useObjectId && json.containsKey(ID_FIELD) && json.getValue(ID_FIELD) instanceof String) {
-      String idString = json.getString(ID_FIELD);
-      if (ObjectId.isValid(idString)) {
-        json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, idString));
-      }
+    if (!useObjectId) return json;
+
+    Object idString = json.getValue(ID_FIELD, null);
+    if (idString instanceof String && ObjectId.isValid((String) idString)) {
+      json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, idString));
     }
+
     return json;
   }
 
   private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
-    if (useObjectId && json.containsKey(ID_FIELD)) {
-      Object idValue = json.getValue(ID_FIELD);
-      if (idValue instanceof JsonObject && ((JsonObject) idValue).containsKey(JsonObjectCodec.OID_FIELD)) {
-        json.put(ID_FIELD, json.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD));
-      }
-    }
+    if (!useObjectId) return json;
+
+    Object idField = json.getValue(ID_FIELD, null);
+    if (!(idField instanceof JsonObject)) return json;
+
+    Object idString = ((JsonObject) idField).getValue(JsonObjectCodec.OID_FIELD, null);
+    if (!(idString instanceof String)) return json;
+
+    json.put(ID_FIELD, (String) idString);
+
     return json;
   }
 
@@ -720,7 +722,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private FindIterable<JsonObject> doFind(String collection, WriteOption writeOption, JsonObject query, FindOptions options) {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    Bson bquery = wrap(query);
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     FindIterable<JsonObject> find = coll.find(bquery, JsonObject.class);
     if (options.getLimit() != -1) {
       find.limit(options.getLimit());
