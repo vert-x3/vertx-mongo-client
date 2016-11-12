@@ -51,7 +51,7 @@ to share the same pool so you don't end up with multiple pools
 
 The simplest way to do this is as follows:
 
-[source,java]
+[source,js]
 ----
 var MongoClient = require("vertx-mongo-js/mongo_client");
 
@@ -69,7 +69,7 @@ Subsequent calls will return a new client instance that uses the same pool, so t
 
 You can create a client specifying a pool source name as follows
 
-[source,java]
+[source,js]
 ----
 var MongoClient = require("vertx-mongo-js/mongo_client");
 
@@ -96,7 +96,7 @@ However, it's possible you want to create a client instance that doesn't share i
 
 In that case you can use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#createNonShared[MongoClient.createNonShared]`.
 
-[source,java]
+[source,js]
 ----
 var MongoClient = require("vertx-mongo-js/mongo_client");
 
