@@ -66,7 +66,7 @@
  *
  * The simplest way to do this is as follows:
  *
- * [source,java]
+ * [source,$lang]
  * ----
  * {@link examples.Examples#exampleCreateDefault}
  * ----
@@ -80,7 +80,7 @@
  *
  * You can create a client specifying a pool source name as follows
  *
- * [source,java]
+ * [source,$lang]
  * ----
  * {@link examples.Examples#exampleCreatePoolName}
  * ----
@@ -103,7 +103,7 @@
  *
  * In that case you can use {@link io.vertx.ext.mongo.MongoClient#createNonShared(io.vertx.core.Vertx, io.vertx.core.json.JsonObject)}.
  *
- * [source,java]
+ * [source,$lang]
  * ----
  * {@link examples.Examples#exampleCreateNonShared}
  * ----
