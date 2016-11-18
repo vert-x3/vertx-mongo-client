@@ -1081,6 +1081,25 @@ var MongoClient = function(j_val) {
   this._jdel = j_mongoClient;
 };
 
+MongoClient._jclass = utils.getJavaClass("io.vertx.ext.mongo.MongoClient");
+MongoClient._jtype = {
+  accept: function(obj) {
+    return MongoClient._jclass.isInstance(obj._jdel);
+  },
+  wrap: function(jdel) {
+    var obj = Object.create(MongoClient.prototype, {});
+    MongoClient.apply(obj, arguments);
+    return obj;
+  },
+  unwrap: function(obj) {
+    return obj._jdel;
+  }
+};
+MongoClient._create = function(jdel) {
+  var obj = Object.create(MongoClient.prototype, {});
+  MongoClient.apply(obj, arguments);
+  return obj;
+}
 /**
  Create a Mongo client which maintains its own data source.
 
@@ -1092,7 +1111,7 @@ var MongoClient = function(j_val) {
 MongoClient.createNonShared = function(vertx, config) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && (typeof __args[1] === 'object' && __args[1] != null)) {
-    return utils.convReturnVertxGen(JMongoClient["createNonShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject)"](vertx._jdel, utils.convParamJsonObject(config)), MongoClient);
+    return utils.convReturnVertxGen(MongoClient, JMongoClient["createNonShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject)"](vertx._jdel, utils.convParamJsonObject(config)));
   } else throw new TypeError('function invoked with invalid arguments');
 };
 
@@ -1109,11 +1128,10 @@ MongoClient.createNonShared = function(vertx, config) {
 MongoClient.createShared = function() {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && (typeof __args[1] === 'object' && __args[1] != null)) {
-    return utils.convReturnVertxGen(JMongoClient["createShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject)"](__args[0]._jdel, utils.convParamJsonObject(__args[1])), MongoClient);
+    return utils.convReturnVertxGen(MongoClient, JMongoClient["createShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject)"](__args[0]._jdel, utils.convParamJsonObject(__args[1])));
   }else if (__args.length === 3 && typeof __args[0] === 'object' && __args[0]._jdel && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string') {
-    return utils.convReturnVertxGen(JMongoClient["createShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject,java.lang.String)"](__args[0]._jdel, utils.convParamJsonObject(__args[1]), __args[2]), MongoClient);
+    return utils.convReturnVertxGen(MongoClient, JMongoClient["createShared(io.vertx.core.Vertx,io.vertx.core.json.JsonObject,java.lang.String)"](__args[0]._jdel, utils.convParamJsonObject(__args[1]), __args[2]));
   } else throw new TypeError('function invoked with invalid arguments');
 };
 
-// We export the Constructor function
 module.exports = MongoClient;

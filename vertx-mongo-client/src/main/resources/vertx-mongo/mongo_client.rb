@@ -16,6 +16,22 @@ module VertxMongo
     def j_del
       @j_del
     end
+    @@j_api_type = Object.new
+    def @@j_api_type.accept?(obj)
+      obj.class == MongoClient
+    end
+    def @@j_api_type.wrap(obj)
+      MongoClient.new(obj)
+    end
+    def @@j_api_type.unwrap(obj)
+      obj.j_del
+    end
+    def self.j_api_type
+      @@j_api_type
+    end
+    def self.j_class
+      Java::IoVertxExtMongo::MongoClient.java_class
+    end
     #  Create a Mongo client which maintains its own data source.
     # @param [::Vertx::Vertx] vertx the Vert.x instance
     # @param [Hash{String => Object}] config the configuration
@@ -24,7 +40,7 @@ module VertxMongo
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
         return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMongo::MongoClient.java_method(:createNonShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config)),::VertxMongo::MongoClient)
       end
-      raise ArgumentError, "Invalid arguments when calling create_non_shared(vertx,config)"
+      raise ArgumentError, "Invalid arguments when calling create_non_shared(#{vertx},#{config})"
     end
     #  Create a Mongo client which shares its data source with any other Mongo clients created with the same
     #  data source name
@@ -38,7 +54,7 @@ module VertxMongo
       elsif vertx.class.method_defined?(:j_del) && config.class == Hash && dataSourceName.class == String && !block_given?
         return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMongo::MongoClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,::Vertx::Util::Utils.to_json_object(config),dataSourceName),::VertxMongo::MongoClient)
       end
-      raise ArgumentError, "Invalid arguments when calling create_shared(vertx,config,dataSourceName)"
+      raise ArgumentError, "Invalid arguments when calling create_shared(#{vertx},#{config},#{dataSourceName})"
     end
     #  Save a document in the specified collection
     #  <p>
@@ -52,7 +68,7 @@ module VertxMongo
         @j_del.java_method(:save, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(document),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling save(collection,document)"
+      raise ArgumentError, "Invalid arguments when calling save(#{collection},#{document})"
     end
     #  Save a document in the specified collection with the specified write option
     #  <p>
@@ -67,7 +83,7 @@ module VertxMongo
         @j_del.java_method(:saveWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(document),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling save_with_options(collection,document,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling save_with_options(#{collection},#{document},#{writeOption})"
     end
     #  Insert a document in the specified collection
     #  <p>
@@ -81,7 +97,7 @@ module VertxMongo
         @j_del.java_method(:insert, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(document),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling insert(collection,document)"
+      raise ArgumentError, "Invalid arguments when calling insert(#{collection},#{document})"
     end
     #  Insert a document in the specified collection with the specified write option
     #  <p>
@@ -96,7 +112,7 @@ module VertxMongo
         @j_del.java_method(:insertWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(document),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling insert_with_options(collection,document,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling insert_with_options(#{collection},#{document},#{writeOption})"
     end
     #  Update matching documents in the specified collection
     # @param [String] collection the collection
@@ -109,7 +125,7 @@ module VertxMongo
         @j_del.java_method(:update, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling update(collection,query,update)"
+      raise ArgumentError, "Invalid arguments when calling update(#{collection},#{query},#{update})"
     end
     #  Update matching documents in the specified collection and return the handler with MongoClientUpdateResult result
     # @param [String] collection the collection
@@ -122,7 +138,7 @@ module VertxMongo
         @j_del.java_method(:updateCollection, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling update_collection(collection,query,update)"
+      raise ArgumentError, "Invalid arguments when calling update_collection(#{collection},#{query},#{update})"
     end
     #  Update matching documents in the specified collection, specifying options
     # @param [String] collection the collection
@@ -136,7 +152,7 @@ module VertxMongo
         @j_del.java_method(:updateWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling update_with_options(collection,query,update,options)"
+      raise ArgumentError, "Invalid arguments when calling update_with_options(#{collection},#{query},#{update},#{options})"
     end
     #  Update matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
     # @param [String] collection the collection
@@ -150,7 +166,7 @@ module VertxMongo
         @j_del.java_method(:updateCollectionWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling update_collection_with_options(collection,query,update,options)"
+      raise ArgumentError, "Invalid arguments when calling update_collection_with_options(#{collection},#{query},#{update},#{options})"
     end
     #  Replace matching documents in the specified collection
     #  <p>
@@ -165,7 +181,7 @@ module VertxMongo
         @j_del.java_method(:replace, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling replace(collection,query,replace)"
+      raise ArgumentError, "Invalid arguments when calling replace(#{collection},#{query},#{replace})"
     end
     #  Replace matching documents in the specified collection and return the handler with MongoClientUpdateResult result
     # @param [String] collection the collection
@@ -178,7 +194,7 @@ module VertxMongo
         @j_del.java_method(:replaceDocuments, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling replace_documents(collection,query,replace)"
+      raise ArgumentError, "Invalid arguments when calling replace_documents(#{collection},#{query},#{replace})"
     end
     #  Replace matching documents in the specified collection, specifying options
     #  <p>
@@ -194,7 +210,7 @@ module VertxMongo
         @j_del.java_method(:replaceWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling replace_with_options(collection,query,replace,options)"
+      raise ArgumentError, "Invalid arguments when calling replace_with_options(#{collection},#{query},#{replace},#{options})"
     end
     #  Replace matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
     # @param [String] collection the collection
@@ -208,7 +224,7 @@ module VertxMongo
         @j_del.java_method(:replaceDocumentsWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling replace_documents_with_options(collection,query,replace,options)"
+      raise ArgumentError, "Invalid arguments when calling replace_documents_with_options(#{collection},#{query},#{replace},#{options})"
     end
     #  Find matching documents in the specified collection
     # @param [String] collection the collection
@@ -220,7 +236,7 @@ module VertxMongo
         @j_del.java_method(:find, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result.to_a.map { |elt| elt != nil ? JSON.parse(elt.encode) : nil } : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling find(#{collection},#{query})"
     end
     #  Find matching documents in the specified collection.
     #  This method use batchCursor for returning each found document.
@@ -233,7 +249,7 @@ module VertxMongo
         @j_del.java_method(:findBatch, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_batch(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling find_batch(#{collection},#{query})"
     end
     #  Find matching documents in the specified collection, specifying options
     # @param [String] collection the collection
@@ -246,7 +262,7 @@ module VertxMongo
         @j_del.java_method(:findWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result.to_a.map { |elt| elt != nil ? JSON.parse(elt.encode) : nil } : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_with_options(collection,query,options)"
+      raise ArgumentError, "Invalid arguments when calling find_with_options(#{collection},#{query},#{options})"
     end
     #  Find matching documents in the specified collection, specifying options.
     #  This method use batchCursor for returning each found document.
@@ -260,7 +276,7 @@ module VertxMongo
         @j_del.java_method(:findBatchWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_batch_with_options(collection,query,options)"
+      raise ArgumentError, "Invalid arguments when calling find_batch_with_options(#{collection},#{query},#{options})"
     end
     #  Find a single matching document in the specified collection
     #  <p>
@@ -275,7 +291,7 @@ module VertxMongo
         @j_del.java_method(:findOne, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(fields),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_one(collection,query,fields)"
+      raise ArgumentError, "Invalid arguments when calling find_one(#{collection},#{query},#{fields})"
     end
     #  Find a single matching document in the specified collection and update it.
     #  <p>
@@ -290,7 +306,7 @@ module VertxMongo
         @j_del.java_method(:findOneAndUpdate, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_one_and_update(collection,query,update)"
+      raise ArgumentError, "Invalid arguments when calling find_one_and_update(#{collection},#{query},#{update})"
     end
     #  Find a single matching document in the specified collection and update it.
     #  <p>
@@ -307,7 +323,7 @@ module VertxMongo
         @j_del.java_method(:findOneAndUpdateWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(update),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(findOptions)),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(updateOptions)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_one_and_update_with_options(collection,query,update,findOptions,updateOptions)"
+      raise ArgumentError, "Invalid arguments when calling find_one_and_update_with_options(#{collection},#{query},#{update},#{findOptions},#{updateOptions})"
     end
     #  Find a single matching document in the specified collection and replace it.
     #  <p>
@@ -322,7 +338,7 @@ module VertxMongo
         @j_del.java_method(:findOneAndReplace, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_one_and_replace(collection,query,replace)"
+      raise ArgumentError, "Invalid arguments when calling find_one_and_replace(#{collection},#{query},#{replace})"
     end
     #  Find a single matching document in the specified collection and replace it.
     #  <p>
@@ -339,7 +355,7 @@ module VertxMongo
         @j_del.java_method(:findOneAndReplaceWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxExtMongo::UpdateOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),::Vertx::Util::Utils.to_json_object(replace),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(findOptions)),Java::IoVertxExtMongo::UpdateOptions.new(::Vertx::Util::Utils.to_json_object(updateOptions)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_one_and_replace_with_options(collection,query,replace,findOptions,updateOptions)"
+      raise ArgumentError, "Invalid arguments when calling find_one_and_replace_with_options(#{collection},#{query},#{replace},#{findOptions},#{updateOptions})"
     end
     #  Find a single matching document in the specified collection and delete it.
     #  <p>
@@ -353,7 +369,7 @@ module VertxMongo
         @j_del.java_method(:findOneAndDelete, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_one_and_delete(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling find_one_and_delete(#{collection},#{query})"
     end
     #  Find a single matching document in the specified collection and delete it.
     #  <p>
@@ -368,7 +384,7 @@ module VertxMongo
         @j_del.java_method(:findOneAndDeleteWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::FindOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::FindOptions.new(::Vertx::Util::Utils.to_json_object(findOptions)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling find_one_and_delete_with_options(collection,query,findOptions)"
+      raise ArgumentError, "Invalid arguments when calling find_one_and_delete_with_options(#{collection},#{query},#{findOptions})"
     end
     #  Count matching documents in a collection.
     # @param [String] collection the collection
@@ -380,7 +396,7 @@ module VertxMongo
         @j_del.java_method(:count, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling count(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling count(#{collection},#{query})"
     end
     #  Remove matching documents from a collection
     # @param [String] collection the collection
@@ -392,7 +408,7 @@ module VertxMongo
         @j_del.java_method(:remove, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling remove(#{collection},#{query})"
     end
     #  Remove matching documents from a collection and return the handler with MongoClientDeleteResult result
     # @param [String] collection the collection
@@ -404,7 +420,7 @@ module VertxMongo
         @j_del.java_method(:removeDocuments, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_documents(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling remove_documents(#{collection},#{query})"
     end
     #  Remove matching documents from a collection with the specified write option
     # @param [String] collection the collection
@@ -417,7 +433,7 @@ module VertxMongo
         @j_del.java_method(:removeWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_with_options(collection,query,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling remove_with_options(#{collection},#{query},#{writeOption})"
     end
     #  Remove matching documents from a collection with the specified write option and return the handler with MongoClientDeleteResult result
     # @param [String] collection the collection
@@ -430,7 +446,7 @@ module VertxMongo
         @j_del.java_method(:removeDocumentsWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_documents_with_options(collection,query,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling remove_documents_with_options(#{collection},#{query},#{writeOption})"
     end
     #  Remove a single matching document from a collection
     # @param [String] collection the collection
@@ -442,7 +458,7 @@ module VertxMongo
         @j_del.java_method(:removeOne, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_one(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling remove_one(#{collection},#{query})"
     end
     #  Remove a single matching document from a collection and return the handler with MongoClientDeleteResult result
     # @param [String] collection the collection
@@ -454,7 +470,7 @@ module VertxMongo
         @j_del.java_method(:removeDocument, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_document(collection,query)"
+      raise ArgumentError, "Invalid arguments when calling remove_document(#{collection},#{query})"
     end
     #  Remove a single matching document from a collection with the specified write option
     # @param [String] collection the collection
@@ -467,7 +483,7 @@ module VertxMongo
         @j_del.java_method(:removeOneWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_one_with_options(collection,query,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling remove_one_with_options(#{collection},#{query},#{writeOption})"
     end
     #  Remove a single matching document from a collection with the specified write option and return the handler with MongoClientDeleteResult result
     # @param [String] collection the collection
@@ -480,7 +496,7 @@ module VertxMongo
         @j_del.java_method(:removeDocumentWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling remove_document_with_options(collection,query,writeOption)"
+      raise ArgumentError, "Invalid arguments when calling remove_document_with_options(#{collection},#{query},#{writeOption})"
     end
     #  Create a new collection
     # @param [String] collectionName the name of the collection
@@ -491,7 +507,7 @@ module VertxMongo
         @j_del.java_method(:createCollection, [Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collectionName,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling create_collection(collectionName)"
+      raise ArgumentError, "Invalid arguments when calling create_collection(#{collectionName})"
     end
     #  Get a list of all collections in the database.
     # @yield will be called with a list of collections.
@@ -512,7 +528,7 @@ module VertxMongo
         @j_del.java_method(:dropCollection, [Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling drop_collection(collection)"
+      raise ArgumentError, "Invalid arguments when calling drop_collection(#{collection})"
     end
     #  Creates an index.
     # @param [String] collection the collection
@@ -524,7 +540,7 @@ module VertxMongo
         @j_del.java_method(:createIndex, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(key),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling create_index(collection,key)"
+      raise ArgumentError, "Invalid arguments when calling create_index(#{collection},#{key})"
     end
     #  Creates an index.
     # @param [String] collection the collection
@@ -537,7 +553,7 @@ module VertxMongo
         @j_del.java_method(:createIndexWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::IndexOptions.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(key),Java::IoVertxExtMongo::IndexOptions.new(::Vertx::Util::Utils.to_json_object(options)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling create_index_with_options(collection,key,options)"
+      raise ArgumentError, "Invalid arguments when calling create_index_with_options(#{collection},#{key},#{options})"
     end
     #  Get all the indexes in this collection.
     # @param [String] collection the collection
@@ -548,7 +564,7 @@ module VertxMongo
         @j_del.java_method(:listIndexes, [Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling list_indexes(collection)"
+      raise ArgumentError, "Invalid arguments when calling list_indexes(#{collection})"
     end
     #  Drops the index given its name.
     # @param [String] collection the collection
@@ -560,7 +576,7 @@ module VertxMongo
         @j_del.java_method(:dropIndex, [Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,indexName,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling drop_index(collection,indexName)"
+      raise ArgumentError, "Invalid arguments when calling drop_index(#{collection},#{indexName})"
     end
     #  Run an arbitrary MongoDB command.
     # @param [String] commandName the name of the command
@@ -572,7 +588,7 @@ module VertxMongo
         @j_del.java_method(:runCommand, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxCore::Handler.java_class]).call(commandName,::Vertx::Util::Utils.to_json_object(command),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling run_command(commandName,command)"
+      raise ArgumentError, "Invalid arguments when calling run_command(#{commandName},#{command})"
     end
     #  Gets the distinct values of the specified field name.
     #  Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
@@ -586,7 +602,7 @@ module VertxMongo
         @j_del.java_method(:distinct, [Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,fieldName,resultClassname,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling distinct(collection,fieldName,resultClassname)"
+      raise ArgumentError, "Invalid arguments when calling distinct(#{collection},#{fieldName},#{resultClassname})"
     end
     #  Gets the distinct values of the specified field name.
     #  This method use batchCursor for returning each found value.
@@ -601,7 +617,7 @@ module VertxMongo
         @j_del.java_method(:distinctBatch, [Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,fieldName,resultClassname,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling distinct_batch(collection,fieldName,resultClassname)"
+      raise ArgumentError, "Invalid arguments when calling distinct_batch(#{collection},#{fieldName},#{resultClassname})"
     end
     #  Close the client and release its resources
     # @return [void]
