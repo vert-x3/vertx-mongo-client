@@ -12,7 +12,7 @@ import static java.util.concurrent.TimeUnit.*;
 class ConnectionPoolSettingsParser {
 
   private final ConnectionPoolSettings settings;
-
+  private final Integer DEFAULT_MONGO_DRIVER_WAIT_Q_SIZE=100;
   public ConnectionPoolSettingsParser(ConnectionString connectionString, JsonObject config) {
     ConnectionPoolSettings.Builder settings = ConnectionPoolSettings.builder();
     if (connectionString != null) {
@@ -36,7 +36,8 @@ class ConnectionPoolSettingsParser {
       }
       Integer waitQueueMultiple = config.getInteger("waitQueueMultiple");
       if (waitQueueMultiple != null) {
-        settings.maxWaitQueueSize(waitQueueMultiple);
+	Integer waitQueueSize = waitQueueMultiple * DEFAULT_MONGO_DRIVER_WAIT_Q_SIZE;
+        settings.maxWaitQueueSize(waitQueueSize);
       }
       Long waitQueueTimeoutMS = config.getLong("waitQueueTimeoutMS");
       if (waitQueueTimeoutMS != null) {
