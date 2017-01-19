@@ -11,6 +11,8 @@ import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
@@ -37,6 +39,12 @@ class ClusterSettingsParser {
       }
       if (replicaSet != null) {
         settings.requiredReplicaSetName(replicaSet);
+      }
+
+      // serverSelectionTimeoutMS
+      Long serverSelectionTimeoutMS = config.getLong("serverSelectionTimeoutMS");
+      if(serverSelectionTimeoutMS != null) {
+        settings.serverSelectionTimeout(serverSelectionTimeoutMS, MILLISECONDS);
       }
     }
 

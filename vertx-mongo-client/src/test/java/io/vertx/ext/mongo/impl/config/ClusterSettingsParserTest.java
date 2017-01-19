@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -43,6 +44,13 @@ public class ClusterSettingsParserTest {
     ClusterSettings settings = settings(multipleHosts().put("replicaSet", "foobar"));
     assertMultipleHosts(settings);
     assertEquals("foobar", settings.getRequiredReplicaSetName());
+  }
+
+  @Test
+  public void testServerSelectionTimeoutMS() {
+    ClusterSettings settings = settings(multipleHosts().put("serverSelectionTimeoutMS", 7533L));
+    assertMultipleHosts(settings);
+    assertEquals(7533L, settings.getServerSelectionTimeout(TimeUnit.MILLISECONDS));
   }
 
   private static void assertSingleHost(ClusterConnectionMode mode, ClusterSettings settings) {
