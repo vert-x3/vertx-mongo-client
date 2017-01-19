@@ -391,7 +391,7 @@
  * ----
  * {
  *   // Single Cluster Settings
- *   "host" : "17.0.0.1", // string
+ *   "host" : "127.0.0.1", // string
  *   "port" : 27017,      // int
  *
  *   // Multiple Cluster Settings
@@ -406,7 +406,8 @@
  *     },
  *     ...
  *   ],
- *   "replicaSet" :  "foo"    // string
+ *   "replicaSet" :  "foo",    // string
+ *   "serverSelectionTimeoutMS" : 30000, // long
  *
  *   // Connection Pool Settings
  *   "maxPoolSize" : 50,                // int
@@ -456,6 +457,7 @@
  * `host`:: A host in the cluster
  * `port`:: The port a host in the cluster is listening on
  * `replicaSet`:: The name of the replica set, if the mongoDB instance is a member of a replica set
+ * `serverSelectionTimeoutMS`:: The time in milliseconds that the mongo driver will wait to select a server for an operation before raising an error.
  * `maxPoolSize`:: The maximum number of connections in the connection pool. The default value is `100`
  * `minPoolSize`:: The minimum number of connections in the connection pool. The default value is `0`
  * `maxIdleTimeMS`:: The maximum idle time of a pooled connection. The default value is `0` which means there is no limit
