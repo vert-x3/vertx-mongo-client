@@ -805,13 +805,47 @@ Here's an example of getting disting value
 
 [source,groovy]
 ----
-Code not translatable
+def document = [
+  title:"The Hobbit"
+]
+
+mongoClient.save("books", document, { res ->
+
+  if (res.succeeded()) {
+
+    mongoClient.distinct("books", "title", java.lang.String.class.getName(), { res2 ->
+      println("Title is : ${res2.result()[0]}")
+    })
+
+  } else {
+    res.cause().printStackTrace()
+  }
+
+})
+
 ----
 Here's an example of getting distinct value in batch mode
 
 [source,groovy]
 ----
-Code not translatable
+def document = [
+  title:"The Hobbit"
+]
+
+mongoClient.save("books", document, { res ->
+
+  if (res.succeeded()) {
+
+    mongoClient.distinctBatch("books", "title", java.lang.String.class.getName(), { res2 ->
+      println("Title is : ${res2.result().title}")
+    })
+
+  } else {
+    res.cause().printStackTrace()
+  }
+
+})
+
 ----
 
 == Configuring the client

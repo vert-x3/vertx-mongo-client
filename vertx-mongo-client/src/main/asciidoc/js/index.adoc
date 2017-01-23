@@ -806,13 +806,47 @@ Here's an example of getting disting value
 
 [source,js]
 ----
-Code not translatable
+var document = {
+  "title" : "The Hobbit"
+};
+
+mongoClient.save("books", document, function (res, res_err) {
+
+  if (res_err == null) {
+
+    mongoClient.distinct("books", "title", Java.type("java.lang.String").class.getName(), function (res2, res2_err) {
+      console.log("Title is : " + res2[0]);
+    });
+
+  } else {
+    res_err.printStackTrace();
+  }
+
+});
+
 ----
 Here's an example of getting distinct value in batch mode
 
 [source,js]
 ----
-Code not translatable
+var document = {
+  "title" : "The Hobbit"
+};
+
+mongoClient.save("books", document, function (res, res_err) {
+
+  if (res_err == null) {
+
+    mongoClient.distinctBatch("books", "title", Java.type("java.lang.String").class.getName(), function (res2, res2_err) {
+      console.log("Title is : " + res2.title);
+    });
+
+  } else {
+    res_err.printStackTrace();
+  }
+
+});
+
 ----
 
 == Configuring the client
