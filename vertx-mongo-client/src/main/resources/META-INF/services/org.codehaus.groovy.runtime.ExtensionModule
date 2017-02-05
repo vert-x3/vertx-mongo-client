@@ -1,4 +1,4 @@
-moduleName = vertx-mongo-module
+moduleName = io.vertx.ext.mongo.MongoClient-module
 moduleVersion = 1.0
-extensionClasses = io.vertx.groovy.ext.mongo.GroovyExtension
-staticExtensionClasses = io.vertx.groovy.ext.mongo.GroovyStaticExtension
+extensionClasses = io.vertx.groovy.ext.mongo.MongoClient_GroovyExtension
+staticExtensionClasses = io.vertx.groovy.ext.mongo.MongoClient_GroovyStaticExtension
