@@ -450,7 +450,7 @@ mongoClient.findBatch("book", query, function (res, res_err) {
 
   if (res_err == null) {
 
-    if (res === null) {
+    if (res === null ||res === undefined) {
 
       console.log("End of research");
 

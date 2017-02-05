@@ -20,12 +20,12 @@ var Vertx = require('vertx-js/vertx');
 
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
-var JMongoClient = io.vertx.ext.mongo.MongoClient;
-var MongoClientDeleteResult = io.vertx.ext.mongo.MongoClientDeleteResult;
-var IndexOptions = io.vertx.ext.mongo.IndexOptions;
-var FindOptions = io.vertx.ext.mongo.FindOptions;
-var MongoClientUpdateResult = io.vertx.ext.mongo.MongoClientUpdateResult;
-var UpdateOptions = io.vertx.ext.mongo.UpdateOptions;
+var JMongoClient = Java.type('io.vertx.ext.mongo.MongoClient');
+var MongoClientDeleteResult = Java.type('io.vertx.ext.mongo.MongoClientDeleteResult');
+var IndexOptions = Java.type('io.vertx.ext.mongo.IndexOptions');
+var FindOptions = Java.type('io.vertx.ext.mongo.FindOptions');
+var MongoClientUpdateResult = Java.type('io.vertx.ext.mongo.MongoClientUpdateResult');
+var UpdateOptions = Java.type('io.vertx.ext.mongo.UpdateOptions');
 
 /**
  A Vert.x service used to interact with MongoDB server instances.
@@ -201,7 +201,7 @@ var MongoClient = function(j_val) {
   this.updateWithOptions = function(collection, query, update, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
-      j_mongoClient["updateWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoClient["updateWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(Java.asJSONCompatible(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
@@ -226,7 +226,7 @@ var MongoClient = function(j_val) {
   this.updateCollectionWithOptions = function(collection, query, update, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
-      j_mongoClient["updateCollectionWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoClient["updateCollectionWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), options != null ? new UpdateOptions(new JsonObject(Java.asJSONCompatible(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -303,7 +303,7 @@ var MongoClient = function(j_val) {
   this.replaceWithOptions = function(collection, query, replace, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
-      j_mongoClient["replaceWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoClient["replaceWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(Java.asJSONCompatible(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {
@@ -328,7 +328,7 @@ var MongoClient = function(j_val) {
   this.replaceDocumentsWithOptions = function(collection, query, replace, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 5 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && typeof __args[4] === 'function') {
-      j_mongoClient["replaceDocumentsWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoClient["replaceDocumentsWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), options != null ? new UpdateOptions(new JsonObject(Java.asJSONCompatible(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -399,7 +399,7 @@ var MongoClient = function(j_val) {
   this.findWithOptions = function(collection, query, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
-      j_mongoClient["findWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), options != null ? new FindOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoClient["findWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), options != null ? new FindOptions(new JsonObject(Java.asJSONCompatible(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnListSetJson(ar.result()), null);
       } else {
@@ -424,7 +424,7 @@ var MongoClient = function(j_val) {
   this.findBatchWithOptions = function(collection, query, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
-      j_mongoClient["findBatchWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), options != null ? new FindOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoClient["findBatchWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), options != null ? new FindOptions(new JsonObject(Java.asJSONCompatible(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {
@@ -504,7 +504,7 @@ var MongoClient = function(j_val) {
   this.findOneAndUpdateWithOptions = function(collection, query, update, findOptions, updateOptions, resultHandler) {
     var __args = arguments;
     if (__args.length === 6 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && (typeof __args[4] === 'object' && __args[4] != null) && typeof __args[5] === 'function') {
-      j_mongoClient["findOneAndUpdateWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), findOptions != null ? new FindOptions(new JsonObject(JSON.stringify(findOptions))) : null, updateOptions != null ? new UpdateOptions(new JsonObject(JSON.stringify(updateOptions))) : null, function(ar) {
+      j_mongoClient["findOneAndUpdateWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(update), findOptions != null ? new FindOptions(new JsonObject(Java.asJSONCompatible(findOptions))) : null, updateOptions != null ? new UpdateOptions(new JsonObject(Java.asJSONCompatible(updateOptions))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {
@@ -558,7 +558,7 @@ var MongoClient = function(j_val) {
   this.findOneAndReplaceWithOptions = function(collection, query, replace, findOptions, updateOptions, resultHandler) {
     var __args = arguments;
     if (__args.length === 6 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && (typeof __args[3] === 'object' && __args[3] != null) && (typeof __args[4] === 'object' && __args[4] != null) && typeof __args[5] === 'function') {
-      j_mongoClient["findOneAndReplaceWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), findOptions != null ? new FindOptions(new JsonObject(JSON.stringify(findOptions))) : null, updateOptions != null ? new UpdateOptions(new JsonObject(JSON.stringify(updateOptions))) : null, function(ar) {
+      j_mongoClient["findOneAndReplaceWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.ext.mongo.UpdateOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), utils.convParamJsonObject(replace), findOptions != null ? new FindOptions(new JsonObject(Java.asJSONCompatible(findOptions))) : null, updateOptions != null ? new UpdateOptions(new JsonObject(Java.asJSONCompatible(updateOptions))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {
@@ -609,7 +609,7 @@ var MongoClient = function(j_val) {
   this.findOneAndDeleteWithOptions = function(collection, query, findOptions, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
-      j_mongoClient["findOneAndDeleteWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), findOptions != null ? new FindOptions(new JsonObject(JSON.stringify(findOptions))) : null, function(ar) {
+      j_mongoClient["findOneAndDeleteWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.FindOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(query), findOptions != null ? new FindOptions(new JsonObject(Java.asJSONCompatible(findOptions))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {
@@ -932,7 +932,7 @@ var MongoClient = function(j_val) {
   this.createIndexWithOptions = function(collection, key, options, resultHandler) {
     var __args = arguments;
     if (__args.length === 4 && typeof __args[0] === 'string' && (typeof __args[1] === 'object' && __args[1] != null) && (typeof __args[2] === 'object' && __args[2] != null) && typeof __args[3] === 'function') {
-      j_mongoClient["createIndexWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.IndexOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(key), options != null ? new IndexOptions(new JsonObject(JSON.stringify(options))) : null, function(ar) {
+      j_mongoClient["createIndexWithOptions(java.lang.String,io.vertx.core.json.JsonObject,io.vertx.ext.mongo.IndexOptions,io.vertx.core.Handler)"](collection, utils.convParamJsonObject(key), options != null ? new IndexOptions(new JsonObject(Java.asJSONCompatible(options))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(null, null);
       } else {

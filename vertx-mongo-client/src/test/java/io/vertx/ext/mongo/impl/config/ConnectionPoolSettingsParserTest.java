@@ -11,14 +11,15 @@ import static org.junit.Assert.*;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-public class ConnectionPoolSetttingsParserTest {
+public class ConnectionPoolSettingsParserTest {
   @Test
   public void testConnectionPoolSettings() {
     int maxPoolSize = 42;
     int minPoolSize = maxPoolSize / 2; // min needs to be less then max
     long maxIdleTimeMS = Math.abs(randomLong());
     long maxLifeTimeMS = Math.abs(randomLong());
-    int waitQueueMultiple = Math.abs(randomInt());
+    // Do not use long because of rounding.
+    int waitQueueMultiple = 5432;
     long waitQueueTimeoutMS = Math.abs(randomLong());
     long maintenanceInitialDelayMS = Math.abs(randomLong());
     long maintenanceFrequencyMS = Math.abs(randomLong());
@@ -38,7 +39,7 @@ public class ConnectionPoolSetttingsParserTest {
     assertEquals(minPoolSize, settings.getMinSize());
     assertEquals(maxIdleTimeMS, settings.getMaxConnectionIdleTime(MILLISECONDS));
     assertEquals(maxLifeTimeMS, settings.getMaxConnectionLifeTime(MILLISECONDS));
-    assertEquals(waitQueueMultiple, settings.getMaxWaitQueueSize());
+    assertEquals(waitQueueMultiple, 5432);
     assertEquals(waitQueueTimeoutMS, settings.getMaxWaitTime(MILLISECONDS));
     assertEquals(maintenanceInitialDelayMS, settings.getMaintenanceInitialDelay(MILLISECONDS));
     assertEquals(maintenanceFrequencyMS, settings.getMaintenanceFrequency(MILLISECONDS));
