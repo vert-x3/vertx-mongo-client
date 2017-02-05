@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.4.0-SNAPSHOT</version>
+  <version>3.4.0.Beta1</version>
 </dependency>
 ----
 
@@ -34,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mongo-client:3.4.0-SNAPSHOT'
+compile 'io.vertx:vertx-mongo-client:3.4.0.Beta1'
 ----
 
 
@@ -54,7 +54,6 @@ The simplest way to do this is as follows:
 [source,kotlin]
 ----
 import io.vertx.ext.mongo.MongoClient
-import io.vertx.kotlin.common.json.*
 
 
 var client = MongoClient.createShared(vertx, config)
@@ -74,7 +73,6 @@ You can create a client specifying a pool source name as follows
 [source,kotlin]
 ----
 import io.vertx.ext.mongo.MongoClient
-import io.vertx.kotlin.common.json.*
 
 
 var client = MongoClient.createShared(vertx, config, "MyPoolName")
@@ -103,7 +101,6 @@ In that case you can use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html
 [source,kotlin]
 ----
 import io.vertx.ext.mongo.MongoClient
-import io.vertx.kotlin.common.json.*
 
 
 var client = MongoClient.createNonShared(vertx, config)
@@ -132,7 +129,7 @@ Here's an example of saving a document and getting the id back
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 // Document has no id
@@ -161,7 +158,7 @@ And here's an example of saving a document which already has an id.
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 // Document has an id already
@@ -196,7 +193,7 @@ If the document is inserted and has no id, then the id field generated will be r
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 // Document has an id already
@@ -225,7 +222,7 @@ If a document is inserted with an id, and a document with that id already eists,
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 // Document has an id already
@@ -267,7 +264,7 @@ Here's an example of updating a document in the books collection:
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 // Match any documents with title=The Hobbit
@@ -308,7 +305,7 @@ This has the following fields:
 [source,kotlin]
 ----
 import io.vertx.ext.mongo.UpdateOptions
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 import io.vertx.kotlin.ext.mongo.*
 
 
@@ -352,7 +349,7 @@ Here's an example of replacing a document in the books collection
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 var query = json {
@@ -393,7 +390,7 @@ Here's a simple example with an empty query that will match all books:
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 // empty query = match any
@@ -426,7 +423,7 @@ Here's another example that will match all books by Tolkien:
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 // will match all Tolkien books
@@ -468,7 +465,7 @@ This has the following fields:
 `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
 
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 // will match all Tolkien books
@@ -518,7 +515,7 @@ Here's an example of removing all Tolkien books:
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 var query = json {
@@ -555,7 +552,7 @@ Here's an example that counts the number of Tolkien books. The number is passed 
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 var query = json {
@@ -586,7 +583,6 @@ To get a list of all collections you can use `link:../../apidocs/io/vertx/ext/mo
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
 
 
 mongoClient.getCollections({ res ->
@@ -609,7 +605,6 @@ To create a new collection you can use `link:../../apidocs/io/vertx/ext/mongo/Mo
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
 
 
 mongoClient.createCollection("mynewcollectionr", { res ->
@@ -634,7 +629,6 @@ NOTE: Dropping a collection will delete all documents within it!
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
 
 
 mongoClient.dropCollection("mynewcollectionr", { res ->
@@ -668,7 +662,7 @@ of the entries in the JSON is the command name it must be specified as a paramet
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 var command = json {
@@ -698,7 +692,7 @@ Here's an example of inserting a document with a date field
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 var document = json {
@@ -772,7 +766,7 @@ Here's an example of inserting a base 64 encoded string, typing it as binary a b
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 //This could be a the byte contents of a pdf file, etc converted to base 64
@@ -815,7 +809,7 @@ Here's an example of inserting an object ID and reading it back
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 
 var individualId = org.bson.types.ObjectId().toHexString()
@@ -855,7 +849,7 @@ Here's an example of getting disting value
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 var document = json {
   obj("title" to "The Hobbit")
@@ -880,7 +874,7 @@ Here's an example of getting distinct value in batch mode
 
 [source,kotlin]
 ----
-import io.vertx.kotlin.common.json.*
+import io.vertx.kotlin.core.json.*
 
 var document = json {
   obj("title" to "The Hobbit")
