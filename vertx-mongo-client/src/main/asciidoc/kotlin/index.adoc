@@ -51,16 +51,15 @@ to share the same pool so you don't end up with multiple pools
 
 The simplest way to do this is as follows:
 
-[source,js]
-----
-var MongoClient = require("vertx-mongo-js/mongo_client");
-
-var client = MongoClient.createShared(vertx, config);
-
-
+[source,kotlin]
 ----
 
-The first call to `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#createShared[MongoClient.createShared]`
+var client = MongoClient.createShared(vertx, config)
+
+
+----
+
+The first call to `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#createShared-io.vertx.core.Vertx-io.vertx.core.json.JsonObject-[MongoClient.createShared]`
 will actually create the pool, and the specified config will be used.
 
 Subsequent calls will return a new client instance that uses the same pool, so the configuration won't be used.
@@ -69,11 +68,10 @@ Subsequent calls will return a new client instance that uses the same pool, so t
 
 You can create a client specifying a pool source name as follows
 
-[source,js]
+[source,kotlin]
 ----
-var MongoClient = require("vertx-mongo-js/mongo_client");
 
-var client = MongoClient.createShared(vertx, config, "MyPoolName");
+var client = MongoClient.createShared(vertx, config, "MyPoolName")
 
 
 ----
@@ -81,7 +79,7 @@ var client = MongoClient.createShared(vertx, config, "MyPoolName");
 If different clients are created using the same Vert.x instance and specifying the same pool name, they will
 share the same pool.
 
-The first call to `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#createShared[MongoClient.createShared]`
+The first call to `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#createShared-io.vertx.core.Vertx-io.vertx.core.json.JsonObject-[MongoClient.createShared]`
 will actually create the pool, and the specified config will be used.
 
 Subsequent calls will return a new client instance that uses the same pool, so the configuration won't be used.
@@ -94,28 +92,27 @@ interacting with different databases.
 In most cases you will want to share a pool between different client instances.
 However, it's possible you want to create a client instance that doesn't share its pool with any other client.
 
-In that case you can use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#createNonShared[MongoClient.createNonShared]`.
+In that case you can use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#createNonShared-io.vertx.core.Vertx-io.vertx.core.json.JsonObject-[MongoClient.createNonShared]`.
 
-[source,js]
-----
-var MongoClient = require("vertx-mongo-js/mongo_client");
-
-var client = MongoClient.createNonShared(vertx, config);
-
-
+[source,kotlin]
 ----
 
-This is equivalent to calling `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#createShared[MongoClient.createShared]`
+var client = MongoClient.createNonShared(vertx, config)
+
+
+----
+
+This is equivalent to calling `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#createShared-io.vertx.core.Vertx-io.vertx.core.json.JsonObject-java.lang.String-[MongoClient.createShared]`
 with a unique pool name each time.
 
 
 == Using the API
 
-The client API is represented by `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html[MongoClient]`.
+The client API is represented by `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html[MongoClient]`.
 
 === Saving documents
 
-To save a document you use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#save[save]`.
+To save a document you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#save-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[save]`.
 
 If the document has no `\_id` field, it is inserted, otherwise, it is _upserted_. Upserted means it is inserted
 if it doesn't already exist, otherwise it is updated.
@@ -124,104 +121,108 @@ If the document is inserted and has no id, then the id field generated will be r
 
 Here's an example of saving a document and getting the id back
 
-[source,js]
+[source,kotlin]
 ----
 
 // Document has no id
 
-var document = {
-  "title" : "The Hobbit"
-};
+var document = json {
+  obj("title" to "The Hobbit")
+}
 
-mongoClient.save("books", document, function (res, res_err) {
+mongoClient.save("books", document, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    var id = res;
-    console.log("Saved book with id " + id);
+    var id = res.result()
+    println("Saved book with id ${id}")
 
   } else {
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 
 ----
 
 And here's an example of saving a document which already has an id.
 
-[source,js]
+[source,kotlin]
 ----
 
 // Document has an id already
 
-var document = {
-  "title" : "The Hobbit",
-  "_id" : "123244"
-};
+var document = json {
+  obj(
+    "title" to "The Hobbit",
+    "_id" to "123244"
+  )
+}
 
-mongoClient.save("books", document, function (res, res_err) {
+mongoClient.save("books", document, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
     // ...
 
   } else {
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 
 ----
 
 === Inserting documents
 
-To insert a document you use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#insert[insert]`.
+To insert a document you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#insert-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[insert]`.
 
 If the document is inserted and has no id, then the id field generated will be returned to the result handler.
 
-[source,js]
+[source,kotlin]
 ----
 
 // Document has an id already
 
-var document = {
-  "title" : "The Hobbit"
-};
+var document = json {
+  obj("title" to "The Hobbit")
+}
 
-mongoClient.insert("books", document, function (res, res_err) {
+mongoClient.insert("books", document, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    var id = res;
-    console.log("Inserted book with id " + id);
+    var id = res.result()
+    println("Inserted book with id ${id}")
 
   } else {
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 
 ----
 
 If a document is inserted with an id, and a document with that id already eists, the insert will fail:
 
-[source,js]
+[source,kotlin]
 ----
 
 // Document has an id already
 
-var document = {
-  "title" : "The Hobbit",
-  "_id" : "123244"
-};
+var document = json {
+  obj(
+    "title" to "The Hobbit",
+    "_id" to "123244"
+  )
+}
 
-mongoClient.insert("books", document, function (res, res_err) {
+mongoClient.insert("books", document, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
     //...
 
@@ -230,14 +231,14 @@ mongoClient.insert("books", document, function (res, res_err) {
     // Will fail if the book with that id already exists.
   }
 
-});
+})
 
 
 ----
 
 === Updating documents
 
-To update a documents you use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#update[update]`.
+To update a documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#update-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[update]`.
 
 This updates one or multiple documents in a collection. The json object that is passed in the `update`
 parameter must contain http://docs.mongodb.org/manual/reference/operator/update-field/[Update Operators] and determines
@@ -247,39 +248,37 @@ The json object specified in the query parameter determines which documents in t
 
 Here's an example of updating a document in the books collection:
 
-[source,js]
+[source,kotlin]
 ----
 
 // Match any documents with title=The Hobbit
-var query = {
-  "title" : "The Hobbit"
-};
+var query = json {
+  obj("title" to "The Hobbit")
+}
 
 // Set the author field
-var update = {
-  "$set" : {
-    "author" : "J. R. R. Tolkien"
-  }
-};
+var update = json {
+  obj("\$$set" to obj("author" to "J. R. R. Tolkien"))
+}
 
-mongoClient.update("books", query, update, function (res, res_err) {
+mongoClient.update("books", query, update, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    console.log("Book updated !");
+    println("Book updated !")
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 
 ----
 
-To specify if the update should upsert or update multiple documents, use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#updateWithOptions[updateWithOptions]`
-and pass in an instance of `link:../dataobjects.html#UpdateOptions[UpdateOptions]`.
+To specify if the update should upsert or update multiple documents, use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#updateWithOptions-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.ext.mongo.UpdateOptions-io.vertx.core.Handler-[updateWithOptions]`
+and pass in an instance of `link:../../apidocs/io/vertx/ext/mongo/UpdateOptions.html[UpdateOptions]`.
 
 This has the following fields:
 
@@ -287,150 +286,150 @@ This has the following fields:
 `upsert`:: set to true to insert the document if the query doesn't match
 `writeConcern`:: the write concern for this operation
 
-[source,js]
+[source,kotlin]
 ----
 
 // Match any documents with title=The Hobbit
-var query = {
-  "title" : "The Hobbit"
-};
+var query = json {
+  obj("title" to "The Hobbit")
+}
 
 // Set the author field
-var update = {
-  "$set" : {
-    "author" : "J. R. R. Tolkien"
-  }
-};
+var update = json {
+  obj("\$$set" to obj("author" to "J. R. R. Tolkien"))
+}
 
-var options = {
-  "multi" : true
-};
+var options = UpdateOptions(
+  multi = true)
 
-mongoClient.updateWithOptions("books", query, update, options, function (res, res_err) {
+mongoClient.updateWithOptions("books", query, update, options, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    console.log("Book updated !");
+    println("Book updated !")
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 
 ----
 
 === Replacing documents
 
-To replace documents you use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#replace[replace]`.
+To replace documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#replace-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[replace]`.
 
 This is similar to the update operation, however it does not take any update operators like `update`.
 Instead it replaces the entire document with the one provided.
 
 Here's an example of replacing a document in the books collection
 
-[source,js]
+[source,kotlin]
 ----
 
-var query = {
-  "title" : "The Hobbit"
-};
+var query = json {
+  obj("title" to "The Hobbit")
+}
 
-var replace = {
-  "title" : "The Lord of the Rings",
-  "author" : "J. R. R. Tolkien"
-};
+var replace = json {
+  obj(
+    "title" to "The Lord of the Rings",
+    "author" to "J. R. R. Tolkien"
+  )
+}
 
-mongoClient.replace("books", query, replace, function (res, res_err) {
+mongoClient.replace("books", query, replace, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    console.log("Book replaced !");
+    println("Book replaced !")
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
 
   }
 
-});
+})
 
 
 ----
 
 === Finding documents
 
-To find documents you use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#find[find]`.
+To find documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#find-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[find]`.
 
 The `query` parameter is used to match the documents in the collection.
 
 Here's a simple example with an empty query that will match all books:
 
-[source,js]
+[source,kotlin]
 ----
 
 // empty query = match any
-var query = {
-};
+var query = json {
+  obj()
+}
 
-mongoClient.find("books", query, function (res, res_err) {
+mongoClient.find("books", query, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    Array.prototype.forEach.call(res, function(json) {
+    for (json in res.result()) {
 
-      console.log(JSON.stringify(json));
+      println(json.toString())
 
-    });
+    }
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
 
   }
 
-});
+})
 
 
 ----
 
 Here's another example that will match all books by Tolkien:
 
-[source,js]
+[source,kotlin]
 ----
 
 // will match all Tolkien books
-var query = {
-  "author" : "J. R. R. Tolkien"
-};
+var query = json {
+  obj("author" to "J. R. R. Tolkien")
+}
 
-mongoClient.find("books", query, function (res, res_err) {
+mongoClient.find("books", query, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    Array.prototype.forEach.call(res, function(json) {
+    for (json in res.result()) {
 
-      console.log(JSON.stringify(json));
+      println(json.toString())
 
-    });
+    }
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
 
   }
 
-});
+})
 
 
 ----
 
 The matching documents are returned as a list of json objects in the result handler.
 
-To specify things like what fields to return, how many results to return, etc use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#findWithOptions[findWithOptions]`
-and pass in the an instance of `link:../dataobjects.html#FindOptions[FindOptions]`.
+To specify things like what fields to return, how many results to return, etc use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#findWithOptions-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.ext.mongo.FindOptions-io.vertx.core.Handler-[findWithOptions]`
+and pass in the an instance of `link:../../apidocs/io/vertx/ext/mongo/FindOptions.html[FindOptions]`.
 
 This has the following fields:
 
@@ -442,30 +441,30 @@ This has the following fields:
 ----
 
 // will match all Tolkien books
-var query = {
-  "author" : "J. R. R. Tolkien"
-};
+var query = json {
+  obj("author" to "J. R. R. Tolkien")
+}
 
-mongoClient.findBatch("book", query, function (res, res_err) {
+mongoClient.findBatch("book", query, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    if ((res === null || res === undefined)) {
+    if (res.result() == null) {
 
-      console.log("End of research");
+      println("End of research")
 
     } else {
 
-      console.log("Found doc: " + JSON.stringify(res));
+      println("Found doc: ${res.result().toString()}")
 
     }
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
 
   }
-});
+})
 
 
 ----
@@ -474,72 +473,72 @@ The matching documents are returned unitary in the result handler.
 
 === Finding a single document
 
-To find a single document you use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#findOne[findOne]`.
+To find a single document you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#findOne-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[findOne]`.
 
-This works just like `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#find[find]` but it returns just the first matching document.
+This works just like `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#find-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[find]` but it returns just the first matching document.
 
 === Removing documents
 
-To remove documents use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#removeDocuments[removeDocuments]`.
+To remove documents use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#removeDocuments-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[removeDocuments]`.
 
 The `query` parameter is used to match the documents in the collection to determine which ones to remove.
 
 Here's an example of removing all Tolkien books:
 
-[source,js]
+[source,kotlin]
 ----
 
-var query = {
-  "author" : "J. R. R. Tolkien"
-};
+var query = json {
+  obj("author" to "J. R. R. Tolkien")
+}
 
-mongoClient.remove("books", query, function (res, res_err) {
+mongoClient.remove("books", query, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    console.log("Never much liked Tolkien stuff!");
+    println("Never much liked Tolkien stuff!")
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
 
   }
-});
+})
 
 
 ----
 
 === Removing a single document
 
-To remove a single document you use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#removeDocument[removeDocument]`.
+To remove a single document you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#removeDocument-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[removeDocument]`.
 
-This works just like `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#removeDocuments[removeDocuments]` but it removes just the first matching document.
+This works just like `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#removeDocuments-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[removeDocuments]` but it removes just the first matching document.
 
 === Counting documents
 
-To count documents use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#count[count]`.
+To count documents use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#count-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[count]`.
 
 Here's an example that counts the number of Tolkien books. The number is passed to the result handler.
 
-[source,js]
+[source,kotlin]
 ----
 
-var query = {
-  "author" : "J. R. R. Tolkien"
-};
+var query = json {
+  obj("author" to "J. R. R. Tolkien")
+}
 
-mongoClient.count("books", query, function (res, res_err) {
+mongoClient.count("books", query, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    var num = res;
+    var num = res.result()
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
 
   }
-});
+})
 
 
 ----
@@ -548,67 +547,67 @@ mongoClient.count("books", query, function (res, res_err) {
 
 All MongoDB documents are stored in collections.
 
-To get a list of all collections you can use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#getCollections[getCollections]`
+To get a list of all collections you can use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#getCollections-io.vertx.core.Handler-[getCollections]`
 
-[source,js]
+[source,kotlin]
 ----
 
-mongoClient.getCollections(function (res, res_err) {
+mongoClient.getCollections({ res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    var collections = res;
+    var collections = res.result()
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
 
   }
-});
+})
 
 
 ----
 
-To create a new collection you can use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#createCollection[createCollection]`
+To create a new collection you can use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#createCollection-java.lang.String-io.vertx.core.Handler-[createCollection]`
 
-[source,js]
+[source,kotlin]
 ----
 
-mongoClient.createCollection("mynewcollectionr", function (res, res_err) {
+mongoClient.createCollection("mynewcollectionr", { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
     // Created ok!
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
 
   }
-});
+})
 
 
 ----
 
-To drop a collection you can use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#dropCollection[dropCollection]`
+To drop a collection you can use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#dropCollection-java.lang.String-io.vertx.core.Handler-[dropCollection]`
 
 NOTE: Dropping a collection will delete all documents within it!
 
-[source,js]
+[source,kotlin]
 ----
 
-mongoClient.dropCollection("mynewcollectionr", function (res, res_err) {
+mongoClient.dropCollection("mynewcollectionr", { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
     // Dropped ok!
 
   } else {
 
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
 
   }
-});
+})
 
 
 ----
@@ -616,7 +615,7 @@ mongoClient.dropCollection("mynewcollectionr", function (res, res_err) {
 
 === Running other MongoDB commands
 
-You can run arbitrary MongoDB commands with `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#runCommand[runCommand]`.
+You can run arbitrary MongoDB commands with `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#runCommand-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[runCommand]`.
 
 Commands can be used to run more advanced mongoDB features, such as using MapReduce.
 For more information see the mongo docs for supported http://docs.mongodb.org/manual/reference/command[Commands].
@@ -626,23 +625,24 @@ and also be contained in the JSON that represents the command. This is because J
 ordered and MongoDB expects the first BSON entry to be the name of the command. In order for us to know which
 of the entries in the JSON is the command name it must be specified as a parameter.
 
-[source,js]
+[source,kotlin]
 ----
 
-var command = {
-  "aggregate" : "collection_name",
-  "pipeline" : [
-  ]
-};
+var command = json {
+  obj(
+    "aggregate" to "collection_name",
+    "pipeline" to array()
+  )
+}
 
-mongoClient.runCommand("aggregate", command, function (res, res_err) {
-  if (res_err == null) {
-    var resArr = res.result;
+mongoClient.runCommand("aggregate", command, { res ->
+  if (res.succeeded()) {
+    var resArr = res.result().getJsonArray("result")
     // etc
   } else {
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
-});
+})
 
 
 ----
@@ -653,46 +653,46 @@ For now, only date, oid and binary types are supported (cf http://docs.mongodb.o
 
 Here's an example of inserting a document with a date field
 
-[source,js]
+[source,kotlin]
 ----
 
-var document = {
-  "title" : "The Hobbit",
-  "publicationDate" : {
-    "$date" : "1937-09-21T00:00:00+00:00"
-  }
-};
+var document = json {
+  obj(
+    "title" to "The Hobbit",
+    "publicationDate" to obj("\$$date" to "1937-09-21T00:00:00+00:00")
+  )
+}
 
-mongoService.save("publishedBooks", document, function (res, res_err) {
+mongoService.save("publishedBooks", document, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    var id = res;
+    var id = res.result()
 
-    mongoService.findOne("publishedBooks", {
-      "_id" : id
-    }, null, function (res2, res2_err) {
-      if (res2_err == null) {
+    mongoService.findOne("publishedBooks", json {
+      obj("_id" to id)
+    }, null, { res2 ->
+      if (res2.succeeded()) {
 
-        console.log("To retrieve ISO-8601 date : " + res2.publicationDate.$date);
+        println("To retrieve ISO-8601 date : ${res2.result().getJsonObject("publicationDate").getString("\$$date")}")
 
       } else {
-        res2_err.printStackTrace();
+        res2.cause().printStackTrace()
       }
-    });
+    })
 
   } else {
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 
 ----
 
 Here's an example (in Java) of inserting a document with a binary field and reading it back
 
-[source,js]
+[source,kotlin]
 ----
 byte[] binaryObject = new byte[40];
 
@@ -725,127 +725,127 @@ mongoService.save("smartPeople", document, res -> {
 
 Here's an example of inserting a base 64 encoded string, typing it as binary a binary field, and reading it back
 
-[source,js]
+[source,kotlin]
 ----
 
 //This could be a the byte contents of a pdf file, etc converted to base 64
-var base64EncodedString = "a2FpbHVhIGlzIHRoZSAjMSBiZWFjaCBpbiB0aGUgd29ybGQ=";
+var base64EncodedString = "a2FpbHVhIGlzIHRoZSAjMSBiZWFjaCBpbiB0aGUgd29ybGQ="
 
-var document = {
-  "name" : "Alan Turing",
-  "binaryStuff" : {
-    "$binary" : base64EncodedString
-  }
-};
+var document = json {
+  obj(
+    "name" to "Alan Turing",
+    "binaryStuff" to obj("\$$binary" to base64EncodedString)
+  )
+}
 
-mongoService.save("smartPeople", document, function (res, res_err) {
+mongoService.save("smartPeople", document, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    var id = res;
+    var id = res.result()
 
-    mongoService.findOne("smartPeople", {
-      "_id" : id
-    }, null, function (res2, res2_err) {
-      if (res2_err == null) {
+    mongoService.findOne("smartPeople", json {
+      obj("_id" to id)
+    }, null, { res2 ->
+      if (res2.succeeded()) {
 
-        var reconstitutedBase64EncodedString = res2.binaryStuff.$binary;
+        var reconstitutedBase64EncodedString = res2.result().getJsonObject("binaryStuff").getString("\$$binary")
         //This could now converted back to bytes from the base 64 string
       } else {
-        res2_err.printStackTrace();
+        res2.cause().printStackTrace()
       }
-    });
+    })
 
   } else {
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 
 ----
 Here's an example of inserting an object ID and reading it back
 
-[source,js]
+[source,kotlin]
 ----
 
-var individualId = new (Java.type("org.bson.types.ObjectId"))().toHexString();
+var individualId = org.bson.types.ObjectId().toHexString()
 
-var document = {
-  "name" : "Stephen Hawking",
-  "individualId" : {
-    "$oid" : individualId
-  }
-};
+var document = json {
+  obj(
+    "name" to "Stephen Hawking",
+    "individualId" to obj("\$$oid" to individualId)
+  )
+}
 
-mongoService.save("smartPeople", document, function (res, res_err) {
+mongoService.save("smartPeople", document, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    var id = res;
+    var id = res.result()
 
-    mongoService.findOne("smartPeople", {
-      "_id" : id
-    }, null, function (res2, res2_err) {
-      if (res2_err == null) {
-        var reconstitutedIndividualId = res2.individualId.$oid;
+    mongoService.findOne("smartPeople", json {
+      obj("_id" to id)
+    }, null, { res2 ->
+      if (res2.succeeded()) {
+        var reconstitutedIndividualId = res2.result().getJsonObject("individualId").getString("\$$oid")
       } else {
-        res2_err.printStackTrace();
+        res2.cause().printStackTrace()
       }
-    });
+    })
 
   } else {
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 
 ----
 Here's an example of getting disting value
 
-[source,js]
+[source,kotlin]
 ----
-var document = {
-  "title" : "The Hobbit"
-};
+var document = json {
+  obj("title" to "The Hobbit")
+}
 
-mongoClient.save("books", document, function (res, res_err) {
+mongoClient.save("books", document, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    mongoClient.distinct("books", "title", Java.type("java.lang.String").class.getName(), function (res2, res2_err) {
-      console.log("Title is : " + res2[0]);
-    });
+    mongoClient.distinct("books", "title", String.`class`.getName(), { res2 ->
+      println("Title is : ${res2.result().getJsonArray(0)}")
+    })
 
   } else {
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 ----
 Here's an example of getting distinct value in batch mode
 
-[source,js]
+[source,kotlin]
 ----
-var document = {
-  "title" : "The Hobbit"
-};
+var document = json {
+  obj("title" to "The Hobbit")
+}
 
-mongoClient.save("books", document, function (res, res_err) {
+mongoClient.save("books", document, { res ->
 
-  if (res_err == null) {
+  if (res.succeeded()) {
 
-    mongoClient.distinctBatch("books", "title", Java.type("java.lang.String").class.getName(), function (res2, res2_err) {
-      console.log("Title is : " + res2.title);
-    });
+    mongoClient.distinctBatch("books", "title", String.`class`.getName(), { res2 ->
+      println("Title is : ${res2.result().getString("title")}")
+    })
 
   } else {
-    res_err.printStackTrace();
+    res.cause().printStackTrace()
   }
 
-});
+})
 
 ----
 

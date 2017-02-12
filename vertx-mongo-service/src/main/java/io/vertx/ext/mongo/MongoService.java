@@ -209,6 +209,10 @@ public interface MongoService extends MongoClient {
   MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Override
+  @Fluent
+  MongoService createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler);
+
+  @Override
   @ProxyIgnore
   void close();
 }

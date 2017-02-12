@@ -19,55 +19,33 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.DistinctIterable;
-import com.mongodb.async.client.FindIterable;
-import com.mongodb.async.client.ListIndexesIterable;
-import com.mongodb.async.client.MongoClients;
-import com.mongodb.async.client.MongoCollection;
-import com.mongodb.async.client.MongoDatabase;
-import com.mongodb.async.client.MongoIterable;
+import com.mongodb.async.client.*;
+import com.mongodb.async.client.gridfs.GridFSBuckets;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-
-import org.bson.BsonDocument;
-import org.bson.BsonDocumentReader;
-import org.bson.BsonValue;
-import org.bson.codecs.DecoderContext;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
-import io.vertx.ext.mongo.FindOptions;
-import io.vertx.ext.mongo.IndexOptions;
+import io.vertx.ext.mongo.*;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.MongoClientDeleteResult;
-import io.vertx.ext.mongo.MongoClientUpdateResult;
-import io.vertx.ext.mongo.UpdateOptions;
-import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
+import org.bson.BsonDocument;
+import org.bson.BsonDocumentReader;
+import org.bson.BsonValue;
+import org.bson.codecs.DecoderContext;
+import org.bson.conversions.Bson;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.requireNonNull;
 
@@ -77,29 +55,25 @@ import static java.util.Objects.requireNonNull;
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
-public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
+public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo.MongoClient {
 
   private static final Logger log = LoggerFactory.getLogger(MongoClientImpl.class);
 
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
-  private static final String ID_FIELD = "_id";
 
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
 
-  private final Vertx vertx;
   protected com.mongodb.async.client.MongoClient mongo;
   protected final MongoHolder holder;
-  protected boolean useObjectId;
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName) {
+    super(vertx, config);
     Objects.requireNonNull(vertx);
     Objects.requireNonNull(config);
     Objects.requireNonNull(dataSourceName);
-    this.vertx = vertx;
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo();
-    this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
   @Override
@@ -599,6 +573,14 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
+  @Override
+  public MongoClient createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
+
+    MongoGridFsClientImpl impl = new MongoGridFsClientImpl(vertx, config, GridFSBuckets.create(holder.db, bucketName));
+    resultHandler.handle(Future.succeededFuture(impl));
+    return this;
+  }
+
   private void convertMongoIterable(MongoIterable iterable, Handler<AsyncResult<JsonArray>> resultHandler) {
     List results = new ArrayList();
     try {
@@ -634,18 +616,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return mongoCollection.distinct(fieldName, resultClass);
   }
 
-
-  private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
-    if (!useObjectId) return json;
-
-    Object idString = json.getValue(ID_FIELD, null);
-    if (idString instanceof String && ObjectId.isValid((String) idString)) {
-      json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, idString));
-    }
-
-    return json;
-  }
-
   private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
     if (!useObjectId) return json;
 
@@ -660,6 +630,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return json;
   }
 
+  /*
   private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
     Context context = vertx.getOrCreateContext();
     return (result, error) -> {
@@ -672,6 +643,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       });
     };
   }
+  */
 
   private <T> Handler<AsyncResult<T>> toVoidAsyncResult(Handler<AsyncResult<Void>> resultHandler) {
     return result -> {
@@ -703,6 +675,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     });
   }
 
+  /*
   private <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
     Context context = vertx.getOrCreateContext();
     return (result, error) -> {
@@ -715,6 +688,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       });
     };
   }
+  */
 
   private FindIterable<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {
     return doFind(collection, null, query, options);
@@ -753,10 +727,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
     return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
-  }
-
-  private JsonObjectBsonAdapter wrap(JsonObject jsonObject) {
-    return jsonObject == null ? null : new JsonObjectBsonAdapter(jsonObject);
   }
 
   private void removeFromMap(LocalMap<String, MongoHolder> map, String dataSourceName) {

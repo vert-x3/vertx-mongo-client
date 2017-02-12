@@ -7,14 +7,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.FindOptions;
-import io.vertx.ext.mongo.IndexOptions;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.MongoClientDeleteResult;
-import io.vertx.ext.mongo.MongoClientUpdateResult;
-import io.vertx.ext.mongo.MongoService;
-import io.vertx.ext.mongo.UpdateOptions;
-import io.vertx.ext.mongo.WriteOption;
+import io.vertx.ext.mongo.*;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -322,6 +315,13 @@ public class MongoServiceImpl implements MongoService {
   @Fluent
   public MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
     client.distinctBatch(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
+    client.createGridFsBucketService(bucketName, resultHandler);
     return this;
   }
 

@@ -809,13 +809,47 @@ Here's an example of getting disting value
 
 [source,ruby]
 ----
-Code not translatable
+document = {
+  'title' => "The Hobbit"
+}
+
+mongoClient.save("books", document) { |res_err,res|
+
+  if (res_err == nil)
+
+    mongoClient.distinct("books", "title", Java::JavaLang::String::class.get_name()) { |res2_err,res2|
+      puts "Title is : #{res2[0]}"
+    }
+
+  else
+    res_err.print_stack_trace()
+  end
+
+}
+
 ----
 Here's an example of getting distinct value in batch mode
 
 [source,ruby]
 ----
-Code not translatable
+document = {
+  'title' => "The Hobbit"
+}
+
+mongoClient.save("books", document) { |res_err,res|
+
+  if (res_err == nil)
+
+    mongoClient.distinct_batch("books", "title", Java::JavaLang::String::class.get_name()) { |res2_err,res2|
+      puts "Title is : #{res2['title']}"
+    }
+
+  else
+    res_err.print_stack_trace()
+  end
+
+}
+
 ----
 
 == Configuring the client

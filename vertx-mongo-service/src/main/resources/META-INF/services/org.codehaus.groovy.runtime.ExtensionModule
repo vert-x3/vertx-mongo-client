@@ -1,0 +1,4 @@
+moduleName = io.vertx.ext.mongo.MongoService-module
+moduleVersion = 1.0
+extensionClasses = io.vertx.groovy.ext.mongo.MongoService_GroovyExtension
+staticExtensionClasses = 

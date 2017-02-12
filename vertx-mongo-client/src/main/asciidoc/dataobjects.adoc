@@ -189,3 +189,19 @@ Set the write option
 +++
 |===
 
+[[UploadOptions]]
+== UploadOptions
+
+++++
+ Options used to configure file uploads to gridfs.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[chunkSizeBytes]]`chunkSizeBytes`|`Number (Integer)`|-
+|[[metadata]]`metadata`|`Json object`|-
+|===
+

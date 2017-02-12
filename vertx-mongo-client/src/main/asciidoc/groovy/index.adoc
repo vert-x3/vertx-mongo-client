@@ -53,7 +53,6 @@ The simplest way to do this is as follows:
 
 [source,groovy]
 ----
-import io.vertx.ext.mongo.MongoClient
 
 def client = MongoClient.createShared(vertx, config)
 
@@ -71,7 +70,6 @@ You can create a client specifying a pool source name as follows
 
 [source,groovy]
 ----
-import io.vertx.ext.mongo.MongoClient
 
 def client = MongoClient.createShared(vertx, config, "MyPoolName")
 
@@ -98,7 +96,6 @@ In that case you can use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html
 
 [source,groovy]
 ----
-import io.vertx.ext.mongo.MongoClient
 
 def client = MongoClient.createNonShared(vertx, config)
 
@@ -805,13 +802,47 @@ Here's an example of getting disting value
 
 [source,groovy]
 ----
-Code not translatable
+def document = [
+  title:"The Hobbit"
+]
+
+mongoClient.save("books", document, { res ->
+
+  if (res.succeeded()) {
+
+    mongoClient.distinct("books", "title", java.lang.String.class.getName(), { res2 ->
+      println("Title is : ${res2.result()[0]}")
+    })
+
+  } else {
+    res.cause().printStackTrace()
+  }
+
+})
+
 ----
 Here's an example of getting distinct value in batch mode
 
 [source,groovy]
 ----
-Code not translatable
+def document = [
+  title:"The Hobbit"
+]
+
+mongoClient.save("books", document, { res ->
+
+  if (res.succeeded()) {
+
+    mongoClient.distinctBatch("books", "title", java.lang.String.class.getName(), { res2 ->
+      println("Title is : ${res2.result().title}")
+    })
+
+  } else {
+    res.cause().printStackTrace()
+  }
+
+})
+
 ----
 
 == Configuring the client

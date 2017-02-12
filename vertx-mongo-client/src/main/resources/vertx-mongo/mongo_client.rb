@@ -1,4 +1,5 @@
 require 'vertx/vertx'
+require 'vertx-mongo/mongo_grid_fs_client'
 require 'vertx/util/utils.rb'
 # Generated from io.vertx.ext.mongo.MongoClient
 module VertxMongo
@@ -80,7 +81,7 @@ module VertxMongo
     # @return [self]
     def save_with_options(collection=nil,document=nil,writeOption=nil)
       if collection.class == String && document.class == Hash && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:saveWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(document),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result : nil) }))
+        @j_del.java_method(:saveWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(document),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption.to_s),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result : nil) }))
         return self
       end
       raise ArgumentError, "Invalid arguments when calling save_with_options(#{collection},#{document},#{writeOption})"
@@ -109,7 +110,7 @@ module VertxMongo
     # @return [self]
     def insert_with_options(collection=nil,document=nil,writeOption=nil)
       if collection.class == String && document.class == Hash && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:insertWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(document),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result : nil) }))
+        @j_del.java_method(:insertWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(document),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption.to_s),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result : nil) }))
         return self
       end
       raise ArgumentError, "Invalid arguments when calling insert_with_options(#{collection},#{document},#{writeOption})"
@@ -430,7 +431,7 @@ module VertxMongo
     # @return [self]
     def remove_with_options(collection=nil,query=nil,writeOption=nil)
       if collection.class == String && query.class == Hash && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:removeWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        @j_del.java_method(:removeWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption.to_s),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
       raise ArgumentError, "Invalid arguments when calling remove_with_options(#{collection},#{query},#{writeOption})"
@@ -443,7 +444,7 @@ module VertxMongo
     # @return [self]
     def remove_documents_with_options(collection=nil,query=nil,writeOption=nil)
       if collection.class == String && query.class == Hash && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:removeDocumentsWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:removeDocumentsWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption.to_s),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
       raise ArgumentError, "Invalid arguments when calling remove_documents_with_options(#{collection},#{query},#{writeOption})"
@@ -480,7 +481,7 @@ module VertxMongo
     # @return [self]
     def remove_one_with_options(collection=nil,query=nil,writeOption=nil)
       if collection.class == String && query.class == Hash && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:removeOneWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
+        @j_del.java_method(:removeOneWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption.to_s),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil) }))
         return self
       end
       raise ArgumentError, "Invalid arguments when calling remove_one_with_options(#{collection},#{query},#{writeOption})"
@@ -493,7 +494,7 @@ module VertxMongo
     # @return [self]
     def remove_document_with_options(collection=nil,query=nil,writeOption=nil)
       if collection.class == String && query.class == Hash && writeOption.class == Symbol && block_given?
-        @j_del.java_method(:removeDocumentWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
+        @j_del.java_method(:removeDocumentWithOptions, [Java::java.lang.String.java_class,Java::IoVertxCoreJson::JsonObject.java_class,Java::IoVertxExtMongo::WriteOption.java_class,Java::IoVertxCore::Handler.java_class]).call(collection,::Vertx::Util::Utils.to_json_object(query),Java::IoVertxExtMongo::WriteOption.valueOf(writeOption.to_s),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
       raise ArgumentError, "Invalid arguments when calling remove_document_with_options(#{collection},#{query},#{writeOption})"
@@ -618,6 +619,17 @@ module VertxMongo
         return self
       end
       raise ArgumentError, "Invalid arguments when calling distinct_batch(#{collection},#{fieldName},#{resultClassname})"
+    end
+    #  Creates a {::VertxMongo::MongoGridFsClient} used to interact with Mongo GridFS.
+    # @param [String] bucketName the name of the GridFS bucket
+    # @yield the {::VertxMongo::MongoGridFsClient} to interact with the bucket named bucketName
+    # @return [self]
+    def create_grid_fs_bucket_service(bucketName=nil)
+      if bucketName.class == String && block_given?
+        @j_del.java_method(:createGridFsBucketService, [Java::java.lang.String.java_class,Java::IoVertxCore::Handler.java_class]).call(bucketName,(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ::Vertx::Util::Utils.safe_create(ar.result,::VertxMongo::MongoGridFsClient) : nil) }))
+        return self
+      end
+      raise ArgumentError, "Invalid arguments when calling create_grid_fs_bucket_service(#{bucketName})"
     end
     #  Close the client and release its resources
     # @return [void]
