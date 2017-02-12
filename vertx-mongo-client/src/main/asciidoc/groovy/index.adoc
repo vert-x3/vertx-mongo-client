@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.4.0.Beta1</version>
+  <version>3.4.0-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -34,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mongo-client:3.4.0.Beta1'
+compile 'io.vertx:vertx-mongo-client:3.4.0-SNAPSHOT'
 ----
 
 
@@ -53,7 +53,6 @@ The simplest way to do this is as follows:
 
 [source,groovy]
 ----
-import io.vertx.ext.mongo.MongoClient
 
 def client = MongoClient.createShared(vertx, config)
 
@@ -71,7 +70,6 @@ You can create a client specifying a pool source name as follows
 
 [source,groovy]
 ----
-import io.vertx.ext.mongo.MongoClient
 
 def client = MongoClient.createShared(vertx, config, "MyPoolName")
 
@@ -98,7 +96,6 @@ In that case you can use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html
 
 [source,groovy]
 ----
-import io.vertx.ext.mongo.MongoClient
 
 def client = MongoClient.createNonShared(vertx, config)
 
