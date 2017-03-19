@@ -1,4 +1,0 @@
-moduleName = io.vertx.ext.mongo.MongoGridFsUpload-module
-moduleVersion = 1.0
-extensionClasses = io.vertx.groovy.ext.mongo.MongoClient_GroovyExtension, io.vertx.groovy.ext.mongo.MongoGridFsClient_GroovyExtension
-staticExtensionClasses = io.vertx.groovy.ext.mongo.MongoClient_GroovyStaticExtension

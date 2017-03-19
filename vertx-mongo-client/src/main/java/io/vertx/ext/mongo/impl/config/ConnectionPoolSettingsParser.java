@@ -13,6 +13,11 @@ class ConnectionPoolSettingsParser {
 
   private final ConnectionPoolSettings settings;
 
+  /*
+  * The Default Mongo Driver maxWaitQueueSize @see <a href="https://github.com/mongodb/mongo-java-driver/blob/master/driver-core/src/main/com/mongodb/connection/ConnectionPoolSettings.java#L61">maxWaitQueueSize</a>
+  */
+  private final Integer DEFAULT_MONGO_DRIVER_WAIT_Q_SIZE = 500;
+
   public ConnectionPoolSettingsParser(ConnectionString connectionString, JsonObject config) {
     ConnectionPoolSettings.Builder settings = ConnectionPoolSettings.builder();
     if (connectionString != null) {
@@ -36,7 +41,8 @@ class ConnectionPoolSettingsParser {
       }
       Integer waitQueueMultiple = config.getInteger("waitQueueMultiple");
       if (waitQueueMultiple != null) {
-        settings.maxWaitQueueSize(waitQueueMultiple);
+	      Integer waitQueueSize = waitQueueMultiple * DEFAULT_MONGO_DRIVER_WAIT_Q_SIZE;
+        settings.maxWaitQueueSize(waitQueueSize);
       }
       Long waitQueueTimeoutMS = config.getLong("waitQueueTimeoutMS");
       if (waitQueueTimeoutMS != null) {

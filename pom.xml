@@ -13,17 +13,14 @@
   ~      http://www.opensource.org/licenses/apache2.0.php
   ~
   ~  You may elect to redistribute this code under either of these licenses.
-  -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-ext-parent</artifactId>
-    <version>23</version>
+    <version>26</version>
   </parent>
 
   <modules>
@@ -32,15 +29,16 @@
   </modules>
 
   <artifactId>vertx-mongo</artifactId>
-  <version>3.4.0-SNAPSHOT</version>
+  <version>3.4.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Vert.x Mongo</name>
 
   <properties>
-    <stack.version>3.4.0-SNAPSHOT</stack.version>
+    <stack.version>3.4.2-SNAPSHOT</stack.version>
     <mongo.async.version>3.4.1</mongo.async.version>
     <doc.skip>true</doc.skip>
+    <codegen.rxjava.deprecated>true</codegen.rxjava.deprecated>
   </properties>
 
   <dependencyManagement>
