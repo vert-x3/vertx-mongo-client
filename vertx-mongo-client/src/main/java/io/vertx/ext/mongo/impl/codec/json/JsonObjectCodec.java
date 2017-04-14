@@ -198,8 +198,8 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected void writeBinary(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     JsonObject tmpObj = (JsonObject) value;
-    byte type = Optional.ofNullable(tmpObj.getBinary(TYPE_FIELD))
-        .map(b -> b[0])
+    byte type = Optional.ofNullable(tmpObj.getInteger(TYPE_FIELD))
+        .map(Integer::byteValue)
         .orElse(BsonBinarySubType.BINARY.getValue());
     final BsonBinary bson = new BsonBinary(type ,tmpObj.getBinary(BINARY_FIELD));
     writer.writeBinaryData(bson);
