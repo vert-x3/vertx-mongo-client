@@ -201,7 +201,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
     byte type = Optional.ofNullable(tmpObj.getInteger(TYPE_FIELD))
         .map(Integer::byteValue)
         .orElse(BsonBinarySubType.BINARY.getValue());
-    final BsonBinary bson = new BsonBinary(type ,tmpObj.getBinary(BINARY_FIELD));
+    final BsonBinary bson = new BsonBinary(type, tmpObj.getBinary(BINARY_FIELD));
     writer.writeBinaryData(bson);
   }
 
