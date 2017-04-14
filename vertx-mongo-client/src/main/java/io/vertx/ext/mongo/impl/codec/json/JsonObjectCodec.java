@@ -11,6 +11,7 @@ import org.bson.types.ObjectId;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -23,6 +24,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   public static final String ID_FIELD = "_id";
   public static final String DATE_FIELD = "$date";
   public static final String BINARY_FIELD = "$binary";
+  public static final String TYPE_FIELD = "$type";
   public static final String OID_FIELD = "$oid";
 
   //https://docs.mongodb.org/manual/reference/mongodb-extended-json/#timestamp
@@ -187,13 +189,19 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected Object readBinary(BsonReader reader, DecoderContext ctx) {
     final JsonObject result = new JsonObject();
-    result.put(BINARY_FIELD, reader.readBinaryData().getData());
+    BsonBinary tmpObj = reader.readBinaryData();
+    result.put(BINARY_FIELD, tmpObj.getData())
+        .put(TYPE_FIELD, tmpObj.getType());
     return result;
   }
 
   @Override
   protected void writeBinary(BsonWriter writer, String name, Object value, EncoderContext ctx) {
-    final BsonBinary bson = new BsonBinary(((JsonObject) value).getBinary(BINARY_FIELD));
+    JsonObject tmpObj = (JsonObject) value;
+    byte type = Optional.ofNullable(tmpObj.getBinary(TYPE_FIELD))
+        .map(b -> b[0])
+        .orElse(BsonBinarySubType.BINARY.getValue());
+    final BsonBinary bson = new BsonBinary(type ,tmpObj.getBinary(BINARY_FIELD));
     writer.writeBinaryData(bson);
   }
 
