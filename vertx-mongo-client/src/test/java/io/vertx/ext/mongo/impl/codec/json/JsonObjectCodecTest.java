@@ -8,13 +8,14 @@ import org.bson.types.ObjectId;
 import org.junit.Test;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.UUID;
 
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -134,6 +135,65 @@ public class JsonObjectCodecTest {
       assertTrue(false);
     }
 
+  }
+
+  @Test
+  public void writeDocument_supportBsonBinaryUUID() {
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    UUID uuid = UUID.randomUUID();
+
+    byte[] byteUuid = ByteBuffer.allocate(16)
+      .putLong(uuid.getMostSignificantBits())
+      .putLong(uuid.getLeastSignificantBits())
+      .array();
+
+    JsonObject value = new JsonObject();
+
+    value.put("test", new JsonObject()
+      .put(JsonObjectCodec.BINARY_FIELD, byteUuid)
+      .put(JsonObjectCodec.TYPE_FIELD, BsonBinarySubType.UUID_STANDARD.getValue())
+    );
+
+    BsonDocument bsonDocument = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonDocument);
+
+    codec.writeDocument(writer, "", value, EncoderContext.builder().build());
+
+    BsonValue resultValue = bsonDocument.get("test");
+    assertEquals(BsonType.BINARY, resultValue.getBsonType());
+
+    BsonBinary bsonBinary = resultValue.asBinary();
+    ByteBuffer byteBuffer = ByteBuffer.wrap(bsonBinary.getData());
+
+    assertEquals(BsonBinarySubType.UUID_STANDARD.getValue(), bsonBinary.getType());
+    assertEquals(uuid, new UUID(byteBuffer.getLong(), byteBuffer.getLong()));
+  }
+
+  @Test
+  public void readDocument_supportBsonBinaryUUID() {
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+    BsonDocument bsonDocument = new BsonDocument();
+
+    UUID uuid = UUID.randomUUID();
+
+    byte[] byteUuid = ByteBuffer.allocate(16)
+      .putLong(uuid.getMostSignificantBits())
+      .putLong(uuid.getLeastSignificantBits())
+      .array();
+
+    bsonDocument.put("test", new BsonBinary(BsonBinarySubType.UUID_STANDARD, byteUuid));
+    BsonDocumentReader reader = new BsonDocumentReader(bsonDocument);
+    JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
+    JsonObject resultValue = result.getJsonObject("test");
+
+    assertTrue(resultValue.containsKey(JsonObjectCodec.BINARY_FIELD));
+    assertTrue(resultValue.containsKey(JsonObjectCodec.TYPE_FIELD));
+
+    ByteBuffer byteBuffer = ByteBuffer.wrap(resultValue.getBinary(JsonObjectCodec.BINARY_FIELD));
+
+    assertEquals(Integer.valueOf(BsonBinarySubType.UUID_STANDARD.getValue()), resultValue.getInteger(JsonObjectCodec.TYPE_FIELD));
+    assertEquals(uuid, new UUID(byteBuffer.getLong(), byteBuffer.getLong()));
   }
 
   @Test
