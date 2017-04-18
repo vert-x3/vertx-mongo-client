@@ -189,19 +189,19 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   @Override
   protected Object readBinary(BsonReader reader, DecoderContext ctx) {
     final JsonObject result = new JsonObject();
-    BsonBinary tmpObj = reader.readBinaryData();
-    result.put(BINARY_FIELD, tmpObj.getData())
-        .put(TYPE_FIELD, tmpObj.getType());
+    BsonBinary bsonBinary = reader.readBinaryData();
+    result.put(BINARY_FIELD, bsonBinary.getData())
+        .put(TYPE_FIELD, bsonBinary.getType());
     return result;
   }
 
   @Override
   protected void writeBinary(BsonWriter writer, String name, Object value, EncoderContext ctx) {
-    JsonObject tmpObj = (JsonObject) value;
-    byte type = Optional.ofNullable(tmpObj.getInteger(TYPE_FIELD))
+    JsonObject binaryJsonObject = (JsonObject) value;
+    byte type = Optional.ofNullable(binaryJsonObject.getInteger(TYPE_FIELD))
         .map(Integer::byteValue)
         .orElse(BsonBinarySubType.BINARY.getValue());
-    final BsonBinary bson = new BsonBinary(type, tmpObj.getBinary(BINARY_FIELD));
+    final BsonBinary bson = new BsonBinary(type, binaryJsonObject.getBinary(BINARY_FIELD));
     writer.writeBinaryData(bson);
   }
 
