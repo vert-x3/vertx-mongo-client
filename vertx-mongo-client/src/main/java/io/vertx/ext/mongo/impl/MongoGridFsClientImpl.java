@@ -17,6 +17,8 @@ import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * The implementation of the {@link MongoGridFsClient}. This implementation is based on the async driver
  * provided by Mongo.
@@ -36,6 +38,8 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
 
   @Override
   public MongoGridFsClient uploadFile(String fileName, Handler<AsyncResult<String>> resultHandler) {
+    requireNonNull(fileName, "fileName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     uploadFileWithOptions(fileName, null, resultHandler);
     return this;
@@ -43,6 +47,8 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
 
   @Override
   public MongoGridFsClient uploadFileWithOptions(String fileName, UploadOptions options, Handler<AsyncResult<String>> resultHandler) {
+    requireNonNull(fileName, "fileName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     OpenOptions openOptions = new OpenOptions().setRead(true);
 
@@ -76,6 +82,8 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
 
   @Override
   public MongoGridFsClient delete(String id, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(id, "id cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     ObjectId objectId = new ObjectId(id);
     bucket.delete(objectId, wrapCallback(resultHandler));
@@ -85,6 +93,9 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
 
   @Override
   public MongoGridFsClient downloadBuffer(String fileName, Handler<AsyncResult<MongoGridFsDownload>> resultHandler) {
+    requireNonNull(fileName, "fileName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
     GridFSDownloadStream stream = bucket.openDownloadStream(fileName);
     MongoGridFsDownload download = new MongoGridFsDownloadImpl(stream, vertx, config);
     resultHandler.handle(Future.succeededFuture(download));
@@ -92,12 +103,30 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
   }
 
   @Override
+  public MongoGridFsClient downloadBufferById(String id, Handler<AsyncResult<MongoGridFsDownload>> resultHandler) {
+    requireNonNull(id, "id cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    ObjectId objectId = new ObjectId(id);
+    GridFSDownloadStream stream = bucket.openDownloadStream(objectId);
+    MongoGridFsDownload download = new MongoGridFsDownloadImpl(stream, vertx, config);
+    resultHandler.handle(Future.succeededFuture(download));
+    return this;
+  }
+
+  @Override
   public MongoGridFsClient downloadFile(String fileName, Handler<AsyncResult<Long>> resultHandler) {
+    requireNonNull(fileName, "fileName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
     return downloadFileAs(fileName, fileName, resultHandler);
   }
 
   @Override
   public MongoGridFsClient downloadFileAs(String fileName, String newFileName, Handler<AsyncResult<Long>> resultHandler) {
+    requireNonNull(fileName, "fileName cannot be null");
+    requireNonNull(newFileName, "newFileName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     OpenOptions options = new OpenOptions().setWrite(true);
 
@@ -115,7 +144,29 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
   }
 
   @Override
+  public MongoGridFsClient downloadFileByID(String id, String fileName, Handler<AsyncResult<Long>> resultHandler) {
+    requireNonNull(fileName, "fileName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    OpenOptions options = new OpenOptions().setWrite(true);
+
+    vertx.fileSystem().open(fileName, options, asyncFileAsyncResult -> {
+      if (asyncFileAsyncResult.succeeded()) {
+        AsyncFile file = asyncFileAsyncResult.result();
+        GridFSOutputStream gridFSOutputStream = GridFSOutputStream.create(file);
+        ObjectId objectId = new ObjectId(id);
+        bucket.downloadToStream(objectId, gridFSOutputStream, wrapCallback(resultHandler));
+      } else {
+        resultHandler.handle(Future.failedFuture(asyncFileAsyncResult.cause()));
+      }
+    });
+
+    return this;
+  }
+
+  @Override
   public MongoGridFsClient drop(Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     bucket.drop(wrapCallback(resultHandler));
     return this;
@@ -123,6 +174,7 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
 
   @Override
   public MongoGridFsClient findAllIds(Handler<AsyncResult<List<String>>> resultHandler) {
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     List<String> ids = new ArrayList<>();
 
@@ -148,6 +200,8 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
 
   @Override
   public MongoGridFsClient findIds(JsonObject query, Handler<AsyncResult<List<String>>> resultHandler) {
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
 
@@ -178,6 +232,8 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
 
   @Override
   public MongoGridFsClient uploadBuffer(String fileName, Handler<AsyncResult<MongoGridFsUpload>> resultHandler) {
+    requireNonNull(fileName, "fileName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     GridFSUploadStream stream = bucket.openUploadStream(fileName);
     MongoGridFsUpload upload = new MongoGridFsUploadImpl(stream, vertx, config);
@@ -188,6 +244,10 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
 
   @Override
   public MongoGridFsClient uploadBufferWithOptions(String fileName, UploadOptions options, Handler<AsyncResult<MongoGridFsUpload>> resultHandler) {
+    requireNonNull(fileName, "fileName cannot be null");
+    requireNonNull(options, "options cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
     GridFSUploadStream stream;
     if (options == null) {
       stream = bucket.openUploadStream(fileName);

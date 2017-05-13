@@ -5,10 +5,13 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.GridFsBuffer;
 import io.vertx.ext.mongo.MongoGridFsUpload;
 
 import java.nio.ByteBuffer;
 import java.util.Base64;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * The implementation of the {@link MongoGridFsUpload}.
@@ -29,10 +32,11 @@ public class MongoGridFsUploadImpl extends MongoBaseImpl implements MongoGridFsU
   }
 
   @Override
-  public MongoGridFsUpload uploadBuffer(String base64EncodedBytes, Handler<AsyncResult<Integer>> resultHandler) {
+  public MongoGridFsUpload uploadBuffer(GridFsBuffer gridFsBuffer, Handler<AsyncResult<Integer>> resultHandler) {
+    requireNonNull(gridFsBuffer, "gridFsBuffer cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    byte[] bytes = Base64.getDecoder().decode(base64EncodedBytes);
-    ByteBuffer buffer = ByteBuffer.wrap(bytes);
+    ByteBuffer buffer = ByteBuffer.wrap(gridFsBuffer.getBuffer().getBytes());
 
     stream.write(buffer, wrapCallback(resultHandler));
 
@@ -41,6 +45,7 @@ public class MongoGridFsUploadImpl extends MongoBaseImpl implements MongoGridFsU
 
   @Override
   public MongoGridFsUpload end(Handler<AsyncResult<String>> resultHandler) {
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     stream.close(convertCallback(resultHandler, nothing -> {
       return stream.getObjectId().toHexString();

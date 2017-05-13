@@ -16,14 +16,16 @@
 
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.*;
 import org.bson.types.ObjectId;
 
+import java.io.FileInputStream;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -547,4 +549,95 @@ public class Examples {
 
     });
   }
+  public void example17(MongoClient mongoClient) {
+    mongoClient.createGridFsBucketService("fs", res -> {
+      if (res.succeeded()) {
+        MongoGridFsClient client = res.result();
+        //Interact with the client...
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+
+  }
+  public void example18(MongoGridFsClient gridFsClient) {
+    gridFsClient.uploadFile("file.name", res -> {
+      if (res.succeeded()) {
+        String id = res.result();
+        //The ID of the stored object in Grid FS
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example19(MongoGridFsClient gridFsClient) {
+    JsonObject metadata = new JsonObject();
+    metadata.put("nick_name", "Puhi the Eel");
+
+    UploadOptions options = new UploadOptions();
+    options.setChunkSizeBytes(1024);
+    options.setMetadata(metadata);
+
+    gridFsClient.uploadFileWithOptions("file.name", options, res -> {
+      if (res.succeeded()) {
+        String id = res.result();
+        //The ID of the stored object in Grid FS
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example20(MongoGridFsClient gridFsClient) {
+    gridFsClient.downloadFile("file.name", res -> {
+      if (res.succeeded()) {
+        Long fileLength = res.result();
+        //The length of the file stored in fileName
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example21(MongoGridFsClient gridFsClient) {
+    gridFsClient.downloadFileAs("file.name", "new_file.name", res -> {
+      if (res.succeeded()) {
+        Long fileLength = res.result();
+        //The length of the file stored in fileName
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example22() {
+    byte[] bFile = new byte[1024];
+    String encodedBuffer = Base64.getEncoder().encodeToString(bFile);
+  }
+  /*
+  public void example22(MongoGridFsClient gridFsClient) throws Exception {
+    FileInputStream fis = new FileInputStream("eel.fil");
+
+    if (fis.available() > 0) {
+      int size = fis.available();
+      if (size > 1024) size = 1024;
+      byte[] bFile = new byte[size];
+      fis.read(bFile);
+      String encodedBuffer = Base64.getEncoder().encodeToString(bFile);
+      upload.uploadBuffer( encodedBuffer, onSuccess(number -> {
+        this.handleUpload(mongoGridFsClient, fis, upload, completeHandler);
+      }));
+    } else {
+      upload.end(onSuccess(id -> {
+        completeHandler.handle(Future.succeededFuture(id));
+      }));
+    }
+
+    gridFsClient.uploadBuffer("file.name", res -> {
+      if (res.succeeded()) {
+        MongoGridFsUpload upload = res.result();
+
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  */
 }

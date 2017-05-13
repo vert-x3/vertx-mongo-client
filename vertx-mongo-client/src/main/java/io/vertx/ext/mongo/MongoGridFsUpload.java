@@ -16,7 +16,7 @@ public interface MongoGridFsUpload {
    * @param base64EncodedBytes string of base 64 encoded bytes
    * @param resultHandler the number of bytes saved to the file.
    */
-  @Fluent MongoGridFsUpload uploadBuffer(String base64EncodedBytes, Handler<AsyncResult<Integer>> resultHandler);
+  @Fluent MongoGridFsUpload uploadBuffer(GridFsBuffer buffer, Handler<AsyncResult<Integer>> resultHandler);
 
   /**
    * Ends the upload of bytes saved in gridfs.

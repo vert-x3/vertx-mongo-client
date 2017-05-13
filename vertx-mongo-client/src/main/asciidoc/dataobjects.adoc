@@ -30,6 +30,21 @@ Set the sort document
 +++
 |===
 
+[[GridFsBuffer]]
+== GridFsBuffer
+
+++++
+ Wrapper for a buffer used by GridFs.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[buffer]]`buffer`|`Buffer`|-
+|===
+
 [[IndexOptions]]
 == IndexOptions
 

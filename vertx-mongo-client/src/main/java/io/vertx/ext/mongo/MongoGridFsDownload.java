@@ -18,7 +18,7 @@ public interface MongoGridFsDownload {
    * @param resultHandler  a string of base 64 encoded bytes.
    */
   @Fluent
-  MongoGridFsDownload read(Integer bufferSize, Handler<AsyncResult<String>> resultHandler);
+  MongoGridFsDownload read(Integer bufferSize, Handler<AsyncResult<GridFsBuffer>> resultHandler);
 
   /**
    * Close the client and release its resources

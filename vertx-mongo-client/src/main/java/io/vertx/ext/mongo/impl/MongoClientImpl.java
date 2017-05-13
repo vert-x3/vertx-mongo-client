@@ -630,21 +630,6 @@ public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo
     return json;
   }
 
-  /*
-  private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
-    Context context = vertx.getOrCreateContext();
-    return (result, error) -> {
-      context.runOnContext(v -> {
-        if (error != null) {
-          resultHandler.handle(Future.failedFuture(error));
-        } else {
-          resultHandler.handle(Future.succeededFuture(converter.apply(result)));
-        }
-      });
-    };
-  }
-  */
-
   private <T> Handler<AsyncResult<T>> toVoidAsyncResult(Handler<AsyncResult<Void>> resultHandler) {
     return result -> {
       if(result.succeeded()) {
@@ -674,21 +659,6 @@ public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo
       }
     });
   }
-
-  /*
-  private <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
-    Context context = vertx.getOrCreateContext();
-    return (result, error) -> {
-      context.runOnContext(v -> {
-        if (error != null) {
-          resultHandler.handle(Future.failedFuture(error));
-        } else {
-          resultHandler.handle(Future.succeededFuture(result));
-        }
-      });
-    };
-  }
-  */
 
   private FindIterable<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {
     return doFind(collection, null, query, options);

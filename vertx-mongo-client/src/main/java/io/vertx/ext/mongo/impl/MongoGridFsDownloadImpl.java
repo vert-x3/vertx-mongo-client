@@ -4,12 +4,16 @@ import com.mongodb.async.client.gridfs.GridFSDownloadStream;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.GridFsBuffer;
 import io.vertx.ext.mongo.MongoGridFsDownload;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Base64;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * The implementation of the {@link MongoGridFsDownload}.
@@ -30,7 +34,9 @@ public class MongoGridFsDownloadImpl extends MongoBaseImpl implements MongoGridF
   }
 
   @Override
-  public MongoGridFsDownload read(Integer bufferSize, Handler<AsyncResult<String>> resultHandler) {
+  public MongoGridFsDownload read(Integer bufferSize, Handler<AsyncResult<GridFsBuffer>> resultHandler) {
+    requireNonNull(bufferSize, "bufferSize cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
     stream.read(buffer, convertCallback(resultHandler, length -> {
@@ -39,7 +45,11 @@ public class MongoGridFsDownloadImpl extends MongoBaseImpl implements MongoGridF
         return null;
       }
 
-      return Base64.getEncoder().encodeToString(Arrays.copyOf(buffer.array(),length));
+      GridFsBuffer gridFsBuffer = new GridFsBuffer();
+      gridFsBuffer.setBuffer(Buffer.buffer(buffer.array()));
+
+      return gridFsBuffer;
+
     }));
     return this;
   }
