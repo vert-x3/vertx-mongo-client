@@ -44,9 +44,9 @@ public class RefCountTest extends MongoTestBase {
     client2.close();
     assertEquals(1, map.size());
     client3.close();
-    waitUntil(() -> map.size() == 0);
-    waitUntil(() -> getLocalMap().size() == 0);
-    waitUntil(() -> map != getLocalMap()); // Map has been closed
+    assertWaitUntil(() -> map.size() == 0);
+    assertWaitUntil(() -> getLocalMap().size() == 0);
+    assertWaitUntil(() -> map != getLocalMap()); // Map has been closed
   }
 
   @Test
