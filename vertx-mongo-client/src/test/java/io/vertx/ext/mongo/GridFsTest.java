@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:dbush@redhat.com">David Bush</a>
@@ -56,6 +57,60 @@ public class GridFsTest extends MongoTestBase {
     super.tearDown();
   }
 
+  private void handleUpload(FileInputStream fileInputStream, MongoGridFsUpload upload, Handler<AsyncResult<String>> completeHandler) {
+
+    try {
+      if (fileInputStream.available() > 0) {
+        int size = fileInputStream.available();
+        if (size > 1024) size = 1024;
+        byte[] bFile = new byte[size];
+        fileInputStream.read(bFile);
+        GridFsBuffer buffer = new GridFsBuffer();
+        buffer.setBuffer(Buffer.buffer(bFile));
+        upload.uploadBuffer( buffer, onSuccess(number -> {
+          assertTrue(number > 0);
+          this.handleUpload(fileInputStream, upload, completeHandler);
+        }));
+      } else {
+        upload.end(onSuccess(id -> {
+          completeHandler.handle(Future.succeededFuture(id));
+        }));
+      }
+    } catch (IOException ioe) {
+      fail(ioe);
+    }
+
+  }
+  /*
+  public static void upload(InputStream stream, MongoGridFsUpload upload, Handler<AsyncResult<String>> completeHandler) {
+    try {
+      if (stream.available() > 0) {
+        int size = stream.available();
+        if (size > 1024) size = 1024;
+        byte[] buffer = new byte[size];
+        stream.read(buffer);
+        GridFsBuffer gridFsBuffer = new GridFsBuffer().setBuffer(Buffer.buffer(buffer));
+        upload.uploadBuffer( gridFsBuffer, res -> {
+          if(res.succeeded()) {
+            GridFsTest.upload(stream, upload, completeHandler);
+          } else {
+            completeHandler.handle(Future.failedFuture(res.cause()));
+          }
+        });
+      } else {
+        upload.end(res -> {
+          if (res.succeeded()) {
+            completeHandler.handle(Future.succeededFuture(res.result()));
+          } else {
+            completeHandler.handle(Future.failedFuture(res.cause()));
+          }
+        });
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  */
   private static String createTempFileWithContent(int length) {
 
     try {
@@ -352,14 +407,14 @@ public class GridFsTest extends MongoTestBase {
 
   }
 
-  private void handleDownload(MongoGridFsDownload download, OutputStream stream, Handler<AsyncResult<Void>> completeHandler) {
+  private void handleDownload(MongoGridFsDownload download, OutputStream stream, Integer length, Handler<AsyncResult<Void>> completeHandler) {
 
-    download.read(1024, onSuccess(buffer -> {
+    download.read(length, onSuccess(buffer -> {
       try {
         if (buffer != null) {
 
           stream.write(buffer.getBuffer().getBytes());
-          handleDownload(download, stream, completeHandler);
+          handleDownload(download, stream, length, completeHandler);
         } else {
           stream.close();
           completeHandler.handle(Future.succeededFuture());
@@ -402,7 +457,7 @@ public class GridFsTest extends MongoTestBase {
       Future<Void> downloadCompleteFuture = Future.future();
 
       ByteArrayOutputStream stream = new ByteArrayOutputStream();
-      this.handleDownload(download, stream, downloadCompleteFuture.completer());
+      handleDownload(download, stream, 1024, downloadCompleteFuture.completer());
 
       return downloadCompleteFuture;
     }).compose(nothing -> {
@@ -445,7 +500,7 @@ public class GridFsTest extends MongoTestBase {
       Future<Void> downloadCompleteFuture = Future.future();
 
       ByteArrayOutputStream stream = new ByteArrayOutputStream();
-      this.handleDownload(download, stream, downloadCompleteFuture.completer());
+      handleDownload(download, stream, 1024, downloadCompleteFuture.completer());
 
       return downloadCompleteFuture;
     }).compose(nothing -> {
@@ -608,7 +663,7 @@ public class GridFsTest extends MongoTestBase {
       }
 
       Future<String> uploadedFuture = Future.future();
-      this.handleUpload(gridFsClient.get(), fileInputStream, upload, uploadedFuture.completer());
+      this.handleUpload(fileInputStream, upload, uploadedFuture.completer());
       return uploadedFuture;
     }).compose( id -> {
       assertNotNull(id);
@@ -660,7 +715,8 @@ public class GridFsTest extends MongoTestBase {
         throw new RuntimeException(e);
       }
       Future<String> uploadedFuture = Future.future();
-      this.handleUpload(gridFsClient.get(), fileInputStream, upload, uploadedFuture.completer());
+      this.handleUpload(fileInputStream, upload, uploadedFuture.completer());
+      //this.handleUpload(gridFsClient.get(), fileInputStream, upload, uploadedFuture.completer());
       return uploadedFuture;
     }).compose( id -> {
       assertNotNull(id);
@@ -672,30 +728,6 @@ public class GridFsTest extends MongoTestBase {
 
   }
 
-  private void handleUpload(MongoGridFsClient mongoGridFsClient, FileInputStream fileInputStream, MongoGridFsUpload upload, Handler<AsyncResult<String>> completeHandler) {
-
-    try {
-      if (fileInputStream.available() > 0) {
-        int size = fileInputStream.available();
-        if (size > 1024) size = 1024;
-        byte[] bFile = new byte[size];
-        fileInputStream.read(bFile);
-        GridFsBuffer buffer = new GridFsBuffer();
-        buffer.setBuffer(Buffer.buffer(bFile));
-        upload.uploadBuffer( buffer, onSuccess(number -> {
-          assertTrue(number > 0);
-          this.handleUpload(mongoGridFsClient, fileInputStream, upload, completeHandler);
-        }));
-      } else {
-        upload.end(onSuccess(id -> {
-          completeHandler.handle(Future.succeededFuture(id));
-        }));
-      }
-    } catch (IOException ioe) {
-      fail(ioe);
-    }
-
-  }
 
   @Test
   public void testFileDownload() {

@@ -16,17 +16,21 @@
 
 package examples;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.ext.mongo.*;
 import org.bson.types.ObjectId;
 
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -553,7 +557,7 @@ public class Examples {
     mongoClient.createGridFsBucketService("fs", res -> {
       if (res.succeeded()) {
         MongoGridFsClient client = res.result();
-        //Interact with the client...
+        //Interact with the GridFS client...
       } else {
         res.cause().printStackTrace();
       }
@@ -607,37 +611,210 @@ public class Examples {
       }
     });
   }
-  public void example22() {
-    byte[] bFile = new byte[1024];
-    String encodedBuffer = Base64.getEncoder().encodeToString(bFile);
+  public void handleDownloadExample(OutputStream stream, MongoGridFsDownload download, Integer length, Handler<AsyncResult<Void>> completeHandler) {
+    download.read(length, result -> {
+      if (result.succeeded()) {
+        GridFsBuffer buffer = result.result();
+        if (buffer != null) {
+          try {
+            stream.write(buffer.getBuffer().getBytes());
+          } catch (IOException e) {
+            completeHandler.handle(Future.failedFuture(e));
+          }
+          handleDownloadExample(stream, download, length, completeHandler);
+        } else {
+          //If the buffer is null, then we are finished.
+          completeHandler.handle(Future.succeededFuture());
+        }
+      } else {
+        completeHandler.handle(Future.failedFuture(result.cause()));
+      }
+    });
+
   }
-  /*
+  public void handleUploadExample(InputStream stream, MongoGridFsUpload upload, Handler<AsyncResult<String>> completeHandler) {
+    try {
+      if (stream.available() > 0) {
+        int size = stream.available();
+        if (size > 1024) size = 1024;
+        byte[] buffer = new byte[size];
+        stream.read(buffer);
+        GridFsBuffer gridFsBuffer = new GridFsBuffer().setBuffer(Buffer.buffer(buffer));
+        upload.uploadBuffer( gridFsBuffer, res -> {
+          if(res.succeeded()) {
+            this.handleUploadExample(stream, upload, completeHandler);
+          } else {
+            completeHandler.handle(Future.failedFuture(res.cause()));
+          }
+        });
+      } else {
+        upload.end(res -> {
+          if (res.succeeded()) {
+            completeHandler.handle(Future.succeededFuture(res.result()));
+          } else {
+            completeHandler.handle(Future.failedFuture(res.cause()));
+          }
+        });
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
   public void example22(MongoGridFsClient gridFsClient) throws Exception {
+    byte[] buffer = new byte[1024];
     FileInputStream fis = new FileInputStream("eel.fil");
 
-    if (fis.available() > 0) {
-      int size = fis.available();
-      if (size > 1024) size = 1024;
-      byte[] bFile = new byte[size];
-      fis.read(bFile);
-      String encodedBuffer = Base64.getEncoder().encodeToString(bFile);
-      upload.uploadBuffer( encodedBuffer, onSuccess(number -> {
-        this.handleUpload(mongoGridFsClient, fis, upload, completeHandler);
-      }));
-    } else {
-      upload.end(onSuccess(id -> {
-        completeHandler.handle(Future.succeededFuture(id));
-      }));
-    }
-
-    gridFsClient.uploadBuffer("file.name", res -> {
+    gridFsClient.uploadBuffer("file.name", (AsyncResult<MongoGridFsUpload> res) -> {
       if (res.succeeded()) {
         MongoGridFsUpload upload = res.result();
-
+        Future<String> future = Future.future();
+        this.handleUploadExample(fis, upload, future.completer());
+        future.setHandler(result -> {
+          String id = result.result(); //This is the file id returned by GridFs
+        });
       } else {
         res.cause().printStackTrace();
       }
     });
   }
-  */
+  public void example23(MongoGridFsClient gridFsClient) throws Exception {
+    byte[] buffer = new byte[1024];
+    FileInputStream fis = new FileInputStream("eel.fil");
+
+    UploadOptions options = new UploadOptions();
+    options.setMetadata(new JsonObject().put("nick_name", "Mini Boo"));
+
+    gridFsClient.uploadBufferWithOptions("file.name", options, (AsyncResult<MongoGridFsUpload> res) -> {
+      if (res.succeeded()) {
+        MongoGridFsUpload upload = res.result();
+        Future<String> future = Future.future();
+        this.handleUploadExample(fis, upload, future.completer());
+        future.setHandler(result -> {
+          String id = result.result(); //This is the file id returned by GridFs
+        });
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example24(MongoGridFsClient gridFsClient) throws Exception {
+    String id = "56660b074cedfd000570839c"; //The GridFS ID of the file
+    gridFsClient.delete(id, (AsyncResult<Void> res) -> {
+      if (res.succeeded()) {
+        //File deleted
+      } else {
+        //Something went wrong
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example25(MongoGridFsClient gridFsClient) throws Exception {
+    int bufferSize = 1024;
+    String filename = "puhi.fil";
+    FileOutputStream stream = new FileOutputStream("eel.fil");
+    gridFsClient.downloadBuffer(filename, res -> {
+      if (res.succeeded()) {
+        MongoGridFsDownload download = res.result();
+        Future<Void> downloadCompleteFuture = Future.future();
+        downloadCompleteFuture.setHandler(downloadRes -> {
+          if (downloadRes.succeeded()) {
+            //Download finished
+          } else {
+            //Something went wrong
+            throw new RuntimeException(downloadRes.cause());
+          }
+        });
+        this.handleDownloadExample(stream, download, bufferSize, downloadCompleteFuture.completer());
+      } else {
+        //Something went wrong
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example26(MongoGridFsClient gridFsClient) throws Exception {
+    int bufferSize = 1024;
+    String id = "56660b074cedfd000570839c";
+    FileOutputStream stream = new FileOutputStream("eel.fil");
+    gridFsClient.downloadBufferById(id, res -> {
+      if (res.succeeded()) {
+        MongoGridFsDownload download = res.result();
+        Future<Void> downloadCompleteFuture = Future.future();
+        downloadCompleteFuture.setHandler(downloadRes -> {
+          if (downloadRes.succeeded()) {
+            //Download finished
+          } else {
+            //Something went wrong
+            throw new RuntimeException(downloadRes.cause());
+          }
+        });
+        this.handleDownloadExample(stream, download, bufferSize, downloadCompleteFuture.completer());
+      } else {
+        //Something went wrong
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example27(MongoGridFsClient gridFsClient) {
+    String id = "56660b074cedfd000570839c";
+    String filename = "puhi.fil";
+    gridFsClient.downloadFileByID(id, filename, res -> {
+      if (res.succeeded()) {
+        Long fileLength = res.result();
+        //The length of the file stored in fileName
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example28(MongoGridFsClient gridFsClient) {
+    gridFsClient.drop(res -> {
+      if (res.succeeded()) {
+        //The file bucket is dropped and all files in it, erased
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example29(MongoGridFsClient gridFsClient) {
+    gridFsClient.findAllIds(res -> {
+      if (res.succeeded()) {
+        List<String> ids = res.result(); //List of file IDs
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example30(MongoGridFsClient gridFsClient) {
+    JsonObject query = new JsonObject().put("metadata.nick_name", "Puhi the eel");
+    gridFsClient.findIds(query, res -> {
+      if (res.succeeded()) {
+        List<String> ids = res.result(); //List of file IDs
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example31(MongoGridFsClient gridFsClient) throws Exception {
+    int bufferSize = 1024;
+    String id = "56660b074cedfd000570839c";
+    FileOutputStream stream = new FileOutputStream("eel.fil");
+    gridFsClient.downloadBufferById(id, res -> {
+      if (res.succeeded()) {
+        MongoGridFsDownload download = res.result();
+        Future<Void> downloadCompleteFuture = Future.future();
+        downloadCompleteFuture.setHandler(downloadRes -> {
+          if (downloadRes.succeeded()) {
+            //Download finished
+          } else {
+            //Something went wrong
+            throw new RuntimeException(downloadRes.cause());
+          }
+        });
+        this.handleDownloadExample(stream, download, bufferSize, downloadCompleteFuture.completer());
+      } else {
+        //Something went wrong
+        res.cause().printStackTrace();
+      }
+    });
+  }
 }

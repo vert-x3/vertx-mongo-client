@@ -29,6 +29,7 @@ public class GridFsBuffer {
   public GridFsBuffer(GridFsBuffer copy) {
     this.buffer = copy.buffer;
   }
+
   /**
    * Constructor from JSON
    *
@@ -54,7 +55,9 @@ public class GridFsBuffer {
     return buffer;
   }
 
-  public void setBuffer(Buffer buffer) {
+  public GridFsBuffer setBuffer(Buffer buffer) {
     this.buffer = buffer;
+
+    return this;
   }
 }
