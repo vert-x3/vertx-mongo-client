@@ -10,8 +10,6 @@ import io.vertx.ext.mongo.GridFsBuffer;
 import io.vertx.ext.mongo.MongoGridFsDownload;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Base64;
 
 import static java.util.Objects.requireNonNull;
 

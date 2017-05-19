@@ -19,7 +19,8 @@ import java.util.Queue;
  */
 public class GridFSInputStreamImpl implements GridFSInputStream {
 
-  private int writeQueueMaxSize = 8192;
+  public static final int DEFAULT_QUEUE_SIZE = 8192;
+  private int writeQueueMaxSize = DEFAULT_QUEUE_SIZE;
 
   private final Queue<Byte> pending = new ArrayDeque<>();
   private Handler<Void> drainHandler;
@@ -59,8 +60,8 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     }
   }
 
-  public GridFSInputStream setWriteQueueMaxSize(int i) {
-    this.writeQueueMaxSize = i;
+  public GridFSInputStream setWriteQueueMaxSize(int queueSize) {
+    this.writeQueueMaxSize = queueSize;
     return this;
   }
 
@@ -76,19 +77,19 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
   /**
    * Write bytes to the buffer provided by the mongo driver. Buffer and Callback provided are cached in case no data
    * is available to write and will be fulfilled by future invocations.
-   * @param b optional buffer provided by the mongo driver
-   * @param c optional callback provided by the mongo driver
+   * @param byteBuffer optional buffer provided by the mongo driver
+   * @param singleResultCallback optional callback provided by the mongo driver
    */
-  private synchronized void writeBytes(ByteBuffer b, SingleResultCallback<Integer> c) {
+  private synchronized void writeBytes(ByteBuffer byteBuffer, SingleResultCallback<Integer> singleResultCallback) {
     int bytesWritten = 0;
 
-    if (b != null && c != null) {
+    if (byteBuffer != null && singleResultCallback != null) {
       if (this.outBuffer != null || this.callback != null) {
-        c.onResult(null, new RuntimeException("mongo provided a new buffer or callback before the previous " +
+        singleResultCallback.onResult(null, new RuntimeException("mongo provided a new buffer or callback before the previous " +
           "one has been fulfilled"));
       }
-      this.outBuffer = b;
-      this.callback = c;
+      this.outBuffer = byteBuffer;
+      this.callback = singleResultCallback;
     }
 
     // a callback and a buffer to write to is available
@@ -106,21 +107,22 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
         }
       }
 
+      // if bytes were written call the callback
       if (bytesWritten > 0) {
-        // if bytes were written call the callback
 
         SingleResultCallback<Integer> tempCallback = this.callback;
         this.outBuffer = null;
         this.callback = null;
         tempCallback.onResult(bytesWritten, null);
 
-      } else if (closed && this.pending.size() == 0) {
+      } else
         // if the stream has been closed and there is no more data to write available, send -1 to the callback
+        if (closed && this.pending.size() == 0) {
 
-        SingleResultCallback<Integer> tempCallback = this.callback;
-        this.outBuffer = null;
-        this.callback = null;
-        tempCallback.onResult(-1, null);
+          SingleResultCallback<Integer> tempCallback = this.callback;
+          this.outBuffer = null;
+          this.callback = null;
+          tempCallback.onResult(-1, null);
       }
     }
 

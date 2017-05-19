@@ -9,7 +9,6 @@ import io.vertx.ext.mongo.GridFsBuffer;
 import io.vertx.ext.mongo.MongoGridFsUpload;
 
 import java.nio.ByteBuffer;
-import java.util.Base64;
 
 import static java.util.Objects.requireNonNull;
 

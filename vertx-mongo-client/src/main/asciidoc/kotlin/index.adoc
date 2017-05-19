@@ -874,8 +874,8 @@ name
 ----
 mongoClient.createGridFsBucketService("fs", { res ->
   if (res.succeeded()) {
-    var client = res.result()
     //Interact with the GridFS client...
+    var client = res.result()
   } else {
     res.cause().printStackTrace()
   }

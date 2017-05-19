@@ -874,8 +874,8 @@ name
 ----
 mongoClient.createGridFsBucketService("fs", function (res, res_err) {
   if (res_err == null) {
-    var client = res;
     //Interact with the GridFS client...
+    var client = res;
   } else {
     res_err.printStackTrace();
   }

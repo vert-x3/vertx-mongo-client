@@ -877,8 +877,8 @@ name
 ----
 mongoClient.create_grid_fs_bucket_service("fs") { |res_err,res|
   if (res_err == nil)
-    client = res
     #Interact with the GridFS client...
+    client = res
   else
     res_err.print_stack_trace()
   end

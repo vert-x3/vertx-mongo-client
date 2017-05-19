@@ -4,12 +4,21 @@ import com.mongodb.async.client.gridfs.GridFSBucket;
 import com.mongodb.async.client.gridfs.GridFSDownloadStream;
 import com.mongodb.async.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.Pump;
-import io.vertx.ext.mongo.*;
+import io.vertx.ext.mongo.GridFSInputStream;
+import io.vertx.ext.mongo.GridFSOutputStream;
+import io.vertx.ext.mongo.MongoGridFsClient;
+import io.vertx.ext.mongo.MongoGridFsDownload;
+import io.vertx.ext.mongo.MongoGridFsUpload;
+import io.vertx.ext.mongo.UploadOptions;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -57,7 +66,6 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
         AsyncFile file = asyncResultHandler.result();
 
         GridFSInputStream gridFSInputStream = GridFSInputStream.create();
-        //AlternateGridFsInputStream gridFSInputStream = new AlternateGridFsInputStream(vertx);
         file.endHandler(endHandler -> gridFSInputStream.end());
         Pump.pump(file, gridFSInputStream).start();
 
@@ -66,7 +74,9 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
         } else {
           GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
           uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
-          if (options.getMetadata() != null) uploadOptions.metadata(new Document(options.getMetadata().getMap()));
+          if (options.getMetadata() != null) {
+            uploadOptions.metadata(new Document(options.getMetadata().getMap()));
+          }
           bucket.uploadFromStream(fileName, gridFSInputStream, uploadOptions, convertCallback(resultHandler, ObjectId::toHexString));
         }
       } else {
@@ -181,7 +191,6 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
     Context context = vertx.getOrCreateContext();
     bucket.find()
       .forEach(gridFSFile -> {
-          System.out.println("adding file");
           ids.add(gridFSFile.getObjectId().toHexString());
         },
         (result, throwable) -> {
@@ -189,7 +198,6 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
             if (throwable != null) {
               resultHandler.handle(Future.failedFuture(throwable));
             } else {
-              System.out.println("returning " + ids.size() + " files");
               resultHandler.handle(Future.succeededFuture(ids));
             }
           });
@@ -206,19 +214,16 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
     JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
 
     Bson bquery = wrap(encodedQuery);
-    System.out.println("Query: " + encodedQuery.encodePrettily());
 
-    //Document document = new Document("metadata.nick_name", "Puhi the eel");
     List<String> ids = new ArrayList<>();
 
     Context context = vertx.getOrCreateContext();
     bucket.find(bquery)
       .forEach(gridFSFile -> {
-          System.out.println("Adding file");
           ids.add(gridFSFile.getObjectId().toHexString());
         },
         (result, throwable) -> {
-          context.runOnContext(v -> {
+          context.runOnContext(voidHandler -> {
             if (throwable != null) {
               resultHandler.handle(Future.failedFuture(throwable));
             } else {
@@ -254,7 +259,6 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
     } else {
       GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
       uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
-      System.out.println("options: " + options.toJson().encodePrettily());
       if (options.getMetadata() != null) uploadOptions.metadata(new Document(options.getMetadata().getMap()));
       stream = bucket.openUploadStream(fileName, uploadOptions);
     }

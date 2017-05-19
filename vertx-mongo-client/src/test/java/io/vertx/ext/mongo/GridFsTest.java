@@ -23,16 +23,19 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:dbush@redhat.com">David Bush</a>
@@ -81,36 +84,6 @@ public class GridFsTest extends MongoTestBase {
     }
 
   }
-  /*
-  public static void upload(InputStream stream, MongoGridFsUpload upload, Handler<AsyncResult<String>> completeHandler) {
-    try {
-      if (stream.available() > 0) {
-        int size = stream.available();
-        if (size > 1024) size = 1024;
-        byte[] buffer = new byte[size];
-        stream.read(buffer);
-        GridFsBuffer gridFsBuffer = new GridFsBuffer().setBuffer(Buffer.buffer(buffer));
-        upload.uploadBuffer( gridFsBuffer, res -> {
-          if(res.succeeded()) {
-            GridFsTest.upload(stream, upload, completeHandler);
-          } else {
-            completeHandler.handle(Future.failedFuture(res.cause()));
-          }
-        });
-      } else {
-        upload.end(res -> {
-          if (res.succeeded()) {
-            completeHandler.handle(Future.succeededFuture(res.result()));
-          } else {
-            completeHandler.handle(Future.failedFuture(res.cause()));
-          }
-        });
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-  */
   private static String createTempFileWithContent(int length) {
 
     try {

@@ -870,8 +870,8 @@ name
 ----
 mongoClient.createGridFsBucketService("fs", { res ->
   if (res.succeeded()) {
-    def client = res.result()
     //Interact with the GridFS client...
+    def client = res.result()
   } else {
     res.cause().printStackTrace()
   }

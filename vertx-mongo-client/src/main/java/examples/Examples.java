@@ -556,8 +556,8 @@ public class Examples {
   public void example17(MongoClient mongoClient) {
     mongoClient.createGridFsBucketService("fs", res -> {
       if (res.succeeded()) {
-        MongoGridFsClient client = res.result();
         //Interact with the GridFS client...
+        MongoGridFsClient client = res.result();
       } else {
         res.cause().printStackTrace();
       }

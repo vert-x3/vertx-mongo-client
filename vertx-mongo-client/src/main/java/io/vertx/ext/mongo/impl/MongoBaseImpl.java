@@ -1,8 +1,11 @@
 package io.vertx.ext.mongo.impl;
 
-
 import com.mongodb.async.SingleResultCallback;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import org.bson.types.ObjectId;
