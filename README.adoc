@@ -11,3 +11,7 @@ of Mongo service:
 * link:vertx-mongo-client/src/main/asciidoc/java/index.adoc[Java in-source docs]
 * link:vertx-mongo-client/src/main/asciidoc/js/index.adoc[JavaScript in-source docs]
 * link:vertx-mongo-client/src/main/asciidoc/groovy/index.adoc[Groovy in-source docs]
+
+```
+docker run --rm --name vertx-mongo -p 27017:27017 mongo
+```
