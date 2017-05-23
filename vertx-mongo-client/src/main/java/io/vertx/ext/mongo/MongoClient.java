@@ -140,13 +140,6 @@ public interface MongoClient {
   MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption,
       Handler<AsyncResult<String>> resultHandler);
 
-  @Fluent
-  MongoClient insertMany(String collection, List<JsonObject> documents, Handler<AsyncResult<Void>> resultHandler);
-
-  @Fluent
-  MongoClient insertManyWithOptions(String collection, List<JsonObject> documents, WriteOption writeOption,
-      Handler<AsyncResult<Void>> resultHandler);
-
   /**
    * Update matching documents in the specified collection
    *
