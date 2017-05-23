@@ -184,28 +184,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
-  @Override
-  public MongoClient insertMany(String collection, List<JsonObject> documents,
-      Handler<AsyncResult<Void>> resultHandler) {
-    insertManyWithOptions(collection, documents, null, resultHandler);
-    return this;
-  }
-
-  @Override
-  public MongoClient insertManyWithOptions(String collection, List<JsonObject> documents, WriteOption writeOption,
-      Handler<AsyncResult<Void>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(documents, "documents cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-    List<JsonObject> encodedDocuments = documents.stream().map(document -> encodeKeyWhenUseObjectId(document))
-        .collect(Collectors.toList());
-    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    coll.insertMany(encodedDocuments, convertCallback(resultHandler, wr -> {
-      return null;
-    }));
-    return this;
-  }
-
   @Deprecated
   @Override
   public io.vertx.ext.mongo.MongoClient update(String collection, JsonObject query, JsonObject update,
