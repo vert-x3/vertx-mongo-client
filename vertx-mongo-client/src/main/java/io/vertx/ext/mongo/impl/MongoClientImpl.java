@@ -16,6 +16,24 @@
 
 package io.vertx.ext.mongo.impl;
 
+import static java.util.Objects.requireNonNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.bson.BsonDocument;
+import org.bson.BsonDocumentReader;
+import org.bson.BsonValue;
+import org.bson.codecs.DecoderContext;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+
 import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
@@ -26,27 +44,21 @@ import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.async.client.MongoIterable;
+import com.mongodb.bulk.BulkWriteResult;
+import com.mongodb.bulk.BulkWriteUpsert;
+import com.mongodb.client.model.DeleteManyModel;
+import com.mongodb.client.model.DeleteOneModel;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.InsertOneModel;
+import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReturnDocument;
+import com.mongodb.client.model.UpdateManyModel;
+import com.mongodb.client.model.UpdateOneModel;
+import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-
-import org.bson.BsonDocument;
-import org.bson.BsonDocumentReader;
-import org.bson.BsonValue;
-import org.bson.codecs.DecoderContext;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -59,17 +71,22 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
+import io.vertx.ext.mongo.BulkWriteOptions;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.IndexOptions;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoClientBulkWriteResult;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.ext.mongo.MongoClientUpdateResult;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
+import io.vertx.ext.mongo.bulk.BulkDelete;
+import io.vertx.ext.mongo.bulk.BulkInsert;
+import io.vertx.ext.mongo.bulk.BulkOperation;
+import io.vertx.ext.mongo.bulk.BulkReplace;
+import io.vertx.ext.mongo.bulk.BulkUpdate;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * The implementation of the {@link io.vertx.ext.mongo.MongoClient}. This implementation is based on the async driver
@@ -83,6 +100,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
+  private static final BulkWriteOptions DEFAULT_BULK_WRITE_OPTIONS = new BulkWriteOptions();
   private static final String ID_FIELD = "_id";
 
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
@@ -108,13 +126,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient save(String collection, JsonObject document,
+      Handler<AsyncResult<String>> resultHandler) {
     saveWithOptions(collection, document, null, resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient saveWithOptions(String collection, JsonObject document, WriteOption writeOption,
+      Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -122,14 +142,14 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Object id = document.getValue(ID_FIELD);
     if (id == null) {
-      coll.insertOne(document, convertCallback(resultHandler, wr -> useObjectId ? document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) : document.getString(ID_FIELD)));
+      coll.insertOne(document, convertCallback(resultHandler, wr -> useObjectId
+          ? document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) : document.getString(ID_FIELD)));
     } else {
       JsonObject filter = new JsonObject();
       JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
       filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
 
-      com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
-          .upsert(true);
+      com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions().upsert(true);
 
       coll.replaceOne(wrap(filter), encodedDocument, updateOptions, convertCallback(resultHandler, result -> null));
     }
@@ -137,13 +157,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient insert(String collection, JsonObject document,
+      Handler<AsyncResult<String>> resultHandler) {
     insertWithOptions(collection, document, null, resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient insertWithOptions(String collection, JsonObject document,
+      WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -153,7 +175,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     coll.insertOne(encodedDocument, convertCallback(resultHandler, wr -> {
-      if (hasCustomId) return null;
+      if (hasCustomId)
+        return null;
 
       JsonObject decodedDocument = decodeKeyWhenUseObjectId(encodedDocument);
       return decodedDocument.getString(ID_FIELD);
@@ -161,27 +184,54 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
-  @Deprecated @Override
-  public io.vertx.ext.mongo.MongoClient update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler) {
+  @Override
+  public MongoClient insertMany(String collection, List<JsonObject> documents,
+      Handler<AsyncResult<Void>> resultHandler) {
+    insertManyWithOptions(collection, documents, null, resultHandler);
+    return this;
+  }
+
+  @Override
+  public MongoClient insertManyWithOptions(String collection, List<JsonObject> documents, WriteOption writeOption,
+      Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(documents, "documents cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    List<JsonObject> encodedDocuments = documents.stream().map(document -> encodeKeyWhenUseObjectId(document))
+        .collect(Collectors.toList());
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    coll.insertMany(encodedDocuments, convertCallback(resultHandler, wr -> {
+      return null;
+    }));
+    return this;
+  }
+
+  @Deprecated
+  @Override
+  public io.vertx.ext.mongo.MongoClient update(String collection, JsonObject query, JsonObject update,
+      Handler<AsyncResult<Void>> resultHandler) {
     updateWithOptions(collection, query, update, DEFAULT_UPDATE_OPTIONS, resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient updateCollection(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient updateCollection(String collection, JsonObject query, JsonObject update,
+      Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
     updateCollectionWithOptions(collection, query, update, DEFAULT_UPDATE_OPTIONS, resultHandler);
     return this;
   }
 
-  @Deprecated @Override
-  public io.vertx.ext.mongo.MongoClient updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  @Deprecated
+  @Override
+  public io.vertx.ext.mongo.MongoClient updateWithOptions(String collection, JsonObject query, JsonObject update,
+      UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
     updateCollectionWithOptions(collection, query, update, options, toVoidAsyncResult(resultHandler));
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options,
-                                                                    Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient updateCollectionWithOptions(String collection, JsonObject query,
+      JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(update, "update cannot be null");
@@ -199,25 +249,31 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
-  @Deprecated @Override
-  public io.vertx.ext.mongo.MongoClient replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler) {
+  @Deprecated
+  @Override
+  public io.vertx.ext.mongo.MongoClient replace(String collection, JsonObject query, JsonObject replace,
+      Handler<AsyncResult<Void>> resultHandler) {
     replaceWithOptions(collection, query, replace, DEFAULT_UPDATE_OPTIONS, resultHandler);
     return this;
   }
 
   @Override
-  public MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+  public MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace,
+      Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
     replaceDocumentsWithOptions(collection, query, replace, DEFAULT_UPDATE_OPTIONS, resultHandler);
     return this;
   }
 
-  @Deprecated @Override
-  public io.vertx.ext.mongo.MongoClient replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  @Deprecated
+  @Override
+  public io.vertx.ext.mongo.MongoClient replaceWithOptions(String collection, JsonObject query, JsonObject replace,
+      UpdateOptions options, Handler<AsyncResult<Void>> resultHandler) {
     return replaceDocumentsWithOptions(collection, query, replace, options, toVoidAsyncResult(resultHandler));
   }
 
   @Override
-  public MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+  public MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace,
+      UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(replace, "update cannot be null");
@@ -226,24 +282,28 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
     Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
-    coll.replaceOne(bquery, encodeKeyWhenUseObjectId(replace), mongoUpdateOptions(options), toMongoClientUpdateResult(resultHandler));
+    coll.replaceOne(bquery, encodeKeyWhenUseObjectId(replace), mongoUpdateOptions(options),
+        toMongoClientUpdateResult(resultHandler));
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient find(String collection, JsonObject query,
+      Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     findWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient findBatch(String collection, JsonObject query,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     findBatchWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient findWithOptions(String collection, JsonObject query, FindOptions options,
+      Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -258,7 +318,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -277,7 +338,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient findOne(String collection, JsonObject query, JsonObject fields,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -291,13 +353,16 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     findOneAndUpdateWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS, resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query,
+      JsonObject update, FindOptions findOptions, UpdateOptions updateOptions,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(findOptions, "find options cannot be null");
@@ -320,13 +385,17 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) {
-    findOneAndReplaceWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS, resultHandler);
+  public io.vertx.ext.mongo.MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject update,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
+    findOneAndReplaceWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS,
+        resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query,
+      JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(findOptions, "find options cannot be null");
@@ -348,13 +417,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient findOneAndDelete(String collection, JsonObject query,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     findOneAndDeleteWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
     return this;
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query,
+      FindOptions findOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(findOptions, "find options cannot be null");
@@ -373,7 +444,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient count(String collection, JsonObject query,
+      Handler<AsyncResult<Long>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -384,26 +456,32 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
-  @Deprecated @Override
-  public io.vertx.ext.mongo.MongoClient remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
+  @Deprecated
+  @Override
+  public io.vertx.ext.mongo.MongoClient remove(String collection, JsonObject query,
+      Handler<AsyncResult<Void>> resultHandler) {
     removeWithOptions(collection, query, null, resultHandler);
     return this;
   }
 
   @Override
-  public MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
+  public MongoClient removeDocuments(String collection, JsonObject query,
+      Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
     removeDocumentsWithOptions(collection, query, null, resultHandler);
     return this;
   }
 
-  @Deprecated @Override
-  public io.vertx.ext.mongo.MongoClient removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+  @Deprecated
+  @Override
+  public io.vertx.ext.mongo.MongoClient removeWithOptions(String collection, JsonObject query, WriteOption writeOption,
+      Handler<AsyncResult<Void>> resultHandler) {
     removeDocumentsWithOptions(collection, query, writeOption, toVoidAsyncResult(resultHandler));
     return this;
   }
 
   @Override
-  public MongoClient removeDocumentsWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
+  public MongoClient removeDocumentsWithOptions(String collection, JsonObject query, WriteOption writeOption,
+      Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -414,26 +492,32 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
-  @Deprecated @Override
-  public io.vertx.ext.mongo.MongoClient removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler) {
+  @Deprecated
+  @Override
+  public io.vertx.ext.mongo.MongoClient removeOne(String collection, JsonObject query,
+      Handler<AsyncResult<Void>> resultHandler) {
     removeOneWithOptions(collection, query, null, resultHandler);
     return this;
   }
 
   @Override
-  public MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
+  public MongoClient removeDocument(String collection, JsonObject query,
+      Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
     removeDocumentWithOptions(collection, query, null, resultHandler);
     return this;
   }
 
-  @Deprecated @Override
-  public io.vertx.ext.mongo.MongoClient removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
+  @Deprecated
+  @Override
+  public io.vertx.ext.mongo.MongoClient removeOneWithOptions(String collection, JsonObject query,
+      WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler) {
     removeDocumentWithOptions(collection, query, writeOption, toVoidAsyncResult(resultHandler));
     return this;
   }
 
   @Override
-  public MongoClient removeDocumentWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
+  public MongoClient removeDocumentWithOptions(String collection, JsonObject query, WriteOption writeOption,
+      Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -442,6 +526,68 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     coll.deleteOne(bquery, toMongoClientDeleteResult(resultHandler));
     return this;
+  }
+
+  public MongoClient bulkWrite(String collection, List<? extends BulkOperation> operations,
+      Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
+    bulkWriteWithOptions(collection, operations, DEFAULT_BULK_WRITE_OPTIONS, resultHandler);
+    return this;
+  }
+
+  public MongoClient bulkWriteWithOptions(String collection, List<? extends BulkOperation> operations,
+      BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(operations, "operations cannot be null");
+    requireNonNull(bulkWriteOptions, "bulkWriteOptions cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection, bulkWriteOptions.getWriteOption());
+    List<WriteModel<JsonObject>> bulkOperations = convertBulkOperations(operations);
+    coll.bulkWrite(bulkOperations, mongoBulkWriteOptions(bulkWriteOptions),
+        toMongoClientBulkWriteResult(resultHandler));
+
+    return this;
+  }
+
+  private static com.mongodb.client.model.BulkWriteOptions mongoBulkWriteOptions(BulkWriteOptions bulkWriteOptions) {
+    com.mongodb.client.model.BulkWriteOptions mongoBulkOptions = new com.mongodb.client.model.BulkWriteOptions()
+        .ordered(bulkWriteOptions.isOrdered());
+    return mongoBulkOptions;
+  }
+
+  private List<WriteModel<JsonObject>> convertBulkOperations(List<? extends BulkOperation> operations) {
+    List<WriteModel<JsonObject>> result = new ArrayList<>(operations.size());
+    for (BulkOperation bulkOperation : operations) {
+      if (bulkOperation instanceof BulkDelete) {
+        BulkDelete bulkDelete = (BulkDelete) bulkOperation;
+        Bson bsonFilter = toBson(bulkDelete.getFilter());
+        if (bulkDelete.isMulti()) {
+          result.add(new DeleteManyModel<>(bsonFilter));
+        } else {
+          result.add(new DeleteOneModel<>(bsonFilter));
+        }
+      } else if (bulkOperation instanceof BulkInsert) {
+        BulkInsert bulkInsert = (BulkInsert) bulkOperation;
+        result.add(new InsertOneModel<>(encodeKeyWhenUseObjectId(bulkInsert.getDocument())));
+      } else if (bulkOperation instanceof BulkReplace) {
+        BulkReplace bulkReplace = (BulkReplace) bulkOperation;
+        result.add(new ReplaceOneModel<>(toBson(bulkReplace.getFilter()), bulkReplace.getReplacement(),
+            new com.mongodb.client.model.UpdateOptions().upsert(bulkReplace.isUpsert())));
+      } else if (bulkOperation instanceof BulkUpdate) {
+        BulkUpdate bulkUpdate = (BulkUpdate) bulkOperation;
+        Bson filter = toBson(bulkUpdate.getFilter());
+        Bson document = toBson(encodeKeyWhenUseObjectId(bulkUpdate.getDocument()));
+        com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
+            .upsert(bulkUpdate.isUpsert());
+        if (bulkUpdate.isMulti()) {
+          result.add(new UpdateManyModel<>(filter, document, updateOptions));
+        } else {
+          result.add(new UpdateOneModel<>(filter, document, updateOptions));
+        }
+      } else {
+        throw new IllegalArgumentException("Unknown bulk operation type: " + bulkOperation.getClass());
+      }
+    }
+    return result;
   }
 
   @Override
@@ -481,34 +627,27 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient createIndex(String collection, JsonObject key,
+      Handler<AsyncResult<Void>> resultHandler) {
     return createIndexWithOptions(collection, key, new IndexOptions(), resultHandler);
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options,
+      Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(key, "fieldName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
     MongoCollection<JsonObject> coll = getCollection(collection);
     com.mongodb.client.model.IndexOptions driverOpts = new com.mongodb.client.model.IndexOptions()
-            .background(options.isBackground())
-            .unique(options.isUnique())
-            .name(options.getName())
-            .sparse(options.isSparse())
-            .expireAfter(options.getExpireAfter(TimeUnit.SECONDS), TimeUnit.SECONDS)
-            .version(options.getVersion())
-            .weights(toBson(options.getWeights()))
-            .defaultLanguage(options.getDefaultLanguage())
-            .languageOverride(options.getLanguageOverride())
-            .textVersion(options.getTextVersion())
-            .sphereVersion(options.getSphereVersion())
-            .bits(options.getBits())
-            .min(options.getMin())
-            .max(options.getMax())
-            .bucketSize(options.getBucketSize())
-            .storageEngine(toBson(options.getStorageEngine()))
-            .partialFilterExpression(toBson(options.getPartialFilterExpression()));
+        .background(options.isBackground()).unique(options.isUnique()).name(options.getName())
+        .sparse(options.isSparse()).expireAfter(options.getExpireAfter(TimeUnit.SECONDS), TimeUnit.SECONDS)
+        .version(options.getVersion()).weights(toBson(options.getWeights()))
+        .defaultLanguage(options.getDefaultLanguage()).languageOverride(options.getLanguageOverride())
+        .textVersion(options.getTextVersion()).sphereVersion(options.getSphereVersion()).bits(options.getBits())
+        .min(options.getMin()).max(options.getMax()).bucketSize(options.getBucketSize())
+        .storageEngine(toBson(options.getStorageEngine()))
+        .partialFilterExpression(toBson(options.getPartialFilterExpression()));
     coll.createIndex(wrap(key), driverOpts, wrapCallback(toVoidAsyncResult(resultHandler)));
     return this;
   }
@@ -540,7 +679,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient runCommand(String commandName, JsonObject command,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     requireNonNull(commandName, "commandName cannot be null");
     requireNonNull(command, "command cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -563,7 +703,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname,
+      Handler<AsyncResult<JsonArray>> resultHandler) {
     DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
 
     if (distinctValues != null) {
@@ -573,7 +714,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public io.vertx.ext.mongo.MongoClient distinctBatch(String collection, String fieldName, String resultClassname,
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
 
     if (distinctValues != null) {
@@ -618,7 +760,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   }
 
-  private DistinctIterable findDistinctValues(String collection, String fieldName, String resultClassname, Handler resultHandler) {
+  private DistinctIterable findDistinctValues(String collection, String fieldName, String resultClassname,
+      Handler resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(fieldName, "fieldName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -634,9 +777,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return mongoCollection.distinct(fieldName, resultClass);
   }
 
-
   private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
-    if (!useObjectId) return json;
+    if (!useObjectId)
+      return json;
 
     Object idString = json.getValue(ID_FIELD, null);
     if (idString instanceof String && ObjectId.isValid((String) idString)) {
@@ -647,20 +790,24 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
-    if (!useObjectId) return json;
+    if (!useObjectId)
+      return json;
 
     Object idField = json.getValue(ID_FIELD, null);
-    if (!(idField instanceof JsonObject)) return json;
+    if (!(idField instanceof JsonObject))
+      return json;
 
     Object idString = ((JsonObject) idField).getValue(JsonObjectCodec.OID_FIELD, null);
-    if (!(idString instanceof String)) return json;
+    if (!(idString instanceof String))
+      return json;
 
     json.put(ID_FIELD, (String) idString);
 
     return json;
   }
 
-  private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
+  private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler,
+      Function<T, R> converter) {
     Context context = vertx.getOrCreateContext();
     return (result, error) -> {
       context.runOnContext(v -> {
@@ -675,7 +822,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private <T> Handler<AsyncResult<T>> toVoidAsyncResult(Handler<AsyncResult<Void>> resultHandler) {
     return result -> {
-      if(result.succeeded()) {
+      if (result.succeeded()) {
         resultHandler.handle(Future.succeededFuture(null));
       } else {
         resultHandler.handle(Future.failedFuture(result.cause()));
@@ -683,17 +830,20 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     };
   }
 
-  private SingleResultCallback<UpdateResult> toMongoClientUpdateResult(Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+  private SingleResultCallback<UpdateResult> toMongoClientUpdateResult(
+      Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
     return convertCallback(resultHandler, result -> {
       if (result.wasAcknowledged()) {
-        return convertToMongoClientUpdateResult(result.getMatchedCount(), result.getUpsertedId(), result.getModifiedCount());
+        return convertToMongoClientUpdateResult(result.getMatchedCount(), result.getUpsertedId(),
+            result.getModifiedCount());
       } else {
         return null;
       }
     });
   }
 
-  private SingleResultCallback<DeleteResult> toMongoClientDeleteResult(Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
+  private SingleResultCallback<DeleteResult> toMongoClientDeleteResult(
+      Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
     return convertCallback(resultHandler, result -> {
       if (result.wasAcknowledged()) {
         return new MongoClientDeleteResult(result.getDeletedCount());
@@ -701,6 +851,28 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
         return null;
       }
     });
+  }
+
+  private SingleResultCallback<BulkWriteResult> toMongoClientBulkWriteResult(
+      Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
+    return convertCallback(resultHandler, result -> {
+      if (result.wasAcknowledged()) {
+        return convertToMongoClientBulkWriteResult(result.getInsertedCount(), result.getMatchedCount(),
+            result.getDeletedCount(), result.getModifiedCount(), result.getUpserts());
+      } else {
+        return null;
+      }
+    });
+  }
+
+  private MongoClientBulkWriteResult convertToMongoClientBulkWriteResult(int insertedCount, int matchedCount,
+      int deletedCount, int modifiedCount, List<BulkWriteUpsert> upserts) {
+    List<JsonObject> upsertResult = upserts.stream().map(upsert -> {
+      JsonObject upsertValue = convertUpsertId(upsert.getId());
+      upsertValue.put(MongoClientBulkWriteResult.INDEX, upsert.getIndex());
+      return upsertValue;
+    }).collect(Collectors.toList());
+    return new MongoClientBulkWriteResult(insertedCount, matchedCount, deletedCount, modifiedCount, upsertResult);
   }
 
   private <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
@@ -720,7 +892,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return doFind(collection, null, query, options);
   }
 
-  private FindIterable<JsonObject> doFind(String collection, WriteOption writeOption, JsonObject query, FindOptions options) {
+  private FindIterable<JsonObject> doFind(String collection, WriteOption writeOption, JsonObject query,
+      FindOptions options) {
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     FindIterable<JsonObject> find = coll.find(bquery, JsonObject.class);
@@ -782,21 +955,25 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     }
   }
 
-  private MongoClientUpdateResult convertToMongoClientUpdateResult(long docMatched, BsonValue upsertId, long docModified) {
+  private MongoClientUpdateResult convertToMongoClientUpdateResult(long docMatched, BsonValue upsertId,
+      long docModified) {
+    return new MongoClientUpdateResult(docMatched, convertUpsertId(upsertId), docModified);
+  }
+
+  private JsonObject convertUpsertId(BsonValue upsertId) {
     JsonObject jsonUpsertId;
     if (upsertId != null) {
       JsonObjectCodec jsonObjectCodec = new JsonObjectCodec(new JsonObject());
 
       BsonDocument upsertIdDocument = new BsonDocument();
-      upsertIdDocument.append(MongoClientUpdateResult.ID_FIELD, upsertId);
+      upsertIdDocument.append(ID_FIELD, upsertId);
 
       BsonDocumentReader bsonDocumentReader = new BsonDocumentReader(upsertIdDocument);
       jsonUpsertId = jsonObjectCodec.decode(bsonDocumentReader, DecoderContext.builder().build());
     } else {
       jsonUpsertId = null;
     }
-
-    return new MongoClientUpdateResult(docMatched, jsonUpsertId, docModified);
+    return jsonUpsertId;
   }
 
   private static class MongoHolder implements Shareable {
