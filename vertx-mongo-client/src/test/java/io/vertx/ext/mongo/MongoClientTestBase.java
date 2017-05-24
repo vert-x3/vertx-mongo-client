@@ -28,8 +28,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.bulk.BulkOperation;
-import io.vertx.ext.mongo.bulk.BulkOperationType;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.test.core.TestUtils;
 
@@ -1457,7 +1455,8 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     JsonObject doc1 = new JsonObject().put("foo", "bar");
     JsonObject doc2 = new JsonObject().put("foo", "foobar");
-    mongoClient.bulkWrite(collection, Arrays.asList(BulkOperation.createInsert(doc1), BulkOperation.createInsert(doc2)),
+    mongoClient.bulkWrite(collection,
+        Arrays.asList(BulkOperation.createInsert(doc1), BulkOperation.createInsert(doc2)),
         onSuccess(bulkResult -> {
           assertEquals(2, bulkResult.getInsertedCount());
           assertEquals(0, bulkResult.getModifiedCount());
@@ -1502,7 +1501,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     insertDocs(mongoClient, collection, 5, onSuccess(v -> {
       JsonObject update = new JsonObject().put("$set", new JsonObject().put("foo", "foobar-bulk"));
       JsonObject filter = new JsonObject();
-      BulkOperationType bulkUpdate = BulkOperation.createUpdate(filter, update).setMulti(true);
+      BulkOperation bulkUpdate = BulkOperation.createUpdate(filter, update).setMulti(true);
       mongoClient.bulkWrite(collection, Arrays.asList(bulkUpdate), onSuccess(bulkResult -> {
         assertEquals(5, bulkResult.getModifiedCount());
         assertEquals(5, bulkResult.getMatchedCount());
@@ -1526,7 +1525,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     insertDocs(mongoClient, collection, 5, onSuccess(v -> {
       JsonObject update = new JsonObject().put("$set", new JsonObject().put("foo", "foobar-bulk"));
       JsonObject filter = new JsonObject();
-      BulkOperationType bulkUpdate = BulkOperation.createUpdate(filter, update).setMulti(false);
+      BulkOperation bulkUpdate = BulkOperation.createUpdate(filter, update).setMulti(false);
       mongoClient.bulkWrite(collection, Arrays.asList(bulkUpdate), onSuccess(bulkResult -> {
         assertEquals(1, bulkResult.getModifiedCount());
         assertEquals(0, bulkResult.getDeletedCount());
@@ -1545,7 +1544,8 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   public void testBulkOperation_upsertDocument() {
     String collection = randomCollection();
     JsonObject doc = new JsonObject().put("$set", new JsonObject().put("foo", "bar"));
-    BulkOperationType bulkUpdate = BulkOperation.createUpdate(new JsonObject().put("foo", "bur"), doc).setUpsert(true);
+    BulkOperation bulkUpdate = BulkOperation.createUpdate(new JsonObject().put("foo", "bur"), doc)
+        .setUpsert(true);
     mongoClient.bulkWrite(collection, Arrays.asList(bulkUpdate), onSuccess(bulkResult -> {
       // even though one document was created, the MongoDB client returns 0 for all counts
       assertEquals(0, bulkResult.getInsertedCount());
@@ -1566,7 +1566,8 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   public void testBulkOperation_upsertDocument_upsertDisabled() {
     String collection = randomCollection();
     JsonObject doc = new JsonObject().put("$set", new JsonObject().put("foo", "bar"));
-    BulkOperationType bulkUpdate = BulkOperation.createUpdate(new JsonObject().put("foo", "bur"), doc).setUpsert(false);
+    BulkOperation bulkUpdate = BulkOperation.createUpdate(new JsonObject().put("foo", "bur"), doc)
+        .setUpsert(false);
     mongoClient.bulkWrite(collection, Arrays.asList(bulkUpdate), onSuccess(bulkResult -> {
       assertEquals(0, bulkResult.getInsertedCount());
       assertEquals(0, bulkResult.getModifiedCount());
@@ -1584,7 +1585,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     insertDocs(mongoClient, collection, 1, onSuccess(v -> {
       JsonObject filter = new JsonObject().put("num", 123);
       JsonObject replace = new JsonObject().put("foo", "replaced");
-      BulkOperationType bulkReplace = BulkOperation.createReplace(filter, replace);
+      BulkOperation bulkReplace = BulkOperation.createReplace(filter, replace);
       mongoClient.bulkWrite(collection, Arrays.asList(bulkReplace), onSuccess(bulkResult -> {
         assertEquals(0, bulkResult.getInsertedCount());
         assertEquals(1, bulkResult.getModifiedCount());
@@ -1608,7 +1609,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     JsonObject filter = new JsonObject().put("foo", "bar");
     JsonObject replace = new JsonObject().put("foo", "upsert");
-    BulkOperationType bulkReplace = BulkOperation.createReplace(filter, replace, true);
+    BulkOperation bulkReplace = BulkOperation.createReplace(filter, replace, true);
     mongoClient.bulkWrite(collection, Arrays.asList(bulkReplace), onSuccess(bulkResult -> {
       assertEquals(0, bulkResult.getInsertedCount());
       assertEquals(0, bulkResult.getDeletedCount());
@@ -1631,7 +1632,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     insertDocs(mongoClient, collection, 5, onSuccess(v -> {
       JsonObject filter = new JsonObject().put("num", 123);
-      BulkOperationType bulkDelete = BulkOperation.createDelete(filter).setMulti(false);
+      BulkOperation bulkDelete = BulkOperation.createDelete(filter).setMulti(false);
       mongoClient.bulkWrite(collection, Arrays.asList(bulkDelete), onSuccess(bulkResult -> {
         assertEquals(0, bulkResult.getInsertedCount());
         assertEquals(1, bulkResult.getDeletedCount());
@@ -1649,7 +1650,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     String collection = randomCollection();
     insertDocs(mongoClient, collection, 5, onSuccess(v -> {
       JsonObject filter = new JsonObject().put("num", 123);
-      BulkOperationType bulkDelete = BulkOperation.createDelete(filter).setMulti(true);
+      BulkOperation bulkDelete = BulkOperation.createDelete(filter).setMulti(true);
       mongoClient.bulkWrite(collection, Arrays.asList(bulkDelete), onSuccess(bulkResult -> {
         assertEquals(0, bulkResult.getInsertedCount());
         assertEquals(5, bulkResult.getDeletedCount());
@@ -1685,12 +1686,12 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   private void testCompleteBulk(BulkWriteOptions bulkWriteOptions) {
     String collection = randomCollection();
     insertDocs(mongoClient, collection, 5, onSuccess(v -> {
-      BulkOperationType bulkInsert = BulkOperation.createInsert(new JsonObject().put("foo", "insert"));
-      BulkOperationType bulkUpdate = BulkOperation.createUpdate(new JsonObject().put("foo", "bar1"),
+      BulkOperation bulkInsert = BulkOperation.createInsert(new JsonObject().put("foo", "insert"));
+      BulkOperation bulkUpdate = BulkOperation.createUpdate(new JsonObject().put("foo", "bar1"),
           new JsonObject().put("$set", new JsonObject().put("foo", "update")));
-      BulkOperationType bulkReplace = BulkOperation.createReplace(new JsonObject().put("foo", "bar2"),
+      BulkOperation bulkReplace = BulkOperation.createReplace(new JsonObject().put("foo", "bar2"),
           new JsonObject().put("foo", "replace"));
-      BulkOperationType bulkDelete = BulkOperation.createDelete(new JsonObject().put("foo", "bar3"));
+      BulkOperation bulkDelete = BulkOperation.createDelete(new JsonObject().put("foo", "bar3"));
       Handler<AsyncResult<MongoClientBulkWriteResult>> successHandler = onSuccess(bulkResult -> {
         if (bulkWriteOptions != null && bulkWriteOptions.getWriteOption() == UNACKNOWLEDGED) {
           assertNull(bulkResult);

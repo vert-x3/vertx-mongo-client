@@ -1,8 +1,12 @@
 = Cheatsheets
 
-[[BulkOperationType]]
-== BulkOperationType
+[[BulkOperation]]
+== BulkOperation
 
+++++
+ Contains all data needed for one operation of a bulk write operation.
+++++
+'''
 
 [cols=">25%,^25%,50%"]
 [frame="topbot"]
@@ -11,7 +15,7 @@
 |[[document]]`document`|`Json object`|-
 |[[filter]]`filter`|`Json object`|-
 |[[multi]]`multi`|`Boolean`|-
-|[[type]]`type`|`String`|-
+|[[type]]`type`|`link:enums.html#BulkOperationType[BulkOperationType]`|-
 |[[upsert]]`upsert`|`Boolean`|-
 |===
 

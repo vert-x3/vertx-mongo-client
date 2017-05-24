@@ -11,7 +11,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.bulk.BulkOperationType;
 import io.vertx.serviceproxy.ProxyHelper;
 
 /**
@@ -87,12 +86,12 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
-  MongoService bulkWrite(String collection, List<BulkOperationType> operations,
+  MongoService bulkWrite(String collection, List<BulkOperation> operations,
       Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
 
   @Override
   @Fluent
-  MongoService bulkWriteWithOptions(String collection, List<BulkOperationType> operations,
+  MongoService bulkWriteWithOptions(String collection, List<BulkOperation> operations,
       BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
 
   @Override
