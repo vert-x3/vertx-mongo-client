@@ -25,6 +25,7 @@ import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -227,7 +228,8 @@ public class MongoGridFsClientImpl extends MongoBaseImpl implements MongoGridFsC
             if (throwable != null) {
               resultHandler.handle(Future.failedFuture(throwable));
             } else {
-              resultHandler.handle(Future.succeededFuture(ids));
+              List<String> idsCopy = ids.stream().map(id -> new String(id)).collect(Collectors.toList());
+              resultHandler.handle(Future.succeededFuture(idsCopy));
             }
           });
         });

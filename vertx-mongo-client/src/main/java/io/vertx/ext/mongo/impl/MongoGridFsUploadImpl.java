@@ -35,7 +35,7 @@ public class MongoGridFsUploadImpl extends MongoBaseImpl implements MongoGridFsU
     requireNonNull(gridFsBuffer, "gridFsBuffer cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    ByteBuffer buffer = ByteBuffer.wrap(gridFsBuffer.getBuffer().getBytes());
+    ByteBuffer buffer = gridFsBuffer.getBuffer().getByteBuf().nioBuffer();
 
     stream.write(buffer, wrapCallback(resultHandler));
 
