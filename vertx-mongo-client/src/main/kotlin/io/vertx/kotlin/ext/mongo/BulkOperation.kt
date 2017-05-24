@@ -8,11 +8,11 @@ import io.vertx.ext.mongo.BulkOperation.BulkOperationType
  *
  * Contains all data needed for one operation of a bulk write operation.
  *
- * @param document 
- * @param filter 
- * @param multi 
- * @param type 
- * @param upsert 
+ * @param document  Sets the document, used by insert, replace, and update operations
+ * @param filter  Sets the filter document, used by replace, update, and delete operations
+ * @param multi  Sets the multi flag, used by update and delete operations
+ * @param type  Sets the operation type
+ * @param upsert  Sets the upsert flag, used by update and replace operations
  *
  * <p/>
  * NOTE: This function has been automatically generated from the [io.vertx.ext.mongo.BulkOperation original] using Vert.x codegen.
