@@ -506,13 +506,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return this;
   }
 
-  public MongoClient bulkWrite(String collection, List<? extends BulkOperation> operations,
+  @Override
+  public MongoClient bulkWrite(String collection, List<BulkOperation> operations,
       Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
     bulkWriteWithOptions(collection, operations, DEFAULT_BULK_WRITE_OPTIONS, resultHandler);
     return this;
   }
 
-  public MongoClient bulkWriteWithOptions(String collection, List<? extends BulkOperation> operations,
+  @Override
+  public MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations,
       BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(operations, "operations cannot be null");
@@ -836,7 +838,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return convertCallback(resultHandler, result -> {
       if (result.wasAcknowledged()) {
         return convertToMongoClientBulkWriteResult(result.getInsertedCount(), result.getMatchedCount(),
-            result.getDeletedCount(), result.getModifiedCount(), result.getUpserts());
+            result.getDeletedCount(), result.isModifiedCountAvailable() ? result.getModifiedCount()
+                : (int) MongoClientBulkWriteResult.DEFAULT_MODIFIED_COUNT,
+            result.getUpserts());
       } else {
         return null;
       }

@@ -1,5 +1,6 @@
 package io.vertx.ext.mongo;
 
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -8,6 +9,7 @@ import io.vertx.core.json.JsonObject;
  * @author sschmitt
  *
  */
+@DataObject
 public class BulkWriteOptions {
 
   /**
