@@ -10,6 +10,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.bulk.BulkOperation;
 import io.vertx.ext.mongo.impl.MongoClientImpl;
 
 /**
@@ -284,6 +285,37 @@ public interface MongoClient {
   @Fluent
   MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace,
       UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+
+  /**
+   * Execute a bulk operation. Can insert, update, replace, and/or delete multiple documents with one request.
+   * 
+   * @param collection
+   *          the collection
+   * @param operations
+   *          the operations to execute
+   * @param resultHandler
+   *          will be called with a {@link MongoClientBulkWriteResult} when complete
+   */
+  @Fluent
+  MongoClient bulkWrite(String collection, List<BulkOperation> operations,
+      Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
+
+  /**
+   * Execute a bulk operation with the specified write options. Can insert, update, replace, and/or delete multiple
+   * documents with one request.
+   * 
+   * @param collection
+   *          the collection
+   * @param operations
+   *          the operations to execute
+   * @param bulkWriteOptions
+   *          the write options
+   * @param resultHandler
+   *          will be called with a {@link MongoClientBulkWriteResult} when complete
+   */
+  @Fluent
+  MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations,
+      BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
 
   /**
    * Find matching documents in the specified collection
@@ -612,7 +644,6 @@ public interface MongoClient {
   @Fluent
   MongoClient removeDocumentWithOptions(String collection, JsonObject query, WriteOption writeOption,
       Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
-
 
   /**
    * Create a new collection

@@ -44,7 +44,7 @@ public class MongoClientBulkWriteResult {
   /**
    * Constant to be used when storing and retrieving Json for ID of upsert information.
    */
-  public static final String ID = "ID";
+  public static final String ID = "_id";
 
   /**
    * Constant to be used when storing and retrieving Json for index of upsert information.
@@ -211,7 +211,10 @@ public class MongoClientBulkWriteResult {
    * @return an unmodifiable list of upsert info
    */
   public List<JsonObject> getUpserts() {
-    return Collections.unmodifiableList(upserts);
+    if (upserts != null)
+      return Collections.unmodifiableList(upserts);
+    else
+      return null;
   }
 
   @Override
