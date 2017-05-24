@@ -360,6 +360,17 @@ mongoClient.replace("books", query, replace) { |res_err,res|
 
 ----
 
+=== Bulk operations
+
+To execute multiple insert, update, replace, or delete operations at once, use `link:../../yardoc/VertxMongo/MongoClient.html#bulk_write-instance_method[bulkWrite]`.
+
+You can pass a list of `link:../dataobjects.html#BulkOperation[BulkOperations]`, with each working similiar to the matching single operations.
+You can pass as many operations, even of the same type, as you wish.
+
+To specify if the bulk operation should be executed in order, and with what write option, use `link:../../yardoc/VertxMongo/MongoClient.html#bulk_write_with_options-instance_method[bulkWriteWithOptions]`
+and pass an instance of `link:../dataobjects.html#BulkWriteOptions[BulkWriteOptions]`.
+For more explanation what ordered means, see https://docs.mongodb.com/manual/reference/method/db.collection.bulkWrite/#execution-of-operations
+
 === Finding documents
 
 To find documents you use `link:../../yardoc/VertxMongo/MongoClient.html#find-instance_method[find]`.

@@ -358,6 +358,17 @@ mongoClient.replace("books", query, replace, { res ->
 
 ----
 
+=== Bulk operations
+
+To execute multiple insert, update, replace, or delete operations at once, use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#bulkWrite-java.lang.String-java.util.List-io.vertx.core.Handler-[bulkWrite]`.
+
+You can pass a list of `link:../../apidocs/io/vertx/ext/mongo/BulkOperation.html[BulkOperations]`, with each working similiar to the matching single operations.
+You can pass as many operations, even of the same type, as you wish.
+
+To specify if the bulk operation should be executed in order, and with what write option, use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#bulkWriteWithOptions-java.lang.String-java.util.List-io.vertx.ext.mongo.BulkWriteOptions-io.vertx.core.Handler-[bulkWriteWithOptions]`
+and pass an instance of `link:../../apidocs/io/vertx/ext/mongo/BulkWriteOptions.html[BulkWriteOptions]`.
+For more explanation what ordered means, see https://docs.mongodb.com/manual/reference/method/db.collection.bulkWrite/#execution-of-operations
+
 === Finding documents
 
 To find documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#find-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[find]`.

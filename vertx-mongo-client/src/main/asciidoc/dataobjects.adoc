@@ -12,11 +12,26 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
-|[[document]]`document`|`Json object`|-
-|[[filter]]`filter`|`Json object`|-
-|[[multi]]`multi`|`Boolean`|-
-|[[type]]`type`|`link:enums.html#BulkOperationType[BulkOperationType]`|-
-|[[upsert]]`upsert`|`Boolean`|-
+|[[document]]`document`|`Json object`|
++++
+Sets the document, used by insert, replace, and update operations
++++
+|[[filter]]`filter`|`Json object`|
++++
+Sets the filter document, used by replace, update, and delete operations
++++
+|[[multi]]`multi`|`Boolean`|
++++
+Sets the multi flag, used by update and delete operations
++++
+|[[type]]`type`|`link:enums.html#BulkOperationType[BulkOperationType]`|
++++
+Sets the operation type
++++
+|[[upsert]]`upsert`|`Boolean`|
++++
+Sets the upsert flag, used by update and replace operations
++++
 |===
 
 [[BulkWriteOptions]]
