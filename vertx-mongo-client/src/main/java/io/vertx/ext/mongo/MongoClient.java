@@ -10,8 +10,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.bulk.BulkOperation;
-import io.vertx.ext.mongo.bulk.BulkOperationType;
 import io.vertx.ext.mongo.impl.MongoClientImpl;
 
 /**
@@ -298,7 +296,7 @@ public interface MongoClient {
    *          will be called with a {@link MongoClientBulkWriteResult} when complete
    */
   @Fluent
-  MongoClient bulkWrite(String collection, List<BulkOperationType> operations,
+  MongoClient bulkWrite(String collection, List<BulkOperation> operations,
       Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
 
   /**
@@ -315,7 +313,7 @@ public interface MongoClient {
    *          will be called with a {@link MongoClientBulkWriteResult} when complete
    */
   @Fluent
-  MongoClient bulkWriteWithOptions(String collection, List<BulkOperationType> operations,
+  MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations,
       BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
 
   /**

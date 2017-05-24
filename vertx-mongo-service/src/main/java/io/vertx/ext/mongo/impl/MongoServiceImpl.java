@@ -7,6 +7,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.BulkOperation;
 import io.vertx.ext.mongo.BulkWriteOptions;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.IndexOptions;
@@ -17,7 +18,6 @@ import io.vertx.ext.mongo.MongoClientUpdateResult;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
-import io.vertx.ext.mongo.bulk.BulkOperationType;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -130,7 +130,7 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService bulkWrite(String collection, List<BulkOperationType> operations,
+  public MongoService bulkWrite(String collection, List<BulkOperation> operations,
       Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
     client.bulkWrite(collection, operations, resultHandler);
     return this;
@@ -138,7 +138,7 @@ public class MongoServiceImpl implements MongoService {
 
   @Override
   @Fluent
-  public MongoService bulkWriteWithOptions(String collection, List<BulkOperationType> operations,
+  public MongoService bulkWriteWithOptions(String collection, List<BulkOperation> operations,
       BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
     client.bulkWriteWithOptions(collection, operations, bulkWriteOptions, resultHandler);
     return this;
