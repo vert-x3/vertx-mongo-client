@@ -12,19 +12,28 @@ import io.vertx.core.json.JsonObject;
 @VertxGen
 public interface BulkOperation {
 
-  static BulkDelete createDelete(JsonObject filter) {
-    return new BulkDelete(filter);
+  static BulkOperationType createDelete(JsonObject filter) {
+    return new BulkOperationType(BulkOperationType.TYPE_DELETE).setFilter(filter);
   }
 
-  static BulkInsert createInsert(JsonObject document) {
-    return new BulkInsert(document);
+  static BulkOperationType createInsert(JsonObject document) {
+    return new BulkOperationType(BulkOperationType.TYPE_INSERT).setDocument(document);
   }
 
-  static BulkUpdate createUpdate(JsonObject filter, JsonObject update) {
-    return new BulkUpdate(filter, update);
+  static BulkOperationType createReplace(JsonObject filter, JsonObject document) {
+    return new BulkOperationType(BulkOperationType.TYPE_REPLACE).setFilter(filter).setDocument(document);
+  }
+  static BulkOperationType createReplace(JsonObject filter, JsonObject document, boolean upsert) {
+    return new BulkOperationType(BulkOperationType.TYPE_REPLACE).setFilter(filter).setDocument(document)
+        .setUpsert(upsert);
   }
 
-  static BulkReplace createReplace(JsonObject filter, JsonObject replace) {
-    return new BulkReplace(filter, replace);
+  static BulkOperationType createUpdate(JsonObject filter, JsonObject document) {
+    return new BulkOperationType(BulkOperationType.TYPE_UPDATE).setFilter(filter).setDocument(document);
   }
+  static BulkOperationType createUpdate(JsonObject filter, JsonObject document, boolean upsert, boolean multi) {
+    return new BulkOperationType(BulkOperationType.TYPE_UPDATE).setFilter(filter).setDocument(document)
+        .setUpsert(upsert).setMulti(multi);
+  }
+
 }

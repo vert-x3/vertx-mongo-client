@@ -1,44 +1,18 @@
 = Cheatsheets
 
-[[BulkDelete]]
-== BulkDelete
+[[BulkOperationType]]
+== BulkOperationType
 
-++++
- Delete operation for bulk write operations. Deletes one or more documents that match the filter, depending on the
- "multi" configuration.
-++++
-'''
 
 [cols=">25%,^25%,50%"]
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
-|[[filter]]`filter`|`Json object`|
-+++
-Set the filter for this delete operation.
-+++
-|[[multi]]`multi`|`Boolean`|
-+++
-Set if the operation should delete multiple document, or only the first matching document
-+++
-|===
-
-[[BulkInsert]]
-== BulkInsert
-
-++++
- Insert operation for bulk operations. Inserts one document.
-++++
-'''
-
-[cols=">25%,^25%,50%"]
-[frame="topbot"]
-|===
-^|Name | Type ^| Description
-|[[document]]`document`|`Json object`|
-+++
-Set the document that should be inserted
-+++
+|[[document]]`document`|`Json object`|-
+|[[filter]]`filter`|`Json object`|-
+|[[multi]]`multi`|`Boolean`|-
+|[[type]]`type`|`String`|-
+|[[upsert]]`upsert`|`Boolean`|-
 |===
 
 [[BulkWriteOptions]]
