@@ -96,7 +96,7 @@ public class MongoClientBulkWriteResultTest {
     assertEquals((long) mongoClientBulkWriteResultJson.getLong(MongoClientBulkWriteResult.MATCHED_COUNT,
         MongoClientBulkWriteResult.DEFAULT_MATCHED_COUNT), mongoClientBulkWriteResult.getMatchedCount());
     assertEquals((long) mongoClientBulkWriteResultJson.getLong(MongoClientBulkWriteResult.MODIFIED_COUNT,
-        MongoClientBulkWriteResult.DEFAULT_MODIFIED_COUNT), mongoClientBulkWriteResult.getMatchedCount());
+        MongoClientBulkWriteResult.DEFAULT_MODIFIED_COUNT), mongoClientBulkWriteResult.getModifiedCount());
 
     JsonArray upserts = mongoClientBulkWriteResultJson.getJsonArray(MongoClientBulkWriteResult.UPSERTS, null);
     assertEquals(upserts != null ? upserts.getList() : null, mongoClientBulkWriteResult.getUpserts());

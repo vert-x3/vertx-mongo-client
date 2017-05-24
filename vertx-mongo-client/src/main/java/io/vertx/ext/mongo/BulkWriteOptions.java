@@ -13,6 +13,16 @@ import io.vertx.core.json.JsonObject;
 public class BulkWriteOptions {
 
   /**
+   * Field name for the ordered value in json representation
+   */
+  public static final String ORDERED = "ordered";
+
+  /**
+   * Field name for the writeOption value in json representation
+   */
+  public static final String WRITE_OPTION = "writeOption";
+
+  /**
    * The default value of ordered = true
    */
   public static final boolean DEFAULT_ORDERED = true;
@@ -55,11 +65,18 @@ public class BulkWriteOptions {
    *          the json
    */
   public BulkWriteOptions(JsonObject json) {
-    String wo = json.getString("writeOption");
+    String wo = json.getString(WRITE_OPTION);
     if (wo != null) {
       setWriteOption(WriteOption.valueOf(wo.toUpperCase()));
     }
-    setOrdered(json.getBoolean("ordered", DEFAULT_ORDERED));
+    setOrdered(json.getBoolean(ORDERED, DEFAULT_ORDERED));
+  }
+
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    json.put(WRITE_OPTION, writeOption);
+    json.put(ORDERED, ordered);
+    return json;
   }
 
   /**

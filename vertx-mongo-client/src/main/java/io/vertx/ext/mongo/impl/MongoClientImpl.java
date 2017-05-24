@@ -80,11 +80,7 @@ import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.ext.mongo.MongoClientUpdateResult;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
-import io.vertx.ext.mongo.bulk.BulkDelete;
-import io.vertx.ext.mongo.bulk.BulkInsert;
-import io.vertx.ext.mongo.bulk.BulkOperation;
-import io.vertx.ext.mongo.bulk.BulkReplace;
-import io.vertx.ext.mongo.bulk.BulkUpdate;
+import io.vertx.ext.mongo.bulk.BulkOperationType;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 
@@ -507,14 +503,14 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public MongoClient bulkWrite(String collection, List<BulkOperation> operations,
+  public MongoClient bulkWrite(String collection, List<BulkOperationType> operations,
       Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
     bulkWriteWithOptions(collection, operations, DEFAULT_BULK_WRITE_OPTIONS, resultHandler);
     return this;
   }
 
   @Override
-  public MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations,
+  public MongoClient bulkWriteWithOptions(String collection, List<BulkOperationType> operations,
       BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(operations, "operations cannot be null");
@@ -534,36 +530,37 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return mongoBulkOptions;
   }
 
-  private List<WriteModel<JsonObject>> convertBulkOperations(List<? extends BulkOperation> operations) {
+  private List<WriteModel<JsonObject>> convertBulkOperations(List<BulkOperationType> operations) {
     List<WriteModel<JsonObject>> result = new ArrayList<>(operations.size());
-    for (BulkOperation bulkOperation : operations) {
-      if (bulkOperation instanceof BulkDelete) {
-        BulkDelete bulkDelete = (BulkDelete) bulkOperation;
-        Bson bsonFilter = toBson(bulkDelete.getFilter());
-        if (bulkDelete.isMulti()) {
+    for (BulkOperationType bulkOperation : operations) {
+      switch (bulkOperation.getType()) {
+      case BulkOperationType.TYPE_DELETE:
+        Bson bsonFilter = toBson(bulkOperation.getFilter());
+        if (bulkOperation.isMulti()) {
           result.add(new DeleteManyModel<>(bsonFilter));
         } else {
           result.add(new DeleteOneModel<>(bsonFilter));
         }
-      } else if (bulkOperation instanceof BulkInsert) {
-        BulkInsert bulkInsert = (BulkInsert) bulkOperation;
-        result.add(new InsertOneModel<>(encodeKeyWhenUseObjectId(bulkInsert.getDocument())));
-      } else if (bulkOperation instanceof BulkReplace) {
-        BulkReplace bulkReplace = (BulkReplace) bulkOperation;
-        result.add(new ReplaceOneModel<>(toBson(bulkReplace.getFilter()), bulkReplace.getReplacement(),
-            new com.mongodb.client.model.UpdateOptions().upsert(bulkReplace.isUpsert())));
-      } else if (bulkOperation instanceof BulkUpdate) {
-        BulkUpdate bulkUpdate = (BulkUpdate) bulkOperation;
-        Bson filter = toBson(bulkUpdate.getFilter());
-        Bson document = toBson(encodeKeyWhenUseObjectId(bulkUpdate.getDocument()));
+        break;
+      case BulkOperationType.TYPE_INSERT:
+        result.add(new InsertOneModel<>(encodeKeyWhenUseObjectId(bulkOperation.getDocument())));
+        break;
+      case BulkOperationType.TYPE_REPLACE:
+        result.add(new ReplaceOneModel<>(toBson(bulkOperation.getFilter()), bulkOperation.getDocument(),
+            new com.mongodb.client.model.UpdateOptions().upsert(bulkOperation.isUpsert())));
+        break;
+      case BulkOperationType.TYPE_UPDATE:
+        Bson filter = toBson(bulkOperation.getFilter());
+        Bson document = toBson(encodeKeyWhenUseObjectId(bulkOperation.getDocument()));
         com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
-            .upsert(bulkUpdate.isUpsert());
-        if (bulkUpdate.isMulti()) {
+            .upsert(bulkOperation.isUpsert());
+        if (bulkOperation.isMulti()) {
           result.add(new UpdateManyModel<>(filter, document, updateOptions));
         } else {
           result.add(new UpdateOneModel<>(filter, document, updateOptions));
         }
-      } else {
+        break;
+      default:
         throw new IllegalArgumentException("Unknown bulk operation type: " + bulkOperation.getClass());
       }
     }
@@ -837,9 +834,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
     return convertCallback(resultHandler, result -> {
       if (result.wasAcknowledged()) {
-        return convertToMongoClientBulkWriteResult(result.getInsertedCount(), result.getMatchedCount(),
-            result.getDeletedCount(), result.isModifiedCountAvailable() ? result.getModifiedCount()
-                : (int) MongoClientBulkWriteResult.DEFAULT_MODIFIED_COUNT,
+        return convertToMongoClientBulkWriteResult(result.getInsertedCount(),
+            result.getMatchedCount(), result.getDeletedCount(), result.isModifiedCountAvailable()
+                ? result.getModifiedCount() : (int) MongoClientBulkWriteResult.DEFAULT_MODIFIED_COUNT,
             result.getUpserts());
       } else {
         return null;
