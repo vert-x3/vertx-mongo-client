@@ -21,6 +21,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
@@ -554,7 +556,17 @@ public class Examples {
     });
   }
   public void example17(MongoClient mongoClient) {
-    mongoClient.createGridFsBucketService("fs", res -> {
+    mongoClient.createGridFsBucketService("bakeke", res -> {
+      if (res.succeeded()) {
+        //Interact with the GridFS client...
+        MongoGridFsClient client = res.result();
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example17b(MongoClient mongoClient) {
+    mongoClient.createDefaultGridFsBucketService( res -> {
       if (res.succeeded()) {
         //Interact with the GridFS client...
         MongoGridFsClient client = res.result();
@@ -660,6 +672,41 @@ public class Examples {
       } else {
         res.cause().printStackTrace();
       }
+    });
+  }
+  public void example31(MongoGridFsClient gridFsClient) {
+    MongoGridFsStreamClient streamClient = gridFsClient.getGridFsStreamClient();
+  }
+  public void example32(MongoGridFsStreamClient gridFsStreamClient, AsyncFile asyncFile) {
+    gridFsStreamClient.uploadByFileName(asyncFile, "kanaloa", stringAsyncResult -> {
+      String id = stringAsyncResult.result();
+    });
+  }
+  public void example33(MongoGridFsStreamClient gridFsStreamClient, AsyncFile asyncFile) {
+    UploadOptions options = new UploadOptions();
+    options.setChunkSizeBytes(2048);
+    options.setMetadata(new JsonObject().put("catagory", "Polynesian gods"));
+    gridFsStreamClient.uploadByFileNameWithOptions(asyncFile, "kanaloa", options, stringAsyncResult -> {
+      String id = stringAsyncResult.result();
+    });
+
+  }
+  public void example34(MongoGridFsStreamClient gridFsStreamClient, AsyncFile asyncFile) {
+    gridFsStreamClient.downloadByFileName(asyncFile, "kamapuaa.fil", longAsyncResult -> {
+      Long length = longAsyncResult.result();
+    });
+  }
+  public void example35(MongoGridFsStreamClient gridFsStreamClient, AsyncFile asyncFile) {
+    DownloadOptions options = new DownloadOptions();
+    options.setRevision(0);
+    gridFsStreamClient.downloadByFileNameWithOptions(asyncFile, "kamapuaa.fil", options, longAsyncResult -> {
+      Long length = longAsyncResult.result();
+    });
+  }
+  public void example36(MongoGridFsStreamClient gridFsStreamClient, AsyncFile asyncFile) {
+    String id = "58f61bf84cedfd000661af06";
+    gridFsStreamClient.downloadById(asyncFile, id, longAsyncResult -> {
+      Long length = longAsyncResult.result();
     });
   }
 }

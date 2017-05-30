@@ -226,7 +226,7 @@ public class GridFsTest extends MongoTestBase {
   @Test
   public void testFileUploadWithOptions() {
 
-    String fileName = createTempFileWithContent((1024 * 3) + 70);
+    String fileName = createTempFileWithContent((1027) + 7000);
 
     AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
 
@@ -397,6 +397,52 @@ public class GridFsTest extends MongoTestBase {
       MongoGridFsStreamClient client = MongoGridFsStreamClient.create(gridFsClient.get());
       Future<Long> downloadedFuture = Future.future();
       client.downloadByFileName(asyncFile, fileName, downloadedFuture.completer());
+      return downloadedFuture;
+    }).compose(length -> {
+      assertTrue(fileLength == length);
+      assertTrue(fileContentsEqual(fileName, downloadFileName));
+      testComplete();
+    }, Future.future().setHandler(handler -> {
+      if (handler.failed()) fail(handler.cause());
+    }));
+    await();
+
+  }
+
+  @Test
+  public void testDownloadStreamById() {
+
+    long fileLength = (1027) + 7000;
+    String fileName = createTempFileWithContent(fileLength);
+    String downloadFileName = createTempFile();
+
+    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
+    AtomicReference<String> idCreated = new AtomicReference<>();
+
+    Future<MongoGridFsClient> gridFsClientFuture = Future.future();
+
+    mongoClient.createDefaultGridFsBucketService(gridFsClientFuture.completer());
+
+    gridFsClientFuture.compose(mongoGridFsClient -> {
+      assertNotNull(mongoGridFsClient);
+      gridFsClient.set(mongoGridFsClient);
+      Future<Void> dropFuture = Future.future();
+      mongoGridFsClient.drop(dropFuture.completer());
+      return dropFuture;
+    }).compose(dropped -> {
+      Future<String> uploadFuture = Future.future();
+      gridFsClient.get().uploadFile(fileName, uploadFuture.completer());
+      return uploadFuture;
+    }).compose(id -> {
+      assertNotNull(id);
+      idCreated.set(id);
+      Future<AsyncFile> openFuture = Future.future();
+      vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true), openFuture.completer());
+      return openFuture;
+    }).compose(asyncFile -> {
+      MongoGridFsStreamClient client = MongoGridFsStreamClient.create(gridFsClient.get());
+      Future<Long> downloadedFuture = Future.future();
+      client.downloadById(asyncFile, idCreated.get(), downloadedFuture.completer());
       return downloadedFuture;
     }).compose(length -> {
       assertTrue(fileLength == length);

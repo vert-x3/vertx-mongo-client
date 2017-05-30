@@ -18,5 +18,6 @@ public interface MongoGridFsStreamClient {
 
   void downloadByFileName(WriteStream stream, String fileName, Handler<AsyncResult<Long>> resultHandler);
   void downloadByFileNameWithOptions(WriteStream stream, String fileName, DownloadOptions options, Handler<AsyncResult<Long>> resultHandler);
+  void downloadById(WriteStream stream, String id, Handler<AsyncResult<Long>> resultHandler);
 
 }

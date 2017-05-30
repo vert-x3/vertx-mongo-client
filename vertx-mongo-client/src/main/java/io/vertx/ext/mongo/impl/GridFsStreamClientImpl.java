@@ -17,6 +17,7 @@ import io.vertx.ext.mongo.GridFSOutputStream;
 import io.vertx.ext.mongo.MongoGridFsStreamClient;
 import io.vertx.ext.mongo.UploadOptions;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 public class GridFsStreamClientImpl implements MongoGridFsStreamClient {
 
@@ -97,6 +98,23 @@ public class GridFsStreamClientImpl implements MongoGridFsStreamClient {
     GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
     Context context = vertx.getOrCreateContext();
     bucket.downloadToStream(fileName, gridFsOutputStream, downloadOptions, (length, throwable) -> {
+      context.runOnContext(nothing -> {
+        if (throwable != null) {
+          resultHandler.handle(Future.failedFuture(throwable));
+        } else {
+          resultHandler.handle(Future.succeededFuture(length));
+        }
+      });
+    });
+  }
+
+  @Override
+  public void downloadById(WriteStream stream, String id, Handler<AsyncResult<Long>> resultHandler) {
+
+    ObjectId objectId = new ObjectId(id);
+    GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
+    Context context = vertx.getOrCreateContext();
+    bucket.downloadToStream(objectId, gridFsOutputStream, (length, throwable) -> {
       context.runOnContext(nothing -> {
         if (throwable != null) {
           resultHandler.handle(Future.failedFuture(throwable));
