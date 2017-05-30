@@ -4,7 +4,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Options used to configure file uploads to gridfs.
+ * Options used to configure uploads to GridFS.
  *
  * @author <a href="mailto:dbush@redhat.com">David Bush</a>
  */

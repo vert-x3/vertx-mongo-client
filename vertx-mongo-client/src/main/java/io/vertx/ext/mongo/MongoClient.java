@@ -553,6 +553,14 @@ public interface MongoClient {
   /**
    * Creates a {@link MongoGridFsClient} used to interact with Mongo GridFS.
    *
+   * @param resultHandler  the {@link MongoGridFsClient} to interact with the bucket named bucketName
+   */
+  @Fluent
+  MongoClient createDefaultGridFsBucketService(Handler<AsyncResult<MongoGridFsClient>> resultHandler);
+
+  /**
+   * Creates a {@link MongoGridFsClient} used to interact with Mongo GridFS.
+   *
    * @param bucketName  the name of the GridFS bucket
    * @param resultHandler  the {@link MongoGridFsClient} to interact with the bucket named bucketName
    */

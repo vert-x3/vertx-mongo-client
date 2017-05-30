@@ -1,7 +1,5 @@
 package io.vertx.ext.mongo;
 
-import java.util.List;
-
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.ProxyIgnore;
@@ -12,6 +10,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ProxyHelper;
+
+import java.util.List;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -207,6 +207,9 @@ public interface MongoService extends MongoClient {
   @Override
   @Fluent
   MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  @Override
+  MongoService createDefaultGridFsBucketService(Handler<AsyncResult<MongoGridFsClient>> resultHandler);
 
   @Override
   MongoService createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler);

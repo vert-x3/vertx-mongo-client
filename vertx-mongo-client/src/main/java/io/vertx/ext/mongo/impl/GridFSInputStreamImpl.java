@@ -1,13 +1,13 @@
 package io.vertx.ext.mongo.impl;
+
 import com.mongodb.async.SingleResultCallback;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.mongo.GridFSInputStream;
+import io.vertx.ext.mongo.util.CircularByteBuffer;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayDeque;
-import java.util.Queue;
 
 /**
  *  Implementation of {@link GridFSInputStream} which allows streaming with
@@ -19,54 +19,123 @@ import java.util.Queue;
  */
 public class GridFSInputStreamImpl implements GridFSInputStream {
 
-  public static final int DEFAULT_QUEUE_SIZE = 8192;
-  private int writeQueueMaxSize = DEFAULT_QUEUE_SIZE;
-
-  private final Queue<Byte> pending = new ArrayDeque<>();
+  public static int DEFAULT_BUFFER_SIZE = 8192;
+  private int writeQueueMaxSize;
+  private final CircularByteBuffer buffer;
   private Handler<Void> drainHandler;
+  private volatile boolean closed = false;
+  private SingleResultCallback<Integer> pendingCallback;
+  private ByteBuffer outputBuffer;
 
-  ByteBuffer outBuffer;
-  SingleResultCallback<Integer> callback;
+  public GridFSInputStreamImpl() {
+    buffer = new CircularByteBuffer(DEFAULT_BUFFER_SIZE);
+    writeQueueMaxSize = buffer.capacity();
+  }
 
-  boolean closed = false;
+  public GridFSInputStreamImpl(final int queueSize) {
+    buffer = new CircularByteBuffer(queueSize);
+    writeQueueMaxSize = queueSize;
+  }
 
-  public void read(ByteBuffer byteBuffer, SingleResultCallback<Integer> singleResultCallback) {
-    this.writeBytes(byteBuffer, singleResultCallback);
+  public void read(ByteBuffer b, SingleResultCallback<Integer> c) {
+    synchronized (buffer) {
+      //If nothing pending and the stream is still open, store the callback for future processing
+      if (buffer.isEmpty() && !closed) {
+        storeCallback(b, c);
+      } else {
+        doCallback(b, c);
+      }
+    }
+  }
+
+  private void storeCallback(final ByteBuffer b, final SingleResultCallback<Integer> c) {
+    if (pendingCallback != null && pendingCallback != c) {
+      c.onResult(null, new RuntimeException("mongo provided a new buffer or callback before the previous " +
+        "one has been fulfilled"));
+    }
+    this.outputBuffer = b;
+    this.pendingCallback = c;
+  }
+
+  private void doCallback(final ByteBuffer b, final SingleResultCallback<Integer> c) {
+    pendingCallback = null;
+    outputBuffer = null;
+    final int bytesWritten = buffer.drainInto(b);
+    c.onResult(bytesWritten, null);
+    // if there is a drain handler and the buffer is less than half full, call the drain handler
+    if (drainHandler != null && buffer.remaining() < writeQueueMaxSize / 2) {
+      drainHandler.handle(null);
+      drainHandler = null;
+    }
+  }
+
+
+  public WriteStream<Buffer> write(Buffer inputBuffer) {
+    if (closed) throw new IllegalStateException("Stream is closed");
+    final byte[] bytes = inputBuffer.getBytes();
+    final ByteBuffer wrapper = ByteBuffer.wrap(bytes);
+    synchronized (buffer) {
+      if (pendingCallback != null) {
+        int bytesWritten = writeOutput(wrapper);
+        if (bytesWritten > 0) doCallback(bytesWritten);
+      }
+      // Drain content left in the input buffer
+      buffer.fillFrom(wrapper);
+    }
+    return this;
+  }
+
+  private int writeOutput(final ByteBuffer wrapper) {
+    // First we drain the pending buffer
+    int bytesWritten = buffer.drainInto(outputBuffer);
+    final int remaining = outputBuffer.remaining();
+    if (remaining > 0) {
+      // If more space left in the output buffer we directly drain the input buffer
+      final int newBytesWritten = remaining > wrapper.capacity() ? wrapper.capacity() : remaining;
+      // Store current limit to restore it in case we don't drain then whole buffer
+      final int limit = wrapper.limit();
+      wrapper.limit(newBytesWritten);
+      outputBuffer.put(wrapper);
+      wrapper.limit(limit);
+      bytesWritten += newBytesWritten;
+    }
+    return bytesWritten;
+  }
+
+
+  private void doCallback(final int bytesWritten) {
+    SingleResultCallback<Integer> c = pendingCallback;
+    outputBuffer = null;
+    pendingCallback = null;
+    c.onResult(bytesWritten, null);
   }
 
   public void close(SingleResultCallback<Void> singleResultCallback) {
-    callback.onResult(null, null);
+    closed = true;
+    singleResultCallback.onResult(null, null);
+  }
+
+  public void end() {
+    synchronized (buffer) {
+      if (pendingCallback != null) {
+        final int bytesWritten = buffer.drainInto(outputBuffer);
+        doCallback(bytesWritten);
+      }
+      this.closed = true;
+    }
   }
 
   public WriteStream<Buffer> exceptionHandler(Handler<Throwable> handler) {
     return this;
   }
 
-  public WriteStream<Buffer> write(Buffer buffer) {
-    for (byte b : buffer.getBytes()) {
-      pending.add(b);
-    }
-    writeBytes(null, null);
-    return this;
-  }
-
-  public void end() {
-    this.closed = true;
-    // if there is no more data to write, call the callback immediately
-    if (this.pending.size() == 0 && this.callback != null) {
-      this.callback.onResult(-1, null);
-      this.callback = null;
-      this.outBuffer = null;
-    }
-  }
-
-  public GridFSInputStream setWriteQueueMaxSize(int queueSize) {
-    this.writeQueueMaxSize = queueSize;
+  public GridFSInputStream setWriteQueueMaxSize(int i) {
+    writeQueueMaxSize = i;
     return this;
   }
 
   public boolean writeQueueFull() {
-    return pending.size() >= writeQueueMaxSize;
+    return buffer.remaining() >= writeQueueMaxSize;
   }
 
   public WriteStream<Buffer> drainHandler(Handler<Void> handler) {
@@ -74,62 +143,4 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     return this;
   }
 
-  /**
-   * Write bytes to the buffer provided by the mongo driver. Buffer and Callback provided are cached in case no data
-   * is available to write and will be fulfilled by future invocations.
-   * @param byteBuffer optional buffer provided by the mongo driver
-   * @param singleResultCallback optional callback provided by the mongo driver
-   */
-  private synchronized void writeBytes(ByteBuffer byteBuffer, SingleResultCallback<Integer> singleResultCallback) {
-    int bytesWritten = 0;
-
-    if (byteBuffer != null && singleResultCallback != null) {
-      if (this.outBuffer != null || this.callback != null) {
-        singleResultCallback.onResult(null, new RuntimeException("mongo provided a new buffer or callback before the previous " +
-          "one has been fulfilled"));
-      }
-      this.outBuffer = byteBuffer;
-      this.callback = singleResultCallback;
-    }
-
-    // a callback and a buffer to write to is available
-    if (this.outBuffer != null && this.callback != null) {
-
-      // there is space in the out buffer available and we have some data to write left, so we write it to the buffer
-      if (this.outBuffer.remaining() > 0 && this.pending.size() > 0) {
-
-        int bytesToWrite = Math.min(this.outBuffer.remaining(), this.pending.size());
-        bytesWritten = bytesToWrite;
-
-        while (bytesToWrite > 0) {
-          this.outBuffer.put(this.pending.poll());
-          bytesToWrite--;
-        }
-      }
-
-      // if bytes were written call the callback
-      if (bytesWritten > 0) {
-
-        SingleResultCallback<Integer> tempCallback = this.callback;
-        this.outBuffer = null;
-        this.callback = null;
-        tempCallback.onResult(bytesWritten, null);
-
-      } else
-        // if the stream has been closed and there is no more data to write available, send -1 to the callback
-        if (closed && this.pending.size() == 0) {
-
-          SingleResultCallback<Integer> tempCallback = this.callback;
-          this.outBuffer = null;
-          this.callback = null;
-          tempCallback.onResult(-1, null);
-      }
-    }
-
-    // if there is a drain handler and the buffer is less than half full, call the drain handler
-    if (drainHandler != null && pending.size() < writeQueueMaxSize / 2) {
-      drainHandler.handle(null);
-      drainHandler = null;
-    }
-  }
 }

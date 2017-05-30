@@ -20,7 +20,9 @@ import static io.netty.buffer.Unpooled.copiedBuffer;
  */
 public class GridFSOutputStreamImpl implements GridFSOutputStream {
 
+  ByteBuffer pendingByteBuffer = null;
   WriteStream<Buffer> writeStream;
+  Throwable throwable = null;
 
   public GridFSOutputStreamImpl(WriteStream<Buffer> writeStream) {
 
@@ -29,28 +31,38 @@ public class GridFSOutputStreamImpl implements GridFSOutputStream {
   }
 
   private void exceptionHandler(Throwable throwable) {
+    this.throwable = throwable;
   }
 
   @Override
   public void write(ByteBuffer byteBuffer, SingleResultCallback<Integer> singleResultCallback) {
-    //  Buffer does not expose the internal ByteBuffer hence this is the only way to correctly set position and limit
-    final ByteBuf byteBuf = copiedBuffer(byteBuffer);
-    final Buffer buffer = Buffer.buffer(byteBuf);
+    if (throwable != null) {
+      singleResultCallback.onResult(null, throwable);
+      return;
+    }
     if (writeStream.writeQueueFull()) {
-      writeStream.drainHandler(handler -> {
-        writeStream.write(buffer);
-        singleResultCallback.onResult(byteBuf.readableBytes(), null);
-      });
+      pendingByteBuffer = byteBuffer;
+      writeStream.drainHandler(this::drainHandler);
     } else {
+      //  Buffer does not expose the internal ByteBuffer hence this is the only way to correctly set position and limit
+      final ByteBuf byteBuf = copiedBuffer(byteBuffer);
+      final Buffer buffer = Buffer.buffer(byteBuf);
       writeStream.write(buffer);
       singleResultCallback.onResult(byteBuf.readableBytes(), null);
     }
   }
 
+  private void drainHandler(Void aVoid) {
+    //  Buffer does not expose the internal ByteBuffer hence this is the only way to correctly set position and limit
+    final ByteBuf byteBuf = copiedBuffer(pendingByteBuffer);
+    final Buffer buffer = Buffer.buffer(byteBuf);
+    writeStream.write(buffer);
+    pendingByteBuffer = null;
+  }
+
   @Override
   public void close(SingleResultCallback<Void> singleResultCallback) {
-
-    singleResultCallback.onResult(null, null);
     writeStream.end();
+    singleResultCallback.onResult(null, throwable);
   }
 }

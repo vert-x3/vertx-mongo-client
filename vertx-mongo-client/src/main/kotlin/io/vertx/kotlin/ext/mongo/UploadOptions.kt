@@ -5,7 +5,7 @@ import io.vertx.ext.mongo.UploadOptions
 /**
  * A function providing a DSL for building [io.vertx.ext.mongo.UploadOptions] objects.
  *
- * Options used to configure file uploads to gridfs.
+ * Options used to configure uploads to GridFS.
  *
  * @param chunkSizeBytes 
  * @param metadata 

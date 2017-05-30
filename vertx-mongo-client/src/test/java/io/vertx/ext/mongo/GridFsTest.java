@@ -16,19 +16,15 @@
 
 package io.vertx.ext.mongo;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -44,47 +40,7 @@ public class GridFsTest extends MongoTestBase {
 
   protected MongoClient mongoClient;
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-    JsonObject config = getConfig();
-    mongoClient = MongoClient.createNonShared(vertx, config);
-    CountDownLatch latch = new CountDownLatch(1);
-    dropCollections(mongoClient, latch);
-    awaitLatch(latch);
-  }
-
-  @Override
-  public void tearDown() throws Exception {
-    mongoClient.close();
-    super.tearDown();
-  }
-
-  private void handleUpload(FileInputStream fileInputStream, MongoGridFsUpload upload, Handler<AsyncResult<String>> completeHandler) {
-
-    try {
-      if (fileInputStream.available() > 0) {
-        int size = fileInputStream.available();
-        if (size > 1024) size = 1024;
-        byte[] bFile = new byte[size];
-        fileInputStream.read(bFile);
-        GridFsBuffer buffer = new GridFsBuffer();
-        buffer.setBuffer(Buffer.buffer(bFile));
-        upload.uploadBuffer( buffer, onSuccess(number -> {
-          assertTrue(number > 0);
-          this.handleUpload(fileInputStream, upload, completeHandler);
-        }));
-      } else {
-        upload.end(onSuccess(id -> {
-          completeHandler.handle(Future.succeededFuture(id));
-        }));
-      }
-    } catch (IOException ioe) {
-      fail(ioe);
-    }
-
-  }
-  private static String createTempFileWithContent(int length) {
+  private static String createTempFileWithContent(long length) {
 
     try {
       Path path = Files.createTempFile("sample-file", ".txt");
@@ -99,6 +55,7 @@ public class GridFsTest extends MongoTestBase {
       throw new RuntimeException(ioe);
     }
   }
+
   private static String createTempFile() {
 
     try {
@@ -110,6 +67,34 @@ public class GridFsTest extends MongoTestBase {
     } catch (IOException ioe) {
       throw new RuntimeException(ioe);
     }
+  }
+
+  private Boolean fileContentsEqual(String fileName, String compareToFileName) {
+    byte[] original = new byte[0];
+    try {
+      original = Files.readAllBytes(new File(fileName).toPath());
+      byte[] copy = Files.readAllBytes(new File(compareToFileName).toPath());
+      return Arrays.equals(original, copy);
+    } catch (IOException e) {
+      e.printStackTrace();
+      return false;
+    }
+  }
+
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+    JsonObject config = getConfig();
+    mongoClient = MongoClient.createNonShared(vertx, config);
+    CountDownLatch latch = new CountDownLatch(1);
+    dropCollections(mongoClient, latch);
+    awaitLatch(latch);
+  }
+
+  @Override
+  public void tearDown() throws Exception {
+    mongoClient.close();
+    super.tearDown();
   }
 
   @Test
@@ -380,35 +365,18 @@ public class GridFsTest extends MongoTestBase {
 
   }
 
-  private void handleDownload(MongoGridFsDownload download, OutputStream stream, Integer length, Handler<AsyncResult<Void>> completeHandler) {
-
-    download.read(length, onSuccess(buffer -> {
-      try {
-        if (buffer != null) {
-
-          stream.write(buffer.getBuffer().getBytes());
-          handleDownload(download, stream, length, completeHandler);
-        } else {
-          stream.close();
-          completeHandler.handle(Future.succeededFuture());
-        }
-      } catch (IOException ioe) {
-        completeHandler.handle(Future.failedFuture(ioe));
-      }
-    }));
-
-  }
-
   @Test
-  public void testDownloadBuffer() {
+  public void testDownloadStream() {
 
-    String fileName = createTempFileWithContent((1024 * 3) + 70);
+    long fileLength = (1024 * 3) + 70;
+    String fileName = createTempFileWithContent(fileLength);
+    String downloadFileName = createTempFile();
 
     AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
 
     Future<MongoGridFsClient> gridFsClientFuture = Future.future();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
+    mongoClient.createDefaultGridFsBucketService(gridFsClientFuture.completer());
 
     gridFsClientFuture.compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
@@ -422,18 +390,17 @@ public class GridFsTest extends MongoTestBase {
       return uploadFuture;
     }).compose(id -> {
       assertNotNull(id);
-      Future<MongoGridFsDownload> downloadBufferFuture = Future.future();
-      gridFsClient.get().downloadBuffer(fileName, downloadBufferFuture.completer());
-      return downloadBufferFuture;
-    }).compose(download -> {
-
-      Future<Void> downloadCompleteFuture = Future.future();
-
-      ByteArrayOutputStream stream = new ByteArrayOutputStream();
-      handleDownload(download, stream, 1024, downloadCompleteFuture.completer());
-
-      return downloadCompleteFuture;
-    }).compose(nothing -> {
+      Future<AsyncFile> openFuture = Future.future();
+      vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true), openFuture.completer());
+      return openFuture;
+    }).compose(asyncFile -> {
+      MongoGridFsStreamClient client = MongoGridFsStreamClient.create(gridFsClient.get());
+      Future<Long> downloadedFuture = Future.future();
+      client.downloadByFileName(asyncFile, fileName, downloadedFuture.completer());
+      return downloadedFuture;
+    }).compose(length -> {
+      assertTrue(fileLength == length);
+      assertTrue(fileContentsEqual(fileName, downloadFileName));
       testComplete();
     }, Future.future().setHandler(handler -> {
       if (handler.failed()) fail(handler.cause());
@@ -443,15 +410,19 @@ public class GridFsTest extends MongoTestBase {
   }
 
   @Test
-  public void testDownloadBufferById() {
+  public void testDownloadStreamWithOptions() {
 
-    String fileName = createTempFileWithContent((1024 * 3) + 70);
+    long fileLength = (1024 * 3) + 70;
+    String fileName = createTempFileWithContent(fileLength);
+    String downloadFileName = createTempFile();
+    DownloadOptions options = new DownloadOptions();
+    options.setRevision(DownloadOptions.DEFAULT_REVISION);
 
     AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
 
     Future<MongoGridFsClient> gridFsClientFuture = Future.future();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
+    mongoClient.createDefaultGridFsBucketService(gridFsClientFuture.completer());
 
     gridFsClientFuture.compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
@@ -465,18 +436,17 @@ public class GridFsTest extends MongoTestBase {
       return uploadFuture;
     }).compose(id -> {
       assertNotNull(id);
-      Future<MongoGridFsDownload> downloadBufferFuture = Future.future();
-      gridFsClient.get().downloadBufferById(id, downloadBufferFuture.completer());
-      return downloadBufferFuture;
-    }).compose(download -> {
-
-      Future<Void> downloadCompleteFuture = Future.future();
-
-      ByteArrayOutputStream stream = new ByteArrayOutputStream();
-      handleDownload(download, stream, 1024, downloadCompleteFuture.completer());
-
-      return downloadCompleteFuture;
-    }).compose(nothing -> {
+      Future<AsyncFile> openFuture = Future.future();
+      vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true), openFuture.completer());
+      return openFuture;
+    }).compose(asyncFile -> {
+      MongoGridFsStreamClient client = MongoGridFsStreamClient.create(gridFsClient.get());
+      Future<Long> downloadedFuture = Future.future();
+      client.downloadByFileNameWithOptions(asyncFile, fileName, options, downloadedFuture.completer());
+      return downloadedFuture;
+    }).compose(length -> {
+      assertTrue(fileLength == length);
+      assertTrue(fileContentsEqual(fileName, downloadFileName));
       testComplete();
     }, Future.future().setHandler(handler -> {
       if (handler.failed()) fail(handler.cause());
@@ -484,223 +454,6 @@ public class GridFsTest extends MongoTestBase {
     await();
 
   }
-
-  @Test
-  public void testUploadBuffer() {
-
-    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
-
-    Future<MongoGridFsClient> gridFsClientFuture = Future.future();
-
-    mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
-
-    gridFsClientFuture.compose(mongoGridFsClient -> {
-      assertNotNull(mongoGridFsClient);
-      gridFsClient.set(mongoGridFsClient);
-      Future<Void> dropFuture = Future.future();
-      mongoGridFsClient.drop(dropFuture.completer());
-      return dropFuture;
-    }).compose(dropped -> {
-
-      Future<MongoGridFsUpload> uploadFuture = Future.future();
-      gridFsClient.get().uploadBuffer("goose.fil", uploadFuture.completer());
-
-      return uploadFuture;
-    }).compose(upload -> {
-
-      String fileName = createTempFileWithContent(512);
-
-      byte[] bFile = new byte[512];
-
-      try {
-        FileInputStream fileInputStream = new FileInputStream(new File(fileName));
-        fileInputStream.read(bFile);
-        fileInputStream.close();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-
-      Future<Integer> uploadFuture = Future.future();
-
-      GridFsBuffer buffer = new GridFsBuffer();
-      buffer.setBuffer(Buffer.buffer(bFile));
-
-      Future<String> uploadedFuture = Future.future();
-
-      upload.uploadBuffer(buffer, onSuccess(length -> {
-        assertEquals(512, length.intValue());
-        upload.end(uploadedFuture.completer());
-      }));
-      return uploadedFuture;
-    }).compose(id -> {
-      assertNotNull(id);
-      testComplete();
-    }, Future.future().setHandler(handler -> {
-      if (handler.failed()) fail(handler.cause());
-    }));
-    await();
-
-  }
-
-  @Test
-  public void testUploadBufferWithOptions() {
-
-
-    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
-
-    Future<MongoGridFsClient> gridFsClientFuture = Future.future();
-
-    mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
-
-    gridFsClientFuture.compose(mongoGridFsClient -> {
-      assertNotNull(mongoGridFsClient);
-      gridFsClient.set(mongoGridFsClient);
-      Future<Void> dropFuture = Future.future();
-      mongoGridFsClient.drop(dropFuture.completer());
-      return dropFuture;
-    }).compose(dropped -> {
-
-      Future<MongoGridFsUpload> uploadFuture = Future.future();
-      UploadOptions options = new UploadOptions();
-      options.setMetadata(new JsonObject().put("nick_name", "Mini Boo"));
-      gridFsClient.get().uploadBufferWithOptions("goose.fil", options, uploadFuture.completer());
-
-      return uploadFuture;
-    }).compose(upload -> {
-
-      String fileName = createTempFileWithContent(512);
-
-      byte[] bFile = new byte[512];
-
-      try {
-        FileInputStream fileInputStream = new FileInputStream(new File(fileName));
-        fileInputStream.read(bFile);
-        fileInputStream.close();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-
-      Future<Integer> uploadFuture = Future.future();
-
-      GridFsBuffer buffer = new GridFsBuffer();
-      buffer.setBuffer(Buffer.buffer(bFile));
-
-      Future<String> uploadedFuture = Future.future();
-
-      upload.uploadBuffer(buffer, onSuccess(length -> {
-        assertEquals(512, length.intValue());
-        upload.end(uploadedFuture.completer());
-      }));
-      return uploadedFuture;
-    }).compose(id -> {
-      assertNotNull(id);
-      testComplete();
-    }, Future.future().setHandler(handler -> {
-      if (handler.failed()) fail(handler.cause());
-    }));
-    await();
-
-  }
-
-  @Test
-  public void testUploadMultipleBuffer() {
-
-    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
-
-    Future<MongoGridFsClient> gridFsClientFuture = Future.future();
-
-    mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
-
-    gridFsClientFuture.compose(mongoGridFsClient -> {
-      assertNotNull(mongoGridFsClient);
-      gridFsClient.set(mongoGridFsClient);
-      Future<Void> dropFuture = Future.future();
-      mongoGridFsClient.drop(dropFuture.completer());
-      return dropFuture;
-    }).compose(dropped -> {
-
-      Future<MongoGridFsUpload> uploadFuture = Future.future();
-      gridFsClient.get().uploadBuffer("eel.fil", uploadFuture.completer());
-
-      return uploadFuture;
-    }).compose(upload -> {
-
-      String fileName = createTempFileWithContent((1024 * 3) + 70);
-
-      FileInputStream fileInputStream;
-
-      try {
-        fileInputStream = new FileInputStream(new File(fileName));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-
-      Future<String> uploadedFuture = Future.future();
-      this.handleUpload(fileInputStream, upload, uploadedFuture.completer());
-      return uploadedFuture;
-    }).compose( id -> {
-      assertNotNull(id);
-      testComplete();
-    }, Future.future().setHandler(handler -> {
-      if (handler.failed()) fail(handler.cause());
-    }));
-    await();
-
-  }
-
-  @Test
-  public void testUploadMultipleBufferWithOptions() {
-
-    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
-
-    Future<MongoGridFsClient> gridFsClientFuture = Future.future();
-
-    mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
-
-    gridFsClientFuture.compose(mongoGridFsClient -> {
-      assertNotNull(mongoGridFsClient);
-      gridFsClient.set(mongoGridFsClient);
-      Future<Void> dropFuture = Future.future();
-      mongoGridFsClient.drop(dropFuture.completer());
-      return dropFuture;
-    }).compose(dropped -> {
-
-
-      JsonObject meta = new JsonObject();
-      meta.put("nick_name", "Io the hawk");
-
-      UploadOptions options = new UploadOptions();
-      options.setMetadata(meta);
-
-      Future<MongoGridFsUpload> uploadFuture = Future.future();
-      gridFsClient.get().uploadBufferWithOptions("eel.fil", options, uploadFuture.completer());
-
-      return uploadFuture;
-    }).compose(upload -> {
-
-      String fileName = createTempFileWithContent((1024 * 3) + 70);
-
-      FileInputStream fileInputStream;
-
-      try {
-        fileInputStream = new FileInputStream(new File(fileName));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-      Future<String> uploadedFuture = Future.future();
-      this.handleUpload(fileInputStream, upload, uploadedFuture.completer());
-      //this.handleUpload(gridFsClient.get(), fileInputStream, upload, uploadedFuture.completer());
-      return uploadedFuture;
-    }).compose( id -> {
-      assertNotNull(id);
-      testComplete();
-    }, Future.future().setHandler(handler -> {
-      if (handler.failed()) fail(handler.cause());
-    }));
-    await();
-
-  }
-
 
   @Test
   public void testFileDownload() {
@@ -731,6 +484,81 @@ public class GridFsTest extends MongoTestBase {
       return downloadFuture;
     }).compose(length -> {
       assertEquals(1024L, length.longValue());
+      testComplete();
+    }, Future.future().setHandler(handler -> {
+      if (handler.failed()) fail(handler.cause());
+    }));
+    await();
+
+  }
+
+  @Test
+  public void testStreamUpload() {
+
+    String fileName = createTempFileWithContent(1024);
+
+    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
+
+    Future<MongoGridFsClient> gridFsClientFuture = Future.future();
+
+    mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
+
+    gridFsClientFuture.compose(mongoGridFsClient -> {
+      assertNotNull(mongoGridFsClient);
+      gridFsClient.set(mongoGridFsClient);
+      Future<Void> dropFuture = Future.future();
+      mongoGridFsClient.drop(dropFuture.completer());
+      return dropFuture;
+    }).compose(dropped -> {
+      Future<AsyncFile> openFuture = Future.future();
+      vertx.fileSystem().open(fileName, new OpenOptions(), openFuture.completer());
+      return openFuture;
+    }).compose(asyncFile -> {
+      MongoGridFsStreamClient client = MongoGridFsStreamClient.create(gridFsClient.get());
+      Future<String> uploadedFuture = Future.future();
+      client.uploadByFileName(asyncFile, fileName, uploadedFuture.completer());
+      return uploadedFuture;
+    }).compose(id -> {
+      assertNotNull(id);
+      testComplete();
+    }, Future.future().setHandler(handler -> {
+      if (handler.failed()) fail(handler.cause());
+    }));
+    await();
+
+  }
+
+  @Test
+  public void testStreamUploadWithOptions() {
+
+    String fileName = createTempFileWithContent(1024);
+    UploadOptions options = new UploadOptions();
+    options.setChunkSizeBytes(1024);
+    options.setMetadata(new JsonObject().put("meta_test", "Kamapua`a"));
+
+    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
+
+    Future<MongoGridFsClient> gridFsClientFuture = Future.future();
+
+    mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
+
+    gridFsClientFuture.compose(mongoGridFsClient -> {
+      assertNotNull(mongoGridFsClient);
+      gridFsClient.set(mongoGridFsClient);
+      Future<Void> dropFuture = Future.future();
+      mongoGridFsClient.drop(dropFuture.completer());
+      return dropFuture;
+    }).compose(dropped -> {
+      Future<AsyncFile> openFuture = Future.future();
+      vertx.fileSystem().open(fileName, new OpenOptions(), openFuture.completer());
+      return openFuture;
+    }).compose(asyncFile -> {
+      MongoGridFsStreamClient client = MongoGridFsStreamClient.create(gridFsClient.get());
+      Future<String> uploadedFuture = Future.future();
+      client.uploadByFileNameWithOptions(asyncFile, fileName, options, uploadedFuture.completer());
+      return uploadedFuture;
+    }).compose(id -> {
+      assertNotNull(id);
       testComplete();
     }, Future.future().setHandler(handler -> {
       if (handler.failed()) fail(handler.cause());

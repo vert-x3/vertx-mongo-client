@@ -19,7 +19,14 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.*;
+import com.mongodb.async.client.DistinctIterable;
+import com.mongodb.async.client.FindIterable;
+import com.mongodb.async.client.ListIndexesIterable;
+import com.mongodb.async.client.MongoClients;
+import com.mongodb.async.client.MongoCollection;
+import com.mongodb.async.client.MongoDatabase;
+import com.mongodb.async.client.MongoIterable;
+import com.mongodb.async.client.gridfs.GridFSBucket;
 import com.mongodb.async.client.gridfs.GridFSBuckets;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
@@ -27,15 +34,25 @@ import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
-import io.vertx.ext.mongo.*;
+import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.IndexOptions;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoClientDeleteResult;
+import io.vertx.ext.mongo.MongoClientUpdateResult;
+import io.vertx.ext.mongo.MongoGridFsClient;
+import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.BsonDocument;
@@ -43,9 +60,15 @@ import org.bson.BsonDocumentReader;
 import org.bson.BsonValue;
 import org.bson.codecs.DecoderContext;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
@@ -55,25 +78,36 @@ import static java.util.Objects.requireNonNull;
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
-public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo.MongoClient {
+public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private static final Logger log = LoggerFactory.getLogger(MongoClientImpl.class);
 
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
+  private static final String ID_FIELD = "_id";
 
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
-
-  protected com.mongodb.async.client.MongoClient mongo;
   protected final MongoHolder holder;
+  private final Vertx vertx;
+  protected com.mongodb.async.client.MongoClient mongo;
+  protected boolean useObjectId;
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName) {
-    super(vertx, config);
     Objects.requireNonNull(vertx);
     Objects.requireNonNull(config);
     Objects.requireNonNull(dataSourceName);
+    this.vertx = vertx;
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo();
+    this.useObjectId = config.getBoolean("useObjectId", false);
+  }
+
+  private static Bson toBson(JsonObject json) {
+    return json == null ? null : BsonDocument.parse(json.encode());
+  }
+
+  private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
+    return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
   }
 
   @Override
@@ -103,7 +137,7 @@ public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo
       filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
 
       com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
-          .upsert(true);
+        .upsert(true);
 
       coll.replaceOne(wrap(filter), encodedDocument, updateOptions, convertCallback(resultHandler, result -> null));
     }
@@ -466,29 +500,25 @@ public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo
     requireNonNull(resultHandler, "resultHandler cannot be null");
     MongoCollection<JsonObject> coll = getCollection(collection);
     com.mongodb.client.model.IndexOptions driverOpts = new com.mongodb.client.model.IndexOptions()
-            .background(options.isBackground())
-            .unique(options.isUnique())
-            .name(options.getName())
-            .sparse(options.isSparse())
-            .expireAfter(options.getExpireAfter(TimeUnit.SECONDS), TimeUnit.SECONDS)
-            .version(options.getVersion())
-            .weights(toBson(options.getWeights()))
-            .defaultLanguage(options.getDefaultLanguage())
-            .languageOverride(options.getLanguageOverride())
-            .textVersion(options.getTextVersion())
-            .sphereVersion(options.getSphereVersion())
-            .bits(options.getBits())
-            .min(options.getMin())
-            .max(options.getMax())
-            .bucketSize(options.getBucketSize())
-            .storageEngine(toBson(options.getStorageEngine()))
-            .partialFilterExpression(toBson(options.getPartialFilterExpression()));
+      .background(options.isBackground())
+      .unique(options.isUnique())
+      .name(options.getName())
+      .sparse(options.isSparse())
+      .expireAfter(options.getExpireAfter(TimeUnit.SECONDS), TimeUnit.SECONDS)
+      .version(options.getVersion())
+      .weights(toBson(options.getWeights()))
+      .defaultLanguage(options.getDefaultLanguage())
+      .languageOverride(options.getLanguageOverride())
+      .textVersion(options.getTextVersion())
+      .sphereVersion(options.getSphereVersion())
+      .bits(options.getBits())
+      .min(options.getMin())
+      .max(options.getMax())
+      .bucketSize(options.getBucketSize())
+      .storageEngine(toBson(options.getStorageEngine()))
+      .partialFilterExpression(toBson(options.getPartialFilterExpression()));
     coll.createIndex(wrap(key), driverOpts, wrapCallback(toVoidAsyncResult(resultHandler)));
     return this;
-  }
-
-  private static Bson toBson(JsonObject json) {
-    return json == null ? null : BsonDocument.parse(json.encode());
   }
 
   @Override
@@ -574,11 +604,19 @@ public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo
   }
 
   @Override
-  public MongoClient createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
+  public MongoClient createDefaultGridFsBucketService(Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
+    return this.createGridFsBucketService("fs", resultHandler);
+  }
 
-    MongoGridFsClientImpl impl = new MongoGridFsClientImpl(vertx, config, GridFSBuckets.create(holder.db, bucketName));
+  @Override
+  public MongoClient createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
+    MongoGridFsClientImpl impl = new MongoGridFsClientImpl(vertx, this, getGridFSBucket(bucketName));
     resultHandler.handle(Future.succeededFuture(impl));
     return this;
+  }
+
+  private GridFSBucket getGridFSBucket(String bucketName) {
+    return GridFSBuckets.create(holder.db, bucketName);
   }
 
   private void convertMongoIterable(MongoIterable iterable, Handler<AsyncResult<JsonArray>> resultHandler) {
@@ -616,6 +654,17 @@ public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo
     return mongoCollection.distinct(fieldName, resultClass);
   }
 
+  protected JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
+    if (!useObjectId) return json;
+
+    Object idString = json.getValue(ID_FIELD, null);
+    if (idString instanceof String && ObjectId.isValid((String) idString)) {
+      json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, idString));
+    }
+
+    return json;
+  }
+
   private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
     if (!useObjectId) return json;
 
@@ -628,6 +677,19 @@ public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo
     json.put(ID_FIELD, (String) idString);
 
     return json;
+  }
+
+  protected <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
+    Context context = vertx.getOrCreateContext();
+    return (result, error) -> {
+      context.runOnContext(v -> {
+        if (error != null) {
+          resultHandler.handle(Future.failedFuture(error));
+        } else {
+          resultHandler.handle(Future.succeededFuture(converter.apply(result)));
+        }
+      });
+    };
   }
 
   private <T> Handler<AsyncResult<T>> toVoidAsyncResult(Handler<AsyncResult<Void>> resultHandler) {
@@ -658,6 +720,19 @@ public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo
         return null;
       }
     });
+  }
+
+  protected <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
+    Context context = vertx.getOrCreateContext();
+    return (result, error) -> {
+      context.runOnContext(v -> {
+        if (error != null) {
+          resultHandler.handle(Future.failedFuture(error));
+        } else {
+          resultHandler.handle(Future.succeededFuture(result));
+        }
+      });
+    };
   }
 
   private FindIterable<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {
@@ -695,8 +770,8 @@ public class MongoClientImpl extends MongoBaseImpl implements io.vertx.ext.mongo
     return coll;
   }
 
-  private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
-    return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
+  protected JsonObjectBsonAdapter wrap(JsonObject jsonObject) {
+    return jsonObject == null ? null : new JsonObjectBsonAdapter(jsonObject);
   }
 
   private void removeFromMap(LocalMap<String, MongoHolder> map, String dataSourceName) {
