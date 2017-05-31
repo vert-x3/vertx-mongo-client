@@ -201,6 +201,17 @@
  * ----
  * {@link examples.Examples#example7}
  * ----
+ * 
+ * === Bulk operations
+ * 
+ * To execute multiple insert, update, replace, or delete operations at once, use {@link io.vertx.ext.mongo.MongoClient#bulkWrite}.
+ * 
+ * You can pass a list of {@link io.vertx.ext.mongo.BulkOperation BulkOperations}, with each working similiar to the matching single operations.
+ * You can pass as many operations, even of the same type, as you wish.
+ * 
+ * To specify if the bulk operation should be executed in order, and with what write option, use {@link io.vertx.ext.mongo.MongoClient#bulkWriteWithOptions}
+ * and pass an instance of {@link io.vertx.ext.mongo.BulkWriteOptions}.
+ * For more explanation what ordered means, see https://docs.mongodb.com/manual/reference/method/db.collection.bulkWrite/#execution-of-operations
  *
  * === Finding documents
  *
