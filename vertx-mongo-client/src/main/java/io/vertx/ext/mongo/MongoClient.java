@@ -216,6 +216,37 @@ public interface MongoClient {
   MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   /**
+   * Execute a bulk operation. Can insert, update, replace, and/or delete multiple documents with one request.
+   * 
+   * @param collection
+   *          the collection
+   * @param operations
+   *          the operations to execute
+   * @param resultHandler
+   *          will be called with a {@link MongoClientBulkWriteResult} when complete
+   */
+  @Fluent
+  MongoClient bulkWrite(String collection, List<BulkOperation> operations,
+      Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
+
+  /**
+   * Execute a bulk operation with the specified write options. Can insert, update, replace, and/or delete multiple
+   * documents with one request.
+   * 
+   * @param collection
+   *          the collection
+   * @param operations
+   *          the operations to execute
+   * @param bulkWriteOptions
+   *          the write options
+   * @param resultHandler
+   *          will be called with a {@link MongoClientBulkWriteResult} when complete
+   */
+  @Fluent
+  MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions,
+      Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
+
+  /**
    * Find matching documents in the specified collection
    *
    * @param collection  the collection

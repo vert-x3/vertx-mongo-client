@@ -86,6 +86,16 @@ public interface MongoService extends MongoClient {
 
   @Override
   @Fluent
+  MongoService bulkWrite(String collection, List<BulkOperation> operations,
+      Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService bulkWriteWithOptions(String collection, List<BulkOperation> operations,
+      BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
+
+  @Override
+  @Fluent
   MongoService find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   @Override
