@@ -29,13 +29,13 @@
   </modules>
 
   <artifactId>vertx-mongo</artifactId>
-  <version>3.5.0.Beta1</version>
+  <version>3.5.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Vert.x Mongo</name>
 
   <properties>
-    <stack.version>3.5.0.Beta1</stack.version>
+    <stack.version>3.5.0-SNAPSHOT</stack.version>
     <mongo.async.version>3.4.1</mongo.async.version>
     <doc.skip>true</doc.skip>
     <codegen.rxjava.deprecated>true</codegen.rxjava.deprecated>
