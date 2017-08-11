@@ -22,7 +22,7 @@ class ClusterSettingsParser {
   /*
   * The Default Mongo Driver maxWaitQueueSize @see <a href="https://github.com/mongodb/mongo-java-driver/blob/master/driver-core/src/main/com/mongodb/connection/ClusterSettings.java">maxWaitQueueSize</a>
   */
-  private final Integer DEFAULT_MONGO_DRIVER_WAIT_Q_SIZE = 500;
+  public static final Integer DEFAULT_MONGO_DRIVER_WAIT_Q_SIZE = 500;
 
   public ClusterSettingsParser(ConnectionString connectionString, JsonObject config) {
     ClusterSettings.Builder settings = ClusterSettings.builder();
