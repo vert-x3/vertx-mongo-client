@@ -53,6 +53,13 @@ public class ClusterSettingsParserTest {
     assertEquals(7533L, settings.getServerSelectionTimeout(TimeUnit.MILLISECONDS));
   }
 
+  @Test
+  public void testMaxWaitQueueSize() {
+    ClusterSettings settings = settings(multipleHosts().put("waitQueueMultiple", 10));
+    assertEquals(ClusterSettingsParser.DEFAULT_MONGO_DRIVER_WAIT_Q_SIZE * 10, settings.getMaxWaitQueueSize());
+  }
+
+
   private static void assertSingleHost(ClusterConnectionMode mode, ClusterSettings settings) {
     List<ServerAddress> hosts = settings.getHosts();
     assertNotNull(hosts);
