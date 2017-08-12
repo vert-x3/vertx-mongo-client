@@ -28,9 +28,16 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     super.tearDown();
   }
 
+  protected JsonObject getConfig() {
+    JsonObject config = super.getConfig();
+    config.put("useObjectId", true);
+    return config;
+  }
+
   protected void assertEquals(JsonObject expected, JsonObject actual) {
 
-    //Test cases will fail unless we map the $oid first
+    //Test cases will fail unless we map the $oid first. This is because the original document is
+    //transformed with an object ID. Probably shouldn't do that.
     if (actual.containsKey("_id")) {
       if (actual.getValue("_id") instanceof String) {
         actual.put("_id", new JsonObject().put("$oid", actual.getString("_id")));
@@ -39,6 +46,7 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     super.assertEquals(expected, actual);
 
   }
+
 
   @Test
   @Override
@@ -59,8 +67,46 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
         assertNotNull(id);
         mongoClient.findOne(collection, new JsonObject().put("foo", "bar"), null, onSuccess(obj -> {
           assertTrue(obj.containsKey("_id"));
-          assertTrue(obj.getValue("_id") instanceof JsonObject);
-          assertTrue(((JsonObject) obj.getValue("_id")).containsKey("$oid"));
+          assertTrue(obj.getValue("_id") instanceof String);
+          obj.remove("_id");
+          assertEquals(orig, obj);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindOneReturnsNothing() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject orig = createDoc();
+      JsonObject doc = orig.copy();
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNotNull(id);
+        mongoClient.findOne(collection, new JsonObject().put("nothing", "xxrandomxx"), null, onSuccess(obj -> {
+          assertNull(obj);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindReturnsStringId() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject orig = createDoc();
+      JsonObject doc = orig.copy();
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        assertNotNull(id);
+        mongoClient.find(collection, new JsonObject().put("foo", "bar"), onSuccess(list -> {
+          assertTrue(list.size() == 1);
+          JsonObject obj = list.get(0);
+          assertTrue(obj.containsKey("_id"));
+          assertTrue(obj.getValue("_id") instanceof String);
           obj.remove("_id");
           assertEquals(orig, obj);
           testComplete();
@@ -108,7 +154,6 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      //Changed to hex string as a random string will not be valid for useObjectId = true
       doc.put("_id", new ObjectId().toHexString());
       mongoClient.insert(collection, doc, onSuccess(id -> {
         assertNull(id);
