@@ -68,7 +68,7 @@ public class JsonObjectCodecTest {
     JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
 
     JsonObject resultValue = result.getJsonObject("test");
-    assertEquals(now, OffsetDateTime.parse(resultValue.getString(JsonObjectCodec.DATE_FIELD)).toInstant());
+    assertEquals(Instant.ofEpochMilli(now.toEpochMilli()), OffsetDateTime.parse(resultValue.getString(JsonObjectCodec.DATE_FIELD)).toInstant());
   }
 
   @Test
