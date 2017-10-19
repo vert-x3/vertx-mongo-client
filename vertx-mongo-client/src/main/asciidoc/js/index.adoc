@@ -813,7 +813,7 @@ mongoService.save("smartPeople", document, function (res, res_err) {
 
 
 ----
-Here's an example of getting disting value
+Here's an example of getting distinct value
 
 [source,js]
 ----
@@ -856,6 +856,423 @@ mongoClient.save("books", document, function (res, res_err) {
     res_err.printStackTrace();
   }
 
+});
+
+----
+
+== Storing/Retrieving files and binary data
+
+The client can store and retrieve files and binary data using MongoDB GridFS. The
+`link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html[MongoGridFsClient]` can be used to upload or download files
+to GridFS.
+
+If you prefer to interact with GridFS using streams, the `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_stream_client-MongoGridFsStreamClient.html[MongoGridFsStreamClient]`
+can be used. This will allow you to upload from any implementation of `link:../../jsdoc/module-vertx-js_read_stream-ReadStream.html[ReadStream]` and
+download to any implementation of `link:../../jsdoc/module-vertx-js_write_stream-WriteStream.html[WriteStream]`.
+
+=== Get the MongoGridFsClient to interact with GridFS.
+
+The `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html[MongoGridFsClient]` is created by calling
+`link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#createGridFsBucketService[createGridFsBucketService]` and providing a bucket name. In GridFS, the bucket name
+ends up being a collection that contains references to all of the objects that are stored.
+You can segregate objects into distinct buckets by providing a unique name.
+
+This has the following fields:
+
+`bucketName` : The name of the bucket to create
+
+Here's an example of getting a `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html[MongoGridFsClient]` with the a custom bucket
+name
+
+[source,js]
+----
+mongoClient.createGridFsBucketService("bakeke", function (res, res_err) {
+  if (res_err == null) {
+    //Interact with the GridFS client...
+    var client = res;
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+----
+
+GridFS uses a default bucket named "fs". If you prefer to get the default bucket instead of naming your own,
+call `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#createDefaultGridFsBucketService[createDefaultGridFsBucketService]`
+
+Here's an example of getting a `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html[MongoGridFsClient]` with the default bucket name.
+
+[source,js]
+----
+mongoClient.createDefaultGridFsBucketService(function (res, res_err) {
+  if (res_err == null) {
+    //Interact with the GridFS client...
+    var client = res;
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+
+----
+
+=== Drop an entire file bucket from GridFS.
+
+An entire file bucket along with all of its contents can be dropped with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#drop[drop]`. It will
+drop the bucket that was specified when the MongoGridFsClient was created.
+
+Here is an example of dropping a file bucket.
+
+[source,js]
+----
+gridFsClient.drop(function (res, res_err) {
+  if (res_err == null) {
+    //The file bucket is dropped and all files in it, erased
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+----
+
+=== Find all file IDs in a GridFS bucket.
+
+A list of all of the file IDs in a bucket can be found with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#findAllIds[findAllIds]`.
+The files can be downloaded by ID using `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#downloadFileByID[downloadFileByID]`.
+
+Here is an example of retrieving the list of file IDs.
+
+[source,js]
+----
+gridFsClient.findAllIds(function (res, res_err) {
+  if (res_err == null) {
+    var ids = res;
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+----
+
+=== Find file IDs in a GridFS bucket matching a query.
+
+A query can be specified to match files in the GridFS bucket. `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#findIds[findIds]`
+will return a list of file IDs that match the query.
+
+This has the following fields:
+
+`query` : The is a json object that can match any of the file's metadata using standard MongoDB query operators. An empty
+json object will match all documents. You can query on attributes of the GridFS files collection as described
+in the GridFS manual. https://docs.mongodb.com/manual/core/gridfs/#the-files-collection
+
+The files can be downloaded by ID using `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#downloadFileByID[downloadFileByID]`.
+
+Here is an example of retrieving the list of file IDs based on a metadata query.
+
+[source,js]
+----
+var query = {
+  "metadata.nick_name" : "Puhi the eel"
+};
+gridFsClient.findIds(query, function (res, res_err) {
+  if (res_err == null) {
+    var ids = res;
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+----
+
+=== Delete a file in GridFS based on its ID.
+
+A file previously stored in GridFS can be deleted with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#delete[delete]` by providing
+the ID of the file. The file IDs can be retrieved with a query using `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#findIds[findIds]`.
+
+This has the following fields:
+`id` : The ID generated by GridFS when the file was stored
+
+Here is an example of deleting a file by ID.
+
+[source,js]
+----
+var id = "56660b074cedfd000570839c";
+gridFsClient.delete(id, function (res) {
+  if (res.succeeded()) {
+    //File deleted
+  } else {
+    //Something went wrong
+    res.cause().printStackTrace();
+  }
+});
+
+----
+
+=== Upload a file in GridFS
+
+A file can be stored by name with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#uploadFile[uploadFile]`. When it
+succeeds, the ID generated by GridFS will be returned. This ID can be used to retrieve the file later.
+
+This has the following fields:
+
+`fileName` : this is name used to save the file in GridFS
+
+[source,js]
+----
+gridFsClient.uploadFile("file.name", function (res, res_err) {
+  if (res_err == null) {
+    var id = res;
+    //The ID of the stored object in Grid FS
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+----
+
+=== Upload a file in GridFS with options.
+
+A file can be stored with additional options with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#uploadFileWithOptions[uploadFileWithOptions]`
+passing in an instance of `link:../dataobjects.html#UploadOptions[UploadOptions]`. When it
+succeeds, the ID generated by GridFS will be returned.
+
+This has the following fields:
+
+`metadata` : this is a json object that includes any metadata that may be useful in a later search
+`chunkSizeBytes` : GridFS will break up the file into chunks of this size
+
+Here is an example of a file uploadByFileName that specifies the chunk size and metadata.
+
+* [source,js]
+----
+var metadata = {
+};
+metadata.nick_name = "Puhi the Eel";
+
+var options = {
+};
+options.chunkSizeBytes = 1024;
+options.metadata = metadata;
+
+gridFsClient.uploadFileWithOptions("file.name", options, function (res, res_err) {
+  if (res_err == null) {
+    var id = res;
+    //The ID of the stored object in Grid FS
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+----
+
+=== Download a file previously stored in GridFS
+
+A file can be downloaded by its original name with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#downloadFile[downloadFile]`.
+When the download is complete, the result handler will return the length of the download as a Long.
+
+This has the following fields:
+
+`fileName`:: the name of the file that was previously stored
+
+Here is an example of downloading a file using the name that it was stored with in GridFS.
+
+* [source,js]
+----
+gridFsClient.downloadFile("file.name", function (res, res_err) {
+  if (res_err == null) {
+    var fileLength = res;
+    //The length of the file stored in fileName
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+----
+
+=== Download a file previously stored in GridFS given its ID
+
+A file can be downloaded to a given file name by its ID with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#downloadFileByID[downloadFileByID]`.
+When the download succeeds, the result handler will return the length of the download as a Long.
+
+This has the following fields:
+
+`id` : The ID generated by GridFS when the file was stored
+
+Here is an example of downloading a file using the ID that it was given when stored in GridFS.
+
+* [source,js]
+----
+var id = "56660b074cedfd000570839c";
+var filename = "puhi.fil";
+gridFsClient.downloadFileByID(id, filename, function (res, res_err) {
+  if (res_err == null) {
+    var fileLength = res;
+    //The length of the file stored in fileName
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+----
+
+=== Download a file from GridFS to a new name
+
+A file can be resolved using its original name and then downloaded to a new name
+with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#downloadFileAs[downloadFileAs]`.
+When the download succeeds, the result handler will return the length of the download as a Long.
+
+This has the following fields:
+
+`fileName` : the name of the file that was previously stored
+`newFileName` : the new name for which the file will be stored
+
+* [source,js]
+----
+gridFsClient.downloadFileAs("file.name", "new_file.name", function (res, res_err) {
+  if (res_err == null) {
+    var fileLength = res;
+    //The length of the file stored in fileName
+  } else {
+    res_err.printStackTrace();
+  }
+});
+
+----
+
+==== Uploading and Downloading to GridFS using Streams
+
+The `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_stream_client-MongoGridFsStreamClient.html[MongoGridFsStreamClient]` is used to interact with GridFS using streams.
+
+To retrieve this client use `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_client-MongoGridFsClient.html#getGridFsStreamClient[getGridFsStreamClient]`
+
+Here is an example of retrieving the stream client:
+
+* [source,js]
+----
+var streamClient = gridFsClient.getGridFsStreamClient();
+
+----
+
+=== Upload a Stream to GridFS
+
+Streams can be uploaded to GridFS using `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_stream_client-MongoGridFsStreamClient.html#uploadByFileName[uploadByFileName]`.
+Once the stream is uploaded, the result handler will be called with the ID generated by GridFS.
+
+This has the following fields:
+
+`stream` : the `link:../../jsdoc/module-vertx-js_read_stream-ReadStream.html[ReadStream]` to upload
+`fileName` : the name for which the stream will be stored
+
+Here is an example of uploading a file stream to GridFS:
+
+* [source,js]
+----
+gridFsStreamClient.uploadByFileName(asyncFile, "kanaloa", function (stringAsyncResult, stringAsyncResult_err) {
+  var id = stringAsyncResult;
+});
+
+----
+
+=== Upload a Stream to GridFS with Options
+
+Streams can be uploaded to GridFS using `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_stream_client-MongoGridFsStreamClient.html#uploadByFileNameWithOptions[uploadByFileNameWithOptions]`
+passing in an instance of `link:../dataobjects.html#UploadOptions[UploadOptions]`.
+Once the stream is uploaded, the result handler will be called with the ID generated by GridFS.
+
+This has the following fields:
+
+`stream` : the `link:../../jsdoc/module-vertx-js_read_stream-ReadStream.html[ReadStream]` to upload
+`fileName` : the name for which the stream will be stored
+`options' : the UploadOptions
+
+`link:../dataobjects.html#UploadOptions[UploadOptions]` has the following fields:
+
+`metadata` : this is a json object that includes any metadata that may be useful in a later search
+`chunkSizeBytes` : GridFS will break up the file into chunks of this size
+
+Here is an example of uploading a file stream with options to GridFS:
+
+* [source,js]
+----
+var options = {
+};
+options.chunkSizeBytes = 2048;
+options.metadata = {
+  "catagory" : "Polynesian gods"
+};
+gridFsStreamClient.uploadByFileNameWithOptions(asyncFile, "kanaloa", options, function (stringAsyncResult, stringAsyncResult_err) {
+  var id = stringAsyncResult;
+});
+
+
+----
+
+=== Download a Stream from GridFS using File Name
+
+Streams can be downloaded from GridFS using a file name with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_stream_client-MongoGridFsStreamClient.html#downloadByFileName[downloadByFileName]`.
+Once the stream is downloaded a result handler will be called with the length of the stream as a Long.
+
+This has the following fields:
+
+`stream` : the `link:../../jsdoc/module-vertx-js_write_stream-WriteStream.html[WriteStream]` to download to
+`fileName` : the name of the file that will be downloaded to the stream.
+
+Here is an example of downloading a file to a stream:
+
+* [source,js]
+----
+gridFsStreamClient.downloadByFileName(asyncFile, "kamapuaa.fil", function (longAsyncResult, longAsyncResult_err) {
+  var length = longAsyncResult;
+});
+
+----
+
+=== Download a Stream with Options from GridFS using File Name
+
+Streams can be downloaded from GridFS using a file name and download options with
+`link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_stream_client-MongoGridFsStreamClient.html#downloadByFileNameWithOptions[downloadByFileNameWithOptions]` passing in an instance of `link:../dataobjects.html#DownloadOptions[DownloadOptions]`.
+Once the stream is downloaded a result handler will be called with the length of the stream as a Long.
+
+This has the following fields:
+
+`stream` : the `link:../../jsdoc/module-vertx-js_write_stream-WriteStream.html[WriteStream]` to download to
+`fileName` : the name of the file that will be downloaded to the stream
+`options` : an instance of `link:../dataobjects.html#DownloadOptions[DownloadOptions]`
+
+DownloadOptions has the following field:
+
+`revision` : the revision of the file to download
+
+Here is an example of downloading a file to a stream with options:
+
+* [source,js]
+----
+var options = {
+};
+options.revision = 0;
+gridFsStreamClient.downloadByFileNameWithOptions(asyncFile, "kamapuaa.fil", options, function (longAsyncResult, longAsyncResult_err) {
+  var length = longAsyncResult;
+});
+
+----
+
+=== Download a Stream from GridFS using ID
+
+Streams can be downloaded using the ID generated by GridFS with `link:../../jsdoc/module-vertx-mongo-js_mongo_grid_fs_stream_client-MongoGridFsStreamClient.html#downloadById[downloadById]`.
+Once the stream is downloaded a result handler will be called with the length of the stream as a Long.
+
+This has the following fields:
+
+`stream` : the `link:../../jsdoc/module-vertx-js_write_stream-WriteStream.html[WriteStream]` to download to
+`id` : the string represendation of the ID generated by GridFS
+
+Here is an example of downloading a file to a stream using the object's ID:
+
+* [source,js]
+----
+var id = "58f61bf84cedfd000661af06";
+gridFsStreamClient.downloadById(asyncFile, id, function (longAsyncResult, longAsyncResult_err) {
+  var length = longAsyncResult;
 });
 
 ----

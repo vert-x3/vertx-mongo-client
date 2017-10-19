@@ -1,7 +1,5 @@
 package io.vertx.ext.mongo.impl;
 
-import java.util.List;
-
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -15,9 +13,12 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoClientBulkWriteResult;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.ext.mongo.MongoClientUpdateResult;
+import io.vertx.ext.mongo.MongoGridFsClient;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
+
+import java.util.List;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -369,6 +370,19 @@ public class MongoServiceImpl implements MongoService {
   public MongoService distinctBatch(String collection, String fieldName, String resultClassname,
       Handler<AsyncResult<JsonObject>> resultHandler) {
     client.distinctBatch(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  @Override
+  public MongoService createDefaultGridFsBucketService(Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
+    client.createGridFsBucketService("fs", resultHandler);
+    return this;
+  }
+
+  @Override
+  @Fluent
+  public MongoService createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
+    client.createGridFsBucketService(bucketName, resultHandler);
     return this;
   }
 

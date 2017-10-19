@@ -56,6 +56,21 @@ Set the write option
 +++
 |===
 
+[[DownloadOptions]]
+== DownloadOptions
+
+++++
+ Options used to configure downloads from GridFS.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[revision]]`revision`|`Number (Integer)`|-
+|===
+
 [[FindOptions]]
 == FindOptions
 
@@ -278,5 +293,21 @@ Set whether upsert is enabled
 +++
 Set the write option
 +++
+|===
+
+[[UploadOptions]]
+== UploadOptions
+
+++++
+ Options used to configure uploads to GridFS.
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[chunkSizeBytes]]`chunkSizeBytes`|`Number (Integer)`|-
+|[[metadata]]`metadata`|`Json object`|-
 |===
 
