@@ -217,7 +217,7 @@ public interface MongoClient {
 
   /**
    * Execute a bulk operation. Can insert, update, replace, and/or delete multiple documents with one request.
-   * 
+   *
    * @param collection
    *          the collection
    * @param operations
@@ -232,7 +232,7 @@ public interface MongoClient {
   /**
    * Execute a bulk operation with the specified write options. Can insert, update, replace, and/or delete multiple
    * documents with one request.
-   * 
+   *
    * @param collection
    *          the collection
    * @param operations
@@ -570,6 +570,18 @@ public interface MongoClient {
   MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
+   * Gets the distinct values of the specified field name filtered by specified query.
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+   *
+   * @param collection  the collection
+   * @param fieldName  the field name
+   * @param query the query
+   * @param resultHandler  will be provided with array of values.
+   */
+  @Fluent
+  MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  /**
    * Gets the distinct values of the specified field name.
    * This method use batchCursor for returning each found value.
    * Each value is a json fragment with fieldName key (eg: {"num": 1}).
@@ -580,6 +592,19 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Gets the distinct values of the specified field name filtered by specified query.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   *
+   * @param collection  the collection
+   * @param fieldName  the field name
+   * @param query the query
+   * @param resultHandler  will be provided with each found value
+   */
+  @Fluent
+  MongoClient distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Close the client and release its resources
