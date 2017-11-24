@@ -646,7 +646,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   @Override
   public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
-    DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
+    return distinctWithQuery(collection, fieldName, resultClassname, new JsonObject(), resultHandler);
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+    DistinctIterable distinctValues = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query, resultHandler);
 
     if (distinctValues != null) {
       convertMongoIterable(distinctValues, resultHandler);
@@ -656,7 +661,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   @Override
   public io.vertx.ext.mongo.MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
-    DistinctIterable distinctValues = findDistinctValues(collection, fieldName, resultClassname, resultHandler);
+    return distinctBatchWithQuery(collection, fieldName, resultClassname, new JsonObject(), resultHandler);
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+    DistinctIterable distinctValues = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query, resultHandler);
 
     if (distinctValues != null) {
       Context context = vertx.getOrCreateContext();
@@ -714,6 +724,27 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     }
     MongoCollection<JsonObject> mongoCollection = getCollection(collection);
     return mongoCollection.distinct(fieldName, resultClass);
+  }
+
+  private DistinctIterable findDistinctValuesWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(fieldName, "fieldName cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+    requireNonNull(query, "query cannot be null");
+
+    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+
+    Bson bquery = wrap(encodedQuery);
+
+    final Class resultClass;
+    try {
+      resultClass = Class.forName(resultClassname);
+    } catch (ClassNotFoundException e) {
+      resultHandler.handle(Future.failedFuture(e));
+      return null;
+    }
+    MongoCollection<JsonObject> mongoCollection = getCollection(collection);
+    return mongoCollection.distinct(fieldName, bquery, resultClass);
   }
 
 

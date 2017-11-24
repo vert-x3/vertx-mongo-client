@@ -547,4 +547,40 @@ public class Examples {
 
     });
   }
+
+  public void example17(MongoClient mongoClient) throws Exception{
+    JsonObject document = new JsonObject().put("title", "The Hobbit")
+            .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
+    JsonObject query = new JsonObject()
+            .put("publicationDate",
+                    new JsonObject().put("$gte", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00")));
+
+    mongoClient.save("books", document, res -> {
+      if (res.succeeded()) {
+
+        mongoClient.distinctWithQuery("books", "title", String.class.getName(), query, res2 -> {
+          System.out.println("Title is : " + res2.result().getJsonArray(0));
+        });
+      }
+
+    });
+  }
+
+  public void example17_d1(MongoClient mongoClient) throws Exception{
+    JsonObject document = new JsonObject().put("title", "The Hobbit")
+            .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
+    JsonObject query = new JsonObject()
+            .put("publicationDate",
+                    new JsonObject().put("$gte", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00")));
+
+    mongoClient.save("books", document, res -> {
+      if (res.succeeded()) {
+
+        mongoClient.distinctBatchWithQuery("books", "title", String.class.getName(), query, res2 -> {
+          System.out.println("Title is : " + res2.result().getString("title"));
+        });
+      }
+
+    });
+  }
 }
