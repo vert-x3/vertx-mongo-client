@@ -710,22 +710,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   }
 
-  private DistinctIterable findDistinctValues(String collection, String fieldName, String resultClassname, Handler resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(fieldName, "fieldName cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    final Class resultClass;
-    try {
-      resultClass = Class.forName(resultClassname);
-    } catch (ClassNotFoundException e) {
-      resultHandler.handle(Future.failedFuture(e));
-      return null;
-    }
-    MongoCollection<JsonObject> mongoCollection = getCollection(collection);
-    return mongoCollection.distinct(fieldName, resultClass);
-  }
-
   private DistinctIterable findDistinctValuesWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(fieldName, "fieldName cannot be null");
