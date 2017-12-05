@@ -37,7 +37,7 @@
 
   <properties>
     <stack.version>3.5.1-SNAPSHOT</stack.version>
-    <mongo.async.version>3.4.1</mongo.async.version>
+    <mongo.async.version>3.5.0</mongo.async.version>
     <doc.skip>true</doc.skip>
     <codegen.rxjava.deprecated>true</codegen.rxjava.deprecated>
   </properties>
