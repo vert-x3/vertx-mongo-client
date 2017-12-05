@@ -219,6 +219,14 @@ public interface MongoService extends MongoClient {
   MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Override
+  @Fluent
+  MongoService distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  @Override
+  @Fluent
+  MongoService distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  @Override
   @ProxyIgnore
   void close();
 }
