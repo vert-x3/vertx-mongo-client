@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.5.0</version>
+  <version>3.5.1-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -34,7 +34,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mongo-client:3.5.0'
+compile 'io.vertx:vertx-mongo-client:3.5.1-SNAPSHOT'
 ----
 
 
@@ -816,7 +816,7 @@ mongoService.save("smartPeople", document) { |res_err,res|
 
 
 ----
-Here's an example of getting disting value
+Here's an example of getting distinct value
 
 [source,ruby]
 ----
@@ -857,6 +857,64 @@ mongoClient.save("books", document) { |res_err,res|
 
   else
     res_err.print_stack_trace()
+  end
+
+}
+
+----
+* Here's an example of getting distinct value with query
+
+[source,ruby]
+----
+document = {
+  'title' => "The Hobbit",
+  'publicationDate' => {
+    '$date' => "1937-09-21T00:00:00+00:00"
+  }
+}
+query = {
+  'publicationDate' => {
+    '$gte' => {
+      '$date' => "1937-09-21T00:00:00+00:00"
+    }
+  }
+}
+
+mongoClient.save("books", document) { |res_err,res|
+  if (res_err == nil)
+
+    mongoClient.distinct_with_query("books", "title", Java::JavaLang::String::class.get_name(), query) { |res2_err,res2|
+      puts "Title is : #{res2[0]}"
+    }
+  end
+
+}
+
+----
+Here's an example of getting distinct value in batch mode with query
+
+[source,ruby]
+----
+document = {
+  'title' => "The Hobbit",
+  'publicationDate' => {
+    '$date' => "1937-09-21T00:00:00+00:00"
+  }
+}
+query = {
+  'publicationDate' => {
+    '$gte' => {
+      '$date' => "1937-09-21T00:00:00+00:00"
+    }
+  }
+}
+
+mongoClient.save("books", document) { |res_err,res|
+  if (res_err == nil)
+
+    mongoClient.distinct_batch_with_query("books", "title", Java::JavaLang::String::class.get_name(), query) { |res2_err,res2|
+      puts "Title is : #{res2['title']}"
+    }
   end
 
 }
