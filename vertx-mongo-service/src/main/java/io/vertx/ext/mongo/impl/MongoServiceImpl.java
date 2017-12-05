@@ -365,10 +365,22 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
+  public MongoService distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+    client.distinctWithQuery(collection, fieldName, resultClassname, query, resultHandler);
+    return this;
+  }
+
+  @Override
   @Fluent
   public MongoService distinctBatch(String collection, String fieldName, String resultClassname,
       Handler<AsyncResult<JsonObject>> resultHandler) {
     client.distinctBatch(collection, fieldName, resultClassname, resultHandler);
+    return this;
+  }
+
+  @Override
+  public MongoService distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
+    client.distinctBatchWithQuery(collection, fieldName, resultClassname, query, resultHandler);
     return this;
   }
 
