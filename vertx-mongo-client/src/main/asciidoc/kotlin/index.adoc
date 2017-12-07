@@ -456,27 +456,13 @@ var query = json {
   obj("author" to "J. R. R. Tolkien")
 }
 
-mongoClient.findBatch("book", query, { res ->
-
-  if (res.succeeded()) {
-
-    if (res.result() == null) {
-
-      println("End of research")
-
-    } else {
-
-      println("Found doc: ${res.result().toString()}")
-
-    }
-
-  } else {
-
-    res.cause().printStackTrace()
-
-  }
+mongoClient.findBatch("book", query).exceptionHandler({ throwable ->
+  throwable.printStackTrace()
+}).endHandler({ v ->
+  println("End of research")
+}).handler({ doc ->
+  println("Found doc: ${doc.toString()}")
 })
-
 
 ----
 
@@ -848,8 +834,8 @@ mongoClient.save("books", document, { res ->
 
   if (res.succeeded()) {
 
-    mongoClient.distinctBatch("books", "title", String.`class`.getName(), { res2 ->
-      println("Title is : ${res2.result().getString("title")}")
+    mongoClient.distinctBatch("books", "title", String.`class`.getName()).handler({ book ->
+      println("Title is : ${book.getString("title")}")
     })
 
   } else {
@@ -901,9 +887,10 @@ var query = json {
 mongoClient.save("books", document, { res ->
   if (res.succeeded()) {
 
-    mongoClient.distinctBatchWithQuery("books", "title", String.`class`.getName(), query, { res2 ->
-      println("Title is : ${res2.result().getString("title")}")
+    mongoClient.distinctBatchWithQuery("books", "title", String.`class`.getName(), query).handler({ book ->
+      println("Title is : ${book.getString("title")}")
     })
+
   }
 
 })

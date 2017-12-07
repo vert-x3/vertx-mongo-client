@@ -16,7 +16,6 @@
 
 package io.vertx.ext.mongo.impl;
 
-import com.mongodb.Block;
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.DistinctIterable;
@@ -28,36 +27,19 @@ import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.async.client.MongoIterable;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.bulk.BulkWriteUpsert;
+import com.mongodb.client.model.DeleteManyModel;
+import com.mongodb.client.model.DeleteOneModel;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
-import com.mongodb.client.model.ReturnDocument;
-import com.mongodb.client.model.DeleteOneModel;
-import com.mongodb.client.model.DeleteManyModel;
 import com.mongodb.client.model.InsertOneModel;
 import com.mongodb.client.model.ReplaceOneModel;
+import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateManyModel;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-
-import org.bson.BsonDocument;
-import org.bson.BsonDocumentReader;
-import org.bson.BsonValue;
-import org.bson.codecs.DecoderContext;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -69,6 +51,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.mongo.BulkOperation;
 import io.vertx.ext.mongo.BulkWriteOptions;
 import io.vertx.ext.mongo.FindOptions;
@@ -81,8 +64,21 @@ import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
+import org.bson.BsonDocument;
+import org.bson.BsonDocumentReader;
+import org.bson.BsonValue;
+import org.bson.codecs.DecoderContext;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
-import static java.util.Objects.requireNonNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.*;
 
 /**
  * The implementation of the {@link io.vertx.ext.mongo.MongoClient}. This implementation is based on the async driver
@@ -251,9 +247,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
-    findBatchWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
-    return this;
+  public ReadStream<JsonObject> findBatch(String collection, JsonObject query) {
+    return findBatchWithOptions(collection, query, DEFAULT_FIND_OPTIONS);
   }
 
   @Override
@@ -272,22 +267,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public ReadStream<JsonObject> findBatchWithOptions(String collection, JsonObject query, FindOptions options) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
     FindIterable<JsonObject> view = doFind(collection, query, options);
-    Block<JsonObject> documentBlock = document -> resultHandler.handle(Future.succeededFuture(document));
-    SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
-      if (throwable != null) {
-        resultHandler.handle(Future.failedFuture(throwable));
-      } else {
-        resultHandler.handle(Future.succeededFuture());
-      }
-    };
-    vertx.runOnContext(v -> view.forEach(documentBlock, callbackWhenFinished));
-    return this;
+    return new MongoIterableStream(vertx.getOrCreateContext(), view);
   }
 
   @Override
@@ -651,44 +635,31 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   @Override
   public io.vertx.ext.mongo.MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
-    DistinctIterable distinctValues = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query, resultHandler);
-
-    if (distinctValues != null) {
-      convertMongoIterable(distinctValues, resultHandler);
-    }
-    return this;
-  }
-
-  @Override
-  public io.vertx.ext.mongo.MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler) {
-    return distinctBatchWithQuery(collection, fieldName, resultClassname, new JsonObject(), resultHandler);
-  }
-
-  @Override
-  public io.vertx.ext.mongo.MongoClient distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
-    DistinctIterable distinctValues = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query, resultHandler);
-
-    if (distinctValues != null) {
-      Context context = vertx.getOrCreateContext();
-      Block valueBlock = value -> {
-        context.runOnContext(v -> {
-          Map mapValue = new HashMap();
-          mapValue.put(fieldName, value);
-          resultHandler.handle(Future.succeededFuture(new JsonObject(mapValue)));
-        });
-      };
-      SingleResultCallback<Void> callbackWhenFinished = (result, throwable) -> {
-        if (throwable != null) {
-          resultHandler.handle(Future.failedFuture(throwable));
-        }
-      };
-      try {
-        distinctValues.forEach(valueBlock, callbackWhenFinished);
-      } catch (Exception unhandledEx) {
-        resultHandler.handle(Future.failedFuture(unhandledEx));
+    try {
+      DistinctIterable distinctValues = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query);
+      if (distinctValues != null) {
+        convertMongoIterable(distinctValues, resultHandler);
       }
+    } catch (ClassNotFoundException e) {
+      resultHandler.handle(Future.failedFuture(e));
     }
     return this;
+  }
+
+  @Override
+  public ReadStream<JsonObject> distinctBatch(String collection, String fieldName, String resultClassname) {
+    return distinctBatchWithQuery(collection, fieldName, resultClassname, new JsonObject());
+  }
+
+  @Override
+  public ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query) {
+    try {
+      MongoIterable<JsonObject> distinctValues = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query)
+        .map(value -> new JsonObject().put(fieldName, value));
+      return new MongoIterableStream(vertx.getOrCreateContext(), distinctValues);
+    } catch (ClassNotFoundException e) {
+      return new FailedStream(e);
+    }
   }
 
   private void convertMongoIterable(MongoIterable iterable, Handler<AsyncResult<JsonArray>> resultHandler) {
@@ -710,25 +681,17 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   }
 
-  private DistinctIterable findDistinctValuesWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler resultHandler) {
+  private DistinctIterable<?> findDistinctValuesWithQuery(String collection, String fieldName, String resultClassname, JsonObject query) throws ClassNotFoundException {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(fieldName, "fieldName cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
     requireNonNull(query, "query cannot be null");
 
     JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
 
     Bson bquery = wrap(encodedQuery);
 
-    final Class resultClass;
-    try {
-      resultClass = Class.forName(resultClassname);
-    } catch (ClassNotFoundException e) {
-      resultHandler.handle(Future.failedFuture(e));
-      return null;
-    }
     MongoCollection<JsonObject> mongoCollection = getCollection(collection);
-    return mongoCollection.distinct(fieldName, bquery, resultClass);
+    return mongoCollection.distinct(fieldName, bquery, Class.forName(resultClassname));
   }
 
 
@@ -960,4 +923,37 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     }
   }
 
+  private static class FailedStream implements ReadStream<JsonObject> {
+    private final ClassNotFoundException e;
+
+    public FailedStream(ClassNotFoundException e) {
+      this.e = e;
+    }
+
+    @Override
+    public ReadStream<JsonObject> exceptionHandler(Handler<Throwable> handler) {
+      handler.handle(e);
+      return this;
+    }
+
+    @Override
+    public ReadStream<JsonObject> handler(Handler<JsonObject> handler) {
+      return this;
+    }
+
+    @Override
+    public ReadStream<JsonObject> pause() {
+      return this;
+    }
+
+    @Override
+    public ReadStream<JsonObject> resume() {
+      return this;
+    }
+
+    @Override
+    public ReadStream<JsonObject> endHandler(Handler<Void> endHandler) {
+      return this;
+    }
+  }
 }

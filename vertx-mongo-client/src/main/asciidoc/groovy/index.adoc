@@ -453,27 +453,13 @@ def query = [
   author:"J. R. R. Tolkien"
 ]
 
-mongoClient.findBatch("book", query, { res ->
-
-  if (res.succeeded()) {
-
-    if (res.result() == null) {
-
-      println("End of research")
-
-    } else {
-
-      println("Found doc: ${groovy.json.JsonOutput.toJson(res.result())}")
-
-    }
-
-  } else {
-
-    res.cause().printStackTrace()
-
-  }
+mongoClient.findBatch("book", query).exceptionHandler({ throwable ->
+  throwable.printStackTrace()
+}).endHandler({ v ->
+  println("End of research")
+}).handler({ doc ->
+  println("Found doc: ${groovy.json.JsonOutput.toJson(doc)}")
 })
-
 
 ----
 
@@ -844,8 +830,8 @@ mongoClient.save("books", document, { res ->
 
   if (res.succeeded()) {
 
-    mongoClient.distinctBatch("books", "title", java.lang.String.class.getName(), { res2 ->
-      println("Title is : ${res2.result().title}")
+    mongoClient.distinctBatch("books", "title", java.lang.String.class.getName()).handler({ book ->
+      println("Title is : ${book.title}")
     })
 
   } else {
@@ -905,9 +891,10 @@ def query = [
 mongoClient.save("books", document, { res ->
   if (res.succeeded()) {
 
-    mongoClient.distinctBatchWithQuery("books", "title", java.lang.String.class.getName(), query, { res2 ->
-      println("Title is : ${res2.result().title}")
+    mongoClient.distinctBatchWithQuery("books", "title", java.lang.String.class.getName(), query).handler({ book ->
+      println("Title is : ${book.title}")
     })
+
   }
 
 })

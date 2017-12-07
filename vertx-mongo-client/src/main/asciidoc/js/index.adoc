@@ -457,27 +457,13 @@ var query = {
   "author" : "J. R. R. Tolkien"
 };
 
-mongoClient.findBatch("book", query, function (res, res_err) {
-
-  if (res_err == null) {
-
-    if ((res === null || res === undefined)) {
-
-      console.log("End of research");
-
-    } else {
-
-      console.log("Found doc: " + JSON.stringify(res));
-
-    }
-
-  } else {
-
-    res_err.printStackTrace();
-
-  }
+mongoClient.findBatch("book", query).exceptionHandler(function (throwable) {
+  throwable.printStackTrace();
+}).endHandler(function (v) {
+  console.log("End of research");
+}).handler(function (doc) {
+  console.log("Found doc: " + JSON.stringify(doc));
 });
-
 
 ----
 
@@ -848,8 +834,8 @@ mongoClient.save("books", document, function (res, res_err) {
 
   if (res_err == null) {
 
-    mongoClient.distinctBatch("books", "title", Java.type("java.lang.String").class.getName(), function (res2, res2_err) {
-      console.log("Title is : " + res2.title);
+    mongoClient.distinctBatch("books", "title", Java.type("java.lang.String").class.getName()).handler(function (book) {
+      console.log("Title is : " + book.title);
     });
 
   } else {
@@ -909,9 +895,10 @@ var query = {
 mongoClient.save("books", document, function (res, res_err) {
   if (res_err == null) {
 
-    mongoClient.distinctBatchWithQuery("books", "title", Java.type("java.lang.String").class.getName(), query, function (res2, res2_err) {
-      console.log("Title is : " + res2.title);
+    mongoClient.distinctBatchWithQuery("books", "title", Java.type("java.lang.String").class.getName(), query).handler(function (book) {
+      console.log("Title is : " + book.title);
     });
+
   }
 
 });
