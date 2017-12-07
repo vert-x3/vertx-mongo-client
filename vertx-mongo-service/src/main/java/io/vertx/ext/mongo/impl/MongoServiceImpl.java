@@ -1,7 +1,5 @@
 package io.vertx.ext.mongo.impl;
 
-import java.util.List;
-
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -18,6 +16,8 @@ import io.vertx.ext.mongo.MongoClientUpdateResult;
 import io.vertx.ext.mongo.MongoService;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
+
+import java.util.List;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -152,23 +152,10 @@ public class MongoServiceImpl implements MongoService {
   }
 
   @Override
-  public MongoService findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
-    client.findBatch(collection, query, resultHandler);
-    return this;
-  }
-
-  @Override
   @Fluent
   public MongoService findWithOptions(String collection, JsonObject query, FindOptions options,
       Handler<AsyncResult<List<JsonObject>>> resultHandler) {
     client.findWithOptions(collection, query, options, resultHandler);
-    return this;
-  }
-
-  @Override
-  public MongoService findBatchWithOptions(String collection, JsonObject query, FindOptions options,
-      Handler<AsyncResult<JsonObject>> resultHandler) {
-    client.findBatchWithOptions(collection, query, options, resultHandler);
     return this;
   }
 
@@ -367,20 +354,6 @@ public class MongoServiceImpl implements MongoService {
   @Override
   public MongoService distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
     client.distinctWithQuery(collection, fieldName, resultClassname, query, resultHandler);
-    return this;
-  }
-
-  @Override
-  @Fluent
-  public MongoService distinctBatch(String collection, String fieldName, String resultClassname,
-      Handler<AsyncResult<JsonObject>> resultHandler) {
-    client.distinctBatch(collection, fieldName, resultClassname, resultHandler);
-    return this;
-  }
-
-  @Override
-  public MongoService distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
-    client.distinctBatchWithQuery(collection, fieldName, resultClassname, query, resultHandler);
     return this;
   }
 

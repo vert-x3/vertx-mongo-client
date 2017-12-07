@@ -1,8 +1,5 @@
 package io.vertx.ext.mongo;
 
-import java.util.List;
-import java.util.UUID;
-
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -10,7 +7,11 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.mongo.impl.MongoClientImpl;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * A Vert.x service used to interact with MongoDB server instances.
@@ -262,10 +263,8 @@ public interface MongoClient {
    *
    * @param collection  the collection
    * @param query  query used to match documents
-   * @param resultHandler  will be provided with each found document
    */
-  @Fluent
-  MongoClient findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+  ReadStream<JsonObject> findBatch(String collection, JsonObject query);
 
   /**
    * Find matching documents in the specified collection, specifying options
@@ -285,10 +284,8 @@ public interface MongoClient {
    * @param collection  the collection
    * @param query  query used to match documents
    * @param options options to configure the find
-   * @param resultHandler  will be provided with each found document
    */
-  @Fluent
-  MongoClient findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler);
+  ReadStream<JsonObject> findBatchWithOptions(String collection, JsonObject query, FindOptions options);
 
   /**
    * Find a single matching document in the specified collection
@@ -588,10 +585,8 @@ public interface MongoClient {
    *
    * @param collection  the collection
    * @param fieldName  the field name
-   * @param resultHandler  will be provided with each found value
    */
-  @Fluent
-  MongoClient distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
+  ReadStream<JsonObject> distinctBatch(String collection, String fieldName, String resultClassname);
 
   /**
    * Gets the distinct values of the specified field name filtered by specified query.
@@ -601,10 +596,8 @@ public interface MongoClient {
    * @param collection  the collection
    * @param fieldName  the field name
    * @param query the query
-   * @param resultHandler  will be provided with each found value
    */
-  @Fluent
-  MongoClient distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+  ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query);
 
   /**
    * Close the client and release its resources

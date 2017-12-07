@@ -460,27 +460,13 @@ query = {
   'author' => "J. R. R. Tolkien"
 }
 
-mongoClient.find_batch("book", query) { |res_err,res|
-
-  if (res_err == nil)
-
-    if (res == nil)
-
-      puts "End of research"
-
-    else
-
-      puts "Found doc: #{JSON.generate(res)}"
-
-    end
-
-  else
-
-    res_err.print_stack_trace()
-
-  end
+mongoClient.find_batch("book", query).exception_handler() { |throwable|
+  throwable.print_stack_trace()
+}.end_handler() { |v|
+  puts "End of research"
+}.handler() { |doc|
+  puts "Found doc: #{JSON.generate(doc)}"
 }
-
 
 ----
 
@@ -851,8 +837,8 @@ mongoClient.save("books", document) { |res_err,res|
 
   if (res_err == nil)
 
-    mongoClient.distinct_batch("books", "title", Java::JavaLang::String::class.get_name()) { |res2_err,res2|
-      puts "Title is : #{res2['title']}"
+    mongoClient.distinct_batch("books", "title", Java::JavaLang::String::class.get_name()).handler() { |book|
+      puts "Title is : #{book['title']}"
     }
 
   else
@@ -912,9 +898,10 @@ query = {
 mongoClient.save("books", document) { |res_err,res|
   if (res_err == nil)
 
-    mongoClient.distinct_batch_with_query("books", "title", Java::JavaLang::String::class.get_name(), query) { |res2_err,res2|
-      puts "Title is : #{res2['title']}"
+    mongoClient.distinct_batch_with_query("books", "title", Java::JavaLang::String::class.get_name(), query).handler() { |book|
+      puts "Title is : #{book['title']}"
     }
+
   end
 
 }

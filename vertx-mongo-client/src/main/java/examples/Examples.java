@@ -259,27 +259,10 @@ public class Examples {
     // will match all Tolkien books
     JsonObject query = new JsonObject().put("author", "J. R. R. Tolkien");
 
-    mongoClient.findBatch("book", query, res -> {
-
-      if (res.succeeded()) {
-
-        if (res.result() == null) {
-
-          System.out.println("End of research");
-
-        } else {
-
-          System.out.println("Found doc: " + res.result().encodePrettily());
-
-        }
-
-      } else {
-
-        res.cause().printStackTrace();
-
-      }
-    });
-
+    mongoClient.findBatch("book", query)
+      .exceptionHandler(throwable -> throwable.printStackTrace())
+      .endHandler(v -> System.out.println("End of research"))
+      .handler(doc -> System.out.println("Found doc: " + doc.encodePrettily()));
   }
 
 
@@ -537,9 +520,8 @@ public class Examples {
 
       if (res.succeeded()) {
 
-        mongoClient.distinctBatch("books", "title", String.class.getName(), res2 -> {
-          System.out.println("Title is : " + res2.result().getString("title"));
-        });
+        mongoClient.distinctBatch("books", "title", String.class.getName())
+          .handler(book -> System.out.println("Title is : " + book.getString("title")));
 
       } else {
         res.cause().printStackTrace();
@@ -576,9 +558,9 @@ public class Examples {
     mongoClient.save("books", document, res -> {
       if (res.succeeded()) {
 
-        mongoClient.distinctBatchWithQuery("books", "title", String.class.getName(), query, res2 -> {
-          System.out.println("Title is : " + res2.result().getString("title"));
-        });
+        mongoClient.distinctBatchWithQuery("books", "title", String.class.getName(), query)
+          .handler(book -> System.out.println("Title is : " + book.getString("title")));
+
       }
 
     });
