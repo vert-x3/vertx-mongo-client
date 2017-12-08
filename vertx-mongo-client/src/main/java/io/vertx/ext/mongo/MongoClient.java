@@ -263,6 +263,7 @@ public interface MongoClient {
    *
    * @param collection  the collection
    * @param query  query used to match documents
+   * @return a {@link ReadStream} emitting found documents
    */
   ReadStream<JsonObject> findBatch(String collection, JsonObject query);
 
@@ -284,6 +285,7 @@ public interface MongoClient {
    * @param collection  the collection
    * @param query  query used to match documents
    * @param options options to configure the find
+   * @return a {@link ReadStream} emitting found documents
    */
   ReadStream<JsonObject> findBatchWithOptions(String collection, JsonObject query, FindOptions options);
 
@@ -585,6 +587,7 @@ public interface MongoClient {
    *
    * @param collection  the collection
    * @param fieldName  the field name
+   * @return a {@link ReadStream} emitting json fragments
    */
   ReadStream<JsonObject> distinctBatch(String collection, String fieldName, String resultClassname);
 
@@ -596,6 +599,7 @@ public interface MongoClient {
    * @param collection  the collection
    * @param fieldName  the field name
    * @param query the query
+   * @return a {@link ReadStream} emitting json fragments
    */
   ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query);
 
