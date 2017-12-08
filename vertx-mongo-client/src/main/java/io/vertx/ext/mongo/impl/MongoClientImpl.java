@@ -691,7 +691,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     Bson bquery = wrap(encodedQuery);
 
     MongoCollection<JsonObject> mongoCollection = getCollection(collection);
-    return mongoCollection.distinct(fieldName, bquery, Class.forName(resultClassname));
+    Class<?> resultClass = this.getClass().getClassLoader().loadClass(resultClassname);
+    return mongoCollection.distinct(fieldName, bquery, resultClass);
   }
 
 

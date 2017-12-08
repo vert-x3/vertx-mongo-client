@@ -66,6 +66,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
               handleException(t);
             } else {
               batchCursor = result;
+              batchCursor.setBatchSize(BATCH_SIZE);
               if (canRead()) {
                 doRead();
               }
@@ -118,7 +119,6 @@ class MongoIterableStream implements ReadStream<JsonObject> {
       context.runOnContext(v -> emitQueued());
       return;
     }
-    batchCursor.setBatchSize(BATCH_SIZE);
     context.<List<JsonObject>>executeBlocking(fut -> {
       batchCursor.next((result, t) -> {
         if (t != null) {
