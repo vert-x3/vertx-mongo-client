@@ -24,6 +24,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
   private final Context context;
   private final MongoIterable<JsonObject> mongoIterable;
 
+  // All the following fields are guarded by this instance
   private AsyncBatchCursor<JsonObject> batchCursor;
   private Deque<JsonObject> queue;
   private Handler<JsonObject> dataHandler;
@@ -45,6 +46,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     return this;
   }
 
+  // Always called from a synchronized method or block
   private void checkClosed() {
     if (closed) {
       throw new IllegalArgumentException("Stream is closed");
@@ -84,6 +86,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     return this;
   }
 
+  // Always called from a synchronized method or block
   private boolean canRead() {
     return !paused && !closed;
   }
@@ -107,6 +110,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     return this;
   }
 
+  // Always called from a synchronized method or block
   private synchronized void doRead() {
     if (readInProgress) {
       return;
@@ -147,12 +151,14 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     });
   }
 
+  // Always called from a synchronized method or block
   private void handleException(Throwable cause) {
     if (exceptionHandler != null) {
       exceptionHandler.handle(cause);
     }
   }
 
+  // Always called from a synchronized method or block
   private synchronized void emitQueued() {
     while (!queue.isEmpty() && canRead()) {
       dataHandler.handle(queue.remove());
@@ -169,6 +175,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     return this;
   }
 
+  // Always called from a synchronized method or block
   private void close() {
     closed = true;
     AtomicReference<AsyncBatchCursor> cursorRef = new AtomicReference<>();
