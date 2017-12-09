@@ -248,18 +248,28 @@
  * `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
  * `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
  *
- * === Find in batches
+ * === Finding documents in batches
  *
  * When dealing with large data sets, it is not advised to use the
  * {@link io.vertx.ext.mongo.MongoClient#find} and
  * {@link io.vertx.ext.mongo.MongoClient#findWithOptions} methods.
  * In order to avoid inflating the whole response into memory, use {@link io.vertx.ext.mongo.MongoClient#findBatch}:
  *
+ * [source,$lang]
  * ----
  * {@link examples.Examples#findBatch}
  * ----
  *
  * The matching documents are emitted one by one by the {@link io.vertx.core.streams.ReadStream} handler.
+ *
+ * {@link io.vertx.ext.mongo.FindOptions} has an extra parameter `batchSize` which you can use to set the number of documents to load at once:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#findBatchWithOptions}
+ * ----
+ *
+ * By default, `batchSize` is set to 20.
  *
  * === Finding a single document
  *
@@ -425,6 +435,7 @@
  *
  * *Specific driver configuration options*
  *
+ * [source,js]
  * ----
  * {
  *   // Single Cluster Settings

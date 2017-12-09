@@ -365,13 +365,14 @@ This has the following fields:
 `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
 `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
 
-=== Find in batches
+=== Finding documents in batches
 
 When dealing with large data sets, it is not advised to use the
 `link:../../yardoc/VertxMongo/MongoClient.html#find-instance_method[find]` and
 `link:../../yardoc/VertxMongo/MongoClient.html#find_with_options-instance_method[findWithOptions]` methods.
 In order to avoid inflating the whole response into memory, use `link:../../yardoc/VertxMongo/MongoClient.html#find_batch-instance_method[findBatch]`:
 
+[source,ruby]
 ----
 require 'json'
 # will match all Tolkien books
@@ -389,6 +390,30 @@ mongoClient.find_batch("book", query).exception_handler() { |throwable|
 ----
 
 The matching documents are emitted one by one by the `link:../../yardoc/Vertx/ReadStream.html[ReadStream]` handler.
+
+`link:../dataobjects.html#FindOptions[FindOptions]` has an extra parameter `batchSize` which you can use to set the number of documents to load at once:
+
+[source,ruby]
+----
+require 'json'
+# will match all Tolkien books
+query = {
+  'author' => "J. R. R. Tolkien"
+}
+options = {
+  'batchSize' => 100
+}
+mongoClient.find_batch_with_options("book", query, options).exception_handler() { |throwable|
+  throwable.print_stack_trace()
+}.end_handler() { |v|
+  puts "End of research"
+}.handler() { |doc|
+  puts "Found doc: #{JSON.generate(doc)}"
+}
+
+----
+
+By default, `batchSize` is set to 20.
 
 === Finding a single document
 
@@ -761,6 +786,7 @@ For more information on the format of the connection string please consult the d
 
 *Specific driver configuration options*
 
+[source,js]
 ----
 {
   // Single Cluster Settings
