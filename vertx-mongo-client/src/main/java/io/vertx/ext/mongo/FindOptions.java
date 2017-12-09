@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-@DataObject
+@DataObject(generateConverter = true)
 public class FindOptions {
 
   /**
@@ -21,17 +21,26 @@ public class FindOptions {
    */
   public static final int DEFAULT_SKIP = 0;
 
+  /**
+   * The default value of batchSize = 10.
+   */
+  public static final int DEFAULT_BATCH_SIZE = 20;
+
   private JsonObject fields;
   private JsonObject sort;
   private int limit;
   private int skip;
+  private int batchSize;
 
   /**
    * Default constructor
    */
   public FindOptions() {
+    this.fields = new JsonObject();
+    this.sort = new JsonObject();
     this.limit = DEFAULT_LIMIT;
     this.skip = DEFAULT_SKIP;
+    this.batchSize = DEFAULT_BATCH_SIZE;
   }
 
   /**
@@ -40,10 +49,11 @@ public class FindOptions {
    * @param options  the one to copy
    */
   public FindOptions(FindOptions options) {
-    this.fields = options.fields;
-    this.sort = options.sort;
+    this.fields = options.fields != null ? options.fields.copy() : new JsonObject();
+    this.sort = options.sort != null ? options.sort.copy() : new JsonObject();
     this.limit = options.limit;
     this.skip = options.skip;
+    this.batchSize = options.batchSize;
   }
 
   /**
@@ -52,10 +62,8 @@ public class FindOptions {
    * @param options  the JSON
    */
   public FindOptions(JsonObject options) {
-    this.fields = options.getJsonObject("fields");
-    this.sort = options.getJsonObject("sort");
-    this.limit = options.getInteger("limit", DEFAULT_LIMIT);
-    this.skip = options.getInteger("skip", DEFAULT_SKIP);
+    this();
+    FindOptionsConverter.fromJson(options, this);
   }
 
   /**
@@ -65,19 +73,7 @@ public class FindOptions {
    */
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    if (fields != null) {
-      json.put("fields", fields);
-    }
-    if (sort != null) {
-      json.put("sort", sort);
-    }
-    if (limit != DEFAULT_LIMIT) {
-      json.put("limit", limit);
-    }
-    if (skip != DEFAULT_SKIP) {
-      json.put("skip", skip);
-    }
-
+    FindOptionsConverter.toJson(this, json);
     return json;
   }
 
@@ -160,19 +156,36 @@ public class FindOptions {
     return this;
   }
 
+  /**
+   * @return the batch size for methods loading found data in batches
+   */
+  public int getBatchSize() {
+    return batchSize;
+  }
+
+  /**
+   * Set the batch size for methods loading found data in batches.
+   *
+   * @param batchSize the number of documents in a batch
+   * @return reference to this, for fluency
+   */
+  public FindOptions setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
+    return this;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    FindOptions options = (FindOptions) o;
+    FindOptions that = (FindOptions) o;
 
-    if (limit != options.limit) return false;
-    if (skip != options.skip) return false;
-    if (fields != null ? !fields.equals(options.fields) : options.fields != null) return false;
-    if (sort != null ? !sort.equals(options.sort) : options.sort != null) return false;
-
-    return true;
+    if (limit != that.limit) return false;
+    if (skip != that.skip) return false;
+    if (batchSize != that.batchSize) return false;
+    if (fields != null ? !fields.equals(that.fields) : that.fields != null) return false;
+    return sort != null ? sort.equals(that.sort) : that.sort == null;
   }
 
   @Override
@@ -181,6 +194,7 @@ public class FindOptions {
     result = 31 * result + (sort != null ? sort.hashCode() : 0);
     result = 31 * result + limit;
     result = 31 * result + skip;
+    result = 31 * result + batchSize;
     return result;
   }
 }

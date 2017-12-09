@@ -237,6 +237,12 @@ public interface MongoService extends MongoClient {
   }
 
   @Override
+  @GenIgnore
+  default ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, int batchSize) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   @ProxyIgnore
   void close();
 }
