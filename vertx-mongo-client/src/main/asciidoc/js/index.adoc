@@ -363,13 +363,14 @@ This has the following fields:
 `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
 `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
 
-=== Find in batches
+=== Finding documents in batches
 
 When dealing with large data sets, it is not advised to use the
 `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#find[find]` and
 `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#findWithOptions[findWithOptions]` methods.
 In order to avoid inflating the whole response into memory, use `link:../../jsdoc/module-vertx-mongo-js_mongo_client-MongoClient.html#findBatch[findBatch]`:
 
+[source,js]
 ----
 // will match all Tolkien books
 var query = {
@@ -386,6 +387,29 @@ mongoClient.findBatch("book", query).exceptionHandler(function (throwable) {
 ----
 
 The matching documents are emitted one by one by the `link:../../jsdoc/module-vertx-js_read_stream-ReadStream.html[ReadStream]` handler.
+
+`link:../dataobjects.html#FindOptions[FindOptions]` has an extra parameter `batchSize` which you can use to set the number of documents to load at once:
+
+[source,js]
+----
+// will match all Tolkien books
+var query = {
+  "author" : "J. R. R. Tolkien"
+};
+var options = {
+  "batchSize" : 100
+};
+mongoClient.findBatchWithOptions("book", query, options).exceptionHandler(function (throwable) {
+  throwable.printStackTrace();
+}).endHandler(function (v) {
+  console.log("End of research");
+}).handler(function (doc) {
+  console.log("Found doc: " + JSON.stringify(doc));
+});
+
+----
+
+By default, `batchSize` is set to 20.
 
 === Finding a single document
 
@@ -758,6 +782,7 @@ For more information on the format of the connection string please consult the d
 
 *Specific driver configuration options*
 
+[source,js]
 ----
 {
   // Single Cluster Settings

@@ -359,13 +359,14 @@ This has the following fields:
 `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
 `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
 
-=== Find in batches
+=== Finding documents in batches
 
 When dealing with large data sets, it is not advised to use the
 `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#find-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[find]` and
 `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#findWithOptions-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.ext.mongo.FindOptions-io.vertx.core.Handler-[findWithOptions]` methods.
 In order to avoid inflating the whole response into memory, use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#findBatch-java.lang.String-io.vertx.core.json.JsonObject-[findBatch]`:
 
+[source,groovy]
 ----
 // will match all Tolkien books
 def query = [
@@ -382,6 +383,29 @@ mongoClient.findBatch("book", query).exceptionHandler({ throwable ->
 ----
 
 The matching documents are emitted one by one by the `link:../../apidocs/io/vertx/core/streams/ReadStream.html[ReadStream]` handler.
+
+`link:../../apidocs/io/vertx/ext/mongo/FindOptions.html[FindOptions]` has an extra parameter `batchSize` which you can use to set the number of documents to load at once:
+
+[source,groovy]
+----
+// will match all Tolkien books
+def query = [
+  author:"J. R. R. Tolkien"
+]
+def options = [
+  batchSize:100
+]
+mongoClient.findBatchWithOptions("book", query, options).exceptionHandler({ throwable ->
+  throwable.printStackTrace()
+}).endHandler({ v ->
+  println("End of research")
+}).handler({ doc ->
+  println("Found doc: ${groovy.json.JsonOutput.toJson(doc)}")
+})
+
+----
+
+By default, `batchSize` is set to 20.
 
 === Finding a single document
 
@@ -754,6 +778,7 @@ For more information on the format of the connection string please consult the d
 
 *Specific driver configuration options*
 
+[source,js]
 ----
 {
   // Single Cluster Settings

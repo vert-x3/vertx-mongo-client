@@ -19,6 +19,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
+import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
 import org.bson.types.ObjectId;
@@ -180,6 +181,17 @@ public class Examples {
     JsonObject query = new JsonObject()
       .put("author", "J. R. R. Tolkien");
     mongoClient.findBatch("book", query)
+      .exceptionHandler(throwable -> throwable.printStackTrace())
+      .endHandler(v -> System.out.println("End of research"))
+      .handler(doc -> System.out.println("Found doc: " + doc.encodePrettily()));
+  }
+
+  public void findBatchWithOptions(MongoClient mongoClient) {
+    // will match all Tolkien books
+    JsonObject query = new JsonObject()
+      .put("author", "J. R. R. Tolkien");
+    FindOptions options = new FindOptions().setBatchSize(100);
+    mongoClient.findBatchWithOptions("book", query, options)
       .exceptionHandler(throwable -> throwable.printStackTrace())
       .endHandler(v -> System.out.println("End of research"))
       .handler(doc -> System.out.println("Found doc: " + doc.encodePrettily()));
