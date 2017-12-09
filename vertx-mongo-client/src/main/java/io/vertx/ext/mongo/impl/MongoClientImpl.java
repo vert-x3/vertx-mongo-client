@@ -271,7 +271,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     FindIterable<JsonObject> view = doFind(collection, query, options);
-    return new MongoIterableStream(vertx.getOrCreateContext(), view);
+    return new MongoIterableStream(vertx.getOrCreateContext(), view, options.getBatchSize());
   }
 
   @Override
@@ -653,10 +653,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   @Override
   public ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query) {
+    return distinctBatchWithQuery(collection, fieldName, resultClassname, query, FindOptions.DEFAULT_BATCH_SIZE);
+  }
+
+  @Override
+  public ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, int batchSize) {
     try {
       MongoIterable<JsonObject> distinctValues = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query)
         .map(value -> new JsonObject().put(fieldName, value));
-      return new MongoIterableStream(vertx.getOrCreateContext(), distinctValues);
+      return new MongoIterableStream(vertx.getOrCreateContext(), distinctValues, batchSize);
     } catch (ClassNotFoundException e) {
       return new FailedStream(e);
     }

@@ -604,6 +604,19 @@ public interface MongoClient {
   ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query);
 
   /**
+   * Gets the distinct values of the specified field name filtered by specified query.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   *
+   * @param collection the collection
+   * @param fieldName  the field name
+   * @param query      the query
+   * @param batchSize  the number of documents to load in a batch
+   * @return a {@link ReadStream} emitting json fragments
+   */
+  ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, int batchSize);
+
+  /**
    * Close the client and release its resources
    */
   void close();

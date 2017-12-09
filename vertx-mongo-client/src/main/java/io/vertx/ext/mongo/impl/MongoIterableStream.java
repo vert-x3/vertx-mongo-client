@@ -19,10 +19,9 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 class MongoIterableStream implements ReadStream<JsonObject> {
 
-  private static final int BATCH_SIZE = 10;
-
   private final Context context;
   private final MongoIterable<JsonObject> mongoIterable;
+  private final int batchSize;
 
   // All the following fields are guarded by this instance
   private AsyncBatchCursor<JsonObject> batchCursor;
@@ -34,9 +33,10 @@ class MongoIterableStream implements ReadStream<JsonObject> {
   private boolean readInProgress;
   private boolean closed;
 
-  MongoIterableStream(Context context, MongoIterable<JsonObject> mongoIterable) {
+  MongoIterableStream(Context context, MongoIterable<JsonObject> mongoIterable, int batchSize) {
     this.context = context;
     this.mongoIterable = mongoIterable;
+    this.batchSize = batchSize;
   }
 
   @Override
@@ -68,7 +68,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
               handleException(t);
             } else {
               batchCursor = result;
-              batchCursor.setBatchSize(BATCH_SIZE);
+              batchCursor.setBatchSize(batchSize);
               if (canRead()) {
                 doRead();
               }
@@ -117,7 +117,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     }
     readInProgress = true;
     if (queue == null) {
-      queue = new ArrayDeque<>(BATCH_SIZE);
+      queue = new ArrayDeque<>(batchSize);
     }
     if (!queue.isEmpty()) {
       context.runOnContext(v -> emitQueued());
