@@ -103,6 +103,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private final Vertx vertx;
   protected com.mongodb.async.client.MongoClient mongo;
+
   protected final MongoHolder holder;
   protected boolean useObjectId;
 
