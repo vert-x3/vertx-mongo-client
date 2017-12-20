@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Red Hat, Inc.
+ * Copyright (c) 2014 Red Hat, Inc. and others
  *
  * Red Hat licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -17,6 +17,7 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
 
 /**
  * Converter for {@link io.vertx.ext.mongo.FindOptions}.
@@ -27,19 +28,19 @@ public class FindOptionsConverter {
 
   public static void fromJson(JsonObject json, FindOptions obj) {
     if (json.getValue("batchSize") instanceof Number) {
-      obj.setBatchSize(((Number) json.getValue("batchSize")).intValue());
+      obj.setBatchSize(((Number)json.getValue("batchSize")).intValue());
     }
     if (json.getValue("fields") instanceof JsonObject) {
-      obj.setFields(((JsonObject) json.getValue("fields")).copy());
+      obj.setFields(((JsonObject)json.getValue("fields")).copy());
     }
     if (json.getValue("limit") instanceof Number) {
-      obj.setLimit(((Number) json.getValue("limit")).intValue());
+      obj.setLimit(((Number)json.getValue("limit")).intValue());
     }
     if (json.getValue("skip") instanceof Number) {
-      obj.setSkip(((Number) json.getValue("skip")).intValue());
+      obj.setSkip(((Number)json.getValue("skip")).intValue());
     }
     if (json.getValue("sort") instanceof JsonObject) {
-      obj.setSort(((JsonObject) json.getValue("sort")).copy());
+      obj.setSort(((JsonObject)json.getValue("sort")).copy());
     }
   }
 

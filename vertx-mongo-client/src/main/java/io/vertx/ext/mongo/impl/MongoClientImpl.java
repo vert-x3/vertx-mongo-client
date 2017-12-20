@@ -99,6 +99,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private final Vertx vertx;
   protected com.mongodb.async.client.MongoClient mongo;
+
   protected final MongoHolder holder;
   protected boolean useObjectId;
 
@@ -478,7 +479,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     for (BulkOperation bulkOperation : operations) {
       switch (bulkOperation.getType()) {
       case DELETE:
-        Bson bsonFilter = toBson(bulkOperation.getFilter());
+        Bson bsonFilter = toBson(encodeKeyWhenUseObjectId(bulkOperation.getFilter()));
         if (bulkOperation.isMulti()) {
           result.add(new DeleteManyModel<>(bsonFilter));
         } else {
@@ -489,11 +490,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
         result.add(new InsertOneModel<>(encodeKeyWhenUseObjectId(bulkOperation.getDocument())));
         break;
       case REPLACE:
-        result.add(new ReplaceOneModel<>(toBson(bulkOperation.getFilter()), bulkOperation.getDocument(),
+        result.add(new ReplaceOneModel<>(toBson(encodeKeyWhenUseObjectId(bulkOperation.getFilter())), bulkOperation.getDocument(),
             new com.mongodb.client.model.UpdateOptions().upsert(bulkOperation.isUpsert())));
         break;
       case UPDATE:
-        Bson filter = toBson(bulkOperation.getFilter());
+        Bson filter = toBson(encodeKeyWhenUseObjectId(bulkOperation.getFilter()));
         Bson document = toBson(encodeKeyWhenUseObjectId(bulkOperation.getDocument()));
         com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
             .upsert(bulkOperation.isUpsert());

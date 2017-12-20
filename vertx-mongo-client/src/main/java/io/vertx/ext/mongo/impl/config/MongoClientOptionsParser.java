@@ -14,6 +14,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import org.bson.codecs.BooleanCodec;
+import org.bson.codecs.BsonDocumentCodec;
 import org.bson.codecs.DoubleCodec;
 import org.bson.codecs.IntegerCodec;
 import org.bson.codecs.LongCodec;
@@ -32,7 +33,7 @@ public class MongoClientOptionsParser {
   private final MongoClientSettings settings;
   private final String database;
   private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
-          new BooleanCodec(), new DoubleCodec(), new LongCodec());
+          new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec());
 
   public MongoClientOptionsParser(JsonObject config) {
     Objects.requireNonNull(config);
