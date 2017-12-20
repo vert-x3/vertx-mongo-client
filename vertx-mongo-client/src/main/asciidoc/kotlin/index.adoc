@@ -53,9 +53,7 @@ The simplest way to do this is as follows:
 
 [source,kotlin]
 ----
-
 var client = MongoClient.createShared(vertx, config)
-
 
 ----
 
@@ -70,9 +68,7 @@ You can create a client specifying a pool source name as follows
 
 [source,kotlin]
 ----
-
 var client = MongoClient.createShared(vertx, config, "MyPoolName")
-
 
 ----
 
@@ -96,9 +92,7 @@ In that case you can use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html
 
 [source,kotlin]
 ----
-
 var client = MongoClient.createNonShared(vertx, config)
-
 
 ----
 
@@ -114,8 +108,8 @@ The client API is represented by `link:../../apidocs/io/vertx/ext/mongo/MongoCli
 
 To save a document you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#save-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[save]`.
 
-If the document has no `\_id` field, it is inserted, otherwise, it is _upserted_. Upserted means it is inserted
-if it doesn't already exist, otherwise it is updated.
+If the document has no `\_id` field, it is inserted, otherwise, it is __upserted__.
+Upserted means it is inserted if it doesn't already exist, otherwise it is updated.
 
 If the document is inserted and has no id, then the id field generated will be returned to the result handler.
 
@@ -123,26 +117,18 @@ Here's an example of saving a document and getting the id back
 
 [source,kotlin]
 ----
-
 // Document has no id
-
 var document = json {
   obj("title" to "The Hobbit")
 }
-
 mongoClient.save("books", document, { res ->
-
   if (res.succeeded()) {
-
     var id = res.result()
     println("Saved book with id ${id}")
-
   } else {
     res.cause().printStackTrace()
   }
-
 })
-
 
 ----
 
@@ -150,28 +136,20 @@ And here's an example of saving a document which already has an id.
 
 [source,kotlin]
 ----
-
 // Document has an id already
-
 var document = json {
   obj(
     "title" to "The Hobbit",
     "_id" to "123244"
   )
 }
-
 mongoClient.save("books", document, { res ->
-
   if (res.succeeded()) {
-
     // ...
-
   } else {
     res.cause().printStackTrace()
   }
-
 })
-
 
 ----
 
@@ -183,66 +161,50 @@ If the document is inserted and has no id, then the id field generated will be r
 
 [source,kotlin]
 ----
-
 // Document has an id already
-
 var document = json {
   obj("title" to "The Hobbit")
 }
-
 mongoClient.insert("books", document, { res ->
-
   if (res.succeeded()) {
-
     var id = res.result()
     println("Inserted book with id ${id}")
-
   } else {
     res.cause().printStackTrace()
   }
-
 })
-
 
 ----
 
-If a document is inserted with an id, and a document with that id already eists, the insert will fail:
+If a document is inserted with an id, and a document with that id already exists, the insert will fail:
 
 [source,kotlin]
 ----
-
 // Document has an id already
-
 var document = json {
   obj(
     "title" to "The Hobbit",
     "_id" to "123244"
   )
 }
-
 mongoClient.insert("books", document, { res ->
-
   if (res.succeeded()) {
-
     //...
-
   } else {
-
     // Will fail if the book with that id already exists.
   }
-
 })
-
 
 ----
 
 === Updating documents
 
-To update a documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#update-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[update]`.
+To update a documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#updateCollection-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[updateCollection]`.
 
-This updates one or multiple documents in a collection. The json object that is passed in the `update`
-parameter must contain http://docs.mongodb.org/manual/reference/operator/update-field/[Update Operators] and determines
-how the object is updated.
+This updates one or multiple documents in a collection.
+The json object that is passed in the `updateCollection` parameter must contain
+http://docs.mongodb.org/manual/reference/operator/update-field/[Update Operators]
+and determines how the object is updated.
 
 The json object specified in the query parameter determines which documents in the collection will be updated.
 
@@ -250,34 +212,26 @@ Here's an example of updating a document in the books collection:
 
 [source,kotlin]
 ----
-
 // Match any documents with title=The Hobbit
 var query = json {
   obj("title" to "The Hobbit")
 }
-
 // Set the author field
 var update = json {
   obj("\$$set" to obj("author" to "J. R. R. Tolkien"))
 }
-
-mongoClient.update("books", query, update, { res ->
-
+mongoClient.updateCollection("books", query, update, { res ->
   if (res.succeeded()) {
-
     println("Book updated !")
-
   } else {
-
     res.cause().printStackTrace()
   }
-
 })
-
 
 ----
 
-To specify if the update should upsert or update multiple documents, use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#updateWithOptions-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.ext.mongo.UpdateOptions-io.vertx.core.Handler-[updateWithOptions]`
+To specify if the update should upsert or update multiple documents, use
+`link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#updateCollectionWithOptions-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.ext.mongo.UpdateOptions-io.vertx.core.Handler-[updateCollectionWithOptions]`
 and pass in an instance of `link:../../apidocs/io/vertx/ext/mongo/UpdateOptions.html[UpdateOptions]`.
 
 This has the following fields:
@@ -288,73 +242,53 @@ This has the following fields:
 
 [source,kotlin]
 ----
-
 // Match any documents with title=The Hobbit
 var query = json {
   obj("title" to "The Hobbit")
 }
-
 // Set the author field
 var update = json {
   obj("\$$set" to obj("author" to "J. R. R. Tolkien"))
 }
-
 var options = UpdateOptions(
   multi = true)
-
-mongoClient.updateWithOptions("books", query, update, options, { res ->
-
+mongoClient.updateCollectionWithOptions("books", query, update, options, { res ->
   if (res.succeeded()) {
-
     println("Book updated !")
-
   } else {
-
     res.cause().printStackTrace()
   }
-
 })
-
 
 ----
 
 === Replacing documents
 
-To replace documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#replace-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[replace]`.
+To replace documents you use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#replaceDocuments-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[replaceDocuments]`.
 
-This is similar to the update operation, however it does not take any update operators like `update`.
+This is similar to the update operation, however it does not take any operator.
 Instead it replaces the entire document with the one provided.
 
 Here's an example of replacing a document in the books collection
 
 [source,kotlin]
 ----
-
 var query = json {
   obj("title" to "The Hobbit")
 }
-
 var replace = json {
   obj(
     "title" to "The Lord of the Rings",
     "author" to "J. R. R. Tolkien"
   )
 }
-
-mongoClient.replace("books", query, replace, { res ->
-
+mongoClient.replaceDocuments("books", query, replace, { res ->
   if (res.succeeded()) {
-
     println("Book replaced !")
-
   } else {
-
     res.cause().printStackTrace()
-
   }
-
 })
-
 
 ----
 
@@ -362,12 +296,13 @@ mongoClient.replace("books", query, replace, { res ->
 
 To execute multiple insert, update, replace, or delete operations at once, use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#bulkWrite-java.lang.String-java.util.List-io.vertx.core.Handler-[bulkWrite]`.
 
-You can pass a list of `link:../../apidocs/io/vertx/ext/mongo/BulkOperation.html[BulkOperations]`, with each working similiar to the matching single operations.
+You can pass a list of `link:../../apidocs/io/vertx/ext/mongo/BulkOperation.html[BulkOperations]`, with each working similar to the matching single operation.
 You can pass as many operations, even of the same type, as you wish.
 
 To specify if the bulk operation should be executed in order, and with what write option, use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#bulkWriteWithOptions-java.lang.String-java.util.List-io.vertx.ext.mongo.BulkWriteOptions-io.vertx.core.Handler-[bulkWriteWithOptions]`
 and pass an instance of `link:../../apidocs/io/vertx/ext/mongo/BulkWriteOptions.html[BulkWriteOptions]`.
-For more explanation what ordered means, see https://docs.mongodb.com/manual/reference/method/db.collection.bulkWrite/#execution-of-operations
+For more explanation what ordered means, see
+https://docs.mongodb.com/manual/reference/method/db.collection.bulkWrite/#execution-of-operations[Execution of Operations].
 
 === Finding documents
 
@@ -379,30 +314,19 @@ Here's a simple example with an empty query that will match all books:
 
 [source,kotlin]
 ----
-
 // empty query = match any
 var query = json {
   obj()
 }
-
 mongoClient.find("books", query, { res ->
-
   if (res.succeeded()) {
-
     for (json in res.result()) {
-
       println(json.toString())
-
     }
-
   } else {
-
     res.cause().printStackTrace()
-
   }
-
 })
-
 
 ----
 
@@ -410,30 +334,19 @@ Here's another example that will match all books by Tolkien:
 
 [source,kotlin]
 ----
-
 // will match all Tolkien books
 var query = json {
   obj("author" to "J. R. R. Tolkien")
 }
-
 mongoClient.find("books", query, { res ->
-
   if (res.succeeded()) {
-
     for (json in res.result()) {
-
       println(json.toString())
-
     }
-
   } else {
-
     res.cause().printStackTrace()
-
   }
-
 })
-
 
 ----
 
@@ -449,38 +362,52 @@ This has the following fields:
 `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
 `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
 
-----
+=== Finding documents in batches
 
+When dealing with large data sets, it is not advised to use the
+`link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#find-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[find]` and
+`link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#findWithOptions-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.ext.mongo.FindOptions-io.vertx.core.Handler-[findWithOptions]` methods.
+In order to avoid inflating the whole response into memory, use `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#findBatch-java.lang.String-io.vertx.core.json.JsonObject-[findBatch]`:
+
+[source,kotlin]
+----
 // will match all Tolkien books
 var query = json {
   obj("author" to "J. R. R. Tolkien")
 }
-
-mongoClient.findBatch("book", query, { res ->
-
-  if (res.succeeded()) {
-
-    if (res.result() == null) {
-
-      println("End of research")
-
-    } else {
-
-      println("Found doc: ${res.result().toString()}")
-
-    }
-
-  } else {
-
-    res.cause().printStackTrace()
-
-  }
+mongoClient.findBatch("book", query).exceptionHandler({ throwable ->
+  throwable.printStackTrace()
+}).endHandler({ v ->
+  println("End of research")
+}).handler({ doc ->
+  println("Found doc: ${doc.toString()}")
 })
-
 
 ----
 
-The matching documents are returned unitary in the result handler.
+The matching documents are emitted one by one by the `link:../../apidocs/io/vertx/core/streams/ReadStream.html[ReadStream]` handler.
+
+`link:../../apidocs/io/vertx/ext/mongo/FindOptions.html[FindOptions]` has an extra parameter `batchSize` which you can use to set the number of documents to load at once:
+
+[source,kotlin]
+----
+// will match all Tolkien books
+var query = json {
+  obj("author" to "J. R. R. Tolkien")
+}
+var options = FindOptions(
+  batchSize = 100)
+mongoClient.findBatchWithOptions("book", query, options).exceptionHandler({ throwable ->
+  throwable.printStackTrace()
+}).endHandler({ v ->
+  println("End of research")
+}).handler({ doc ->
+  println("Found doc: ${doc.toString()}")
+})
+
+----
+
+By default, `batchSize` is set to 20.
 
 === Finding a single document
 
@@ -498,24 +425,16 @@ Here's an example of removing all Tolkien books:
 
 [source,kotlin]
 ----
-
 var query = json {
   obj("author" to "J. R. R. Tolkien")
 }
-
-mongoClient.remove("books", query, { res ->
-
+mongoClient.removeDocuments("books", query, { res ->
   if (res.succeeded()) {
-
     println("Never much liked Tolkien stuff!")
-
   } else {
-
     res.cause().printStackTrace()
-
   }
 })
-
 
 ----
 
@@ -533,24 +452,16 @@ Here's an example that counts the number of Tolkien books. The number is passed 
 
 [source,kotlin]
 ----
-
 var query = json {
   obj("author" to "J. R. R. Tolkien")
 }
-
 mongoClient.count("books", query, { res ->
-
   if (res.succeeded()) {
-
     var num = res.result()
-
   } else {
-
     res.cause().printStackTrace()
-
   }
 })
-
 
 ----
 
@@ -562,20 +473,13 @@ To get a list of all collections you can use `link:../../apidocs/io/vertx/ext/mo
 
 [source,kotlin]
 ----
-
 mongoClient.getCollections({ res ->
-
   if (res.succeeded()) {
-
     var collections = res.result()
-
   } else {
-
     res.cause().printStackTrace()
-
   }
 })
-
 
 ----
 
@@ -583,20 +487,13 @@ To create a new collection you can use `link:../../apidocs/io/vertx/ext/mongo/Mo
 
 [source,kotlin]
 ----
-
 mongoClient.createCollection("mynewcollectionr", { res ->
-
   if (res.succeeded()) {
-
     // Created ok!
-
   } else {
-
     res.cause().printStackTrace()
-
   }
 })
-
 
 ----
 
@@ -606,20 +503,13 @@ NOTE: Dropping a collection will delete all documents within it!
 
 [source,kotlin]
 ----
-
 mongoClient.dropCollection("mynewcollectionr", { res ->
-
   if (res.succeeded()) {
-
     // Dropped ok!
-
   } else {
-
     res.cause().printStackTrace()
-
   }
 })
-
 
 ----
 
@@ -628,7 +518,7 @@ mongoClient.dropCollection("mynewcollectionr", { res ->
 
 You can run arbitrary MongoDB commands with `link:../../apidocs/io/vertx/ext/mongo/MongoClient.html#runCommand-java.lang.String-io.vertx.core.json.JsonObject-io.vertx.core.Handler-[runCommand]`.
 
-Commands can be used to run more advanced mongoDB features, such as using MapReduce.
+Commands can be used to run more advanced MongoDB features, such as using MapReduce.
 For more information see the mongo docs for supported http://docs.mongodb.org/manual/reference/command[Commands].
 
 Here's an example of running an aggregate command. Note that the command name must be specified as a parameter
@@ -638,14 +528,12 @@ of the entries in the JSON is the command name it must be specified as a paramet
 
 [source,kotlin]
 ----
-
 var command = json {
   obj(
     "aggregate" to "collection_name",
     "pipeline" to array()
   )
 }
-
 mongoClient.runCommand("aggregate", command, { res ->
   if (res.succeeded()) {
     var resArr = res.result().getJsonArray("result")
@@ -655,49 +543,39 @@ mongoClient.runCommand("aggregate", command, { res ->
   }
 })
 
-
 ----
 
 === MongoDB Extended JSON support
 
-For now, only date, oid and binary types are supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
+For now, only `date`, `oid` and `binary` types are supported
+(see http://docs.mongodb.org/manual/reference/mongodb-extended-json[MongoDB Extended JSON]).
 
-Here's an example of inserting a document with a date field
+Here's an example of inserting a document with a `date` field:
 
 [source,kotlin]
 ----
-
 var document = json {
   obj(
     "title" to "The Hobbit",
     "publicationDate" to obj("\$$date" to "1937-09-21T00:00:00+00:00")
   )
 }
-
 mongoService.save("publishedBooks", document, { res ->
-
   if (res.succeeded()) {
-
     var id = res.result()
-
     mongoService.findOne("publishedBooks", json {
       obj("_id" to id)
     }, null, { res2 ->
       if (res2.succeeded()) {
-
         println("To retrieve ISO-8601 date : ${res2.result().getJsonObject("publicationDate").getString("\$$date")}")
-
       } else {
         res2.cause().printStackTrace()
       }
     })
-
   } else {
     res.cause().printStackTrace()
   }
-
 })
-
 
 ----
 
@@ -706,31 +584,23 @@ Here's an example (in Java) of inserting a document with a binary field and read
 [source,kotlin]
 ----
 byte[] binaryObject = new byte[40];
-
 JsonObject document = new JsonObject()
-        .put("name", "Alan Turing")
-        .put("binaryStuff", new JsonObject().put("$binary", binaryObject));
-
+  .put("name", "Alan Turing")
+  .put("binaryStuff", new JsonObject().put("$binary", binaryObject));
 mongoService.save("smartPeople", document, res -> {
-
   if (res.succeeded()) {
-
     String id = res.result();
-
     mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
-      if(res2.succeeded()) {
-
+      if (res2.succeeded()) {
         byte[] reconstitutedBinaryObject = res2.result().getJsonObject("binaryStuff").getBinary("$binary");
         //This could now be de-serialized into an object in real life
       } else {
         res2.cause().printStackTrace();
       }
     });
-
   } else {
     res.cause().printStackTrace();
   }
-
 });
 ----
 
@@ -738,81 +608,66 @@ Here's an example of inserting a base 64 encoded string, typing it as binary a b
 
 [source,kotlin]
 ----
-
 //This could be a the byte contents of a pdf file, etc converted to base 64
 var base64EncodedString = "a2FpbHVhIGlzIHRoZSAjMSBiZWFjaCBpbiB0aGUgd29ybGQ="
-
 var document = json {
   obj(
     "name" to "Alan Turing",
     "binaryStuff" to obj("\$$binary" to base64EncodedString)
   )
 }
-
 mongoService.save("smartPeople", document, { res ->
-
   if (res.succeeded()) {
-
     var id = res.result()
-
     mongoService.findOne("smartPeople", json {
       obj("_id" to id)
     }, null, { res2 ->
       if (res2.succeeded()) {
-
         var reconstitutedBase64EncodedString = res2.result().getJsonObject("binaryStuff").getString("\$$binary")
         //This could now converted back to bytes from the base 64 string
       } else {
         res2.cause().printStackTrace()
       }
     })
-
   } else {
     res.cause().printStackTrace()
   }
-
 })
-
 
 ----
 Here's an example of inserting an object ID and reading it back
 
 [source,kotlin]
 ----
-
 var individualId = org.bson.types.ObjectId().toHexString()
-
 var document = json {
   obj(
     "name" to "Stephen Hawking",
     "individualId" to obj("\$$oid" to individualId)
   )
 }
-
 mongoService.save("smartPeople", document, { res ->
-
   if (res.succeeded()) {
-
     var id = res.result()
-
-    mongoService.findOne("smartPeople", json {
+    var query = json {
       obj("_id" to id)
-    }, null, { res2 ->
+    }
+    mongoService.findOne("smartPeople", query, null, { res2 ->
       if (res2.succeeded()) {
         var reconstitutedIndividualId = res2.result().getJsonObject("individualId").getString("\$$oid")
       } else {
         res2.cause().printStackTrace()
       }
     })
-
   } else {
     res.cause().printStackTrace()
   }
-
 })
 
-
 ----
+
+=== Getting distinct values
+
 Here's an example of getting distinct value
 
 [source,kotlin]
@@ -820,19 +675,14 @@ Here's an example of getting distinct value
 var document = json {
   obj("title" to "The Hobbit")
 }
-
 mongoClient.save("books", document, { res ->
-
   if (res.succeeded()) {
-
     mongoClient.distinct("books", "title", String.`class`.getName(), { res2 ->
       println("Title is : ${res2.result().getJsonArray(0)}")
     })
-
   } else {
     res.cause().printStackTrace()
   }
-
 })
 
 ----
@@ -843,19 +693,14 @@ Here's an example of getting distinct value in batch mode
 var document = json {
   obj("title" to "The Hobbit")
 }
-
 mongoClient.save("books", document, { res ->
-
   if (res.succeeded()) {
-
-    mongoClient.distinctBatch("books", "title", String.`class`.getName(), { res2 ->
-      println("Title is : ${res2.result().getString("title")}")
+    mongoClient.distinctBatch("books", "title", String.`class`.getName()).handler({ book ->
+      println("Title is : ${book.getString("title")}")
     })
-
   } else {
     res.cause().printStackTrace()
   }
-
 })
 
 ----
@@ -872,15 +717,12 @@ var document = json {
 var query = json {
   obj("publicationDate" to obj("\$$gte" to obj("\$$date" to "1937-09-21T00:00:00+00:00")))
 }
-
 mongoClient.save("books", document, { res ->
   if (res.succeeded()) {
-
     mongoClient.distinctWithQuery("books", "title", String.`class`.getName(), query, { res2 ->
       println("Title is : ${res2.result().getJsonArray(0)}")
     })
   }
-
 })
 
 ----
@@ -897,15 +739,12 @@ var document = json {
 var query = json {
   obj("publicationDate" to obj("\$$gte" to obj("\$$date" to "1937-09-21T00:00:00+00:00")))
 }
-
 mongoClient.save("books", document, { res ->
   if (res.succeeded()) {
-
-    mongoClient.distinctBatchWithQuery("books", "title", String.`class`.getName(), query, { res2 ->
-      println("Title is : ${res2.result().getString("title")}")
+    mongoClient.distinctBatchWithQuery("books", "title", String.`class`.getName(), query).handler({ book ->
+      println("Title is : ${book.getString("title")}")
     })
   }
-
 })
 
 ----
@@ -917,7 +756,7 @@ The client is configured with a json object.
 The following configuration is supported by the mongo client:
 
 
-`db_name`:: Name of the database in the mongoDB instance to use. Defaults to `default_db`
+`db_name`:: Name of the database in the MongoDB instance to use. Defaults to `default_db`
 `useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. If `true`, hex-strings will
 be saved as native Mongodb ObjectId types in the document collection. This will allow the sorting of documents based on creation
 time. You can also derive the creation time from the hex-string using ObjectId::getDate(). Set to `false` for other types of your choosing.
@@ -934,6 +773,7 @@ For more information on the format of the connection string please consult the d
 
 *Specific driver configuration options*
 
+[source,js]
 ----
 {
   // Single Cluster Settings
@@ -997,12 +837,12 @@ For more information on the format of the connection string please consult the d
 
 *Driver option descriptions*
 
-`host`:: The host the mongoDB instance is running. Defaults to `127.0.0.1`. This is ignored if `hosts` is specified
-`port`:: The port the mongoDB instance is listening on. Defaults to `27017`. This is ignored if `hosts` is specified
-`hosts`:: An array representing the hosts and ports to support a mongoDB cluster (sharding / replication)
+`host`:: The host the MongoDB instance is running. Defaults to `127.0.0.1`. This is ignored if `hosts` is specified
+`port`:: The port the MongoDB instance is listening on. Defaults to `27017`. This is ignored if `hosts` is specified
+`hosts`:: An array representing the hosts and ports to support a MongoDB cluster (sharding / replication)
 `host`:: A host in the cluster
 `port`:: The port a host in the cluster is listening on
-`replicaSet`:: The name of the replica set, if the mongoDB instance is a member of a replica set
+`replicaSet`:: The name of the replica set, if the MongoDB instance is a member of a replica set
 `serverSelectionTimeoutMS`:: The time in milliseconds that the mongo driver will wait to select a server for an operation before raising an error.
 `maxPoolSize`:: The maximum number of connections in the connection pool. The default value is `100`
 `minPoolSize`:: The minimum number of connections in the connection pool. The default value is `0`

@@ -54,9 +54,7 @@ The simplest way to do this is as follows:
 [source,ruby]
 ----
 require 'vertx-mongo/mongo_client'
-
 client = VertxMongo::MongoClient.create_shared(vertx, config)
-
 
 ----
 
@@ -72,9 +70,7 @@ You can create a client specifying a pool source name as follows
 [source,ruby]
 ----
 require 'vertx-mongo/mongo_client'
-
 client = VertxMongo::MongoClient.create_shared(vertx, config, "MyPoolName")
-
 
 ----
 
@@ -99,9 +95,7 @@ In that case you can use `link:../../yardoc/VertxMongo/MongoClient.html#create_n
 [source,ruby]
 ----
 require 'vertx-mongo/mongo_client'
-
 client = VertxMongo::MongoClient.create_non_shared(vertx, config)
-
 
 ----
 
@@ -117,8 +111,8 @@ The client API is represented by `link:../../yardoc/VertxMongo/MongoClient.html[
 
 To save a document you use `link:../../yardoc/VertxMongo/MongoClient.html#save-instance_method[save]`.
 
-If the document has no `\_id` field, it is inserted, otherwise, it is _upserted_. Upserted means it is inserted
-if it doesn't already exist, otherwise it is updated.
+If the document has no `\_id` field, it is inserted, otherwise, it is __upserted__.
+Upserted means it is inserted if it doesn't already exist, otherwise it is updated.
 
 If the document is inserted and has no id, then the id field generated will be returned to the result handler.
 
@@ -126,26 +120,18 @@ Here's an example of saving a document and getting the id back
 
 [source,ruby]
 ----
-
 # Document has no id
-
 document = {
   'title' => "The Hobbit"
 }
-
 mongoClient.save("books", document) { |res_err,res|
-
   if (res_err == nil)
-
     id = res
     puts "Saved book with id #{id}"
-
   else
     res_err.print_stack_trace()
   end
-
 }
-
 
 ----
 
@@ -153,26 +139,18 @@ And here's an example of saving a document which already has an id.
 
 [source,ruby]
 ----
-
 # Document has an id already
-
 document = {
   'title' => "The Hobbit",
   '_id' => "123244"
 }
-
 mongoClient.save("books", document) { |res_err,res|
-
   if (res_err == nil)
-
     # ...
-
   else
     res_err.print_stack_trace()
   end
-
 }
-
 
 ----
 
@@ -184,64 +162,48 @@ If the document is inserted and has no id, then the id field generated will be r
 
 [source,ruby]
 ----
-
 # Document has an id already
-
 document = {
   'title' => "The Hobbit"
 }
-
 mongoClient.insert("books", document) { |res_err,res|
-
   if (res_err == nil)
-
     id = res
     puts "Inserted book with id #{id}"
-
   else
     res_err.print_stack_trace()
   end
-
 }
-
 
 ----
 
-If a document is inserted with an id, and a document with that id already eists, the insert will fail:
+If a document is inserted with an id, and a document with that id already exists, the insert will fail:
 
 [source,ruby]
 ----
-
 # Document has an id already
-
 document = {
   'title' => "The Hobbit",
   '_id' => "123244"
 }
-
 mongoClient.insert("books", document) { |res_err,res|
-
   if (res_err == nil)
-
     #...
-
   else
-
     # Will fail if the book with that id already exists.
   end
-
 }
-
 
 ----
 
 === Updating documents
 
-To update a documents you use `link:../../yardoc/VertxMongo/MongoClient.html#update-instance_method[update]`.
+To update a documents you use `link:../../yardoc/VertxMongo/MongoClient.html#update_collection-instance_method[updateCollection]`.
 
-This updates one or multiple documents in a collection. The json object that is passed in the `update`
-parameter must contain http://docs.mongodb.org/manual/reference/operator/update-field/[Update Operators] and determines
-how the object is updated.
+This updates one or multiple documents in a collection.
+The json object that is passed in the `updateCollection` parameter must contain
+http://docs.mongodb.org/manual/reference/operator/update-field/[Update Operators]
+and determines how the object is updated.
 
 The json object specified in the query parameter determines which documents in the collection will be updated.
 
@@ -249,36 +211,28 @@ Here's an example of updating a document in the books collection:
 
 [source,ruby]
 ----
-
 # Match any documents with title=The Hobbit
 query = {
   'title' => "The Hobbit"
 }
-
 # Set the author field
 update = {
   '$set' => {
     'author' => "J. R. R. Tolkien"
   }
 }
-
-mongoClient.update("books", query, update) { |res_err,res|
-
+mongoClient.update_collection("books", query, update) { |res_err,res|
   if (res_err == nil)
-
     puts "Book updated !"
-
   else
-
     res_err.print_stack_trace()
   end
-
 }
-
 
 ----
 
-To specify if the update should upsert or update multiple documents, use `link:../../yardoc/VertxMongo/MongoClient.html#update_with_options-instance_method[updateWithOptions]`
+To specify if the update should upsert or update multiple documents, use
+`link:../../yardoc/VertxMongo/MongoClient.html#update_collection_with_options-instance_method[updateCollectionWithOptions]`
 and pass in an instance of `link:../dataobjects.html#UpdateOptions[UpdateOptions]`.
 
 This has the following fields:
@@ -289,74 +243,54 @@ This has the following fields:
 
 [source,ruby]
 ----
-
 # Match any documents with title=The Hobbit
 query = {
   'title' => "The Hobbit"
 }
-
 # Set the author field
 update = {
   '$set' => {
     'author' => "J. R. R. Tolkien"
   }
 }
-
 options = {
   'multi' => true
 }
-
-mongoClient.update_with_options("books", query, update, options) { |res_err,res|
-
+mongoClient.update_collection_with_options("books", query, update, options) { |res_err,res|
   if (res_err == nil)
-
     puts "Book updated !"
-
   else
-
     res_err.print_stack_trace()
   end
-
 }
-
 
 ----
 
 === Replacing documents
 
-To replace documents you use `link:../../yardoc/VertxMongo/MongoClient.html#replace-instance_method[replace]`.
+To replace documents you use `link:../../yardoc/VertxMongo/MongoClient.html#replace_documents-instance_method[replaceDocuments]`.
 
-This is similar to the update operation, however it does not take any update operators like `update`.
+This is similar to the update operation, however it does not take any operator.
 Instead it replaces the entire document with the one provided.
 
 Here's an example of replacing a document in the books collection
 
 [source,ruby]
 ----
-
 query = {
   'title' => "The Hobbit"
 }
-
 replace = {
   'title' => "The Lord of the Rings",
   'author' => "J. R. R. Tolkien"
 }
-
-mongoClient.replace("books", query, replace) { |res_err,res|
-
+mongoClient.replace_documents("books", query, replace) { |res_err,res|
   if (res_err == nil)
-
     puts "Book replaced !"
-
   else
-
     res_err.print_stack_trace()
-
   end
-
 }
-
 
 ----
 
@@ -364,12 +298,13 @@ mongoClient.replace("books", query, replace) { |res_err,res|
 
 To execute multiple insert, update, replace, or delete operations at once, use `link:../../yardoc/VertxMongo/MongoClient.html#bulk_write-instance_method[bulkWrite]`.
 
-You can pass a list of `link:../dataobjects.html#BulkOperation[BulkOperations]`, with each working similiar to the matching single operations.
+You can pass a list of `link:../dataobjects.html#BulkOperation[BulkOperations]`, with each working similar to the matching single operation.
 You can pass as many operations, even of the same type, as you wish.
 
 To specify if the bulk operation should be executed in order, and with what write option, use `link:../../yardoc/VertxMongo/MongoClient.html#bulk_write_with_options-instance_method[bulkWriteWithOptions]`
 and pass an instance of `link:../dataobjects.html#BulkWriteOptions[BulkWriteOptions]`.
-For more explanation what ordered means, see https://docs.mongodb.com/manual/reference/method/db.collection.bulkWrite/#execution-of-operations
+For more explanation what ordered means, see
+https://docs.mongodb.com/manual/reference/method/db.collection.bulkWrite/#execution-of-operations[Execution of Operations].
 
 === Finding documents
 
@@ -382,29 +317,18 @@ Here's a simple example with an empty query that will match all books:
 [source,ruby]
 ----
 require 'json'
-
 # empty query = match any
 query = {
 }
-
 mongoClient.find("books", query) { |res_err,res|
-
   if (res_err == nil)
-
     res.each do |json|
-
       puts JSON.generate(json)
-
     end
-
   else
-
     res_err.print_stack_trace()
-
   end
-
 }
-
 
 ----
 
@@ -413,30 +337,19 @@ Here's another example that will match all books by Tolkien:
 [source,ruby]
 ----
 require 'json'
-
 # will match all Tolkien books
 query = {
   'author' => "J. R. R. Tolkien"
 }
-
 mongoClient.find("books", query) { |res_err,res|
-
   if (res_err == nil)
-
     res.each do |json|
-
       puts JSON.generate(json)
-
     end
-
   else
-
     res_err.print_stack_trace()
-
   end
-
 }
-
 
 ----
 
@@ -452,39 +365,55 @@ This has the following fields:
 `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
 `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
 
+=== Finding documents in batches
+
+When dealing with large data sets, it is not advised to use the
+`link:../../yardoc/VertxMongo/MongoClient.html#find-instance_method[find]` and
+`link:../../yardoc/VertxMongo/MongoClient.html#find_with_options-instance_method[findWithOptions]` methods.
+In order to avoid inflating the whole response into memory, use `link:../../yardoc/VertxMongo/MongoClient.html#find_batch-instance_method[findBatch]`:
+
+[source,ruby]
 ----
 require 'json'
-
 # will match all Tolkien books
 query = {
   'author' => "J. R. R. Tolkien"
 }
-
-mongoClient.find_batch("book", query) { |res_err,res|
-
-  if (res_err == nil)
-
-    if (res == nil)
-
-      puts "End of research"
-
-    else
-
-      puts "Found doc: #{JSON.generate(res)}"
-
-    end
-
-  else
-
-    res_err.print_stack_trace()
-
-  end
+mongoClient.find_batch("book", query).exception_handler() { |throwable|
+  throwable.print_stack_trace()
+}.end_handler() { |v|
+  puts "End of research"
+}.handler() { |doc|
+  puts "Found doc: #{JSON.generate(doc)}"
 }
-
 
 ----
 
-The matching documents are returned unitary in the result handler.
+The matching documents are emitted one by one by the `link:../../yardoc/Vertx/ReadStream.html[ReadStream]` handler.
+
+`link:../dataobjects.html#FindOptions[FindOptions]` has an extra parameter `batchSize` which you can use to set the number of documents to load at once:
+
+[source,ruby]
+----
+require 'json'
+# will match all Tolkien books
+query = {
+  'author' => "J. R. R. Tolkien"
+}
+options = {
+  'batchSize' => 100
+}
+mongoClient.find_batch_with_options("book", query, options).exception_handler() { |throwable|
+  throwable.print_stack_trace()
+}.end_handler() { |v|
+  puts "End of research"
+}.handler() { |doc|
+  puts "Found doc: #{JSON.generate(doc)}"
+}
+
+----
+
+By default, `batchSize` is set to 20.
 
 === Finding a single document
 
@@ -502,24 +431,16 @@ Here's an example of removing all Tolkien books:
 
 [source,ruby]
 ----
-
 query = {
   'author' => "J. R. R. Tolkien"
 }
-
-mongoClient.remove("books", query) { |res_err,res|
-
+mongoClient.remove_documents("books", query) { |res_err,res|
   if (res_err == nil)
-
     puts "Never much liked Tolkien stuff!"
-
   else
-
     res_err.print_stack_trace()
-
   end
 }
-
 
 ----
 
@@ -537,24 +458,16 @@ Here's an example that counts the number of Tolkien books. The number is passed 
 
 [source,ruby]
 ----
-
 query = {
   'author' => "J. R. R. Tolkien"
 }
-
 mongoClient.count("books", query) { |res_err,res|
-
   if (res_err == nil)
-
     num = res
-
   else
-
     res_err.print_stack_trace()
-
   end
 }
-
 
 ----
 
@@ -566,20 +479,13 @@ To get a list of all collections you can use `link:../../yardoc/VertxMongo/Mongo
 
 [source,ruby]
 ----
-
 mongoClient.get_collections() { |res_err,res|
-
   if (res_err == nil)
-
     collections = res
-
   else
-
     res_err.print_stack_trace()
-
   end
 }
-
 
 ----
 
@@ -587,20 +493,13 @@ To create a new collection you can use `link:../../yardoc/VertxMongo/MongoClient
 
 [source,ruby]
 ----
-
 mongoClient.create_collection("mynewcollectionr") { |res_err,res|
-
   if (res_err == nil)
-
     # Created ok!
-
   else
-
     res_err.print_stack_trace()
-
   end
 }
-
 
 ----
 
@@ -610,20 +509,13 @@ NOTE: Dropping a collection will delete all documents within it!
 
 [source,ruby]
 ----
-
 mongoClient.drop_collection("mynewcollectionr") { |res_err,res|
-
   if (res_err == nil)
-
     # Dropped ok!
-
   else
-
     res_err.print_stack_trace()
-
   end
 }
-
 
 ----
 
@@ -632,7 +524,7 @@ mongoClient.drop_collection("mynewcollectionr") { |res_err,res|
 
 You can run arbitrary MongoDB commands with `link:../../yardoc/VertxMongo/MongoClient.html#run_command-instance_method[runCommand]`.
 
-Commands can be used to run more advanced mongoDB features, such as using MapReduce.
+Commands can be used to run more advanced MongoDB features, such as using MapReduce.
 For more information see the mongo docs for supported http://docs.mongodb.org/manual/reference/command[Commands].
 
 Here's an example of running an aggregate command. Note that the command name must be specified as a parameter
@@ -642,13 +534,11 @@ of the entries in the JSON is the command name it must be specified as a paramet
 
 [source,ruby]
 ----
-
 command = {
   'aggregate' => "collection_name",
   'pipeline' => [
   ]
 }
-
 mongoClient.run_command("aggregate", command) { |res_err,res|
   if (res_err == nil)
     resArr = res['result']
@@ -658,49 +548,39 @@ mongoClient.run_command("aggregate", command) { |res_err,res|
   end
 }
 
-
 ----
 
 === MongoDB Extended JSON support
 
-For now, only date, oid and binary types are supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
+For now, only `date`, `oid` and `binary` types are supported
+(see http://docs.mongodb.org/manual/reference/mongodb-extended-json[MongoDB Extended JSON]).
 
-Here's an example of inserting a document with a date field
+Here's an example of inserting a document with a `date` field:
 
 [source,ruby]
 ----
-
 document = {
   'title' => "The Hobbit",
   'publicationDate' => {
     '$date' => "1937-09-21T00:00:00+00:00"
   }
 }
-
 mongoService.save("publishedBooks", document) { |res_err,res|
-
   if (res_err == nil)
-
     id = res
-
     mongoService.find_one("publishedBooks", {
       '_id' => id
     }, nil) { |res2_err,res2|
       if (res2_err == nil)
-
         puts "To retrieve ISO-8601 date : #{res2['publicationDate']['$date']}"
-
       else
         res2_err.print_stack_trace()
       end
     }
-
   else
     res_err.print_stack_trace()
   end
-
 }
-
 
 ----
 
@@ -709,31 +589,23 @@ Here's an example (in Java) of inserting a document with a binary field and read
 [source,ruby]
 ----
 byte[] binaryObject = new byte[40];
-
 JsonObject document = new JsonObject()
-        .put("name", "Alan Turing")
-        .put("binaryStuff", new JsonObject().put("$binary", binaryObject));
-
+  .put("name", "Alan Turing")
+  .put("binaryStuff", new JsonObject().put("$binary", binaryObject));
 mongoService.save("smartPeople", document, res -> {
-
   if (res.succeeded()) {
-
     String id = res.result();
-
     mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
-      if(res2.succeeded()) {
-
+      if (res2.succeeded()) {
         byte[] reconstitutedBinaryObject = res2.result().getJsonObject("binaryStuff").getBinary("$binary");
         //This could now be de-serialized into an object in real life
       } else {
         res2.cause().printStackTrace();
       }
     });
-
   } else {
     res.cause().printStackTrace();
   }
-
 });
 ----
 
@@ -741,81 +613,66 @@ Here's an example of inserting a base 64 encoded string, typing it as binary a b
 
 [source,ruby]
 ----
-
 #This could be a the byte contents of a pdf file, etc converted to base 64
 base64EncodedString = "a2FpbHVhIGlzIHRoZSAjMSBiZWFjaCBpbiB0aGUgd29ybGQ="
-
 document = {
   'name' => "Alan Turing",
   'binaryStuff' => {
     '$binary' => base64EncodedString
   }
 }
-
 mongoService.save("smartPeople", document) { |res_err,res|
-
   if (res_err == nil)
-
     id = res
-
     mongoService.find_one("smartPeople", {
       '_id' => id
     }, nil) { |res2_err,res2|
       if (res2_err == nil)
-
         reconstitutedBase64EncodedString = res2['binaryStuff']['$binary']
         #This could now converted back to bytes from the base 64 string
       else
         res2_err.print_stack_trace()
       end
     }
-
   else
     res_err.print_stack_trace()
   end
-
 }
-
 
 ----
 Here's an example of inserting an object ID and reading it back
 
 [source,ruby]
 ----
-
 individualId = Java::OrgBsonTypes::ObjectId.new().to_hex_string()
-
 document = {
   'name' => "Stephen Hawking",
   'individualId' => {
     '$oid' => individualId
   }
 }
-
 mongoService.save("smartPeople", document) { |res_err,res|
-
   if (res_err == nil)
-
     id = res
-
-    mongoService.find_one("smartPeople", {
+    query = {
       '_id' => id
-    }, nil) { |res2_err,res2|
+    }
+    mongoService.find_one("smartPeople", query, nil) { |res2_err,res2|
       if (res2_err == nil)
         reconstitutedIndividualId = res2['individualId']['$oid']
       else
         res2_err.print_stack_trace()
       end
     }
-
   else
     res_err.print_stack_trace()
   end
-
 }
 
-
 ----
+
+=== Getting distinct values
+
 Here's an example of getting distinct value
 
 [source,ruby]
@@ -823,19 +680,14 @@ Here's an example of getting distinct value
 document = {
   'title' => "The Hobbit"
 }
-
 mongoClient.save("books", document) { |res_err,res|
-
   if (res_err == nil)
-
     mongoClient.distinct("books", "title", Java::JavaLang::String::class.get_name()) { |res2_err,res2|
       puts "Title is : #{res2[0]}"
     }
-
   else
     res_err.print_stack_trace()
   end
-
 }
 
 ----
@@ -846,19 +698,14 @@ Here's an example of getting distinct value in batch mode
 document = {
   'title' => "The Hobbit"
 }
-
 mongoClient.save("books", document) { |res_err,res|
-
   if (res_err == nil)
-
-    mongoClient.distinct_batch("books", "title", Java::JavaLang::String::class.get_name()) { |res2_err,res2|
-      puts "Title is : #{res2['title']}"
+    mongoClient.distinct_batch("books", "title", Java::JavaLang::String::class.get_name()).handler() { |book|
+      puts "Title is : #{book['title']}"
     }
-
   else
     res_err.print_stack_trace()
   end
-
 }
 
 ----
@@ -879,15 +726,12 @@ query = {
     }
   }
 }
-
 mongoClient.save("books", document) { |res_err,res|
   if (res_err == nil)
-
     mongoClient.distinct_with_query("books", "title", Java::JavaLang::String::class.get_name(), query) { |res2_err,res2|
       puts "Title is : #{res2[0]}"
     }
   end
-
 }
 
 ----
@@ -908,15 +752,12 @@ query = {
     }
   }
 }
-
 mongoClient.save("books", document) { |res_err,res|
   if (res_err == nil)
-
-    mongoClient.distinct_batch_with_query("books", "title", Java::JavaLang::String::class.get_name(), query) { |res2_err,res2|
-      puts "Title is : #{res2['title']}"
+    mongoClient.distinct_batch_with_query("books", "title", Java::JavaLang::String::class.get_name(), query).handler() { |book|
+      puts "Title is : #{book['title']}"
     }
   end
-
 }
 
 ----
@@ -928,7 +769,7 @@ The client is configured with a json object.
 The following configuration is supported by the mongo client:
 
 
-`db_name`:: Name of the database in the mongoDB instance to use. Defaults to `default_db`
+`db_name`:: Name of the database in the MongoDB instance to use. Defaults to `default_db`
 `useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. If `true`, hex-strings will
 be saved as native Mongodb ObjectId types in the document collection. This will allow the sorting of documents based on creation
 time. You can also derive the creation time from the hex-string using ObjectId::getDate(). Set to `false` for other types of your choosing.
@@ -945,6 +786,7 @@ For more information on the format of the connection string please consult the d
 
 *Specific driver configuration options*
 
+[source,js]
 ----
 {
   // Single Cluster Settings
@@ -1008,12 +850,12 @@ For more information on the format of the connection string please consult the d
 
 *Driver option descriptions*
 
-`host`:: The host the mongoDB instance is running. Defaults to `127.0.0.1`. This is ignored if `hosts` is specified
-`port`:: The port the mongoDB instance is listening on. Defaults to `27017`. This is ignored if `hosts` is specified
-`hosts`:: An array representing the hosts and ports to support a mongoDB cluster (sharding / replication)
+`host`:: The host the MongoDB instance is running. Defaults to `127.0.0.1`. This is ignored if `hosts` is specified
+`port`:: The port the MongoDB instance is listening on. Defaults to `27017`. This is ignored if `hosts` is specified
+`hosts`:: An array representing the hosts and ports to support a MongoDB cluster (sharding / replication)
 `host`:: A host in the cluster
 `port`:: The port a host in the cluster is listening on
-`replicaSet`:: The name of the replica set, if the mongoDB instance is a member of a replica set
+`replicaSet`:: The name of the replica set, if the MongoDB instance is a member of a replica set
 `serverSelectionTimeoutMS`:: The time in milliseconds that the mongo driver will wait to select a server for an operation before raising an error.
 `maxPoolSize`:: The maximum number of connections in the connection pool. The default value is `100`
 `minPoolSize`:: The minimum number of connections in the connection pool. The default value is `0`

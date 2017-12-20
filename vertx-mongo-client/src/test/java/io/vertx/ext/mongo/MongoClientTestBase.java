@@ -1599,6 +1599,35 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testBulkOperation_replaceById() {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = new JsonObject();
+      doc.put("foo", "bar");
+      doc.put("num", 123);
+      mongoClient.insert(collection, doc, onSuccess(id -> {
+        JsonObject filter = new JsonObject().put("_id", id);
+        JsonObject replace = new JsonObject().put("foo", "replaced");
+        BulkOperation bulkReplace = BulkOperation.createReplace(filter, replace);
+        mongoClient.bulkWrite(collection, Arrays.asList(bulkReplace), onSuccess(bulkResult -> {
+          assertEquals(0, bulkResult.getInsertedCount());
+          assertEquals(0, bulkResult.getDeletedCount());
+          assertEquals(1, bulkResult.getMatchedCount());
+          assertEquals(0, bulkResult.getUpserts().size());
+          mongoClient.find(collection, new JsonObject(), onSuccess(docs -> {
+            assertEquals(1, docs.size());
+            JsonObject foundDoc = docs.get(0);
+            assertEquals("replaced", foundDoc.getString("foo"));
+            assertNull(foundDoc.getInteger("num"));
+            testComplete();
+          }));
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testBulkOperation_replaceOne_upsert() {
     String collection = randomCollection();
     JsonObject filter = new JsonObject().put("foo", "bar");

@@ -1,8 +1,7 @@
 package io.vertx.ext.mongo;
 
-import java.util.List;
-
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.ProxyIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -11,7 +10,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.serviceproxy.ProxyHelper;
+
+import java.util.List;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -99,16 +101,20 @@ public interface MongoService extends MongoClient {
   MongoService find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   @Override
-  @Fluent
-  MongoService findBatch(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+  @GenIgnore
+  default ReadStream<JsonObject> findBatch(String collection, JsonObject query) {
+    throw new UnsupportedOperationException();
+  }
 
   @Override
   @Fluent
   MongoService findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   @Override
-  @Fluent
-  MongoService findBatchWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<JsonObject>> resultHandler);
+  @GenIgnore
+  default ReadStream<JsonObject> findBatchWithOptions(String collection, JsonObject query, FindOptions options) {
+    throw new UnsupportedOperationException();
+  }
 
   @Override
   @Fluent
@@ -215,16 +221,26 @@ public interface MongoService extends MongoClient {
   MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
 
   @Override
-  @Fluent
-  MongoService distinctBatch(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonObject>> resultHandler);
+  @GenIgnore
+  default ReadStream<JsonObject> distinctBatch(String collection, String fieldName, String resultClassname) {
+    throw new UnsupportedOperationException();
+  }
 
   @Override
   @Fluent
   MongoService distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
 
   @Override
-  @Fluent
-  MongoService distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+  @GenIgnore
+  default ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  @GenIgnore
+  default ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, int batchSize) {
+    throw new UnsupportedOperationException();
+  }
 
   @Override
   @ProxyIgnore
