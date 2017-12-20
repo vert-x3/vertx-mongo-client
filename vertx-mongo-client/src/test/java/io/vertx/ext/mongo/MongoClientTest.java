@@ -38,13 +38,10 @@ public class MongoClientTest extends MongoClientTestBase {
     List<String> foos = new ArrayList<>();
     mongoClient.createCollection(collection, onSuccess(res -> {
       insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
-          mongoClient.findBatchWithOptions(collection, new JsonObject(), new FindOptions().setSort(new JsonObject().put("foo", 1)), onSuccess(result -> {
-            if (result == null) {
-              latch.countDown();
-            } else {
-              foos.add(result.getString("foo"));
-            }
-          }));
+        mongoClient.findBatchWithOptions(collection, new JsonObject(), new FindOptions().setSort(new JsonObject().put("foo", 1)))
+          .exceptionHandler(this::fail)
+          .endHandler(v -> latch.countDown())
+          .handler(result -> foos.add(result.getString("foo")));
       }));
     }));
     awaitLatch(latch);

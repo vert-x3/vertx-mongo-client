@@ -34,10 +34,12 @@ public class FindOptionsTest {
   @Test
   public void testDefaultOptions() {
     FindOptions options = new FindOptions();
-    assertNull(options.getFields());
-    assertNull(options.getSort());
-    assertEquals(-1, options.getLimit());
-    assertEquals(0, options.getSkip());
+    assertNotNull(options.getFields());
+    assertTrue(options.getFields().isEmpty());
+    assertNotNull(options.getSort());
+    assertTrue(options.getSort().isEmpty());
+    assertEquals(FindOptions.DEFAULT_LIMIT, options.getLimit());
+    assertEquals(FindOptions.DEFAULT_SKIP, options.getSkip());
   }
 
   @Test
