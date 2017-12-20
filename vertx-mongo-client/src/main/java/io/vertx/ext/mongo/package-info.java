@@ -120,8 +120,8 @@
  *
  * To save a document you use {@link io.vertx.ext.mongo.MongoClient#save}.
  *
- * If the document has no `\_id` field, it is inserted, otherwise, it is _upserted_. Upserted means it is inserted
- * if it doesn't already exist, otherwise it is updated.
+ * If the document has no `\_id` field, it is inserted, otherwise, it is __upserted__.
+ * Upserted means it is inserted if it doesn't already exist, otherwise it is updated.
  *
  * If the document is inserted and has no id, then the id field generated will be returned to the result handler.
  *
@@ -150,7 +150,7 @@
  * {@link examples.Examples#example3}
  * ----
  *
- * If a document is inserted with an id, and a document with that id already eists, the insert will fail:
+ * If a document is inserted with an id, and a document with that id already exists, the insert will fail:
  *
  * [source,$lang]
  * ----
@@ -159,11 +159,12 @@
  *
  * === Updating documents
  *
- * To update a documents you use {@link io.vertx.ext.mongo.MongoClient#update}.
+ * To update a documents you use {@link io.vertx.ext.mongo.MongoClient#updateCollection}.
  *
- * This updates one or multiple documents in a collection. The json object that is passed in the `update`
- * parameter must contain http://docs.mongodb.org/manual/reference/operator/update-field/[Update Operators] and determines
- * how the object is updated.
+ * This updates one or multiple documents in a collection.
+ * The json object that is passed in the `updateCollection` parameter must contain
+ * http://docs.mongodb.org/manual/reference/operator/update-field/[Update Operators]
+ * and determines how the object is updated.
  *
  * The json object specified in the query parameter determines which documents in the collection will be updated.
  *
@@ -174,7 +175,8 @@
  * {@link examples.Examples#example5}
  * ----
  *
- * To specify if the update should upsert or update multiple documents, use {@link io.vertx.ext.mongo.MongoClient#updateWithOptions}
+ * To specify if the update should upsert or update multiple documents, use
+ * {@link io.vertx.ext.mongo.MongoClient#updateCollectionWithOptions}
  * and pass in an instance of {@link io.vertx.ext.mongo.UpdateOptions}.
  *
  * This has the following fields:
@@ -190,9 +192,9 @@
  *
  * === Replacing documents
  *
- * To replace documents you use {@link io.vertx.ext.mongo.MongoClient#replace}.
+ * To replace documents you use {@link io.vertx.ext.mongo.MongoClient#replaceDocuments}.
  *
- * This is similar to the update operation, however it does not take any update operators like `update`.
+ * This is similar to the update operation, however it does not take any operator.
  * Instead it replaces the entire document with the one provided.
  *
  * Here's an example of replacing a document in the books collection
@@ -206,12 +208,13 @@
  *
  * To execute multiple insert, update, replace, or delete operations at once, use {@link io.vertx.ext.mongo.MongoClient#bulkWrite}.
  *
- * You can pass a list of {@link io.vertx.ext.mongo.BulkOperation BulkOperations}, with each working similiar to the matching single operations.
+ * You can pass a list of {@link io.vertx.ext.mongo.BulkOperation BulkOperations}, with each working similar to the matching single operation.
  * You can pass as many operations, even of the same type, as you wish.
  *
  * To specify if the bulk operation should be executed in order, and with what write option, use {@link io.vertx.ext.mongo.MongoClient#bulkWriteWithOptions}
  * and pass an instance of {@link io.vertx.ext.mongo.BulkWriteOptions}.
- * For more explanation what ordered means, see https://docs.mongodb.com/manual/reference/method/db.collection.bulkWrite/#execution-of-operations
+ * For more explanation what ordered means, see
+ * https://docs.mongodb.com/manual/reference/method/db.collection.bulkWrite/#execution-of-operations[Execution of Operations].
  *
  * === Finding documents
  *
@@ -245,11 +248,28 @@
  * `limit`:: The limit of the number of results to return. Default to `-1`, meaning all results will be returned.
  * `skip`:: The number of documents to skip before returning the results. Defaults to `0`.
  *
+ * === Finding documents in batches
+ *
+ * When dealing with large data sets, it is not advised to use the
+ * {@link io.vertx.ext.mongo.MongoClient#find} and
+ * {@link io.vertx.ext.mongo.MongoClient#findWithOptions} methods.
+ * In order to avoid inflating the whole response into memory, use {@link io.vertx.ext.mongo.MongoClient#findBatch}:
+ *
+ * [source,$lang]
  * ----
- * {@link examples.Examples#example9_1}
+ * {@link examples.Examples#findBatch}
  * ----
  *
- * The matching documents are returned unitary in the result handler.
+ * The matching documents are emitted one by one by the {@link io.vertx.core.streams.ReadStream} handler.
+ *
+ * {@link io.vertx.ext.mongo.FindOptions} has an extra parameter `batchSize` which you can use to set the number of documents to load at once:
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#findBatchWithOptions}
+ * ----
+ *
+ * By default, `batchSize` is set to 20.
  *
  * === Finding a single document
  *
@@ -319,7 +339,7 @@
  *
  * You can run arbitrary MongoDB commands with {@link io.vertx.ext.mongo.MongoClient#runCommand}.
  *
- * Commands can be used to run more advanced mongoDB features, such as using MapReduce.
+ * Commands can be used to run more advanced MongoDB features, such as using MapReduce.
  * For more information see the mongo docs for supported http://docs.mongodb.org/manual/reference/command[Commands].
  *
  * Here's an example of running an aggregate command. Note that the command name must be specified as a parameter
@@ -334,9 +354,10 @@
  *
  * === MongoDB Extended JSON support
  *
- * For now, only date, oid and binary types are supported (cf http://docs.mongodb.org/manual/reference/mongodb-extended-json )
+ * For now, only `date`, `oid` and `binary` types are supported
+ * (see http://docs.mongodb.org/manual/reference/mongodb-extended-json[MongoDB Extended JSON]).
  *
- * Here's an example of inserting a document with a date field
+ * Here's an example of inserting a document with a `date` field:
  *
  * [source,$lang]
  * ----
@@ -362,6 +383,9 @@
  * ----
  * {@link examples.Examples#example15_dl}
  * ----
+ *
+ * === Getting distinct values
+ *
  * Here's an example of getting distinct value
  *
  * [source,$lang]
@@ -394,7 +418,7 @@
  * The following configuration is supported by the mongo client:
  *
  *
- * `db_name`:: Name of the database in the mongoDB instance to use. Defaults to `default_db`
+ * `db_name`:: Name of the database in the MongoDB instance to use. Defaults to `default_db`
  * `useObjectId`:: Toggle this option to support persisting and retrieving ObjectId's as strings. If `true`, hex-strings will
  * be saved as native Mongodb ObjectId types in the document collection. This will allow the sorting of documents based on creation
  * time. You can also derive the creation time from the hex-string using ObjectId::getDate(). Set to `false` for other types of your choosing.
@@ -411,6 +435,7 @@
  *
  * *Specific driver configuration options*
  *
+ * [source,js]
  * ----
  * {
  *   // Single Cluster Settings
@@ -474,12 +499,12 @@
  *
  * *Driver option descriptions*
  *
- * `host`:: The host the mongoDB instance is running. Defaults to `127.0.0.1`. This is ignored if `hosts` is specified
- * `port`:: The port the mongoDB instance is listening on. Defaults to `27017`. This is ignored if `hosts` is specified
- * `hosts`:: An array representing the hosts and ports to support a mongoDB cluster (sharding / replication)
+ * `host`:: The host the MongoDB instance is running. Defaults to `127.0.0.1`. This is ignored if `hosts` is specified
+ * `port`:: The port the MongoDB instance is listening on. Defaults to `27017`. This is ignored if `hosts` is specified
+ * `hosts`:: An array representing the hosts and ports to support a MongoDB cluster (sharding / replication)
  * `host`:: A host in the cluster
  * `port`:: The port a host in the cluster is listening on
- * `replicaSet`:: The name of the replica set, if the mongoDB instance is a member of a replica set
+ * `replicaSet`:: The name of the replica set, if the MongoDB instance is a member of a replica set
  * `serverSelectionTimeoutMS`:: The time in milliseconds that the mongo driver will wait to select a server for an operation before raising an error.
  * `maxPoolSize`:: The maximum number of connections in the connection pool. The default value is `100`
  * `minPoolSize`:: The minimum number of connections in the connection pool. The default value is `0`

@@ -19,6 +19,9 @@ package io.vertx.ext.mongo;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class DistinctTest extends MongoTestBase {
@@ -208,9 +211,10 @@ public class DistinctTest extends MongoTestBase {
   public void testDistinctBatchBadResultClass() {
     String collection = randomCollection();
     insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
-      mongoClient.distinctBatch(collection, "foo", Object.class.getName(), onFailure(failure -> {
-        testComplete();
-      }));
+      mongoClient.distinctBatch(collection, "foo", Object.class.getName())
+        .exceptionHandler(t -> testComplete())
+        .endHandler(v -> fail("Throwable expected"))
+        .handler(v -> fail("Throwable expected"));
     }));
     await();
   }
@@ -242,23 +246,25 @@ public class DistinctTest extends MongoTestBase {
   public void testDistinctBatchString() throws Exception {
     String collection = randomCollection();
     int numDocs = 10;
-    CountDownLatch latch = new CountDownLatch(numDocs);
+    List<JsonObject> results = Collections.synchronizedList(new ArrayList<>());
     insertDocs(mongoClient, collection, numDocs, onSuccess(inserted -> {
-      mongoClient.distinctBatch(collection, "foo", String.class.getName(), onSuccess(distincted -> {
-        assertNotNull(distincted);
-        latch.countDown();
-      }));
+      mongoClient.distinctBatch(collection, "foo", String.class.getName())
+        .exceptionHandler(this::fail)
+        .endHandler(v -> testComplete())
+        .handler(results::add);
     }));
-    awaitLatch(latch);
+    await();
+    assertEquals(numDocs, results.size());
   }
 
   @Test
   public void testDistinctBatchWithQueryBadResultClass() {
     String collection = randomCollection();
     insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
-      mongoClient.distinctBatchWithQuery(collection, "foo", Object.class.getName(), new JsonObject(), onFailure(failure -> {
-        testComplete();
-      }));
+      mongoClient.distinctBatchWithQuery(collection, "foo", Object.class.getName(), new JsonObject())
+        .exceptionHandler(t -> testComplete())
+        .endHandler(v -> fail("Throwable expected"))
+        .handler(v -> fail("Throwable expected"));
     }));
     await();
   }
@@ -290,13 +296,14 @@ public class DistinctTest extends MongoTestBase {
   public void testDistinctBatchWithQueryString() throws Exception {
     String collection = randomCollection();
     int numDocs = 10;
-    CountDownLatch latch = new CountDownLatch(numDocs);
+    List<JsonObject> results = Collections.synchronizedList(new ArrayList<>());
     insertDocs(mongoClient, collection, numDocs, onSuccess(inserted -> {
-      mongoClient.distinctBatchWithQuery(collection, "foo", String.class.getName(), new JsonObject(), onSuccess(distincted -> {
-        assertNotNull(distincted);
-        latch.countDown();
-      }));
+      mongoClient.distinctBatchWithQuery(collection, "foo", String.class.getName(), new JsonObject())
+        .exceptionHandler(this::fail)
+        .endHandler(v -> testComplete())
+        .handler(results::add);
     }));
-    awaitLatch(latch);
+    await();
+    assertEquals(numDocs, results.size());
   }
 }
