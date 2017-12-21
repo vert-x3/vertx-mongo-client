@@ -199,15 +199,36 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
+    update = generateIdIfNeeded(query, update, options);
+
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
     Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     Bson bupdate = wrap(encodeKeyWhenUseObjectId(update));
+
+
     if (options.isMulti()) {
       coll.updateMany(bquery, bupdate, mongoUpdateOptions(options), toMongoClientUpdateResult(resultHandler));
     } else {
       coll.updateOne(bquery, bupdate, mongoUpdateOptions(options), toMongoClientUpdateResult(resultHandler));
     }
     return this;
+  }
+
+  private JsonObject generateIdIfNeeded(JsonObject query, JsonObject update, UpdateOptions options) {
+    if(options.isUpsert() && !update.containsKey(ID_FIELD) && !useObjectId) {
+      JsonObject setId = update.getJsonObject("$setOnInsert", new JsonObject());
+      String id;
+
+      //This seems odd, but if you filter based on _id, mongo expects the generated _id to match
+      if(query.containsKey(ID_FIELD)) {
+        id = query.getString(ID_FIELD);
+      } else {
+        id = JsonObjectCodec.generateHexObjectId();
+      }
+      setId.put(ID_FIELD, id);
+      update.put("$setOnInsert", setId);
+    }
+    return update;
   }
 
   @Deprecated @Override
