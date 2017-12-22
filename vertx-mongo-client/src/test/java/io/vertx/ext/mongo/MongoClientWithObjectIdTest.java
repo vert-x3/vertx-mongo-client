@@ -47,16 +47,6 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
 
   }
 
-
-  @Test
-  @Override
-  public void testSavePreexistingLongID() throws Exception {
-    //Override this test as it does not make sense for useObjectId = true
-    assertTrue(true);
-    testComplete();
-    await();
-  }
-
   @Test
   public void testFindOneReturnsStringId() throws Exception {
     String collection = randomCollection();
@@ -123,9 +113,10 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       //Changed to hex string as a random string will not be valid for useObjectId = true
-      doc.put("_id", new ObjectId().toHexString());
+      String generatedId = new ObjectId().toHexString();
+      doc.put("_id", generatedId);
       mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
-        assertNull(id);
+        assertEquals(generatedId, id);
         testComplete();
       }));
     }));
@@ -139,9 +130,10 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
       //Changed to hex string as a random string will not be valid for useObjectId = true
-      doc.put("_id", new ObjectId().toHexString());
+      String generatedId = new ObjectId().toHexString();
+      doc.put("_id", generatedId);
       mongoClient.insert(collection, doc, onSuccess(id -> {
-        assertNull(id);
+        assertEquals(generatedId, id);
         testComplete();
       }));
     }));
@@ -154,9 +146,10 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject doc = createDoc();
-      doc.put("_id", new ObjectId().toHexString());
+      String generatedId = new ObjectId().toHexString();
+      doc.put("_id", generatedId);
       mongoClient.insert(collection, doc, onSuccess(id -> {
-        assertNull(id);
+        assertEquals(generatedId, id);
         mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
           assertEquals(doc, retrieved);
           testComplete();

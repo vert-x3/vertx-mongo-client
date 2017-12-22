@@ -216,34 +216,6 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
-  public void testInsertPreexistingLongID() throws Exception {
-    String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
-      JsonObject doc = createDoc();
-      Long genID = TestUtils.randomLong();
-      doc.put("_id", genID);
-      mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
-        assertDocumentWithIdIsPresent(collection, genID);
-      }));
-    }));
-    await();
-  }
-
-  @Test
-  public void testSavePreexistingLongID() throws Exception {
-    String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
-      JsonObject doc = createDoc();
-      Long genID = TestUtils.randomLong();
-      doc.put("_id", genID);
-      mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
-        assertDocumentWithIdIsPresent(collection, genID);
-      }));
-    }));
-    await();
-  }
-
-  @Test
   public void testInsertPreexistingObjectID() throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
@@ -358,7 +330,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       String genID = TestUtils.randomAlphaString(100);
       doc.put("_id", genID);
       mongoClient.insert(collection, doc, onSuccess(id -> {
-        assertNull(id);
+        assertEquals(genID, id);
         mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
           assertEquals(doc, retrieved);
           testComplete();
@@ -512,7 +484,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
         }));
       }));
     }));
-    await();
+     await();
   }
 
   @Test
@@ -1384,23 +1356,6 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     await();
   }
 
-  @Test
-  public void testNonStringID() {
-    String collection = randomCollection();
-    JsonObject document = new JsonObject().put("title", "The Hobbit");
-    // here it happened
-    document.put("_id", 123456);
-    document.put("foo", "bar");
-
-    mongoClient.insert(collection, document, onSuccess(id -> {
-      mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
-        assertEquals(document, retrieved);
-        testComplete();
-      }));
-    }));
-    await();
-  }
-
 
   @Test
   public void testContexts() {
@@ -1410,7 +1365,6 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
       String collection = randomCollection();
       JsonObject document = new JsonObject().put("title", "The Hobbit");
-      document.put("_id", 123456);
       document.put("foo", "bar");
 
       mongoClient.insert(collection, document, onSuccess(id -> {

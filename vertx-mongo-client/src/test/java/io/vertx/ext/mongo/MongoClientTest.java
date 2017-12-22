@@ -1,11 +1,14 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.test.core.TestUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+
+import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -26,6 +29,52 @@ public class MongoClientTest extends MongoClientTestBase {
   public void tearDown() throws Exception {
     mongoClient.close();
     super.tearDown();
+  }
+
+
+  @Test
+  public void testNonStringID() {
+    String collection = randomCollection();
+    JsonObject document = new JsonObject().put("title", "The Hobbit");
+    // here it happened
+    document.put("_id", 123456);
+    document.put("foo", "bar");
+
+    mongoClient.insert(collection, document, onSuccess(id -> {
+      mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
+        assertEquals(document, retrieved);
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testInsertPreexistingLongID() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      Long genID = TestUtils.randomLong();
+      doc.put("_id", genID);
+      mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
+        assertDocumentWithIdIsPresent(collection, genID);
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testSavePreexistingLongID() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      Long genID = TestUtils.randomLong();
+      doc.put("_id", genID);
+      mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
+        assertDocumentWithIdIsPresent(collection, genID);
+      }));
+    }));
+    await();
   }
 
 
