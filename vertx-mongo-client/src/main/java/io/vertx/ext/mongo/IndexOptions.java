@@ -2,8 +2,6 @@ package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
-import org.bson.BsonDocument;
-import org.bson.conversions.Bson;
 
 import java.util.concurrent.TimeUnit;
 

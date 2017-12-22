@@ -119,17 +119,6 @@ public interface MongoClient {
   MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   /**
-   * Update matching documents in the specified collection
-   *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param update used to describe how the documents will be updated
-   * @param resultHandler will be called when complete
-   */
-  @Deprecated @Fluent
-  MongoClient update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
    * Update matching documents in the specified collection and return the handler with MongoClientUpdateResult result
    *
    * @param collection  the collection
@@ -140,18 +129,6 @@ public interface MongoClient {
   @Fluent
   MongoClient updateCollection(String collection, JsonObject query, JsonObject update,
                                Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
-
-  /**
-   * Update matching documents in the specified collection, specifying options
-   *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param update used to describe how the documents will be updated
-   * @param options options to configure the update
-   * @param resultHandler will be called when complete
-   */
-  @Deprecated @Fluent
-  MongoClient updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Update matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
@@ -167,19 +144,6 @@ public interface MongoClient {
                                           Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
 
   /**
-   * Replace matching documents in the specified collection
-   * <p>
-   * This operation might change <i>_id</i> field of <i>replace</i> parameter
-   *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param replace  all matching documents will be replaced with this
-   * @param resultHandler will be called when complete
-   */
-  @Deprecated @Fluent
-  MongoClient replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
    * Replace matching documents in the specified collection and return the handler with MongoClientUpdateResult result
    *
    * @param collection  the collection
@@ -189,20 +153,6 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
-
-  /**
-   * Replace matching documents in the specified collection, specifying options
-   * <p>
-   * This operation might change <i>_id</i> field of <i>replace</i> parameter
-   *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param replace  all matching documents will be replaced with this
-   * @param options options to configure the replace
-   * @param resultHandler will be called when complete
-   */
-  @Deprecated @Fluent
-  MongoClient replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Replace matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
@@ -394,16 +344,6 @@ public interface MongoClient {
   MongoClient count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler);
 
   /**
-   * Remove matching documents from a collection
-   *
-   * @param collection  the collection
-   * @param query  query used to match documents
-   * @param resultHandler will be called when complete
-   */
-  @Deprecated @Fluent
-  MongoClient remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
    * Remove matching documents from a collection and return the handler with MongoClientDeleteResult result
    *
    * @param collection  the collection
@@ -412,17 +352,6 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
-
-  /**
-   * Remove matching documents from a collection with the specified write option
-   *
-   * @param collection  the collection
-   * @param query  query used to match documents
-   * @param writeOption  the write option to use
-   * @param resultHandler will be called when complete
-   */
-  @Deprecated @Fluent
-  MongoClient removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Remove matching documents from a collection with the specified write option and return the handler with MongoClientDeleteResult result
@@ -436,16 +365,6 @@ public interface MongoClient {
   MongoClient removeDocumentsWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   /**
-   * Remove a single matching document from a collection
-   *
-   * @param collection  the collection
-   * @param query  query used to match document
-   * @param resultHandler will be called when complete
-   */
-  @Deprecated @Fluent
-  MongoClient removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
    * Remove a single matching document from a collection and return the handler with MongoClientDeleteResult result
    *
    * @param collection  the collection
@@ -454,17 +373,6 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
-
-  /**
-   * Remove a single matching document from a collection with the specified write option
-   *
-   * @param collection  the collection
-   * @param query  query used to match document
-   * @param writeOption  the write option to use
-   * @param resultHandler will be called when complete
-   */
-  @Deprecated @Fluent
-  MongoClient removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Remove a single matching document from a collection with the specified write option and return the handler with MongoClientDeleteResult result

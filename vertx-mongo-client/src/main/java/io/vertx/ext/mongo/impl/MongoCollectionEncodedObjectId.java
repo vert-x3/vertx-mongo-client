@@ -104,7 +104,7 @@ class MongoCollectionEncodedObjectId {
     collection.findOneAndDelete(encodeAndConvert(filter), options, wrapCallback(callback));
   }
 
-  FindIterable<JsonObject> find(JsonObject filter) {
+  private FindIterable<JsonObject> find(JsonObject filter) {
     return collection.find(encodeAndConvert(filter), JsonObject.class);
   }
 

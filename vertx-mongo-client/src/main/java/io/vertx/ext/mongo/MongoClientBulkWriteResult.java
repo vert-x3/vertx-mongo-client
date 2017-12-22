@@ -89,7 +89,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Constructor to specify the result of the bulk write operation.
-   * 
+   *
    * @param insertedCount
    *          the number of inserted documents
    * @param matchedCount
@@ -112,7 +112,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Copy constructor
-   * 
+   *
    * @param other
    */
   public MongoClientBulkWriteResult(MongoClientBulkWriteResult other) {
@@ -128,7 +128,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Constructor from JSON
-   * 
+   *
    * @param mongoClientBulkWriteResultJson
    */
   public MongoClientBulkWriteResult(JsonObject mongoClientBulkWriteResultJson) {
@@ -144,7 +144,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Convert to JSON
-   * 
+   *
    * @return the JSON
    */
   public JsonObject toJson() {
@@ -170,7 +170,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Returns the number of inserted documents
-   * 
+   *
    * @return the inserted documents
    */
   public long getInsertedCount() {
@@ -179,7 +179,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Returns the number of matched documents
-   * 
+   *
    * @return the matched documents
    */
   public long getMatchedCount() {
@@ -188,7 +188,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Returns the number of deleted documents
-   * 
+   *
    * @return the deleted documents
    */
   public long getDeletedCount() {
@@ -197,7 +197,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Returns the number of modified documents
-   * 
+   *
    * @return the modified documents
    */
   public long getModifiedCount() {
@@ -207,7 +207,7 @@ public class MongoClientBulkWriteResult {
   /**
    * An unmodifiable list of upsert data. Each entry has the index of the request that lead to the upsert, and the
    * generated ID of the upsert.
-   * 
+   *
    * @return an unmodifiable list of upsert info
    */
   public List<JsonObject> getUpserts() {

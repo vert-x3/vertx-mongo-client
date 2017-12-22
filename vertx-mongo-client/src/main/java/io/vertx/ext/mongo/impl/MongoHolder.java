@@ -9,8 +9,8 @@ import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 class MongoHolder implements Shareable {
   private com.mongodb.async.client.MongoClient mongo;
   private MongoDatabase db;
-  private JsonObject config;
-  private Runnable closeRunner;
+  private final JsonObject config;
+  private final Runnable closeRunner;
   private int refCount = 1;
 
   MongoHolder(JsonObject config, Runnable closeRunner) {

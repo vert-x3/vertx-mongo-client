@@ -3,7 +3,6 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.AuthenticationMechanism;
 import com.mongodb.MongoCredential;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.impl.MongoClientImpl;
 import io.vertx.test.core.TestUtils;
 import org.junit.Test;
 

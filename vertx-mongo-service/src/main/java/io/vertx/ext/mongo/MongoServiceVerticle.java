@@ -2,7 +2,7 @@ package io.vertx.ext.mongo;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.mongo.impl.MongoServiceImpl;
-import io.vertx.serviceproxy.ProxyHelper;
+import io.vertx.serviceproxy.ServiceBinder;
 
 /**
  * A verticle which starts a MongoDB client and registers it to listen on the event bus.
@@ -24,7 +24,9 @@ public class MongoServiceVerticle extends AbstractVerticle {
     if (address == null) {
       throw new IllegalStateException("address field must be specified in config for client verticle");
     }
-    ProxyHelper.registerService(MongoService.class, vertx, service, address);
+    new ServiceBinder(vertx)
+      .setAddress(address)
+      .register(MongoService.class, service);
   }
 
   @Override

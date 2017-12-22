@@ -104,7 +104,7 @@ public abstract class MongoTestBase extends VertxTestBase {
     // Drop all the collections in the db
     mongoClient.getCollections(onSuccess(list -> {
       AtomicInteger collCount = new AtomicInteger();
-      List<String> toDrop = getOurCollections((List) list);
+      List<String> toDrop = getOurCollections(list);
       int count = toDrop.size();
       if (!toDrop.isEmpty()) {
         for (String collection : toDrop) {

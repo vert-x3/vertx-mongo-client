@@ -4,7 +4,6 @@ import com.mongodb.ConnectionString;
 import com.mongodb.ServerAddress;
 import com.mongodb.connection.ClusterConnectionMode;
 import com.mongodb.connection.ClusterSettings;
-import com.mongodb.connection.ClusterType;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 

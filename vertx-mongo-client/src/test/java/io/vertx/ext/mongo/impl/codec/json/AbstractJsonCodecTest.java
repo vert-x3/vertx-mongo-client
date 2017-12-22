@@ -1,7 +1,5 @@
 package io.vertx.ext.mongo.impl.codec.json;
 
-import org.bson.BsonDocument;
-import org.bson.BsonDocumentWriter;
 import org.bson.BsonType;
 import org.junit.Assert;
 import org.junit.Test;

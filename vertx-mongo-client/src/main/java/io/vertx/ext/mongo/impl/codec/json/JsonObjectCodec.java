@@ -82,10 +82,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected boolean isObjectIdInstance(Object instance) {
-    if (instance instanceof JsonObject && ((JsonObject) instance).containsKey(OID_FIELD)) {
-      return true;
-    }
-    return false;
+    return instance instanceof JsonObject && ((JsonObject) instance).containsKey(OID_FIELD);
   }
 
   @Override
