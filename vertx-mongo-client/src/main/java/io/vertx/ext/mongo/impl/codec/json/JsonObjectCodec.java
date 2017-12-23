@@ -42,12 +42,16 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   public JsonObject generateIdIfAbsentFromDocument(JsonObject json) {
 
     if (!documentHasId(json)) {
-      ObjectId id = new ObjectId();
-
-      if (useObjectId) json.put(ID_FIELD, new JsonObject().put(OID_FIELD, id.toHexString()));
-      else json.put(ID_FIELD, id.toHexString());
+      String value = generateHexObjectId();
+      if (useObjectId) json.put(ID_FIELD, new JsonObject().put(OID_FIELD, value));
+      else json.put(ID_FIELD, value);
     }
     return json;
+  }
+
+  public static String generateHexObjectId() {
+    ObjectId id = new ObjectId();
+    return id.toHexString();
   }
 
   @Override
