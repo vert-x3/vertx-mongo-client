@@ -230,6 +230,20 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testSaveWithOptionCanTakeNullWriteOption() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      Long genID = TestUtils.randomLong();
+      doc.put("_id", genID);
+      mongoClient.saveWithOptions(collection, doc, null, onSuccess(id -> {
+        assertDocumentWithIdIsPresent(collection, genID);
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testSavePreexistingLongID() throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
@@ -306,6 +320,19 @@ public abstract class MongoClientTestBase extends MongoTestBase {
         mongoClient.insert(collection, doc, onFailure(t -> {
           testComplete();
         }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testInsertWithOptionsCanTakeNullWriteOption() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject doc = createDoc();
+      mongoClient.insertWithOptions(collection, doc, null, onSuccess(id -> {
+        assertNotNull(id);
+        testComplete();
       }));
     }));
     await();
@@ -1288,6 +1315,19 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testRemoveDocumentWithOptionsCanHaveNullWriteOption() throws Exception {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 6, onSuccess(res2 -> {
+      mongoClient.removeDocumentWithOptions(collection, new JsonObject().put("num", 123), null, onSuccess(res3 -> {
+        assertEquals(1, res3.getRemovedCount());
+
+        testComplete();
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testRemoveOneWithOptionsWithMongoClientDeleteResultAcknowledged() throws Exception {
     String collection = randomCollection();
     insertDocs(mongoClient, collection, 6, onSuccess(res2 -> {
@@ -1353,6 +1393,19 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
           testComplete();
         }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testRemoveDocumentsWithOptionsCanHaveNullWriteOption() throws Exception {
+    String collection = randomCollection();
+    insertDocs(mongoClient, collection, 10, onSuccess(v -> {
+      mongoClient.removeDocumentsWithOptions(collection, new JsonObject(), null, onSuccess(v2 -> {
+        assertEquals(10, v2.getRemovedCount());
+
+        testComplete();
       }));
     }));
     await();
