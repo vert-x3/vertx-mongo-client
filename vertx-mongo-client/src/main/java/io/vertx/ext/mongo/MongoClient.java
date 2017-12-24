@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -91,7 +92,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient saveWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+  MongoClient saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Insert a document in the specified collection
@@ -116,7 +117,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient insertWithOptions(String collection, JsonObject document, WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+  MongoClient insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Update matching documents in the specified collection
@@ -300,7 +301,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
-  MongoClient findOne(String collection, JsonObject query, JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient findOne(String collection, JsonObject query, @Nullable JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection and update it.
@@ -433,7 +434,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeDocumentsWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   /**
    * Remove a single matching document from a collection
@@ -475,7 +476,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeDocumentWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
 
   /**
    * Create a new collection
