@@ -26,7 +26,8 @@ class ReadConcernLevelParser {
   }
 
   private Optional<ReadConcern> tryToParseFromConnectionString() {
-    return Optional.ofNullable(connectionString).map(ConnectionString::getReadConcern);
+    return Optional.ofNullable(connectionString)
+      .flatMap(cs -> Optional.ofNullable(cs.getReadConcern()));
   }
 
   private Optional<ReadConcern> tryToParseFromConfig() {
