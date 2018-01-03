@@ -69,7 +69,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private final Vertx vertx;
 
-  private final MongoHolder holder;
+  private final MongoDatabaseFactory holder;
   private final boolean useObjectId;
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName) {
@@ -98,7 +98,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection, writeOption);
+    VertxMongoCollection coll = getCollection(collection, writeOption);
     Object id = document.getValue(ID_FIELD);
     if (id == null) {
       coll.insertOne(document, convertCallback(resultHandler, Function.identity()));
@@ -126,7 +126,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(document, "document cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection, writeOption);
+    VertxMongoCollection coll = getCollection(collection, writeOption);
     coll.insertOne(document, convertCallback(resultHandler, Function.identity()));
     return this;
   }
@@ -146,7 +146,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection, options.getWriteOption());
+    VertxMongoCollection coll = getCollection(collection, options.getWriteOption());
     if (options.isMulti()) {
       coll.updateMany(query, update, mongoUpdateOptions(options), toMongoClientUpdateResult(resultHandler));
     } else {
@@ -169,7 +169,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(options, "options cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection, options.getWriteOption());
+    VertxMongoCollection coll = getCollection(collection, options.getWriteOption());
     coll.replaceOne(query, replace, mongoUpdateOptions(options), toMongoClientUpdateResult(resultHandler));
     return this;
   }
@@ -235,7 +235,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     foauOptions.upsert(updateOptions.isUpsert());
     foauOptions.returnDocument(updateOptions.isReturningNewDocument() ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection);
+    VertxMongoCollection coll = getCollection(collection);
     coll.findOneAndUpdate(query, update, foauOptions, resultHandler);
     return this;
   }
@@ -260,7 +260,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     foarOptions.upsert(updateOptions.isUpsert());
     foarOptions.returnDocument(updateOptions.isReturningNewDocument() ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection);
+    VertxMongoCollection coll = getCollection(collection);
     coll.findOneAndReplace(query, replace, foarOptions, resultHandler);
     return this;
   }
@@ -282,7 +282,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     foadOptions.sort(toBson(findOptions.getSort()));
     foadOptions.projection(toBson(findOptions.getFields()));
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection);
+    VertxMongoCollection coll = getCollection(collection);
     coll.findOneAndDelete(query, foadOptions, resultHandler);
     return this;
   }
@@ -293,7 +293,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection);
+    VertxMongoCollection coll = getCollection(collection);
     coll.count(query, wrapCallback(resultHandler));
     return this;
   }
@@ -310,7 +310,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection, writeOption);
+    VertxMongoCollection coll = getCollection(collection, writeOption);
     coll.deleteMany(query, toMongoClientDeleteResult(resultHandler));
     return this;
   }
@@ -327,7 +327,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(query, "query cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection, writeOption);
+    VertxMongoCollection coll = getCollection(collection, writeOption);
     coll.deleteOne(query, toMongoClientDeleteResult(resultHandler));
     return this;
   }
@@ -346,7 +346,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(operations, "operations cannot be null");
     requireNonNull(bulkWriteOptions, "bulkWriteOptions cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
-    MongoCollectionEncodedObjectId coll = getCollection(collection, bulkWriteOptions.getWriteOption());
+    VertxMongoCollection coll = getCollection(collection, bulkWriteOptions.getWriteOption());
     coll.bulkWrite(operations, mongoBulkWriteOptions(bulkWriteOptions),
       toMongoClientBulkWriteResult(resultHandler));
 
@@ -389,7 +389,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    MongoCollectionEncodedObjectId coll = getCollection(collection);
+    VertxMongoCollection coll = getCollection(collection);
     coll.drop(wrapCallback(resultHandler));
     return this;
   }
@@ -404,7 +404,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(key, "fieldName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
-    MongoCollectionEncodedObjectId coll = getCollection(collection);
+    VertxMongoCollection coll = getCollection(collection);
     com.mongodb.client.model.IndexOptions driverOpts = new com.mongodb.client.model.IndexOptions()
       .background(options.isBackground())
       .unique(options.isUnique())
@@ -431,7 +431,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   public io.vertx.ext.mongo.MongoClient listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
-    MongoCollectionEncodedObjectId coll = getCollection(collection);
+    VertxMongoCollection coll = getCollection(collection);
     ListIndexesIterable indexes = coll.listIndexes();
     if (indexes != null) {
       convertMongoIterable(indexes, resultHandler);
@@ -444,7 +444,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(indexName, "indexName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
-    MongoCollectionEncodedObjectId coll = getCollection(collection);
+    VertxMongoCollection coll = getCollection(collection);
     coll.dropIndex(indexName, wrapCallback(resultHandler));
     return this;
   }
@@ -535,7 +535,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(fieldName, "fieldName cannot be null");
     requireNonNull(query, "query cannot be null");
 
-    MongoCollectionEncodedObjectId mongoCollection = getCollection(collection);
+    VertxMongoCollection mongoCollection = getCollection(collection);
     Class<?> resultClass = this.getClass().getClassLoader().loadClass(resultClassname);
     return mongoCollection.distinct(fieldName, query, resultClass);
   }
@@ -621,20 +621,20 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   }
 
   private MongoIterable<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {
-    MongoCollectionEncodedObjectId coll = getCollection(collection, null);
+    VertxMongoCollection coll = getCollection(collection, null);
     return coll.find(query, options);
   }
 
-  private MongoCollectionEncodedObjectId getCollection(String name) {
+  private VertxMongoCollection getCollection(String name) {
     return getCollection(name, null);
   }
 
-  private MongoCollectionEncodedObjectId getCollection(String name, WriteOption writeOption) {
+  private VertxMongoCollection getCollection(String name, WriteOption writeOption) {
     MongoCollection<JsonObject> coll = holder.getDb().getCollection(name, JsonObject.class);
     if (coll != null && writeOption != null) {
       coll = coll.withWriteConcern(WriteConcern.valueOf(writeOption.name()));
     }
-    return new MongoCollectionEncodedObjectId(coll, useObjectId, vertx);
+    return new VertxMongoCollection(coll, useObjectId, vertx);
   }
 
   private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
@@ -646,7 +646,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return json == null ? null : BsonDocument.parse(json.encode());
   }
 
-  private void removeFromMap(LocalMap<String, MongoHolder> map, String dataSourceName) {
+  private void removeFromMap(LocalMap<String, MongoDatabaseFactory> map, String dataSourceName) {
     synchronized (vertx) {
       map.remove(dataSourceName);
       if (map.isEmpty()) {
@@ -655,12 +655,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     }
   }
 
-  private MongoHolder lookupHolder(String datasourceName, JsonObject config) {
+  private MongoDatabaseFactory lookupHolder(String datasourceName, JsonObject config) {
     synchronized (vertx) {
-      LocalMap<String, MongoHolder> map = vertx.sharedData().getLocalMap(DS_LOCAL_MAP_NAME);
-      MongoHolder theHolder = map.get(datasourceName);
+      LocalMap<String, MongoDatabaseFactory> map = vertx.sharedData().getLocalMap(DS_LOCAL_MAP_NAME);
+      MongoDatabaseFactory theHolder = map.get(datasourceName);
       if (theHolder == null) {
-        theHolder = new MongoHolder(config, () -> removeFromMap(map, datasourceName));
+        theHolder = new MongoDatabaseFactory(config, () -> removeFromMap(map, datasourceName));
         map.put(datasourceName, theHolder);
       } else {
         theHolder.incRefCount();

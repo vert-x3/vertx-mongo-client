@@ -6,14 +6,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 
-class MongoHolder implements Shareable {
+class MongoDatabaseFactory implements Shareable {
   private com.mongodb.async.client.MongoClient mongo;
   private MongoDatabase db;
   private final JsonObject config;
   private final Runnable closeRunner;
   private int refCount = 1;
 
-  MongoHolder(JsonObject config, Runnable closeRunner) {
+  MongoDatabaseFactory(JsonObject config, Runnable closeRunner) {
     this.config = config;
     this.closeRunner = closeRunner;
   }

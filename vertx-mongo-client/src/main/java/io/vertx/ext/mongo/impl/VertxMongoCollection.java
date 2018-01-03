@@ -24,13 +24,13 @@ import static io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec.ID_FIELD;
  * This delegates to MongoClient. Its purpose is to ensure that whenever a call to com.mongodb.async.client.MongoCollection
  * is made, that the ObjectId is correctly encoded first
  */
-class MongoCollectionEncodedObjectId {
+class VertxMongoCollection {
 
   private final MongoCollection<JsonObject> collection;
   private final boolean useObjectId;
   private final Vertx vertx;
 
-  MongoCollectionEncodedObjectId(MongoCollection<JsonObject> collection, boolean useObjectId, Vertx vertx) {
+  VertxMongoCollection(MongoCollection<JsonObject> collection, boolean useObjectId, Vertx vertx) {
     this.collection = collection;
     this.useObjectId = useObjectId;
     this.vertx = vertx;
