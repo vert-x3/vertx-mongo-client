@@ -1,39 +1,28 @@
 package io.vertx.ext.mongo.impl.config;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoCredential;
-import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
+import com.mongodb.*;
 import com.mongodb.async.client.MongoClientSettings;
-import com.mongodb.connection.ClusterSettings;
-import com.mongodb.connection.ConnectionPoolSettings;
-import com.mongodb.connection.ServerSettings;
-import com.mongodb.connection.SocketSettings;
-import com.mongodb.connection.SslSettings;
+import com.mongodb.connection.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
-import org.bson.codecs.BooleanCodec;
-import org.bson.codecs.BsonDocumentCodec;
-import org.bson.codecs.DoubleCodec;
-import org.bson.codecs.IntegerCodec;
-import org.bson.codecs.LongCodec;
-import org.bson.codecs.StringCodec;
+import org.bson.codecs.*;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 public class MongoClientOptionsParser {
 
+  private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
+    new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec());
   private final MongoClientSettings settings;
   private final String database;
-  private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
-          new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec());
 
   public MongoClientOptionsParser(JsonObject config) {
     Objects.requireNonNull(config);
@@ -73,6 +62,9 @@ public class MongoClientOptionsParser {
       options.writeConcern(writeConcern);
     }
 
+    // ReadConcern
+    maybeReadConcern(connectionString, config).ifPresent(options::readConcern);
+
     // ReadPreference
     ReadPreference readPreference = new ReadPreferenceParser(connectionString, config).readPreference();
     if (readPreference != null) {
@@ -99,5 +91,9 @@ public class MongoClientOptionsParser {
 
   public String database() {
     return database;
+  }
+
+  private Optional<ReadConcern> maybeReadConcern(ConnectionString connectionString, JsonObject config) {
+    return new ReadConcernLevelParser(connectionString, config).readConcern();
   }
 }
