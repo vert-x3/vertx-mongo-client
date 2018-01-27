@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-public class SSLSettingsParser {
+class SSLSettingsParser {
   private final ConnectionString connectionString;
   private final JsonObject config;
 
