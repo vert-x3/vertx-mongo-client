@@ -52,6 +52,9 @@ public class MongoClientOptionsParser {
     SocketSettings socketSettings = new SocketSettingsParser(connectionString, config).settings();
     options.socketSettings(socketSettings);
 
+    // Transport type
+    new StreamTypeParser(connectionString, config).streamFactory().ifPresent(options::streamFactoryFactory);
+
     // SSLSettings
     SslSettings sslSettings = new SSLSettingsParser(connectionString, config).settings();
     options.sslSettings(sslSettings);
