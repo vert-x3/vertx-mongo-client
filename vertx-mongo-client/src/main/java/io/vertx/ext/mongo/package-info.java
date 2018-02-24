@@ -68,7 +68,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#exampleCreateDefault}
+ * {@link examples.MongoClientExamples#exampleCreateDefault}
  * ----
  *
  * The first call to {@link io.vertx.ext.mongo.MongoClient#createShared(io.vertx.core.Vertx, io.vertx.core.json.JsonObject)}
@@ -82,7 +82,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#exampleCreatePoolName}
+ * {@link examples.MongoClientExamples#exampleCreatePoolName}
  * ----
  *
  * If different clients are created using the same Vert.x instance and specifying the same pool name, they will
@@ -105,7 +105,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#exampleCreateNonShared}
+ * {@link examples.MongoClientExamples#exampleCreateNonShared}
  * ----
  *
  * This is equivalent to calling {@link io.vertx.ext.mongo.MongoClient#createShared(io.vertx.core.Vertx, io.vertx.core.json.JsonObject, String)}
@@ -129,14 +129,14 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example1}
+ * {@link examples.MongoClientExamples#example1}
  * ----
  *
  * And here's an example of saving a document which already has an id.
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example2}
+ * {@link examples.MongoClientExamples#example2}
  * ----
  *
  * === Inserting documents
@@ -147,14 +147,14 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example3}
+ * {@link examples.MongoClientExamples#example3}
  * ----
  *
  * If a document is inserted with an id, and a document with that id already exists, the insert will fail:
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example4}
+ * {@link examples.MongoClientExamples#example4}
  * ----
  *
  * === Updating documents
@@ -172,7 +172,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example5}
+ * {@link examples.MongoClientExamples#example5}
  * ----
  *
  * To specify if the update should upsert or update multiple documents, use
@@ -187,7 +187,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example6}
+ * {@link examples.MongoClientExamples#example6}
  * ----
  *
  * === Replacing documents
@@ -201,7 +201,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example7}
+ * {@link examples.MongoClientExamples#example7}
  * ----
  *
  * === Bulk operations
@@ -226,14 +226,14 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example8}
+ * {@link examples.MongoClientExamples#example8}
  * ----
  *
  * Here's another example that will match all books by Tolkien:
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example9}
+ * {@link examples.MongoClientExamples#example9}
  * ----
  *
  * The matching documents are returned as a list of json objects in the result handler.
@@ -257,7 +257,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#findBatch}
+ * {@link examples.MongoClientExamples#findBatch}
  * ----
  *
  * The matching documents are emitted one by one by the {@link io.vertx.core.streams.ReadStream} handler.
@@ -266,7 +266,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#findBatchWithOptions}
+ * {@link examples.MongoClientExamples#findBatchWithOptions}
  * ----
  *
  * By default, `batchSize` is set to 20.
@@ -287,7 +287,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example10}
+ * {@link examples.MongoClientExamples#example10}
  * ----
  *
  * === Removing a single document
@@ -304,7 +304,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example11}
+ * {@link examples.MongoClientExamples#example11}
  * ----
  *
  * === Managing MongoDB collections
@@ -315,14 +315,14 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example11_1}
+ * {@link examples.MongoClientExamples#example11_1}
  * ----
  *
  * To create a new collection you can use {@link io.vertx.ext.mongo.MongoClient#createCollection}
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example11_2}
+ * {@link examples.MongoClientExamples#example11_2}
  * ----
  *
  * To drop a collection you can use {@link io.vertx.ext.mongo.MongoClient#dropCollection}
@@ -331,7 +331,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example11_3}
+ * {@link examples.MongoClientExamples#example11_3}
  * ----
  *
  *
@@ -349,7 +349,7 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example12}
+ * {@link examples.MongoClientExamples#example12}
  * ----
  *
  * === MongoDB Extended JSON support
@@ -361,27 +361,27 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example13_0}
+ * {@link examples.MongoClientExamples#example13_0}
  * ----
  *
  * Here's an example (in Java) of inserting a document with a binary field and reading it back
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example14_01_dl}
+ * {@link examples.MongoClientExamples#example14_01_dl}
  * ----
  *
  * Here's an example of inserting a base 64 encoded string, typing it as binary a binary field, and reading it back
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example14_02_dl}
+ * {@link examples.MongoClientExamples#example14_02_dl}
  * ----
  * Here's an example of inserting an object ID and reading it back
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example15_dl}
+ * {@link examples.MongoClientExamples#example15_dl}
  * ----
  *
  * === Getting distinct values
@@ -390,25 +390,25 @@
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example16}
+ * {@link examples.MongoClientExamples#example16}
  * ----
  * Here's an example of getting distinct value in batch mode
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example16_d1}
+ * {@link examples.MongoClientExamples#example16_d1}
  * ----
  * * Here's an example of getting distinct value with query
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example17}
+ * {@link examples.MongoClientExamples#example17}
  * ----
  * Here's an example of getting distinct value in batch mode with query
  *
  * [source,$lang]
  * ----
- * {@link examples.Examples#example17_d1}
+ * {@link examples.MongoClientExamples#example17_d1}
  * ----
  *
  * == Configuring the client
