@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
-public class Examples {
+public class MongoClientExamples {
 
   public void exampleCreateDefault(Vertx vertx, JsonObject config) {
     MongoClient client = MongoClient.createShared(vertx, config);
