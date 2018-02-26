@@ -4,7 +4,7 @@ image:https://vertx.ci.cloudbees.com/buildStatus/icon?job=vert.x3-mongo-client["
 
 An asynchronous client for interacting with a MongoDB database
 
-Please see the in source asciidoc link:vertx-mongo-client/src/main/asciidoc/java/index.adoc[documentation] or the main documentation on the http://vertx.io/docs/#data_access[web-site] for a full description
+Please see the in source asciidoc link:vertx-mongo-client/src/main/asciidoc/index.adoc[documentation] or the main documentation on the http://vertx.io/docs/#data_access[web-site] for a full description
 of Mongo service.
 
 The following docker CLI can be used for running mongo tests:
