@@ -38,7 +38,6 @@
     <stack.version>3.6.0-SNAPSHOT</stack.version>
     <mongo.async.version>3.6.3</mongo.async.version>
     <doc.skip>true</doc.skip>
-    <codegen.rxjava.deprecated>true</codegen.rxjava.deprecated>
   </properties>
 
   <dependencyManagement>
