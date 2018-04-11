@@ -141,10 +141,11 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
     JsonObject command = new JsonObject()
       .put("aggregate", "collection_name")
+      .put("cursor", new JsonObject().put("batchSize", 1))
       .put("pipeline", new JsonArray());
 
     mongoClient.runCommand("aggregate", command, onSuccess(resultObj -> {
-      JsonArray resArr = resultObj.getJsonArray("result");
+      JsonArray resArr = resultObj.getJsonObject("cursor").getJsonArray("firstBatch");
       assertNotNull(resArr);
       assertEquals(0, resArr.size());
       testComplete();
@@ -708,7 +709,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
       }));
     }
 
-    awaitLatch(latch);
+    longAwaitLatch(latch);
 
     JsonObject query = new JsonObject().put("flag", true);
     mongoClient.count(collection, query, onSuccess(count -> {

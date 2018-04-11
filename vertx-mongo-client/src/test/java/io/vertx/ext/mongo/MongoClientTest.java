@@ -4,6 +4,7 @@ import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoDatabase;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
+import io.vertx.test.core.Repeat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class MongoClientTest extends MongoClientTestBase {
     mongoClient = MongoClient.createNonShared(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);
-    awaitLatch(latch);
+    longAwaitLatch(latch);
 
 
     actualMongo = MongoClients.create("mongodb://localhost:27018");
@@ -58,7 +59,7 @@ public class MongoClientTest extends MongoClientTestBase {
           .handler(result -> foos.add(result.getString("foo")));
       }));
     }));
-    awaitLatch(latch);
+    longAwaitLatch(latch);
     assertEquals(numDocs, foos.size());
     assertEquals("bar0", foos.get(0));
     assertEquals("bar999", foos.get(numDocs - 1));

@@ -210,6 +210,38 @@ An unmodifiable list of upsert data. Each entry has the index of the request tha
 +++
 |===
 
+[[MongoClientChange]]
+== MongoClientChange
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[fullDocument]]`fullDocument`|`Json object`|-
+|[[namespace]]`namespace`|`Json object`|
++++
+The namespace is a JSON document of the form:
+ <pre>
+ {
+    "db": The database against which the watch cursor was opened
+    "coll": The collection the watch cursor is observing
+ }
+ </pre>
++++
+|[[operationType]]`operationType`|`link:enums.html#MongoClientChangeOperationType[MongoClientChangeOperationType]`|-
+|[[removedFields]]`removedFields`|`Array of String`|-
+|[[resumeToken]]`resumeToken`|`Json object`|
++++
+A token that can be passed to link to resume watching after a certain point
+ of time in a closed link.
+ <p>
+ It is recommended to use link to retrieve the very last resume token
+ that a watch cursor observed.
++++
+|[[updatedFields]]`updatedFields`|`Json object`|-
+|===
+
 [[MongoClientDeleteResult]]
 == MongoClientDeleteResult
 
@@ -282,5 +314,20 @@ Set whether upsert is enabled
 +++
 Set the write option
 +++
+|===
+
+[[WatchOptions]]
+== WatchOptions
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[batchSize]]`batchSize`|`Number (int)`|-
+|[[collation]]`collation`|`Json object`|-
+|[[fullDocument]]`fullDocument`|`String`|-
+|[[maxAwaitTimeMS]]`maxAwaitTimeMS`|`Number (int)`|-
+|[[resumeAfter]]`resumeAfter`|`Json object`|-
 |===
 

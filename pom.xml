@@ -40,6 +40,13 @@
     <doc.skip>true</doc.skip>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -84,9 +91,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-mongo-embedded-db</artifactId>
-      <scope>test</scope>
+      <groupId>com.github.hiddenswitch</groupId>
+      <artifactId>vertx-embedded-mongo-db</artifactId>
+      <version>3.5.1-mongo-three-six-two-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>

@@ -25,8 +25,8 @@ public interface MongoService extends MongoClient {
   /**
    * Create a proxy to a service that is deployed somewhere on the event bus
    *
-   * @param vertx  the Vert.x instance
-   * @param address  the address the service is listening on on the event bus
+   * @param vertx   the Vert.x instance
+   * @param address the address the service is listening on on the event bus
    * @return the service
    */
   static MongoService createEventBusProxy(Vertx vertx, String address) {
@@ -89,12 +89,12 @@ public interface MongoService extends MongoClient {
   @Override
   @Fluent
   MongoService bulkWrite(String collection, List<BulkOperation> operations,
-      Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
+                         Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
 
   @Override
   @Fluent
   MongoService bulkWriteWithOptions(String collection, List<BulkOperation> operations,
-      BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
+                                    BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
 
   @Override
   @Fluent
@@ -219,6 +219,20 @@ public interface MongoService extends MongoClient {
   @Override
   @Fluent
   MongoService distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  @Override
+  @Fluent
+  @GenIgnore
+  default MongoClient watch(String collection, JsonArray pipeline, WatchOptions options, Handler<AsyncResult<MongoClientChangeStream<MongoClientChange>>> resultHandler) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  @Fluent
+  @GenIgnore
+  default MongoClient watchReplaceRoot(String collection, JsonArray pipeline, WatchOptions options, Handler<AsyncResult<MongoClientChangeStream<JsonObject>>> resultHandler) {
+    throw new UnsupportedOperationException();
+  }
 
   @Override
   @GenIgnore

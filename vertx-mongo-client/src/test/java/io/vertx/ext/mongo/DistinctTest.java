@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class DistinctTest extends MongoTestBase {
 
@@ -35,7 +36,7 @@ public class DistinctTest extends MongoTestBase {
     mongoClient = MongoClient.createNonShared(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);
-    awaitLatch(latch);
+    longAwaitLatch(latch);
   }
 
   @Override

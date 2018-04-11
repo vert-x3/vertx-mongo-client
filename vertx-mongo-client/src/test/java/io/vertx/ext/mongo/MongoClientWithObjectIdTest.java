@@ -19,7 +19,7 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     mongoClient = MongoClient.createNonShared(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);
-    awaitLatch(latch);
+    longAwaitLatch(latch);
   }
 
   @Override
