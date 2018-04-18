@@ -157,12 +157,13 @@ public class WatchTest extends MongoTestBase {
     AtomicInteger counter = new AtomicInteger(10);
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(v -> {
-      mongoClient.watchReplaceRoot(collection, new JsonArray(Collections.singletonList(
+      mongoClient.watch(collection, new JsonArray(Collections.singletonList(
         new JsonObject().put("$replaceRoot", new JsonObject()
           .put("newRoot", "$fullDocument"))
       )), new WatchOptions(), onSuccess(cursor -> {
         cursor.handler(document -> {
-          assertTrue(document.containsKey("foo"));
+          // TODO Should actually be a change in the root document
+          assertTrue(document.getFullDocument().containsKey("foo"));
           if (counter.decrementAndGet() == 0) {
             cursor.close(Future.future());
             testComplete();

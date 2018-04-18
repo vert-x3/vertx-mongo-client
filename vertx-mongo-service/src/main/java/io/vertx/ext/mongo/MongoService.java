@@ -223,14 +223,7 @@ public interface MongoService extends MongoClient {
   @Override
   @Fluent
   @GenIgnore
-  default MongoClient watch(String collection, JsonArray pipeline, WatchOptions options, Handler<AsyncResult<MongoClientChangeStream<MongoClientChange>>> resultHandler) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  @Fluent
-  @GenIgnore
-  default MongoClient watchReplaceRoot(String collection, JsonArray pipeline, WatchOptions options, Handler<AsyncResult<MongoClientChangeStream<JsonObject>>> resultHandler) {
+  default MongoService watch(String collection, JsonArray pipeline, WatchOptions options, Handler<AsyncResult<MongoClientChangeStream<MongoClientChange>>> resultHandler) {
     throw new UnsupportedOperationException();
   }
 

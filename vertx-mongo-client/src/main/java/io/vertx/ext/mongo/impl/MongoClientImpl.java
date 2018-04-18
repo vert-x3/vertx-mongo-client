@@ -692,18 +692,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   @Override
   public MongoClient watch(String collection, JsonArray pipeline, WatchOptions options, Handler<AsyncResult<MongoClientChangeStream<MongoClientChange>>> resultHandler) {
-    return createWatchIterable(collection, pipeline, options, false, resultHandler);
-  }
-
-  @Override
-  public MongoClient watchReplaceRoot(String collection, JsonArray pipeline, WatchOptions options, Handler<AsyncResult<MongoClientChangeStream<JsonObject>>> resultHandler) {
-    throw new UnsupportedOperationException();
-    // Not supported until https://jira.mongodb.org/browse/JAVA-2828 is fixed
-    // return createWatchIterable(collection, pipeline, options, true, resultHandler);
-  }
-  
-  @SuppressWarnings("unchecked")
-  private <T> MongoClient createWatchIterable(String collection, JsonArray pipeline, WatchOptions options, boolean replacedRootDocument, Handler<AsyncResult<MongoClientChangeStream<T>>> resultHandler) {
     requireNonNull(collection);
     requireNonNull(pipeline);
 
@@ -712,7 +700,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     } else {
       if (options.getFullDocument() != null
         && !options.getFullDocument().equals(WatchOptions.FULL_DOCUMENT_UPDATE_LOOKUP)) {
-        resultHandler.handle(Future.failedFuture(new IllegalArgumentException("fullDocument must be null or \"updatedLookup\"")));
+        resultHandler.handle(Future.failedFuture(new IllegalArgumentException("fullDocument option must be either  null or \"" + WatchOptions.FULL_DOCUMENT_UPDATE_LOOKUP + " \"")));
         return this;
       }
     }
@@ -735,13 +723,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       }
 
       Context context = vertx.getOrCreateContext();
-      if (replacedRootDocument) {
-        MongoIterableStream<JsonObject> adaptor = new MongoIterableStream<>(view.withDocumentClass(JsonObject.class), context, options.getBatchSize());
-        resultHandler.handle(Future.succeededFuture((MongoClientChangeStream<T>)new MongoClientReplacedRootStreamImpl(adaptor)));
-      } else {
-        MongoIterableStream<ChangeStreamDocument<JsonObject>> adaptor = new MongoIterableStream<>(view, context, options.getBatchSize());
-        resultHandler.handle(Future.succeededFuture((MongoClientChangeStream<T>)new MongoClientChangeStreamChangeDocImpl(adaptor)));
-      }
+
+      MongoIterableStream<ChangeStreamDocument<JsonObject>> adaptor = new MongoIterableStream<>(view, context, options.getBatchSize());
+      resultHandler.handle(Future.succeededFuture(new MongoClientChangeStreamChangeDocImpl(adaptor)));
+
     } catch (Exception unhandledEx) {
       resultHandler.handle(Future.failedFuture(unhandledEx));
     }

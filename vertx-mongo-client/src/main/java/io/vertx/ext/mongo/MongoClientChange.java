@@ -14,8 +14,7 @@ import java.util.List;
 
 @DataObject
 public class MongoClientChange {
-  private static final ThreadLocal<JsonObjectCodec> codec = ThreadLocal.withInitial(() -> new JsonObjectCodec(new JsonObject()));
-
+  private static final JsonObjectCodec CODEC = new JsonObjectCodec(new JsonObject());
   private List<String> removedFields;
   private JsonObject updatedFields;
   private JsonObject fullDocument;
@@ -52,6 +51,10 @@ public class MongoClientChange {
     this.namespace = json.getJsonObject("namespace");
   }
 
+  private static JsonObjectCodec getCodec() {
+    return CODEC;
+  }
+
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     json.put("removedFields", new JsonArray(removedFields));
@@ -79,14 +82,14 @@ public class MongoClientChange {
       removedFields = obj.getUpdateDescription().getRemovedFields();
       final BsonDocument updatedFields = obj.getUpdateDescription().getUpdatedFields();
       if (updatedFields != null) {
-        this.updatedFields = codec.get().decode(new BsonDocumentReader(updatedFields), DecoderContext.builder().build());
+        this.updatedFields = getCodec().decode(new BsonDocumentReader(updatedFields), DecoderContext.builder().build());
       }
     }
 
     fullDocument = obj.getFullDocument();
     final BsonDocument resumeToken = obj.getResumeToken();
     if (resumeToken != null) {
-      this.resumeToken = codec.get().decode(new BsonDocumentReader(resumeToken), DecoderContext.builder().build());
+      this.resumeToken = getCodec().decode(new BsonDocumentReader(resumeToken), DecoderContext.builder().build());
     }
     operationType = MongoClientChangeOperationType.valueOf(obj.getOperationType().name());
     namespace = new JsonObject()
