@@ -70,7 +70,7 @@ public abstract class MongoTestBase extends VertxTestBase {
   public static void startMongo() throws Exception {
     if (getConnectionString() == null ) {
       IMongodConfig config = new MongodConfigBuilder().
-        version(Version.Main.PRODUCTION).
+        version(Version.Main.V3_4).
         net(new Net(27018, Network.localhostIsIPv6())).
         build();
       exe = MongodStarter.getDefaultInstance().prepare(config);
