@@ -3,64 +3,61 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.async.AsyncBatchCursor;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.MongoIterable;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
 
-import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * @author Thomas Segismont
- */
-class MongoIterableStream implements ReadStream<JsonObject> {
-
-  private final Context context;
-  private final MongoIterable<JsonObject> mongoIterable;
-  private final int batchSize;
-
+class MongoIterableStream<T> implements ReadStream<T> {
+  protected final Context context;
+  protected final MongoIterable<T> mongoIterable;
+  protected final int batchSize;
   // All the following fields are guarded by this instance
-  private AsyncBatchCursor<JsonObject> batchCursor;
-  private Deque<JsonObject> queue;
-  private Handler<JsonObject> dataHandler;
+  private AtomicBoolean readInProgress = new AtomicBoolean(false);
+  private AtomicBoolean closed = new AtomicBoolean(false);
+
+  private AsyncBatchCursor<T> batchCursor;
+  private Deque<T> queue;
+  private Handler<T> dataHandler;
   private Handler<Throwable> exceptionHandler;
   private Handler<Void> endHandler;
   private boolean paused;
-  private boolean readInProgress;
-  private boolean closed;
 
-  MongoIterableStream(Context context, MongoIterable<JsonObject> mongoIterable, int batchSize) {
-    this.context = context;
+  public MongoIterableStream(MongoIterable<T> mongoIterable, Context context, int batchSize) {
     this.mongoIterable = mongoIterable;
+    this.context = context;
     this.batchSize = batchSize;
   }
 
   @Override
-  public synchronized MongoIterableStream exceptionHandler(Handler<Throwable> handler) {
+  public synchronized MongoIterableStream<T> exceptionHandler(Handler<Throwable> handler) {
     checkClosed();
     this.exceptionHandler = handler;
     return this;
   }
 
   // Always called from a synchronized method or block
-  private void checkClosed() {
-    if (closed) {
+  private synchronized void checkClosed() {
+    if (closed.get()) {
       throw new IllegalArgumentException("Stream is closed");
     }
   }
 
   @Override
-  public synchronized MongoIterableStream handler(Handler<JsonObject> handler) {
+  public synchronized MongoIterableStream<T> handler(Handler<T> handler) {
     checkClosed();
     if (handler == null) {
       close();
     } else {
       dataHandler = handler;
-      SingleResultCallback<AsyncBatchCursor<JsonObject>> callback = (result, t) -> {
+      SingleResultCallback<AsyncBatchCursor<T>> callback = (result, t) -> {
         context.runOnContext(v -> {
           synchronized (this) {
             if (t != null) {
@@ -87,19 +84,19 @@ class MongoIterableStream implements ReadStream<JsonObject> {
   }
 
   // Always called from a synchronized method or block
-  private boolean canRead() {
-    return !paused && !closed;
+  private synchronized boolean canRead() {
+    return !paused && !closed.get();
   }
 
   @Override
-  public synchronized MongoIterableStream pause() {
+  public synchronized MongoIterableStream<T> pause() {
     checkClosed();
     paused = true;
     return this;
   }
 
   @Override
-  public synchronized MongoIterableStream resume() {
+  public synchronized MongoIterableStream<T> resume() {
     checkClosed();
     if (paused) {
       paused = false;
@@ -110,29 +107,28 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     return this;
   }
 
-  // Always called from a synchronized method or block
-  private synchronized void doRead() {
-    if (readInProgress) {
+  private void doRead() {
+    // This is essentially a semaphore
+    if (!readInProgress.compareAndSet(false, true)) {
       return;
     }
-    readInProgress = true;
     if (queue == null) {
-      queue = new ArrayDeque<>(batchSize);
+      queue = new ConcurrentLinkedDeque<>();
     }
     if (!queue.isEmpty()) {
       context.runOnContext(v -> emitQueued());
       return;
     }
-    context.<List<JsonObject>>executeBlocking(fut -> {
-      batchCursor.next((result, t) -> {
-        if (t != null) {
-          fut.fail(t);
-        } else {
-          fut.complete(result == null ? Collections.emptyList() : result);
-        }
-      });
-    }, false, ar -> {
-      synchronized (this) {
+
+    batchCursor.next((result, t) -> {
+      final Future<List<T>> ar;
+      if (t != null) {
+        ar = Future.failedFuture(t);
+      } else {
+        ar = Future.succeededFuture(result == null ? Collections.emptyList() : result);
+      }
+
+      context.runOnContext(v -> {
         if (ar.succeeded()) {
           queue.addAll(ar.result());
           if (queue.isEmpty()) {
@@ -147,47 +143,49 @@ class MongoIterableStream implements ReadStream<JsonObject> {
           close();
           handleException(ar.cause());
         }
-      }
+      });
     });
   }
 
-  // Always called from a synchronized method or block
-  private void handleException(Throwable cause) {
+  private synchronized void handleException(Throwable cause) {
     if (exceptionHandler != null) {
       exceptionHandler.handle(cause);
     }
   }
 
-  // Always called from a synchronized method or block
-  private synchronized void emitQueued() {
+  private void emitQueued() {
     while (!queue.isEmpty() && canRead()) {
       dataHandler.handle(queue.remove());
     }
-    readInProgress = false;
+    readInProgress.set(false);
     if (canRead()) {
       doRead();
     }
   }
 
   @Override
-  public synchronized MongoIterableStream endHandler(Handler<Void> handler) {
+  public synchronized MongoIterableStream<T> endHandler(Handler<Void> handler) {
     endHandler = handler;
     return this;
   }
 
   // Always called from a synchronized method or block
-  private void close() {
-    closed = true;
-    AtomicReference<AsyncBatchCursor> cursorRef = new AtomicReference<>();
+  void close() {
+    if (!closed.compareAndSet(false, true)) {
+      return;
+    }
+
+    close(Future.future());
+  }
+
+  public void close(Handler<AsyncResult<Void>> handler) {
+    if (!closed.compareAndSet(false, true)) {
+      return;
+    }
+
     context.executeBlocking(fut -> {
-      synchronized (this) {
-        cursorRef.set(batchCursor);
-      }
-      AsyncBatchCursor cursor = cursorRef.get();
-      if (cursor != null) {
-        cursor.close();
-      }
+      batchCursor.close();
       fut.complete();
-    }, false, null);
+    }, handler);
   }
 }

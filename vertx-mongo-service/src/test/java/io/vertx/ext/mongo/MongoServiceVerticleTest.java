@@ -36,7 +36,7 @@ public class MongoServiceVerticleTest extends MongoClientTestBase {
       mongoClient = MongoService.createEventBusProxy(vertx, "vertx.mongo");
       dropCollections(mongoClient, latch);
     }));
-    awaitLatch(latch);
+    longAwaitLatch(latch);
   }
 
 }

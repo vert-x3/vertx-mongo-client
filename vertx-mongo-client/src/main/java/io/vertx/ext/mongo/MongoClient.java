@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -580,6 +581,59 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  /**
+   * Subscribes to the change stream specified by the given aggregation pipeline.
+   *
+   * {@code pipeline} describes a Mongo "aggregation" pipeline object limited to {@code $match}, {@code $project},
+   * {@code $addFields}, {@code $replaceRoot} and {@code $redact} commands. This pipeline is evaluated not against the
+   * underlying collection's document but against a "change event" document:
+   * <p>
+   * <pre>
+   * {
+   *    _id : { (metadata related to the change) },
+   *    "operationType" : (one of {@link MongoClientChangeOperationType}),
+   *    "fullDocument" : { the collection document when {@link WatchOptions#fullDocument} is set to "updateLookup" },
+   *    "ns" : {
+   *       "db" : "database",
+   *       "coll" : "collection"
+   *    },
+   *    "documentKey" : { "_id" : (ObjectId or string) },
+   *    "updateDescription" : {
+   *       "updatedFields" : { key-value pairs of updated fields, whose keys match the fields as updated by an update
+   *                           cmd },
+   *       "removedFields" : [ "field names", ... ]
+   *    }
+   * }
+   * </pre>
+   * <p>
+   * This change document format differs slightly from {@link MongoClientChange} due to differences in the Mongo driver.
+   * <p>
+   * The {@code $project}, {@code $replaceRoot} and {@code $redact} aggregation steps can be used to modify the document
+   * sent to the handler of this watch. If the {@code _id} field of the resulting document does not have the exact
+   * contents of the {@code _id} field that the change document began with in the pipeline, the mongo driver will throw
+   * an exception. It is strongly recommended to not use these pipeline operators for the time being.
+   * <p>
+   * {@code options} and {@code pipeline} should not be {@code null}. Use {@code new JsonArray()} as your
+   * {@code pipeline} to specify all changes, and {@code new WatchOptions()} for default options.
+   * <p>
+   * Requires that the mongod server is running at least 3.6.0 and that the connection is a replica set connection
+   * (e.g., {@code "mongodb://localhost:27017/dbname?replicaSet=replSetName"}.
+   * <p>
+   * Trying to watch for change streams on a non-replica-set node will fail.
+   * <p>
+   * Each watch uses 1 connection to the database until {@link MongoClientChangeStream#close(Handler)} is called.
+   * Reportedly, there is a limit of <a href="https://github.com/meteor/meteor-feature-requests/issues/158#issuecomment-339376181">
+   * 1,000 change stream watches</a> in Mongo 3.6. This will exceed the default max connections in any case.
+   *
+   * @param collection  the collection
+   * @param pipeline  the Mongo aggregation pipeline
+   * @param options  the options
+   * @param resultHandler  will be provided with an async iterable for watching
+   */
+  @Fluent
+  @GenIgnore
+  MongoClient watch(String collection, JsonArray pipeline, WatchOptions options, Handler<AsyncResult<MongoClientChangeStream<MongoClientChange>>> resultHandler);
 
   /**
    * Gets the distinct values of the specified field name.
