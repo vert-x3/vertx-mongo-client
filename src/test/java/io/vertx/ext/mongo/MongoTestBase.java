@@ -68,13 +68,19 @@ public abstract class MongoTestBase extends VertxTestBase {
 
   @BeforeClass
   public static void startMongo() throws Exception {
-    if (getConnectionString() == null ) {
+    String uri = getConnectionString();
+    if (uri == null ) {
+      Version.Main version = Version.Main.V3_4;
+      int port = 27018;
+      System.out.println("Starting Mongo " + version + " on port " + port);
       IMongodConfig config = new MongodConfigBuilder().
-        version(Version.Main.V3_4).
-        net(new Net(27018, Network.localhostIsIPv6())).
+        version(version).
+        net(new Net(port, Network.localhostIsIPv6())).
         build();
       exe = MongodStarter.getDefaultInstance().prepare(config);
       exe.start();
+    } else {
+      System.out.println("Using existing Mongo " + uri);
     }
   }
 
