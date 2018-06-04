@@ -3,14 +3,13 @@ package io.vertx.ext.mongo;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoDatabase;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
-import org.junit.After;
-import org.junit.Before;
+import io.vertx.core.streams.ReadStream;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -47,12 +46,17 @@ public class MongoClientTest extends MongoClientTestBase {
   public void testFindBatch() throws Exception {
     int numDocs = 3000;
 
+    AtomicReference<ReadStream<JsonObject>> streamReference = new AtomicReference<>();
+
     String collection = randomCollection();
     CountDownLatch latch = new CountDownLatch(1);
     List<String> foos = new ArrayList<>();
     mongoClient.createCollection(collection, onSuccess(res -> {
       insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
-        mongoClient.findBatchWithOptions(collection, new JsonObject(), new FindOptions().setSort(new JsonObject().put("foo", 1)))
+        FindOptions findOptions = new FindOptions().setSort(new JsonObject().put("foo", 1));
+        ReadStream<JsonObject> stream = mongoClient.findBatchWithOptions(collection, new JsonObject(), findOptions);
+        streamReference.set(stream);
+        stream
           .exceptionHandler(this::fail)
           .endHandler(v -> latch.countDown())
           .handler(result -> foos.add(result.getString("foo")));
@@ -62,6 +66,9 @@ public class MongoClientTest extends MongoClientTestBase {
     assertEquals(numDocs, foos.size());
     assertEquals("bar0", foos.get(0));
     assertEquals("bar999", foos.get(numDocs - 1));
+
+    // Make sure stream handlers can be set to null after closing
+    streamReference.get().handler(null).exceptionHandler(null).endHandler(null);
   }
 
 

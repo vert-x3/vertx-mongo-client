@@ -41,7 +41,6 @@ class MongoIterableStream implements ReadStream<JsonObject> {
 
   @Override
   public synchronized MongoIterableStream exceptionHandler(Handler<Throwable> handler) {
-    checkClosed();
     this.exceptionHandler = handler;
     return this;
   }
@@ -55,11 +54,9 @@ class MongoIterableStream implements ReadStream<JsonObject> {
 
   @Override
   public synchronized MongoIterableStream handler(Handler<JsonObject> handler) {
-    checkClosed();
-    if (handler == null) {
+    if ((dataHandler = handler) == null) {
       close();
     } else {
-      dataHandler = handler;
       SingleResultCallback<AsyncBatchCursor<JsonObject>> callback = (result, t) -> {
         context.runOnContext(v -> {
           synchronized (this) {
@@ -177,6 +174,9 @@ class MongoIterableStream implements ReadStream<JsonObject> {
 
   // Always called from a synchronized method or block
   private void close() {
+    if (closed) {
+      return;
+    }
     closed = true;
     AtomicReference<AsyncBatchCursor> cursorRef = new AtomicReference<>();
     context.executeBlocking(fut -> {
