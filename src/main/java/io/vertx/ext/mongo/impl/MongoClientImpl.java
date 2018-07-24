@@ -972,6 +972,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     }
 
     @Override
+    public ReadStream<JsonObject> fetch(long l) {
+      return this;
+    }
+
+    @Override
     public ReadStream<JsonObject> resume() {
       return this;
     }

@@ -6,11 +6,9 @@ import com.mongodb.async.client.MongoIterable;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.queue.Queue;
 import io.vertx.core.streams.ReadStream;
 
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,18 +23,17 @@ class MongoIterableStream implements ReadStream<JsonObject> {
 
   // All the following fields are guarded by this instance
   private AsyncBatchCursor<JsonObject> batchCursor;
-  private Deque<JsonObject> queue;
-  private Handler<JsonObject> dataHandler;
+  private Queue<JsonObject> queue;
   private Handler<Throwable> exceptionHandler;
   private Handler<Void> endHandler;
-  private boolean paused;
-  private boolean readInProgress;
   private boolean closed;
 
   MongoIterableStream(Context context, MongoIterable<JsonObject> mongoIterable, int batchSize) {
     this.context = context;
     this.mongoIterable = mongoIterable;
     this.batchSize = batchSize;
+    this.queue = Queue.queue(context);
+    queue.writableHandler(v -> doRead());
   }
 
   @Override
@@ -46,7 +43,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
   }
 
   // Always called from a synchronized method or block
-  private void checkClosed() {
+  private synchronized void checkClosed() {
     if (closed) {
       throw new IllegalArgumentException("Stream is closed");
     }
@@ -54,7 +51,8 @@ class MongoIterableStream implements ReadStream<JsonObject> {
 
   @Override
   public synchronized MongoIterableStream handler(Handler<JsonObject> handler) {
-    if ((dataHandler = handler) == null) {
+    queue.handler(handler);
+    if (handler == null) {
       close();
     } else {
       SingleResultCallback<AsyncBatchCursor<JsonObject>> callback = (result, t) -> {
@@ -66,7 +64,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
             } else {
               batchCursor = result;
               batchCursor.setBatchSize(batchSize);
-              if (canRead()) {
+              if (!closed) {
                 doRead();
               }
             }
@@ -83,62 +81,50 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     return this;
   }
 
-  // Always called from a synchronized method or block
-  private boolean canRead() {
-    return !paused && !closed;
-  }
-
   @Override
-  public synchronized MongoIterableStream pause() {
+  public MongoIterableStream pause() {
     checkClosed();
-    paused = true;
+    queue.pause();
     return this;
   }
 
   @Override
-  public synchronized MongoIterableStream resume() {
+  public MongoIterableStream resume() {
     checkClosed();
-    if (paused) {
-      paused = false;
-      if (dataHandler != null) {
-        doRead();
-      }
-    }
+    queue.resume();
+    return this;
+  }
+
+  @Override
+  public ReadStream<JsonObject> fetch(long amount) {
+    checkClosed();
+    queue.take(amount);
     return this;
   }
 
   // Always called from a synchronized method or block
   private synchronized void doRead() {
-    if (readInProgress) {
-      return;
-    }
-    readInProgress = true;
-    if (queue == null) {
-      queue = new ArrayDeque<>(batchSize);
-    }
-    if (!queue.isEmpty()) {
-      context.runOnContext(v -> emitQueued());
-      return;
-    }
     context.<List<JsonObject>>executeBlocking(fut -> {
       batchCursor.next((result, t) -> {
         if (t != null) {
           fut.fail(t);
         } else {
-          fut.complete(result == null ? Collections.emptyList() : result);
+          fut.complete(result);
         }
       });
-    }, false, ar -> {
+    }, true, ar -> {
       synchronized (this) {
         if (ar.succeeded()) {
-          queue.addAll(ar.result());
-          if (queue.isEmpty()) {
+          List<JsonObject> list = ar.result();
+          if (list != null) {
+            if (queue.addAll(list)) {
+              doRead();
+            }
+          } else {
             close();
             if (endHandler != null) {
               endHandler.handle(null);
             }
-          } else {
-            emitQueued();
           }
         } else {
           close();
@@ -152,17 +138,6 @@ class MongoIterableStream implements ReadStream<JsonObject> {
   private void handleException(Throwable cause) {
     if (exceptionHandler != null) {
       exceptionHandler.handle(cause);
-    }
-  }
-
-  // Always called from a synchronized method or block
-  private synchronized void emitQueued() {
-    while (!queue.isEmpty() && canRead()) {
-      dataHandler.handle(queue.remove());
-    }
-    readInProgress = false;
-    if (canRead()) {
-      doRead();
     }
   }
 
