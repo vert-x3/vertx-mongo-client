@@ -42,13 +42,6 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     return this;
   }
 
-  // Always called from a synchronized method or block
-  private synchronized void checkClosed() {
-    if (closed) {
-      throw new IllegalArgumentException("Stream is closed");
-    }
-  }
-
   @Override
   public synchronized MongoIterableStream handler(Handler<JsonObject> handler) {
     queue.handler(handler);
@@ -83,21 +76,33 @@ class MongoIterableStream implements ReadStream<JsonObject> {
 
   @Override
   public MongoIterableStream pause() {
-    checkClosed();
+    synchronized (this) {
+      if (closed) {
+        return this;
+      }
+    }
     queue.pause();
     return this;
   }
 
   @Override
   public MongoIterableStream resume() {
-    checkClosed();
+    synchronized (this) {
+      if (closed) {
+        return this;
+      }
+    }
     queue.resume();
     return this;
   }
 
   @Override
   public ReadStream<JsonObject> fetch(long amount) {
-    checkClosed();
+    synchronized (this) {
+      if (closed) {
+        return this;
+      }
+    }
     queue.take(amount);
     return this;
   }
