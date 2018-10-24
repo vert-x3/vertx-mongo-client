@@ -6,8 +6,8 @@ import com.mongodb.async.client.MongoIterable;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.queue.Queue;
 import io.vertx.core.streams.ReadStream;
+import io.vertx.core.streams.impl.InboundBuffer;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,7 +23,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
 
   // All the following fields are guarded by this instance
   private AsyncBatchCursor<JsonObject> batchCursor;
-  private Queue<JsonObject> queue;
+  private InboundBuffer<JsonObject> queue;
   private Handler<Throwable> exceptionHandler;
   private Handler<Void> endHandler;
   private boolean closed;
@@ -32,8 +32,8 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     this.context = context;
     this.mongoIterable = mongoIterable;
     this.batchSize = batchSize;
-    this.queue = Queue.queue(context);
-    queue.writableHandler(v -> doRead());
+    this.queue = new InboundBuffer<>(context);
+    queue.drainHandler(v -> doRead());
   }
 
   @Override
@@ -103,7 +103,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
         return this;
       }
     }
-    queue.take(amount);
+    queue.fetch(amount);
     return this;
   }
 
@@ -122,7 +122,7 @@ class MongoIterableStream implements ReadStream<JsonObject> {
         if (ar.succeeded()) {
           List<JsonObject> list = ar.result();
           if (list != null) {
-            if (queue.addAll(list)) {
+            if (queue.write(list)) {
               doRead();
             }
           } else {
