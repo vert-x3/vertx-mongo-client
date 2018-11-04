@@ -17,26 +17,24 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
 
 /**
  * Converter for {@link io.vertx.ext.mongo.AggregateOptions}.
- * <p>
+ *
  * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.AggregateOptions} original class using Vert.x codegen.
  */
 public class AggregateOptionsConverter {
 
   public static void fromJson(JsonObject json, AggregateOptions obj) {
     if (json.getValue("allowDiskUse") instanceof Boolean) {
-      obj.setAllowDiskUse((Boolean) json.getValue("allowDiskUse"));
+      obj.setAllowDiskUse((Boolean)json.getValue("allowDiskUse"));
     }
     if (json.getValue("batchSize") instanceof Number) {
-      obj.setBatchSize(((Number) json.getValue("batchSize")).intValue());
-    }
-    if (json.getValue("maxAwaitTime") instanceof Number) {
-      obj.setMaxAwaitTime(((Number) json.getValue("maxAwaitTime")).longValue());
+      obj.setBatchSize(((Number)json.getValue("batchSize")).intValue());
     }
     if (json.getValue("maxTime") instanceof Number) {
-      obj.setMaxTime(((Number) json.getValue("maxTime")).longValue());
+      obj.setMaxTime(((Number)json.getValue("maxTime")).longValue());
     }
   }
 
@@ -45,7 +43,6 @@ public class AggregateOptionsConverter {
       json.put("allowDiskUse", obj.getAllowDiskUse());
     }
     json.put("batchSize", obj.getBatchSize());
-    json.put("maxAwaitTime", obj.getMaxAwaitTime());
     json.put("maxTime", obj.getMaxTime());
   }
 }
