@@ -18,7 +18,7 @@ Set the flag if writing to temporary files is enabled.
 +++
 |[[batchSize]]`batchSize`|`Number (int)`|
 +++
-Set the batch size for methods loading found data in batches.
+Set the batch size for methods loading in data.
 +++
 |[[maxAwaitTime]]`maxAwaitTime`|`Number (long)`|
 +++
