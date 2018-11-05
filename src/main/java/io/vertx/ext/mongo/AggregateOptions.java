@@ -21,7 +21,7 @@ public class AggregateOptions {
    */
   public static final long DEFAULT_MAX_TIME       = 0L;
   /**
-   * The default value of maxAwaiTime = 0.
+   * The default value of maxAwaiTime = 1000.
    */
   public static final long DEFAULT_MAX_AWAIT_TIME = 1000L;
 
@@ -95,21 +95,15 @@ public class AggregateOptions {
   }
 
   /**
-   * @return the batch size for methods loading found data in batches
-   */
-  public int getBatchSize() {
-    return batchSize;
-  }
-
-  /**
    * Get the flag if writing to temporary files is enabled.
    * When set to true, aggregation operations can write data to the _tmp subdirectory in the dbPath directory.
    *
    * @return true if writing to temporary files is enabled.
    */
-  public Boolean getAllowDiskUse(){
+  public Boolean getAllowDiskUse() {
     return allowDiskUse;
   }
+
   /**
    * Set the flag if writing to temporary files is enabled.
    *
@@ -119,6 +113,13 @@ public class AggregateOptions {
   public AggregateOptions setAllowDiskUse(final Boolean allowDiskUse) {
     this.allowDiskUse = allowDiskUse;
     return this;
+  }
+
+  /**
+   * @return the batch size for methods loading found data in batches
+   */
+  public int getBatchSize() {
+    return batchSize;
   }
 
   /**
@@ -133,7 +134,6 @@ public class AggregateOptions {
   }
 
   /**
-   *
    * @return the max await time in ms
    */
   public long getMaxAwaitTime() {
