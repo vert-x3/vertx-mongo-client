@@ -14,7 +14,8 @@
 ^|Name | Type ^| Description
 |[[allowDiskUse]]`allowDiskUse`|`Boolean`|
 +++
-Set the flag if writing to temporary files is enabled.
+Set the flag for enabling/disabling writing  to the _tmp subdirectory in the dbPath directory.
+.  Defaults to false if not set.
 +++
 |[[batchSize]]`batchSize`|`Number (int)`|
 +++
