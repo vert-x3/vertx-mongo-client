@@ -5,6 +5,7 @@ import io.vertx.test.core.TestUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
@@ -12,27 +13,32 @@ import static org.junit.Assert.assertEquals;
 public class AggregateOptionsTest {
   @Test
   public void testOptions() {
-    AggregateOptions options = new AggregateOptions();
+    final AggregateOptions options = new AggregateOptions();
 
-    long maxAwaitTime = TestUtils.randomLong();
+    final long maxAwaitTime = TestUtils.randomLong();
     assertEquals(options, options.setMaxAwaitTime(maxAwaitTime));
     assertEquals(maxAwaitTime, options.getMaxAwaitTime());
 
-    long maxTime = TestUtils.randomLong();
+    final long maxTime = TestUtils.randomLong();
     assertEquals(options, options.setMaxTime(maxTime));
     assertEquals(maxTime, options.getMaxTime());
+
+    final boolean useDisk = TestUtils.randomBoolean();
+    assertEquals(options, options.setAllowDiskUse(useDisk));
+    assertEquals(useDisk, options.getAllowDiskUse());
   }
 
   @Test
   public void testDefaultOptions() {
-    AggregateOptions options = new AggregateOptions();
+    final AggregateOptions options = new AggregateOptions();
     assertEquals(AggregateOptions.DEFAULT_MAX_AWAIT_TIME, options.getMaxAwaitTime());
     assertEquals(AggregateOptions.DEFAULT_MAX_TIME, options.getMaxTime());
+    assertNull(options.getAllowDiskUse());
   }
 
   @Test
   public void testOptionsJson() {
-    JsonObject json = new JsonObject();
+    final JsonObject json = new JsonObject();
 
     long maxAwaitTime = TestUtils.randomLong();
     json.put("maxAwaitTime", maxAwaitTime);
@@ -40,37 +46,43 @@ public class AggregateOptionsTest {
     long maxTime = TestUtils.randomLong();
     json.put("maxTime", maxTime);
 
-    AggregateOptions options = new AggregateOptions(json);
+    boolean useDisk = TestUtils.randomBoolean();
+    json.put("allowDiskUse", useDisk);
+
+    final AggregateOptions options = new AggregateOptions(json);
     assertEquals(maxAwaitTime, options.getMaxAwaitTime());
     assertEquals(maxTime, options.getMaxTime());
+    assertEquals(useDisk, options.getAllowDiskUse());
   }
 
   @Test
   public void testDefaultOptionsJson() {
-    AggregateOptions options = new AggregateOptions(new JsonObject());
-    AggregateOptions def = new AggregateOptions();
+    final AggregateOptions options = new AggregateOptions(new JsonObject());
+    final AggregateOptions def = new AggregateOptions();
     assertEquals(def.getMaxAwaitTime(), options.getMaxAwaitTime());
     assertEquals(def.getMaxTime(), options.getMaxTime());
+    assertNull(options.getAllowDiskUse());
   }
 
   @Test
   public void testCopyOptions() {
-    AggregateOptions options = new AggregateOptions();
+    final AggregateOptions options = new AggregateOptions();
     options.setMaxAwaitTime(TestUtils.randomLong());
     options.setMaxTime(TestUtils.randomLong());
+    options.setAllowDiskUse(TestUtils.randomBoolean());
 
-    AggregateOptions copy = new AggregateOptions(options);
+    final AggregateOptions copy = new AggregateOptions(options);
     assertEquals(options.getMaxAwaitTime(), copy.getMaxAwaitTime());
     assertEquals(options.getMaxTime(), copy.getMaxTime());
+    assertEquals(options.getAllowDiskUse(), copy.getAllowDiskUse());
   }
 
   @Test
   public void testToJson() {
-    AggregateOptions options = new AggregateOptions();
-    long maxAwaitTime = TestUtils.randomPositiveLong();
-    long maxTime = TestUtils.randomPositiveLong();
-    options.setMaxAwaitTime(maxAwaitTime);
-    options.setMaxTime(maxTime);
+    final AggregateOptions options = new AggregateOptions();
+    options.setMaxAwaitTime(TestUtils.randomPositiveLong());
+    options.setMaxTime(TestUtils.randomPositiveLong());
+    options.setAllowDiskUse(TestUtils.randomBoolean());
 
     assertEquals(options, new AggregateOptions(options.toJson()));
   }

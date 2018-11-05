@@ -75,7 +75,7 @@ public class AggregateOptions {
   /**
    * Get the specified time limit in milliseconds for processing operations on a cursor.
    * If you do not specify a value for maxTime, operations will not time out.
-   * A value of 0 explicitly specifies the default unbounded behavior.
+   * A value of 0 explicitly specifies the default unbounded behavior, which is not to time out.
    *
    * @return the specified time limit in milliseconds for processing operations on a cursor
    */
