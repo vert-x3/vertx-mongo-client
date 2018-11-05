@@ -13,7 +13,7 @@ import io.vertx.core.json.JsonObject;
 @DataObject(generateConverter = true)
 public class AggregateOptions {
   /**
-   * The default value of batchSize = 10.
+   * The default value of batchSize = 20.
    */
   public static final int  DEFAULT_BATCH_SIZE     = 20;
   /**
