@@ -617,6 +617,24 @@ public interface MongoClient {
    */
   ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, int batchSize);
 
+
+  /**
+   * Run aggregate MongoDB command with default {@link AggregateOptions}.
+   *
+   * @param collection the collection
+   * @param pipeline   aggregation pipeline to be executed
+   */
+  ReadStream<JsonObject> aggregate(final String collection, final JsonArray pipeline);
+
+  /**
+   * Run aggregate MongoDB command.
+   *
+   * @param collection the collection
+   * @param pipeline   aggregation pipeline to be executed
+   * @param options    options to configure the aggregation command
+   */
+  ReadStream<JsonObject> aggregateWithOptions(String collection, final JsonArray pipeline, final AggregateOptions options);
+
   /**
    * Close the client and release its resources
    */
