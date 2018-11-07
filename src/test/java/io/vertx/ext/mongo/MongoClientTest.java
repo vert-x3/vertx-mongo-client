@@ -2,14 +2,15 @@ package io.vertx.ext.mongo;
 
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoDatabase;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
@@ -99,27 +100,6 @@ public class MongoClientTest extends MongoClientTestBase {
         });
       }));
     await();
-  }
-
-  @Test
-  public void testAggregate() throws Exception {
-    int numDocs = 1000;
-
-    String collection = randomCollection();
-    CountDownLatch latch = new CountDownLatch(1);
-    AtomicLong count = new AtomicLong();
-    mongoClient.createCollection(collection, onSuccess(res -> {
-      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
-        mongoClient.aggregate(collection,
-                              new JsonArray().add(new JsonObject().put("$match", new JsonObject().put("foo", new JsonObject().put("$regex", "bar1"))))
-                                             .add(new JsonObject().put("$count", "foo_starting_with_bar1")))
-                   .exceptionHandler(this::fail)
-                   .endHandler(v -> latch.countDown())
-                   .handler(result -> count.set(result.getLong("foo_starting_with_bar1")));
-      }));
-    }));
-    awaitLatch(latch);
-    assertEquals(111, count.longValue());
   }
 
   private void upsertDoc(String collection, JsonObject docToInsert, String expectedId, Consumer<JsonObject> doneFunction) {
