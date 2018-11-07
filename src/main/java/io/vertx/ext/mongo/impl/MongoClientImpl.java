@@ -18,7 +18,6 @@ package io.vertx.ext.mongo.impl;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.async.SingleResultCallback;
-import com.mongodb.async.client.AggregateIterable;
 import com.mongodb.async.client.DistinctIterable;
 import com.mongodb.async.client.FindIterable;
 import com.mongodb.async.client.ListIndexesIterable;
@@ -54,7 +53,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.core.streams.ReadStream;
-import io.vertx.ext.mongo.AggregateOptions;
 import io.vertx.ext.mongo.BulkOperation;
 import io.vertx.ext.mongo.BulkWriteOptions;
 import io.vertx.ext.mongo.FindOptions;
@@ -95,7 +93,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private static final UpdateOptions DEFAULT_UPDATE_OPTIONS = new UpdateOptions();
   private static final FindOptions DEFAULT_FIND_OPTIONS = new FindOptions();
-  private static final AggregateOptions DEFAULT_AGGREGATE_OPTIONS = new AggregateOptions();
   private static final BulkWriteOptions DEFAULT_BULK_WRITE_OPTIONS = new BulkWriteOptions();
   private static final String ID_FIELD = "_id";
 
@@ -692,17 +689,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     }
   }
 
-  @Override
-  public ReadStream<JsonObject> aggregate(final String collection, final JsonArray pipeline) {
-    return aggregateWithOptions(collection, pipeline, DEFAULT_AGGREGATE_OPTIONS);
-  }
-
-  @Override
-  public ReadStream<JsonObject> aggregateWithOptions(final String collection, final JsonArray pipeline, final AggregateOptions options) {
-      final MongoIterable<JsonObject> view = doAggregate(collection, pipeline, options);
-      return new MongoIterableStream(vertx.getOrCreateContext(), view, options.getBatchSize());
-  }
-
   private void convertMongoIterable(MongoIterable iterable, Handler<AsyncResult<JsonArray>> resultHandler) {
     List results = new ArrayList();
     try {
@@ -736,28 +722,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     return mongoCollection.distinct(fieldName, bquery, resultClass);
   }
 
-  private AggregateIterable<JsonObject> doAggregate(String collection, JsonArray pipeline, AggregateOptions options) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(pipeline, "pipeline cannot be null");
-    final MongoCollection<JsonObject> coll = getCollection(collection);
-    final List<Bson> bpipeline = new ArrayList<>(pipeline.size());
-    pipeline.getList().forEach(entry -> bpipeline.add(wrap(JsonObject.mapFrom(entry))));
-    final AggregateIterable<JsonObject> aggregate = coll.aggregate(bpipeline, JsonObject.class);
-
-    if (options.getBatchSize() != -1) {
-      aggregate.batchSize(options.getBatchSize());
-    }
-    if (options.getMaxTime() > 0) {
-      aggregate.maxTime(options.getMaxTime(), TimeUnit.MILLISECONDS);
-    }
-    if (options.getMaxAwaitTime()  > 0) {
-      aggregate.maxAwaitTime(options.getMaxAwaitTime(), TimeUnit.MILLISECONDS);
-    }
-    if (options.getAllowDiskUse() != null) {
-      aggregate.allowDiskUse(options.getAllowDiskUse());
-    }
-    return aggregate;
-  }
 
   private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
     if (!useObjectId) return json;
