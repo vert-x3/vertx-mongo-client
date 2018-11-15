@@ -15,19 +15,14 @@ public class AggregateOptions {
   /**
    * The default value of batchSize = 10.
    */
-  public static final int  DEFAULT_BATCH_SIZE     = 20;
+  public static final int  DEFAULT_BATCH_SIZE = 20;
   /**
    * The default value of maxTime = 0.
    */
-  public static final long DEFAULT_MAX_TIME       = 0L;
-  /**
-   * The default value of maxAwaiTime = 0.
-   */
-  public static final long DEFAULT_MAX_AWAIT_TIME = 1000L;
+  public static final long DEFAULT_MAX_TIME   = 0L;
 
   private int     batchSize;
   private long    maxTime;
-  private long    maxAwaitTime;
   private Boolean allowDiskUse;
 
   /**
@@ -36,7 +31,6 @@ public class AggregateOptions {
   public AggregateOptions() {
     this.batchSize = DEFAULT_BATCH_SIZE;
     this.maxTime = DEFAULT_MAX_TIME;
-    this.maxAwaitTime = DEFAULT_MAX_AWAIT_TIME;
   }
 
   /**
@@ -47,7 +41,6 @@ public class AggregateOptions {
   public AggregateOptions(AggregateOptions options) {
     this.batchSize = options.batchSize;
     this.maxTime = options.maxTime;
-    this.maxAwaitTime = options.maxAwaitTime;
     this.allowDiskUse = options.allowDiskUse;
   }
 
@@ -107,9 +100,10 @@ public class AggregateOptions {
    *
    * @return true if writing to temporary files is enabled.
    */
-  public Boolean getAllowDiskUse(){
+  public Boolean getAllowDiskUse() {
     return allowDiskUse;
   }
+
   /**
    * Set the flag if writing to temporary files is enabled.
    *
@@ -132,25 +126,6 @@ public class AggregateOptions {
     return this;
   }
 
-  /**
-   *
-   * @return the max await time in ms
-   */
-  public long getMaxAwaitTime() {
-    return maxAwaitTime;
-  }
-
-  /**
-   * The maximum amount of time for the server to wait on new documents to satisfy a $changeStream aggregation.
-   *
-   * @param maxAwaitTime the max await time in ms
-   * @return reference to this, for fluency
-   */
-  public AggregateOptions setMaxAwaitTime(final long maxAwaitTime) {
-    this.maxAwaitTime = maxAwaitTime;
-    return this;
-  }
-
   @Override
   public boolean equals(final Object o) {
     if (this == o) {
@@ -160,11 +135,11 @@ public class AggregateOptions {
       return false;
     }
     final AggregateOptions that = (AggregateOptions) o;
-    return batchSize == that.batchSize && maxTime == that.maxTime && maxAwaitTime == that.maxAwaitTime && allowDiskUse == that.allowDiskUse;
+    return batchSize == that.batchSize && maxTime == that.maxTime && allowDiskUse == that.allowDiskUse;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(batchSize, maxTime, maxAwaitTime, allowDiskUse);
+    return Objects.hash(batchSize, maxTime, allowDiskUse);
   }
 }

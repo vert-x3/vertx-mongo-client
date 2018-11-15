@@ -751,9 +751,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     if (aggregateOptions.getMaxTime() > 0) {
       aggregate.maxTime(aggregateOptions.getMaxTime(), TimeUnit.MILLISECONDS);
     }
-    if (aggregateOptions.getMaxAwaitTime()  > 0) {
-      aggregate.maxAwaitTime(aggregateOptions.getMaxAwaitTime(), TimeUnit.MILLISECONDS);
-    }
     if (aggregateOptions.getAllowDiskUse() != null) {
       aggregate.allowDiskUse(aggregateOptions.getAllowDiskUse());
     }

@@ -24,11 +24,6 @@ public class AggregateOptionsConverter {
             obj.setBatchSize(((Number)member.getValue()).intValue());
           }
           break;
-        case "maxAwaitTime":
-          if (member.getValue() instanceof Number) {
-            obj.setMaxAwaitTime(((Number)member.getValue()).longValue());
-          }
-          break;
         case "maxTime":
           if (member.getValue() instanceof Number) {
             obj.setMaxTime(((Number)member.getValue()).longValue());
@@ -47,7 +42,6 @@ public class AggregateOptionsConverter {
       json.put("allowDiskUse", obj.getAllowDiskUse());
     }
     json.put("batchSize", obj.getBatchSize());
-    json.put("maxAwaitTime", obj.getMaxAwaitTime());
     json.put("maxTime", obj.getMaxTime());
   }
 }
