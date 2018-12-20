@@ -15,13 +15,13 @@
  */
 package examples;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
+import io.vertx.core.file.AsyncFile;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
-import io.vertx.ext.mongo.FindOptions;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.*;
 import org.bson.types.ObjectId;
 
 import java.util.List;
@@ -412,6 +412,171 @@ public class MongoClientExamples {
         mongoClient.distinctBatchWithQuery("books", "title", String.class.getName(), query)
           .handler(book -> System.out.println("Title is : " + book.getString("title")));
       }
+    });
+  }
+
+  public void example18(MongoClient mongoClient) {
+    mongoClient.createGridFsBucketService("bakeke", res -> {
+      if (res.succeeded()) {
+        //Interact with the GridFS client...
+        MongoGridFsClient client = res.result();
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+
+  public void example19(MongoClient mongoClient) {
+    mongoClient.createDefaultGridFsBucketService( res -> {
+      if (res.succeeded()) {
+        //Interact with the GridFS client...
+        MongoGridFsClient client = res.result();
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+
+  }
+
+  public void example20(MongoGridFsClient gridFsClient) {
+    gridFsClient.drop(res -> {
+      if (res.succeeded()) {
+        //The file bucket is dropped and all files in it, erased
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+
+  public void example21(MongoGridFsClient gridFsClient) {
+    gridFsClient.findAllIds(res -> {
+      if (res.succeeded()) {
+        List<String> ids = res.result(); //List of file IDs
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+
+  public void example22(MongoGridFsClient gridFsClient) {
+    JsonObject query = new JsonObject().put("metadata.nick_name", "Puhi the eel");
+    gridFsClient.findIds(query, res -> {
+      if (res.succeeded()) {
+        List<String> ids = res.result(); //List of file IDs
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+
+  public void example23(MongoGridFsClient gridFsClient) throws Exception {
+    String id = "56660b074cedfd000570839c"; //The GridFS ID of the file
+    gridFsClient.delete(id, (AsyncResult<Void> res) -> {
+      if (res.succeeded()) {
+        //File deleted
+      } else {
+        //Something went wrong
+        res.cause().printStackTrace();
+      }
+    });
+  }
+
+  public void example24(MongoGridFsClient gridFsClient) {
+    gridFsClient.uploadFile("file.name", res -> {
+      if (res.succeeded()) {
+        String id = res.result();
+        //The ID of the stored object in Grid FS
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+
+  public void example25(MongoGridFsClient gridFsClient) {
+    JsonObject metadata = new JsonObject();
+    metadata.put("nick_name", "Puhi the Eel");
+
+    UploadOptions options = new UploadOptions();
+    options.setChunkSizeBytes(1024);
+    options.setMetadata(metadata);
+
+    gridFsClient.uploadFileWithOptions("file.name", options, res -> {
+      if (res.succeeded()) {
+        String id = res.result();
+        //The ID of the stored object in Grid FS
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+
+  public void example26(MongoGridFsClient gridFsClient) {
+    gridFsClient.downloadFile("file.name", res -> {
+      if (res.succeeded()) {
+        Long fileLength = res.result();
+        //The length of the file stored in fileName
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example27(MongoGridFsClient gridFsClient) {
+    String id = "56660b074cedfd000570839c";
+    String filename = "puhi.fil";
+    gridFsClient.downloadFileByID(id, filename, res -> {
+      if (res.succeeded()) {
+        Long fileLength = res.result();
+        //The length of the file stored in fileName
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+  public void example28(MongoGridFsClient gridFsClient) {
+    gridFsClient.downloadFileAs("file.name", "new_file.name", res -> {
+      if (res.succeeded()) {
+        Long fileLength = res.result();
+        //The length of the file stored in fileName
+      } else {
+        res.cause().printStackTrace();
+      }
+    });
+  }
+
+  public void example29(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
+    gridFsStreamClient.uploadByFileName(asyncFile, "kanaloa", stringAsyncResult -> {
+      String id = stringAsyncResult.result();
+    });
+  }
+
+  public void example30(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
+    UploadOptions options = new UploadOptions();
+    options.setChunkSizeBytes(2048);
+    options.setMetadata(new JsonObject().put("catagory", "Polynesian gods"));
+    gridFsStreamClient.uploadByFileNameWithOptions(asyncFile, "kanaloa", options, stringAsyncResult -> {
+      String id = stringAsyncResult.result();
+    });
+
+  }
+
+  public void example31(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
+    gridFsStreamClient.downloadByFileName(asyncFile, "kamapuaa.fil", longAsyncResult -> {
+      Long length = longAsyncResult.result();
+    });
+  }
+
+  public void example32(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
+    DownloadOptions options = new DownloadOptions();
+    options.setRevision(0);
+    gridFsStreamClient.downloadByFileNameWithOptions(asyncFile, "kamapuaa.fil", options, longAsyncResult -> {
+      Long length = longAsyncResult.result();
+    });
+  }
+
+  public void example33(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
+    String id = "58f61bf84cedfd000661af06";
+    gridFsStreamClient.downloadById(asyncFile, id, longAsyncResult -> {
+      Long length = longAsyncResult.result();
     });
   }
 }

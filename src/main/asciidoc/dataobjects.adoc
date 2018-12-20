@@ -75,6 +75,21 @@ Set the write option
 +++
 |===
 
+[[DownloadOptions]]
+== DownloadOptions
+
+++++
+ Options used to configure downloads from GridFS.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[revision]]`@revision`|`Number (Integer)`|-
+|===
+
 [[FindOptions]]
 == FindOptions
 
@@ -286,5 +301,17 @@ Set whether upsert is enabled
 |[[writeOption]]`@writeOption`|`link:enums.html#WriteOption[WriteOption]`|+++
 Set the write option
 +++
+|===
+
+[[UploadOptions]]
+== UploadOptions
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[chunkSizeBytes]]`@chunkSizeBytes`|`Number (Integer)`|-
+|[[metadata]]`@metadata`|`Json object`|-
 |===
 
