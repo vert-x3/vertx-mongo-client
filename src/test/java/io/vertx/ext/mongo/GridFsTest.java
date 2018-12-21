@@ -167,7 +167,7 @@ public class GridFsTest extends MongoTestBase {
   @Test
   public void testBigFileUpload() {
 
-    String originalFileName = createTempFileWithContent((1024 * 60) + 16);
+    String originalFileName = createTempFileWithContent((1024 * 50) + 16);
     long originalLength = new File(originalFileName).length();
     String copiedFileName = createTempFile();
 
@@ -194,7 +194,7 @@ public class GridFsTest extends MongoTestBase {
       return downloadFuture;
     }).compose(length -> {
       assertEquals(originalLength, length.longValue());
-      byte[] original = new byte[0];
+      byte[] original;
       try {
         original = Files.readAllBytes(new File(originalFileName).toPath());
         byte[] copy = Files.readAllBytes(new File(copiedFileName).toPath());
@@ -222,7 +222,7 @@ public class GridFsTest extends MongoTestBase {
     JsonObject meta = new JsonObject();
     meta.put("nick_name", "Puhi the eel");
 
-    UploadOptions options = new UploadOptions();
+    GridFsUploadOptions options = new GridFsUploadOptions();
     options.setMetadata(meta);
 
     mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
@@ -259,7 +259,7 @@ public class GridFsTest extends MongoTestBase {
     JsonObject meta = new JsonObject();
     meta.put("nick_name", "Puhi the eel");
 
-    UploadOptions options = new UploadOptions();
+    GridFsUploadOptions options = new GridFsUploadOptions();
     options.setMetadata(meta);
 
     mongoClient.createGridFsBucketService("fs", gridFsClientFuture.completer());
@@ -446,8 +446,8 @@ public class GridFsTest extends MongoTestBase {
     long fileLength = (1024 * 3) + 70;
     String fileName = createTempFileWithContent(fileLength);
     String downloadFileName = createTempFile();
-    DownloadOptions options = new DownloadOptions();
-    options.setRevision(DownloadOptions.DEFAULT_REVISION);
+    GridFsDownloadOptions options = new GridFsDownloadOptions();
+    options.setRevision(GridFsDownloadOptions.DEFAULT_REVISION);
 
     AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
 
@@ -559,7 +559,7 @@ public class GridFsTest extends MongoTestBase {
   public void testStreamUploadWithOptions() {
 
     String fileName = createTempFileWithContent(1024);
-    UploadOptions options = new UploadOptions();
+    GridFsUploadOptions options = new GridFsUploadOptions();
     options.setChunkSizeBytes(1024);
     options.setMetadata(new JsonObject().put("meta_test", "Kamapua`a"));
 

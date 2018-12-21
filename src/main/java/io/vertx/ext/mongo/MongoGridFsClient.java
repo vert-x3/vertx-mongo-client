@@ -25,7 +25,7 @@ public interface MongoGridFsClient {
   MongoGridFsClient downloadByFileName(WriteStream stream, String fileName, Handler<AsyncResult<Long>> resultHandler);
 
   @Fluent
-  MongoGridFsClient downloadByFileNameWithOptions(WriteStream stream, String fileName, DownloadOptions options, Handler<AsyncResult<Long>> resultHandler);
+  MongoGridFsClient downloadByFileNameWithOptions(WriteStream stream, String fileName, GridFsDownloadOptions options, Handler<AsyncResult<Long>> resultHandler);
 
   @Fluent
   MongoGridFsClient downloadById(WriteStream stream, String id, Handler<AsyncResult<Long>> resultHandler);
@@ -87,7 +87,7 @@ public interface MongoGridFsClient {
   MongoGridFsClient uploadByFileName(ReadStream stream, String fileName, Handler<AsyncResult<String>> resultHandler);
 
   @Fluent
-  MongoGridFsClient uploadByFileNameWithOptions(ReadStream stream, String fileName, UploadOptions options, Handler<AsyncResult<String>> resultHandler);
+  MongoGridFsClient uploadByFileNameWithOptions(ReadStream stream, String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Upload a file to gridfs
@@ -102,11 +102,11 @@ public interface MongoGridFsClient {
    * Upload a file to gridfs with options
    *
    * @param fileName      the name of the file to store in gridfs
-   * @param options       {@link UploadOptions} for specifying metadata and chunk size
+   * @param options       {@link GridFsUploadOptions} for specifying metadata and chunk size
    * @param resultHandler the id of the file that was uploaded
    */
   @Fluent
-  MongoGridFsClient uploadFileWithOptions(String fileName, UploadOptions options, Handler<AsyncResult<String>> resultHandler);
+  MongoGridFsClient uploadFileWithOptions(String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Close the client and release its resources

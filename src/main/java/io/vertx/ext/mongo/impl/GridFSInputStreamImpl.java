@@ -5,7 +5,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.mongo.GridFSInputStream;
-import io.vertx.ext.mongo.util.CircularByteBuffer;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.nio.ByteBuffer;
 
@@ -21,54 +21,57 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
 
   public static int DEFAULT_BUFFER_SIZE = 8192;
   private int writeQueueMaxSize;
-  private final CircularByteBuffer buffer;
+  private final CircularFifoQueue<Byte> buffer;
   private Handler<Void> drainHandler;
   private volatile boolean closed = false;
   private SingleResultCallback<Integer> pendingCallback;
   private ByteBuffer outputBuffer;
 
   public GridFSInputStreamImpl() {
-    buffer = new CircularByteBuffer(DEFAULT_BUFFER_SIZE);
-    writeQueueMaxSize = buffer.capacity();
+    buffer = new CircularFifoQueue<>(DEFAULT_BUFFER_SIZE);
+    writeQueueMaxSize = buffer.maxSize();
   }
 
   public GridFSInputStreamImpl(final int queueSize) {
-    buffer = new CircularByteBuffer(queueSize);
+    buffer = new CircularFifoQueue<>(DEFAULT_BUFFER_SIZE);
     writeQueueMaxSize = queueSize;
   }
 
-  public void read(ByteBuffer b, SingleResultCallback<Integer> c) {
-    synchronized (buffer) {
+  public void read(ByteBuffer buffer, SingleResultCallback<Integer> resultCallback) {
+    synchronized (this.buffer) {
       //If nothing pending and the stream is still open, store the callback for future processing
-      if (buffer.isEmpty() && !closed) {
-        storeCallback(b, c);
+      if (this.buffer.isEmpty() && !closed) {
+        storeCallback(buffer, resultCallback);
       } else {
-        doCallback(b, c);
+        doCallback(buffer, resultCallback);
       }
     }
   }
 
-  private void storeCallback(final ByteBuffer b, final SingleResultCallback<Integer> c) {
-    if (pendingCallback != null && pendingCallback != c) {
-      c.onResult(null, new RuntimeException("mongo provided a new buffer or callback before the previous " +
+  private void storeCallback(final ByteBuffer buffer, final SingleResultCallback<Integer> resultCallback) {
+    if (pendingCallback != null && pendingCallback != resultCallback) {
+      resultCallback.onResult(null, new RuntimeException("mongo provided a new buffer or callback before the previous " +
         "one has been fulfilled"));
     }
-    this.outputBuffer = b;
-    this.pendingCallback = c;
+    this.outputBuffer = buffer;
+    this.pendingCallback = resultCallback;
   }
 
-  private void doCallback(final ByteBuffer b, final SingleResultCallback<Integer> c) {
+  private void doCallback(final ByteBuffer buffer, final SingleResultCallback<Integer> resultCallback) {
     pendingCallback = null;
     outputBuffer = null;
-    final int bytesWritten = buffer.drainInto(b);
-    c.onResult(bytesWritten, null);
+    int bytesWritten = 0;
+    while (!this.buffer.isEmpty()) {
+      buffer.put(this.buffer.remove());
+      bytesWritten++;
+    }
+    resultCallback.onResult(bytesWritten, null);
     // if there is a drain handler and the buffer is less than half full, call the drain handler
-    if (drainHandler != null && buffer.remaining() < writeQueueMaxSize / 2) {
+    if (drainHandler != null && this.buffer.size() < writeQueueMaxSize / 2) {
       drainHandler.handle(null);
       drainHandler = null;
     }
   }
-
 
   public WriteStream<Buffer> write(Buffer inputBuffer) {
     if (closed) throw new IllegalStateException("Stream is closed");
@@ -80,14 +83,20 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
         if (bytesWritten > 0) doCallback(bytesWritten);
       }
       // Drain content left in the input buffer
-      buffer.fillFrom(wrapper);
+      while (wrapper.hasRemaining()) {
+        buffer.offer(wrapper.get());
+      }
     }
     return this;
   }
 
   private int writeOutput(final ByteBuffer wrapper) {
     // First we drain the pending buffer
-    int bytesWritten = buffer.drainInto(outputBuffer);
+    int bytesWritten = 0;
+    while (!this.buffer.isEmpty()) {
+      outputBuffer.put(this.buffer.remove());
+      bytesWritten++;
+    }
     final int remaining = outputBuffer.remaining();
     if (remaining > 0) {
       // If more space left in the output buffer we directly drain the input buffer
@@ -101,7 +110,6 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     }
     return bytesWritten;
   }
-
 
   private void doCallback(final int bytesWritten) {
     SingleResultCallback<Integer> c = pendingCallback;
@@ -118,7 +126,11 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
   public void end() {
     synchronized (buffer) {
       if (pendingCallback != null) {
-        final int bytesWritten = buffer.drainInto(outputBuffer);
+        int bytesWritten = 0;
+        while (!this.buffer.isEmpty()) {
+          outputBuffer.put(this.buffer.remove());
+          bytesWritten++;
+        }
         doCallback(bytesWritten);
       }
       this.closed = true;
@@ -129,13 +141,13 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     return this;
   }
 
-  public GridFSInputStream setWriteQueueMaxSize(int i) {
-    writeQueueMaxSize = i;
+  public GridFSInputStream setWriteQueueMaxSize(int size) {
+    writeQueueMaxSize = size;
     return this;
   }
 
   public boolean writeQueueFull() {
-    return buffer.remaining() >= writeQueueMaxSize;
+    return buffer.size() >= writeQueueMaxSize;
   }
 
   public WriteStream<Buffer> drainHandler(Handler<Void> handler) {
