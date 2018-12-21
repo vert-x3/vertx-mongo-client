@@ -21,7 +21,12 @@ import io.vertx.core.file.AsyncFile;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
-import io.vertx.ext.mongo.*;
+import io.vertx.ext.mongo.GridFsDownloadOptions;
+import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.GridFsUploadOptions;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoGridFsClient;
+import io.vertx.ext.mongo.UpdateOptions;
 import org.bson.types.ObjectId;
 
 import java.util.List;
@@ -496,7 +501,7 @@ public class MongoClientExamples {
     JsonObject metadata = new JsonObject();
     metadata.put("nick_name", "Puhi the Eel");
 
-    UploadOptions options = new UploadOptions();
+    GridFsUploadOptions options = new GridFsUploadOptions();
     options.setChunkSizeBytes(1024);
     options.setMetadata(metadata);
 
@@ -520,6 +525,7 @@ public class MongoClientExamples {
       }
     });
   }
+
   public void example27(MongoGridFsClient gridFsClient) {
     String id = "56660b074cedfd000570839c";
     String filename = "puhi.fil";
@@ -532,6 +538,7 @@ public class MongoClientExamples {
       }
     });
   }
+  
   public void example28(MongoGridFsClient gridFsClient) {
     gridFsClient.downloadFileAs("file.name", "new_file.name", res -> {
       if (res.succeeded()) {
@@ -550,7 +557,7 @@ public class MongoClientExamples {
   }
 
   public void example30(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
-    UploadOptions options = new UploadOptions();
+    GridFsUploadOptions options = new GridFsUploadOptions();
     options.setChunkSizeBytes(2048);
     options.setMetadata(new JsonObject().put("catagory", "Polynesian gods"));
     gridFsStreamClient.uploadByFileNameWithOptions(asyncFile, "kanaloa", options, stringAsyncResult -> {
@@ -566,7 +573,7 @@ public class MongoClientExamples {
   }
 
   public void example32(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
-    DownloadOptions options = new DownloadOptions();
+    GridFsDownloadOptions options = new GridFsDownloadOptions();
     options.setRevision(0);
     gridFsStreamClient.downloadByFileNameWithOptions(asyncFile, "kamapuaa.fil", options, longAsyncResult -> {
       Long length = longAsyncResult.result();

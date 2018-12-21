@@ -3,14 +3,22 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.async.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.Pump;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
-import io.vertx.ext.mongo.*;
+import io.vertx.ext.mongo.GridFSInputStream;
+import io.vertx.ext.mongo.GridFSOutputStream;
+import io.vertx.ext.mongo.GridFsDownloadOptions;
+import io.vertx.ext.mongo.GridFsUploadOptions;
+import io.vertx.ext.mongo.MongoGridFsClient;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -49,7 +57,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     Context context = vertx.getOrCreateContext();
     bucket.uploadFromStream(fileName, gridFsInputStream, (bsonId, throwable) -> {
-      context.runOnContext( nothing -> {
+      context.runOnContext(nothing -> {
         if (throwable != null) {
           resultHandler.handle(Future.failedFuture(throwable));
         } else {
@@ -62,7 +70,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient uploadByFileNameWithOptions(ReadStream stream, String fileName, UploadOptions options, Handler<AsyncResult<String>> resultHandler) {
+  public MongoGridFsClient uploadByFileNameWithOptions(ReadStream stream, String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler) {
 
     GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
     uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
@@ -75,7 +83,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     Context context = vertx.getOrCreateContext();
     bucket.uploadFromStream(fileName, gridFsInputStream, uploadOptions, (bsonId, throwable) -> {
-      context.runOnContext( nothing -> {
+      context.runOnContext(nothing -> {
         if (throwable != null) {
           resultHandler.handle(Future.failedFuture(throwable));
         } else {
@@ -97,7 +105,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient uploadFileWithOptions(String fileName, UploadOptions options, Handler<AsyncResult<String>> resultHandler) {
+  public MongoGridFsClient uploadFileWithOptions(String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(fileName, "fileName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
@@ -162,7 +170,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient downloadByFileNameWithOptions(WriteStream stream, String fileName, DownloadOptions options, Handler<AsyncResult<Long>> resultHandler) {
+  public MongoGridFsClient downloadByFileNameWithOptions(WriteStream stream, String fileName, GridFsDownloadOptions options, Handler<AsyncResult<Long>> resultHandler) {
 
     GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions();
     downloadOptions.revision(options.getRevision());
@@ -221,7 +229,18 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
       if (asyncFileAsyncResult.succeeded()) {
         AsyncFile file = asyncFileAsyncResult.result();
         GridFSOutputStream gridFSOutputStream = GridFSOutputStream.create(file);
-        bucket.downloadToStream(fileName, gridFSOutputStream, clientImpl.wrapCallback(resultHandler));
+        bucket.downloadToStream(fileName, gridFSOutputStream, (result, error) -> {
+          file.close();
+          Context context = vertx.getOrCreateContext();
+          context.runOnContext(v -> {
+            if (error != null) {
+              resultHandler.handle(Future.failedFuture(error));
+            } else {
+              resultHandler.handle(Future.succeededFuture(result));
+            }
+          });
+        });
+
       } else {
         resultHandler.handle(Future.failedFuture(asyncFileAsyncResult.cause()));
       }
@@ -242,7 +261,17 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
         AsyncFile file = asyncFileAsyncResult.result();
         GridFSOutputStream gridFSOutputStream = GridFSOutputStream.create(file);
         ObjectId objectId = new ObjectId(id);
-        bucket.downloadToStream(objectId, gridFSOutputStream, clientImpl.wrapCallback(resultHandler));
+        bucket.downloadToStream(objectId, gridFSOutputStream, (result, error) -> {
+          file.close();
+          Context context = vertx.getOrCreateContext();
+          context.runOnContext(v -> {
+            if (error != null) {
+              resultHandler.handle(Future.failedFuture(error));
+            } else {
+              resultHandler.handle(Future.succeededFuture(result));
+            }
+          });
+        });
       } else {
         resultHandler.handle(Future.failedFuture(asyncFileAsyncResult.cause()));
       }

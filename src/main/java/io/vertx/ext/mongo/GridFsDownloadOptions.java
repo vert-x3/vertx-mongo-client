@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:dbush@redhat.com">David Bush</a>
  */
 @DataObject
-public class DownloadOptions {
+public class GridFsDownloadOptions {
 
   public static final Integer DEFAULT_REVISION = 0;
 
@@ -18,7 +18,7 @@ public class DownloadOptions {
   /**
    * Default constructor
    */
-  public DownloadOptions() {
+  public GridFsDownloadOptions() {
   }
 
   /**
@@ -26,7 +26,7 @@ public class DownloadOptions {
    *
    * @param options the one to copy
    */
-  public DownloadOptions(DownloadOptions options) {
+  public GridFsDownloadOptions(GridFsDownloadOptions options) {
     this.revision = options.revision;
   }
 
@@ -35,7 +35,7 @@ public class DownloadOptions {
    *
    * @param options the JSON
    */
-  public DownloadOptions(JsonObject options) {
+  public GridFsDownloadOptions(JsonObject options) {
     this.revision = options.getInteger("revision");
   }
 

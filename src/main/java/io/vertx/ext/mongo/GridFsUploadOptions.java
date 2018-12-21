@@ -4,14 +4,14 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
 @DataObject
-public class UploadOptions {
+public class GridFsUploadOptions {
   private JsonObject metadata;
   private Integer chunkSizeBytes;
 
   /**
    * Default constructor
    */
-  public UploadOptions() {
+  public GridFsUploadOptions() {
   }
 
   /**
@@ -19,7 +19,7 @@ public class UploadOptions {
    *
    * @param options the one to copy
    */
-  public UploadOptions(UploadOptions options) {
+  public GridFsUploadOptions(GridFsUploadOptions options) {
     this.metadata = options.metadata;
     this.chunkSizeBytes = options.chunkSizeBytes;
   }
@@ -29,7 +29,7 @@ public class UploadOptions {
    *
    * @param options the JSON
    */
-  public UploadOptions(JsonObject options) {
+  public GridFsUploadOptions(JsonObject options) {
     this.metadata = options.getJsonObject("metadata");
     this.chunkSizeBytes = options.getInteger("chunkSizeBytes");
   }
