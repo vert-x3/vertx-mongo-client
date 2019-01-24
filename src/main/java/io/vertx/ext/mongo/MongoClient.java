@@ -79,7 +79,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
+  MongoClient save(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
 
   /**
    * Save a document in the specified collection with the specified write option
@@ -92,7 +92,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+  MongoClient saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
 
   /**
    * Insert a document in the specified collection
@@ -104,7 +104,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler);
+  MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
 
   /**
    * Insert a document in the specified collection with the specified write option
@@ -117,7 +117,7 @@ public interface MongoClient {
    * @param resultHandler  result handler will be provided with the id if document didn't already have one
    */
   @Fluent
-  MongoClient insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<String>> resultHandler);
+  MongoClient insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
 
   /**
    * Update matching documents in the specified collection
@@ -301,7 +301,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
-  MongoClient findOne(String collection, JsonObject query, @Nullable JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient findOne(String collection, JsonObject query, @Nullable JsonObject fields, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection and update it.
@@ -314,7 +314,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
-  MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection and update it.
@@ -329,7 +329,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
-  MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection and replace it.
@@ -342,7 +342,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
-  MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection and replace it.
@@ -357,7 +357,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
-  MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection and delete it.
@@ -369,7 +369,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the deleted document, if any
    */
   @Fluent
-  MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
    * Find a single matching document in the specified collection and delete it.
@@ -382,7 +382,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the deleted document, if any
    */
   @Fluent
-  MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
    * Count matching documents in a collection.
