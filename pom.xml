@@ -23,10 +23,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>vertx-mongo-client</artifactId>
-  <version>3.6.3</version>
+  <version>3.6.4-SNAPSHOT</version>
 
   <properties>
-    <stack.version>3.6.3</stack.version>
+    <stack.version>3.6.4-SNAPSHOT</stack.version>
     <mongo.async.version>3.6.3</mongo.async.version>
   </properties>
 
