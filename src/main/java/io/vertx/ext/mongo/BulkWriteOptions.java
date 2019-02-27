@@ -120,4 +120,24 @@ public class BulkWriteOptions {
     this.ordered = ordered;
     return this;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    BulkWriteOptions options = (BulkWriteOptions) o;
+
+    if (writeOption != options.writeOption) return false;
+    if (ordered != options.ordered) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = writeOption != null ? writeOption.hashCode() : 0;
+    result = 31 * result + (ordered ? 1 : 0);
+    return result;
+  }
 }
