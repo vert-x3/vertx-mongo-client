@@ -269,4 +269,27 @@ public class BulkOperation {
     return this;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    BulkOperation other = (BulkOperation) o;
+
+    if (type != other.type) return false;
+    if (filter != null ? !filter.equals(other.filter) : other.filter != null) return false;
+    if (document != null ? !document.equals(other.document) : other.document != null) return false;
+
+    return upsert == other.upsert && multi == other.multi;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = type.hashCode();
+    result = 31 * result + filter.hashCode();
+    result = 31 * result + document.hashCode();
+    result = 31 * result + (upsert ? 1 : 0);
+    result = 31 * result + (multi ? 1 : 0);
+    return result;
+  }
 }
