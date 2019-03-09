@@ -27,7 +27,7 @@
 
   <properties>
     <stack.version>4.0.0-SNAPSHOT</stack.version>
-    <mongo.async.version>3.6.3</mongo.async.version>
+    <mongo.async.version>3.10.1</mongo.async.version>
   </properties>
 
   <dependencyManagement>
