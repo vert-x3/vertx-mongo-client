@@ -868,6 +868,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     MongoCollection<JsonObject> coll = getCollection(collection);
     Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     FindIterable<JsonObject> find = coll.find(bquery, JsonObject.class);
+    if (options.getBatchSize() > 0) {
+      find.batchSize(options.getBatchSize());
+    }
     if (options.getLimit() != -1) {
       find.limit(options.getLimit());
     }
