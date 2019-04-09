@@ -1,5 +1,8 @@
 package io.vertx.ext.mongo.impl;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.mongodb.async.AsyncBatchCursor;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.MongoIterable;
@@ -8,9 +11,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.impl.InboundBuffer;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Thomas Segismont
@@ -27,6 +27,8 @@ class MongoIterableStream implements ReadStream<JsonObject> {
   private Handler<Throwable> exceptionHandler;
   private Handler<Void> endHandler;
   private boolean closed;
+
+  private boolean closeShouldBeCalled = false;
 
   MongoIterableStream(Context context, MongoIterable<JsonObject> mongoIterable, int batchSize) {
     this.context = context;
@@ -92,7 +94,12 @@ class MongoIterableStream implements ReadStream<JsonObject> {
         return this;
       }
     }
-    queue.resume();
+    if (queue.isEmpty() && closeShouldBeCalled) {
+      queue.resume();
+      tryClose();
+    } else {
+      queue.resume();
+    }
     return this;
   }
 
@@ -126,10 +133,9 @@ class MongoIterableStream implements ReadStream<JsonObject> {
               doRead();
             }
           } else {
-            close();
-            if (endHandler != null) {
-              endHandler.handle(null);
-            }
+            // try to close stream
+            tryClose();
+            queue.emptyHandler(h -> tryClose());
           }
         } else {
           close();
@@ -137,6 +143,21 @@ class MongoIterableStream implements ReadStream<JsonObject> {
         }
       }
     });
+  }
+
+  private boolean tryClose() {
+    if (queue.isPaused()) {
+      closeShouldBeCalled = true;
+      return false;
+    }
+    if (queue.isEmpty()) {
+      close();
+      if (endHandler != null) {
+        endHandler.handle(null);
+      }
+      return true;
+    }
+    return false;
   }
 
   // Always called from a synchronized method or block

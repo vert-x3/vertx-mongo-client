@@ -1,12 +1,5 @@
 package io.vertx.ext.mongo;
 
-import com.mongodb.async.client.MongoClients;
-import com.mongodb.async.client.MongoDatabase;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.streams.ReadStream;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -14,6 +7,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+
+import com.mongodb.async.client.MongoClients;
+import com.mongodb.async.client.MongoDatabase;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.ReadStream;
+import org.junit.Test;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -78,6 +78,27 @@ public class MongoClientTest extends MongoClientTestBase {
   }
 
   @Test
+  public void findBatchResumePause() throws Exception {
+    int docs= 111;
+    testFindBatch((latch, stream) -> {
+      List<String> foos = new ArrayList<>();
+      CountDownLatch handlerCallsAfterPause = new CountDownLatch(docs);
+      stream.exceptionHandler(this::fail).endHandler(v -> {
+        latch.countDown();
+        assertEquals(0, handlerCallsAfterPause.getCount());
+      }).handler(result -> {
+        foos.add(result.getString("foo"));
+        stream.pause();
+        vertx.setTimer(10, id -> {
+          handlerCallsAfterPause.countDown();
+          stream.resume();
+        });
+      });
+      return foos;
+    }, docs);
+  }
+
+  @Test
   public void testFindBatchFetch() throws Exception {
     testFindBatch((latch, stream) -> {
       List<String> foos = new ArrayList<>();
@@ -92,7 +113,6 @@ public class MongoClientTest extends MongoClientTestBase {
             });
           }
         });
-      stream.pause();
       stream.fetch(100);
       return foos;
     });
@@ -100,9 +120,11 @@ public class MongoClientTest extends MongoClientTestBase {
 
   private void testFindBatch(BiFunction<CountDownLatch, ReadStream<JsonObject>, List<String>> checker) throws Exception {
     int numDocs = 3000;
+    testFindBatch(checker, numDocs);
+  }
 
+  private void testFindBatch(BiFunction<CountDownLatch, ReadStream<JsonObject>, List<String>> checker, int numDocs) throws Exception {
     AtomicReference<ReadStream<JsonObject>> streamReference = new AtomicReference<>();
-
     String collection = randomCollection();
     CountDownLatch latch = new CountDownLatch(1);
     AtomicReference<List<String>> foos = new AtomicReference();
@@ -117,12 +139,14 @@ public class MongoClientTest extends MongoClientTestBase {
     awaitLatch(latch);
     assertEquals(numDocs, foos.get().size());
     assertEquals("bar0", foos.get().get(0));
-    assertEquals("bar999", foos.get().get(numDocs - 1));
-
+    String bar = "bar";
+    for(int i=0;i<String.valueOf(numDocs).length()-1;i++){
+      bar = bar + "9";
+    }
+    assertEquals(bar, foos.get().get(numDocs - 1));
     // Make sure stream handlers can be set to null after closing
     streamReference.get().handler(null).exceptionHandler(null).endHandler(null);
   }
-
 
   @Test
   public void testUpsertCreatesHexIfRecordDoesNotExist() throws Exception {
