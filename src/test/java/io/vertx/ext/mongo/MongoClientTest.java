@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoDatabase;
@@ -14,6 +15,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
 import org.junit.Test;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -32,7 +35,6 @@ public class MongoClientTest extends MongoClientTestBase {
     dropCollections(mongoClient, latch);
     awaitLatch(latch);
 
-
     actualMongo = MongoClients.create("mongodb://localhost:27018");
     db = actualMongo.getDatabase(io.vertx.ext.mongo.MongoClient.DEFAULT_DB_NAME);
   }
@@ -48,108 +50,112 @@ public class MongoClientTest extends MongoClientTestBase {
   @Test
   public void testFindBatch() throws Exception {
     testFindBatch((latch, stream) -> {
-      List<String> foos = new ArrayList<>();
+      List<String> dummyData = new ArrayList<>();
       stream
         .exceptionHandler(this::fail)
         .endHandler(v -> latch.countDown())
-        .handler(result -> foos.add(result.getString("foo")));
-      return foos;
+        .handler(result -> dummyData.add(result.getString("foo")));
+      return dummyData;
     });
   }
 
   @Test
   public void testFindBatchResumePause() throws Exception {
     testFindBatch((latch, stream) -> {
-      List<String> foos = new ArrayList<>();
+      List<String> dummyData = new ArrayList<>();
       stream
         .exceptionHandler(this::fail)
         .endHandler(v -> latch.countDown())
         .handler(result -> {
-          foos.add(result.getString("foo"));
-          if (foos.size() % 100 == 0) {
+          dummyData.add(result.getString("foo"));
+          if (dummyData.size() % 100 == 0) {
             stream.pause();
             vertx.setTimer(10, id -> {
               stream.resume();
             });
           }
         });
-      return foos;
+      return dummyData;
     });
   }
 
   @Test
   public void findBatchResumePause() throws Exception {
-    int docs= 111;
+    int numberOfDocs = 111;
     testFindBatch((latch, stream) -> {
-      List<String> foos = new ArrayList<>();
-      CountDownLatch handlerCallsAfterPause = new CountDownLatch(docs);
-      stream.exceptionHandler(this::fail).endHandler(v -> {
-        latch.countDown();
-        assertEquals(0, handlerCallsAfterPause.getCount());
-      }).handler(result -> {
-        foos.add(result.getString("foo"));
-        stream.pause();
-        vertx.setTimer(10, id -> {
-          handlerCallsAfterPause.countDown();
-          stream.resume();
-        });
+      List<String> dummyData = new ArrayList<>();
+      CountDownLatch handlerCallsAfterPause = new CountDownLatch(numberOfDocs);
+      stream
+        .exceptionHandler(this::fail)
+        .endHandler(v -> {
+          latch.countDown();
+          assertEquals(0, handlerCallsAfterPause.getCount());
+        }).handler(result -> {
+          dummyData.add(result.getString("foo"));
+          stream.pause();
+          vertx.setTimer(10, id -> {
+            handlerCallsAfterPause.countDown();
+            stream.resume();
+          });
       });
-      return foos;
-    }, docs);
+      return dummyData;
+    }, numberOfDocs);
   }
 
   @Test
   public void testFindBatchFetch() throws Exception {
     testFindBatch((latch, stream) -> {
-      List<String> foos = new ArrayList<>();
+      List<String> dummyData = new ArrayList<>();
       stream
         .exceptionHandler(this::fail)
         .endHandler(v -> latch.countDown())
         .handler(result -> {
-          foos.add(result.getString("foo"));
-          if (foos.size() % 100 == 0) {
+          dummyData.add(result.getString("foo"));
+          if (dummyData.size() % 100 == 0) {
             vertx.setTimer(10, id -> {
               stream.fetch(100);
             });
           }
         });
       stream.fetch(100);
-      return foos;
+      return dummyData;
     });
   }
 
   private void testFindBatch(BiFunction<CountDownLatch, ReadStream<JsonObject>, List<String>> checker) throws Exception {
-    int numDocs = 3000;
-    testFindBatch(checker, numDocs);
+    int numberOfDocs = 3000;
+    testFindBatch(checker, numberOfDocs);
   }
 
-  private void testFindBatch(BiFunction<CountDownLatch, ReadStream<JsonObject>, List<String>> checker, int numDocs) throws Exception {
+  private void testFindBatch(BiFunction<CountDownLatch, ReadStream<JsonObject>, List<String>> checker, int numberOfDocs) throws Exception {
     AtomicReference<ReadStream<JsonObject>> streamReference = new AtomicReference<>();
     String collection = randomCollection();
     CountDownLatch latch = new CountDownLatch(1);
-    AtomicReference<List<String>> foos = new AtomicReference();
+    AtomicReference<List<String>> dummyData = new AtomicReference<>();
     mongoClient.createCollection(collection, onSuccess(res -> {
-      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
+      insertDocs(mongoClient, collection, numberOfDocs, onSuccess(res2 -> {
         FindOptions findOptions = new FindOptions().setSort(new JsonObject().put("foo", 1));
         ReadStream<JsonObject> stream = mongoClient.findBatchWithOptions(collection, new JsonObject(), findOptions);
         streamReference.set(stream);
-        foos.set(checker.apply(latch, stream));
+        dummyData.set(checker.apply(latch, stream));
       }));
     }));
     awaitLatch(latch);
-    assertEquals(numDocs, foos.get().size());
-    assertEquals("bar0", foos.get().get(0));
-    String bar = "bar";
-    for(int i=0;i<String.valueOf(numDocs).length()-1;i++){
-      bar = bar + "9";
-    }
-    assertEquals(bar, foos.get().get(numDocs - 1));
+    assertEquals(numberOfDocs, dummyData.get().size());
+
+    // check first element received
+    assertEquals("bar0", dummyData.get().get(0));
+
+    // check last element received
+    String expectedLastDummyValue = "bar" + Stream.generate(() -> "9").limit(String.valueOf(numberOfDocs).length() -1).collect(joining());
+    assertEquals(expectedLastDummyValue, dummyData.get().get(numberOfDocs - 1));
+
     // Make sure stream handlers can be set to null after closing
     streamReference.get().handler(null).exceptionHandler(null).endHandler(null);
   }
 
   @Test
-  public void testUpsertCreatesHexIfRecordDoesNotExist() throws Exception {
+  public void testUpsertCreatesHexIfRecordDoesNotExist() {
     upsertDoc(randomCollection(), createDoc(), null, IGNORE -> {
       testComplete();
     });
@@ -158,7 +164,7 @@ public class MongoClientTest extends MongoClientTestBase {
   }
 
   @Test
-  public void testUpsertWithASetOnInsertIsNotOverWritten() throws Exception {
+  public void testUpsertWithASetOnInsertIsNotOverWritten() {
     String collection = randomCollection();
     JsonObject docToInsert = createDoc();
     JsonObject insertStatement = new JsonObject()
@@ -173,7 +179,7 @@ public class MongoClientTest extends MongoClientTestBase {
   }
 
   @Test
-  public void testUpsertDoesNotChangeIdIfRecordExist() throws Exception {
+  public void testUpsertDoesNotChangeIdIfRecordExist() {
     String collection = randomCollection();
     JsonObject docToInsert = createDoc();
     mongoClient

@@ -94,11 +94,10 @@ class MongoIterableStream implements ReadStream<JsonObject> {
         return this;
       }
     }
+
+    queue.resume();
     if (queue.isEmpty() && closeShouldBeCalled) {
-      queue.resume();
       tryClose();
-    } else {
-      queue.resume();
     }
     return this;
   }
@@ -145,19 +144,18 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     });
   }
 
-  private boolean tryClose() {
+  private synchronized void tryClose() {
     if (queue.isPaused()) {
       closeShouldBeCalled = true;
-      return false;
+      return;
     }
+
     if (queue.isEmpty()) {
       close();
       if (endHandler != null) {
         endHandler.handle(null);
       }
-      return true;
     }
-    return false;
   }
 
   // Always called from a synchronized method or block
