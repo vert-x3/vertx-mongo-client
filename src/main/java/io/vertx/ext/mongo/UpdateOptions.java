@@ -51,7 +51,7 @@ public class UpdateOptions {
   }
 
   /**
-   * Constructor specify upsert and multu
+   * Constructor specify upsert and multi
    * @param upsert  the value of upsert
    * @param multi  the value of multi
    */
