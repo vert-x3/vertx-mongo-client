@@ -26,6 +26,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   public static final String BINARY_FIELD = "$binary";
   public static final String TYPE_FIELD = "$type";
   public static final String OID_FIELD = "$oid";
+  public static final String LONG_FIELD = "$numberLong";
 
   //https://docs.mongodb.org/manual/reference/mongodb-extended-json/#timestamp
   public static final String TIMESTAMP_FIELD = "$timestamp";
@@ -158,6 +159,8 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
         return BsonType.BINARY;
       } else if (obj.containsKey(TIMESTAMP_FIELD)) {
         return BsonType.TIMESTAMP;
+      } else if (obj.containsKey(LONG_FIELD)) {
+        return BsonType.INT64;
       }
     }
     return type;
@@ -232,6 +235,12 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
       timeStamp.getInteger(TIMESTAMP_INCREMENT_FIELD));
 
     writer.writeTimestamp(bson);
+  }
+
+  @Override
+  protected void writeNumberLong(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    final long aLong = ((JsonObject) value).getLong(LONG_FIELD);
+    writer.writeInt64(aLong);
   }
 
 }

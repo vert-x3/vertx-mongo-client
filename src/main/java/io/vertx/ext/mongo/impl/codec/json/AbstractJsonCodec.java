@@ -1,5 +1,6 @@
 package io.vertx.ext.mongo.impl.codec.json;
 
+import io.vertx.core.json.JsonObject;
 import org.bson.BsonReader;
 import org.bson.BsonType;
 import org.bson.BsonWriter;
@@ -212,7 +213,11 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
   }
 
   protected void writeInt64(BsonWriter writer, String name, Object value, EncoderContext ctx) {
-    writer.writeInt64((long) value);
+    if (value instanceof JsonObject) {
+      writeNumberLong(writer, name, value, ctx);
+    } else {
+      writer.writeInt64((long)value);
+    }
   }
 
   protected Object readString(BsonReader reader, DecoderContext ctx) {
@@ -402,6 +407,10 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
   }
 
   protected void writeUndefined(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    throw new UnsupportedOperationException();
+  }
+
+  protected void writeNumberLong(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 }
