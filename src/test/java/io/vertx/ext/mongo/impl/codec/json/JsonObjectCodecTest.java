@@ -362,4 +362,50 @@ public class JsonObjectCodecTest {
     assertTrue(document.getJsonObject("_id").containsKey(JsonObjectCodec.OID_FIELD));
   }
 
+  @Test
+  public void writeDocument_supportNumberLong() {
+
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    long l = 248934988;
+
+    JsonObject value = new JsonObject();
+
+    value.put("test", new JsonObject().put(
+      JsonObjectCodec.LONG_FIELD, l
+    ));
+
+    BsonDocument bsonResult = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+    codec.writeDocument(writer,"", value, EncoderContext.builder().build());
+
+    BsonValue resutlValue = bsonResult.get("test");
+    assertEquals(BsonType.INT64, resutlValue.getBsonType());
+
+    BsonInt64 bsonInt64 = resutlValue.asInt64();
+    assertEquals(l, bsonInt64.getValue());
+  }
+
+  @Test
+  public void readDocument_supportNumberLong() {
+
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    long v = 24;
+
+    BsonDocument bson = new BsonDocument();
+    BsonDocument numberLong = new BsonDocument();
+    numberLong.append(JsonObjectCodec.LONG_FIELD, new BsonInt64(v));
+    bson.append("test", numberLong);
+
+    BsonDocumentReader reader = new BsonDocumentReader(bson);
+
+    JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
+
+    long timeStampValue = result.getJsonObject("test").getLong(JsonObjectCodec.LONG_FIELD);
+
+    assertEquals(v, timeStampValue);
+  }
+
 }
