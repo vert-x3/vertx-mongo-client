@@ -21,7 +21,7 @@ public class AggregateOptions {
    */
   public static final long DEFAULT_MAX_TIME       = 0L;
   /**
-   * The default value of maxAwaiTime = 0.
+   * The default value of maxAwaitTime = 1000.
    */
   public static final long DEFAULT_MAX_AWAIT_TIME = 1000L;
 
