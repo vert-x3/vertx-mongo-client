@@ -5,8 +5,7 @@ import com.mongodb.connection.SslSettings;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ParsingSSLOptionsTest {
 
@@ -81,5 +80,21 @@ public class ParsingSSLOptionsTest {
 
     // then
     assertTrue(sslSettings.isInvalidHostNameAllowed());
+  }
+
+  @Test
+  public void testTrustAllProperty() {
+    // given
+    final JsonObject withSSLAndTrustAllEnabled = new JsonObject()
+      .put("ssl", true)
+      .put("trustAll", true);
+
+    // when
+    final SslSettings sslSettings = new MongoClientOptionsParser(withSSLAndTrustAllEnabled)
+      .settings()
+      .getSslSettings();
+
+    // then
+    assertNotNull(sslSettings.getContext());
   }
 }
