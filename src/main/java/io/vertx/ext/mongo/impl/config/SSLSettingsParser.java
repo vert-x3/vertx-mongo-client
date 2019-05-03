@@ -3,13 +3,15 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.ConnectionString;
 import com.mongodb.connection.SslSettings;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.impl.TrustAllTrustManager;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.*;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 
@@ -30,23 +32,23 @@ class SSLSettingsParser {
     if (config.getBoolean("trustAll", false)) {
       try {
         final SSLContext context = SSLContext.getInstance("TLS");
-        context.init(null, new TrustManager[]{new X509TrustManager() {
-          @Override
-          public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
-          }
-
-          @Override
-          public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
-          }
-
-          @Override
-          public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-          }
-        }}, new SecureRandom());
+        context.init(null, new TrustManager[]{TrustAllTrustManager.INSTANCE}, new SecureRandom());
         builder.context(context);
       } catch (final NoSuchAlgorithmException | KeyManagementException e) {
         //fail silently on error
+      }
+    }
+    if (config.containsKey("caPath")) {
+      final String caPath = config.getString("caPath");
+      try {
+        final TrustManagerFactory tmf = buildTrustManagerFactory(caPath);
+        final SSLContext context = SSLContext.getInstance("TLS");
+        context.init(null, tmf.getTrustManagers(), new SecureRandom());
+        builder.context(context);
+      } catch (final FileNotFoundException e) {
+        throw new IllegalArgumentException("Invalid caPath " + e.getMessage());
+      } catch (final NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException | KeyManagementException e) {
+        throw new IllegalArgumentException("Unable to load certificate from caPath '" + caPath + "' " + e.getMessage());
       }
     }
     return builder.build();
@@ -63,5 +65,21 @@ class SSLSettingsParser {
     return SslSettings.builder()
       .enabled(config.getBoolean("ssl", false))
       .invalidHostNameAllowed(config.getBoolean("sslInvalidHostNameAllowed", false));
+  }
+
+  private static TrustManagerFactory buildTrustManagerFactory(final String caPath)
+    throws NoSuchAlgorithmException, CertificateException, KeyStoreException, IOException {
+    final CertificateFactory fact = CertificateFactory.getInstance("X.509");
+    final FileInputStream is = new FileInputStream(caPath);
+    final X509Certificate cert = (X509Certificate) fact.generateCertificate(is);
+
+    final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+    ks.load(null, null);
+    ks.setCertificateEntry("1", cert);
+
+    final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    trustManagerFactory.init(ks);
+
+    return trustManagerFactory;
   }
 }
