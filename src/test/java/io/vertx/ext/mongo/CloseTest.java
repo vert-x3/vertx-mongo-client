@@ -13,6 +13,16 @@ import java.util.concurrent.*;
 public class CloseTest extends MongoClientTestBase {
   private static final JsonObject theConfig = getConfig();
 
+  @Override
+  public void setUp() throws Exception{
+    super.setUp();
+    JsonObject config = getConfig();
+    mongoClient = MongoClient.createNonShared(vertx, config);
+    CountDownLatch latch = new CountDownLatch(1);
+    dropCollections(mongoClient, latch);
+    awaitLatch(latch);
+  }
+
   public static class SharedVerticle extends AbstractVerticle {
 
     @Override
