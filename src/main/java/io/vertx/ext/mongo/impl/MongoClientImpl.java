@@ -42,11 +42,7 @@ import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import io.vertx.codegen.annotations.Nullable;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.impl.logging.Logger;
@@ -89,7 +85,7 @@ import static java.util.Objects.*;
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
-public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
+public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeable {
 
   private static final Logger log = LoggerFactory.getLogger(MongoClientImpl.class);
 
@@ -102,6 +98,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
 
   private final Vertx vertx;
+  private final Context context;
   protected com.mongodb.async.client.MongoClient mongo;
 
   protected final MongoHolder holder;
@@ -112,6 +109,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     Objects.requireNonNull(config);
     Objects.requireNonNull(dataSourceName);
     this.vertx = vertx;
+    this.context = vertx.getOrCreateContext();
+    context.addCloseHook(this);
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo();
     this.useObjectId = config.getBoolean("useObjectId", false);
@@ -946,6 +945,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       jsonUpsertId = null;
     }
     return jsonUpsertId;
+  }
+
+  @Override
+  public void close(Handler<AsyncResult<Void>> handler) {
+    holder.close();
+    handler.handle(Future.succeededFuture());
   }
 
   private static class MongoHolder implements Shareable {
