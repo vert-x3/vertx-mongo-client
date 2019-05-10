@@ -103,7 +103,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
 
   private final Vertx vertx;
-  private final Context context;
   protected com.mongodb.async.client.MongoClient mongo;
 
   protected final MongoHolder holder;
@@ -114,7 +113,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Objects.requireNonNull(config);
     Objects.requireNonNull(dataSourceName);
     this.vertx = vertx;
-    this.context = vertx.getOrCreateContext();
+    Context context = vertx.getOrCreateContext();
     context.addCloseHook(this);
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo();
