@@ -28,8 +28,8 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
     super.tearDown();
   }
 
-  protected JsonObject getConfig() {
-    JsonObject config = super.getConfig();
+  protected static JsonObject getConfig() {
+    JsonObject config  = MongoClientTestBase.getConfig();
     config.put("useObjectId", true);
     return config;
   }

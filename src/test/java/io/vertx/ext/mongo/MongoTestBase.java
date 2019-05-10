@@ -91,7 +91,7 @@ public abstract class MongoTestBase extends VertxTestBase {
     }
   }
 
-  protected JsonObject getConfig() {
+  protected static JsonObject getConfig() {
     JsonObject config = new JsonObject();
     String connectionString = getConnectionString();
     if (connectionString != null) {
