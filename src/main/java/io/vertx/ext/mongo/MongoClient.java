@@ -530,6 +530,17 @@ public interface MongoClient {
   MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   /**
+   * creates an indexes
+   * @param collection the collection
+   * @param indexes A model that contains pairs of document and indexOptions, document contains the field and value pairs
+   *                where the field is the index key and the value describes the type of index for that field.
+   *                For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+   * @param resultHandler will be called when complete
+   */
+  @Fluent
+  MongoClient createIndexes(String collection, List<IndexModel> indexes, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
    * Get all the indexes in this collection.
    *
    * @param collection  the collection
