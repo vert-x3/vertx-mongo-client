@@ -65,6 +65,7 @@ import io.vertx.ext.mongo.MongoClientDeleteResult;
 import io.vertx.ext.mongo.MongoClientUpdateResult;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.WriteOption;
+import io.vertx.ext.mongo.IndexModel;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.BsonDocument;
@@ -81,7 +82,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.*;
+import static java.util.Objects.requireNonNull;
 
 /**
  * The implementation of the {@link io.vertx.ext.mongo.MongoClient}. This implementation is based on the async driver
@@ -581,25 +582,22 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     requireNonNull(key, "fieldName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
     MongoCollection<JsonObject> coll = getCollection(collection);
-    com.mongodb.client.model.IndexOptions driverOpts = new com.mongodb.client.model.IndexOptions()
-            .background(options.isBackground())
-            .unique(options.isUnique())
-            .name(options.getName())
-            .sparse(options.isSparse())
-            .expireAfter(options.getExpireAfter(TimeUnit.SECONDS), TimeUnit.SECONDS)
-            .version(options.getVersion())
-            .weights(toBson(options.getWeights()))
-            .defaultLanguage(options.getDefaultLanguage())
-            .languageOverride(options.getLanguageOverride())
-            .textVersion(options.getTextVersion())
-            .sphereVersion(options.getSphereVersion())
-            .bits(options.getBits())
-            .min(options.getMin())
-            .max(options.getMax())
-            .bucketSize(options.getBucketSize())
-            .storageEngine(toBson(options.getStorageEngine()))
-            .partialFilterExpression(toBson(options.getPartialFilterExpression()));
+    com.mongodb.client.model.IndexOptions driverOpts = mongoIndexOptions(options);
     coll.createIndex(wrap(key), driverOpts, wrapCallback(toVoidAsyncResult(resultHandler)));
+    return this;
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient createIndexes(String collection, List<IndexModel> indexes, Handler<AsyncResult<Void>> resultHandler) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(resultHandler, "resultHandler cannot be null");
+
+    final List<com.mongodb.client.model.IndexModel> transformIndexes = indexes.stream().map(it -> {
+      if (it.getOptions()!=null) return  new com.mongodb.client.model.IndexModel(wrap(it.getKey()), mongoIndexOptions(it.getOptions()));
+      else return new com.mongodb.client.model.IndexModel(wrap(it.getKey()));
+    }).collect(Collectors.toList());
+
+    getCollection(collection).createIndexes(transformIndexes, wrapCallback(toVoidAsyncResult(resultHandler)));
     return this;
   }
 
@@ -897,6 +895,27 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
 
   private static com.mongodb.client.model.UpdateOptions mongoUpdateOptions(UpdateOptions options) {
     return new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
+  }
+
+  private com.mongodb.client.model.IndexOptions mongoIndexOptions(IndexOptions options) {
+    return new com.mongodb.client.model.IndexOptions()
+      .background(options.isBackground())
+      .unique(options.isUnique())
+      .name(options.getName())
+      .sparse(options.isSparse())
+      .expireAfter(options.getExpireAfter(TimeUnit.SECONDS), TimeUnit.SECONDS)
+      .version(options.getVersion())
+      .weights(toBson(options.getWeights()))
+      .defaultLanguage(options.getDefaultLanguage())
+      .languageOverride(options.getLanguageOverride())
+      .textVersion(options.getTextVersion())
+      .sphereVersion(options.getSphereVersion())
+      .bits(options.getBits())
+      .min(options.getMin())
+      .max(options.getMax())
+      .bucketSize(options.getBucketSize())
+      .storageEngine(toBson(options.getStorageEngine()))
+      .partialFilterExpression(toBson(options.getPartialFilterExpression()));
   }
 
   @Nullable
