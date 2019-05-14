@@ -89,6 +89,33 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testCreateIndexes() {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      List<IndexModel> indexes = new ArrayList<>();
+      JsonObject key = new JsonObject().put("field", 1);
+      IndexModel index = new IndexModel(key);
+      indexes.add(index);
+
+      JsonObject key2 = new JsonObject().put("field1", 1);
+      IndexModel index2 = new IndexModel(key2);
+      indexes.add(index2);
+
+      mongoClient.createIndexes(collection, indexes, onSuccess(res2 -> {
+        mongoClient.listIndexes(collection, onSuccess(res3 -> {
+          long cnt = res3.stream()
+            .filter(o -> ((JsonObject) o).getJsonObject("key").containsKey("field") ||
+              ((JsonObject) o).getJsonObject("key").containsKey("field1") )
+            .count();
+          assertEquals(2, cnt);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testCreateIndex() {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
