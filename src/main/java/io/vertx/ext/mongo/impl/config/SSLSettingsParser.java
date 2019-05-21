@@ -2,14 +2,22 @@ package io.vertx.ext.mongo.impl.config;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.connection.SslSettings;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.impl.TrustAllTrustManager;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.*;
-import java.security.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -19,6 +27,7 @@ import java.util.Optional;
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 class SSLSettingsParser {
+  private static final Logger log = LoggerFactory.getLogger(SSLSettingsParser.class);
   private final ConnectionString connectionString;
   private final JsonObject config;
 
@@ -30,6 +39,7 @@ class SSLSettingsParser {
   public SslSettings settings() {
     final SslSettings.Builder builder = fromConnectionString().orElseGet(this::fromConfiguration);
     if (config.getBoolean("trustAll", false)) {
+      log.warn("Mongo client has been set to trust ALL certificates, this can open you up to security issues. Make sure you know the risks.");
       try {
         final SSLContext context = SSLContext.getInstance("TLS");
         context.init(null, new TrustManager[]{TrustAllTrustManager.INSTANCE}, new SecureRandom());
