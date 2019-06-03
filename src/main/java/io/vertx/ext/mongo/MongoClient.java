@@ -140,7 +140,7 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient updateCollection(String collection, JsonObject query, JsonObject update,
-                               Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+                               Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
   /**
    * Update matching documents in the specified collection, specifying options
@@ -165,7 +165,7 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options,
-                                          Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+                                          Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
   /**
    * Replace matching documents in the specified collection
@@ -189,7 +189,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
   /**
    * Replace matching documents in the specified collection, specifying options
@@ -215,7 +215,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler);
+  MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
   /**
    * Execute a bulk operation. Can insert, update, replace, and/or delete multiple documents with one request.
@@ -229,7 +229,7 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient bulkWrite(String collection, List<BulkOperation> operations,
-      Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
+                        Handler<AsyncResult<@Nullable MongoClientBulkWriteResult>> resultHandler);
 
   /**
    * Execute a bulk operation with the specified write options. Can insert, update, replace, and/or delete multiple
@@ -246,7 +246,7 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions,
-      Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler);
+                                   Handler<AsyncResult<@Nullable MongoClientBulkWriteResult>> resultHandler);
 
   /**
    * Find matching documents in the specified collection
@@ -412,7 +412,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
    * Remove matching documents from a collection with the specified write option
@@ -434,7 +434,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
    * Remove a single matching document from a collection
@@ -454,7 +454,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
    * Remove a single matching document from a collection with the specified write option
@@ -476,7 +476,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
-  MongoClient removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler);
+  MongoClient removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
    * Create a new collection
@@ -556,7 +556,7 @@ public interface MongoClient {
    * @param resultHandler  will be called with the result.
    */
   @Fluent
-  MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler);
+  MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
    * Gets the distinct values of the specified field name.
