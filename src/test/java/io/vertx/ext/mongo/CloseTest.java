@@ -1,7 +1,6 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.core.*;
-import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
@@ -26,7 +25,7 @@ public class CloseTest extends MongoClientTestBase {
   public static class SharedVerticle extends AbstractVerticle {
 
     @Override
-    public void start(Future<Void> startFuture) {
+    public void start(Promise<Void> startFuture) {
       MongoClient client = MongoClient.createNonShared(vertx, theConfig);
       startFuture.complete();
     }
