@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -30,6 +31,7 @@ public class UpdateOptions {
   private boolean upsert;
   private boolean multi;
   private boolean returnNewDocument; // uniquely valid on findOneAnd* methods
+  private JsonArray arrayFilters;
 
   /**
    * Default constructor
@@ -69,6 +71,7 @@ public class UpdateOptions {
     this.upsert = other.upsert;
     this.multi = other.multi;
     this.returnNewDocument = other.returnNewDocument;
+    this.arrayFilters = other.arrayFilters;
   }
 
   /**
@@ -84,6 +87,7 @@ public class UpdateOptions {
     upsert = json.getBoolean("upsert", DEFAULT_UPSERT);
     multi = json.getBoolean("multi", DEFAULT_MULTI);
     returnNewDocument = json.getBoolean("return_new_document", DEFAULT_RETURN_NEW_DOCUMENT);
+    arrayFilters = json.getJsonArray("arrayFilters", null);
   }
 
   /**
@@ -166,6 +170,25 @@ public class UpdateOptions {
     return this;
   }
 
+  /**
+   * Get the arrayFilters option.
+   *
+   * @return the arrayFilters option
+   */
+  public JsonArray getArrayFilters() {
+    return arrayFilters;
+  }
+
+  /**
+   * Set the arrayFilters option
+   * @param arrayFilters  the arrayFilters option
+   * @return reference to this, for fluency
+   */
+  public UpdateOptions setArrayFilters(JsonArray arrayFilters) {
+    this.arrayFilters = arrayFilters;
+    return this;
+  }
+
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     if (writeOption != null) {
@@ -179,6 +202,9 @@ public class UpdateOptions {
     }
     if (returnNewDocument) {
       json.put("return_new_document", true);
+    }
+    if (arrayFilters != null && !arrayFilters.isEmpty()) {
+      json.put("arrayFilters", arrayFilters);
     }
 
     return json;
@@ -195,6 +221,7 @@ public class UpdateOptions {
     if (upsert != options.upsert) return false;
     if (writeOption != options.writeOption) return false;
     if (returnNewDocument != options.returnNewDocument) return false;
+    if (arrayFilters != options.arrayFilters) return false;
 
     return true;
   }
@@ -205,6 +232,7 @@ public class UpdateOptions {
     result = 31 * result + (upsert ? 1 : 0);
     result = 31 * result + (multi ? 1 : 0);
     result = 31 * result + (returnNewDocument ? 1 : 0);
+    result = 31 * result + (arrayFilters != null ? arrayFilters.hashCode() : 0);
     return result;
   }
 }
