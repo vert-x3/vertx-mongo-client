@@ -72,6 +72,8 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
         return readTimeStamp(reader, ctx);
       case UNDEFINED:
         return readUndefined(reader, ctx);
+      case DECIMAL128:
+        return readNumberDecimal(reader, ctx);
       default:
         throw new IllegalStateException("Unknown bson type " + type);
     }
@@ -113,6 +115,9 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
         break;
       case INT64:
         writeInt64(writer, name, value, ctx);
+        break;
+      case DECIMAL128:
+        writeNumberDecimal(writer, name, value, ctx);
         break;
       case MAX_KEY:
         writeMaxKey(writer, name, value, ctx);
@@ -411,6 +416,14 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
   }
 
   protected void writeNumberLong(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    throw new UnsupportedOperationException();
+  }
+
+  protected void writeNumberDecimal(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    throw new UnsupportedOperationException();
+  }
+
+  protected Object readNumberDecimal(BsonReader reader, DecoderContext ctx) {
     throw new UnsupportedOperationException();
   }
 }
