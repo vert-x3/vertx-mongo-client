@@ -6,8 +6,10 @@ import org.bson.*;
 import org.bson.codecs.CollectibleCodec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
+import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -27,6 +29,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   public static final String TYPE_FIELD = "$type";
   public static final String OID_FIELD = "$oid";
   public static final String LONG_FIELD = "$numberLong";
+  public static final String DECIMAL_FIELD = "$numberDecimal";
 
   //https://docs.mongodb.org/manual/reference/mongodb-extended-json/#timestamp
   public static final String TIMESTAMP_FIELD = "$timestamp";
@@ -161,6 +164,8 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
         return BsonType.TIMESTAMP;
       } else if (obj.containsKey(LONG_FIELD)) {
         return BsonType.INT64;
+      } else if (obj.containsKey(DECIMAL_FIELD)) {
+        return BsonType.DECIMAL128;
       }
     }
     return type;
@@ -243,4 +248,19 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
     writer.writeInt64(aLong);
   }
 
+  @Override
+  protected void writeNumberDecimal(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+    final String decimal = ((JsonObject) value).getString(DECIMAL_FIELD);
+    if (decimal.contains(".")) {
+      writer.writeDecimal128(new Decimal128(new BigDecimal(decimal)));
+    } else {
+      writer.writeDecimal128(new Decimal128(Long.parseLong(decimal)));
+    }
+  }
+
+  @Override
+  protected Object readNumberDecimal(BsonReader reader, DecoderContext ctx) {
+    final Decimal128 decimal128 = reader.readDecimal128();
+    return decimal128.toString();
+  }
 }

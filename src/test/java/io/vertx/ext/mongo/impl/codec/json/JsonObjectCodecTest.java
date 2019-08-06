@@ -4,10 +4,12 @@ import io.vertx.core.json.JsonObject;
 import org.bson.*;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
+import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.junit.Test;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -403,9 +405,52 @@ public class JsonObjectCodecTest {
 
     JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
 
-    long timeStampValue = result.getJsonObject("test").getLong(JsonObjectCodec.LONG_FIELD);
+    long numberLongValue = result.getJsonObject("test").getLong(JsonObjectCodec.LONG_FIELD);
 
-    assertEquals(v, timeStampValue);
+    assertEquals(v, numberLongValue);
   }
 
+  @Test
+  public void writeDocument_supportNumberDecimal() {
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    String l = "2222.454543";
+
+    JsonObject value = new JsonObject();
+
+    value.put("test", new JsonObject().put(
+      JsonObjectCodec.DECIMAL_FIELD, l
+    ));
+
+    BsonDocument bsonResult = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+    codec.writeDocument(writer,"", value, EncoderContext.builder().build());
+
+    BsonValue resultValue = bsonResult.get("test");
+    assertEquals(BsonType.DECIMAL128, resultValue.getBsonType());
+
+    BsonDecimal128 decimal128 = resultValue.asDecimal128();
+    assertEquals(l, decimal128.getValue().toString());
+  }
+
+  @Test
+  public void readDocument_supportNumberDecimal() {
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    String v = "24.56";
+
+    BsonDocument bson = new BsonDocument();
+    BsonDocument numberDecimal = new BsonDocument();
+    numberDecimal.append(JsonObjectCodec.DECIMAL_FIELD, new BsonDecimal128(new Decimal128(new BigDecimal(v))));
+    bson.append("test", numberDecimal);
+
+    BsonDocumentReader reader = new BsonDocumentReader(bson);
+
+    JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
+
+    String decimalValue = result.getJsonObject("test").getString(JsonObjectCodec.DECIMAL_FIELD);
+
+    assertEquals(v, decimalValue);
+  }
 }
