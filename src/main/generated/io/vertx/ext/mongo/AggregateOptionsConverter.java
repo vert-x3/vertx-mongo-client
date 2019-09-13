@@ -4,21 +4,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import io.vertx.core.spi.json.JsonCodec;
 
 /**
- * Converter and Codec for {@link io.vertx.ext.mongo.AggregateOptions}.
+ * Converter and mapper for {@link io.vertx.ext.mongo.AggregateOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.AggregateOptions} original class using Vert.x codegen.
  */
-public class AggregateOptionsConverter implements JsonCodec<AggregateOptions, JsonObject> {
+public class AggregateOptionsConverter {
 
-  public static final AggregateOptionsConverter INSTANCE = new AggregateOptionsConverter();
-
-  @Override public JsonObject encode(AggregateOptions value) { return (value != null) ? value.toJson() : null; }
-
-  @Override public AggregateOptions decode(JsonObject value) { return (value != null) ? new AggregateOptions(value) : null; }
-
-  @Override public Class<AggregateOptions> getTargetClass() { return AggregateOptions.class; }
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, AggregateOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
