@@ -1,6 +1,8 @@
 package io.vertx.ext.mongo;
 
 import com.mongodb.async.client.gridfs.AsyncInputStream;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.mongo.impl.GridFSInputStreamImpl;
@@ -20,7 +22,7 @@ public interface GridFSInputStream extends AsyncInputStream, WriteStream<Buffer>
    * has been written to the database, the driver will be signalled that all data has been processed.
    */
   @Override
-  void end();
+  void end(Handler<AsyncResult<Void>> handler);
 
   /**
    * Sets the maximum internal buffer size.
