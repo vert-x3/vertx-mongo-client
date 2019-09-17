@@ -104,6 +104,33 @@ Set the sort document
 +++
 |===
 
+[[GridFsDownloadOptions]]
+== GridFsDownloadOptions
+
+++++
+ Options used to configure downloads from GridFS.
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[revision]]`@revision`|`Number (Integer)`|-
+|===
+
+[[GridFsUploadOptions]]
+== GridFsUploadOptions
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[chunkSizeBytes]]`@chunkSizeBytes`|`Number (Integer)`|-
+|[[metadata]]`@metadata`|`Json object`|-
+|===
+
 [[IndexModel]]
 == IndexModel
 
