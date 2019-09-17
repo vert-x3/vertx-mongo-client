@@ -950,7 +950,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Nullable
-  protected staticJsonObjectBsonAdapter wrap(@Nullable JsonObject jsonObject) {
+  protected static JsonObjectBsonAdapter wrap(@Nullable JsonObject jsonObject) {
     return jsonObject == null ? null : new JsonObjectBsonAdapter(jsonObject);
   }
 

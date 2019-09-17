@@ -104,22 +104,6 @@ Set the sort document
 +++
 |===
 
-[[IndexModel]]
-== IndexModel
-
-
-[cols=">25%,25%,50%"]
-[frame="topbot"]
-|===
-^|Name | Type ^| Description
-|[[key]]`@key`|`Json object`|+++
-Get the index key
-+++
-|[[options]]`@options`|`link:dataobjects.html#IndexOptions[IndexOptions]`|+++
-Get the index options
-+++
-|===
-
 [[GridFsDownloadOptions]]
 == GridFsDownloadOptions
 
@@ -145,6 +129,22 @@ Get the index options
 ^|Name | Type ^| Description
 |[[chunkSizeBytes]]`@chunkSizeBytes`|`Number (Integer)`|-
 |[[metadata]]`@metadata`|`Json object`|-
+|===
+
+[[IndexModel]]
+== IndexModel
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[key]]`@key`|`Json object`|+++
+Get the index key
++++
+|[[options]]`@options`|`link:dataobjects.html#IndexOptions[IndexOptions]`|+++
+Get the index options
++++
 |===
 
 [[IndexOptions]]

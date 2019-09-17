@@ -1,6 +1,8 @@
 package io.vertx.ext.mongo.impl;
 
 import com.mongodb.async.SingleResultCallback;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.WriteStream;
@@ -73,7 +75,7 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     }
   }
 
-  public WriteStream<Buffer> write(Buffer inputBuffer) {
+  public Future<Void> write(Buffer inputBuffer) {
     if (closed) throw new IllegalStateException("Stream is closed");
     final byte[] bytes = inputBuffer.getBytes();
     final ByteBuffer wrapper = ByteBuffer.wrap(bytes);
@@ -87,7 +89,17 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
         buffer.offer(wrapper.get());
       }
     }
-    return this;
+    return Future.succeededFuture();
+  }
+
+  @Override
+  public void write(Buffer data, Handler<AsyncResult<Void>> handler) {
+    handler.handle(write(data));
+  }
+
+  @Override
+  public void skip(long bytesToSkip, SingleResultCallback<Long> callback) {
+    throw new IllegalStateException("Not implemented");
   }
 
   private int writeOutput(final ByteBuffer wrapper) {
@@ -123,7 +135,7 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     singleResultCallback.onResult(null, null);
   }
 
-  public void end() {
+  public void end(Handler<AsyncResult<Void>> resultHandler) {
     synchronized (buffer) {
       if (pendingCallback != null) {
         int bytesWritten = 0;
@@ -154,5 +166,4 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     this.drainHandler = handler;
     return this;
   }
-
 }
