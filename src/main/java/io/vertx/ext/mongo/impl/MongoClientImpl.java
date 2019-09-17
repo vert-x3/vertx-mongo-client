@@ -26,6 +26,8 @@ import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.async.client.MongoIterable;
+import com.mongodb.async.client.gridfs.GridFSBucket;
+import com.mongodb.async.client.gridfs.GridFSBuckets;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.bulk.BulkWriteUpsert;
 import com.mongodb.client.model.DeleteManyModel;
@@ -55,17 +57,7 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.core.streams.ReadStream;
-import io.vertx.ext.mongo.AggregateOptions;
-import io.vertx.ext.mongo.BulkOperation;
-import io.vertx.ext.mongo.BulkWriteOptions;
-import io.vertx.ext.mongo.FindOptions;
-import io.vertx.ext.mongo.IndexOptions;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.MongoClientBulkWriteResult;
-import io.vertx.ext.mongo.MongoClientDeleteResult;
-import io.vertx.ext.mongo.MongoClientUpdateResult;
-import io.vertx.ext.mongo.UpdateOptions;
-import io.vertx.ext.mongo.WriteOption;
+import io.vertx.ext.mongo.*;
 import io.vertx.ext.mongo.IndexModel;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
@@ -708,6 +700,22 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public MongoClient createDefaultGridFsBucketService(Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
+    return this.createGridFsBucketService("fs", resultHandler);
+  }
+
+  @Override
+  public MongoClient createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
+    MongoGridFsClientImpl impl = new MongoGridFsClientImpl(vertx, this, getGridFSBucket(bucketName));
+    resultHandler.handle(Future.succeededFuture(impl));
+    return this;
+  }
+
+  private GridFSBucket getGridFSBucket(String bucketName) {
+    return GridFSBuckets.create(holder.db, bucketName);
+  }
+
+  @Override
   public ReadStream<JsonObject> aggregate(final String collection, final JsonArray pipeline) {
     return aggregateWithOptions(collection, pipeline, DEFAULT_AGGREGATE_OPTIONS);
   }
@@ -775,7 +783,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return aggregate;
   }
 
-  private JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
+  protected JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
     if (!useObjectId) return json;
 
     Object idString = json.getValue(ID_FIELD, null);
@@ -800,7 +808,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return json;
   }
 
-  private <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
+  protected <T, R> SingleResultCallback<T> convertCallback(Handler<AsyncResult<R>> resultHandler, Function<T, R> converter) {
     Context context = vertx.getOrCreateContext();
     return (result, error) -> {
       context.runOnContext(v -> {
@@ -866,7 +874,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return new MongoClientBulkWriteResult(insertedCount, matchedCount, deletedCount, modifiedCount, upsertResult);
   }
 
-  private <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
+  protected  <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
     Context context = vertx.getOrCreateContext();
     return (result, error) -> {
       context.runOnContext(v -> {
@@ -942,7 +950,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Nullable
-  private static JsonObjectBsonAdapter wrap(@Nullable JsonObject jsonObject) {
+  protected static JsonObjectBsonAdapter wrap(@Nullable JsonObject jsonObject) {
     return jsonObject == null ? null : new JsonObjectBsonAdapter(jsonObject);
   }
 
