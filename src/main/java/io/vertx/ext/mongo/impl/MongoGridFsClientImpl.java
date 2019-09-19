@@ -8,6 +8,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
@@ -48,7 +49,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient uploadByFileName(ReadStream stream, String fileName, Handler<AsyncResult<String>> resultHandler) {
+  public MongoGridFsClient uploadByFileName(ReadStream<Buffer> stream, String fileName, Handler<AsyncResult<String>> resultHandler) {
 
     GridFSInputStream gridFsInputStream = new GridFSInputStreamImpl();
 
@@ -70,7 +71,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient uploadByFileNameWithOptions(ReadStream stream, String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler) {
+  public MongoGridFsClient uploadByFileNameWithOptions(ReadStream<Buffer> stream, String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler) {
 
     GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
     uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
@@ -152,7 +153,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient downloadByFileName(WriteStream stream, String fileName, Handler<AsyncResult<Long>> resultHandler) {
+  public MongoGridFsClient downloadByFileName(WriteStream<Buffer> stream, String fileName, Handler<AsyncResult<Long>> resultHandler) {
     GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
     Context context = vertx.getOrCreateContext();
     bucket.downloadToStream(fileName, gridFsOutputStream, (length, throwable) -> {
@@ -169,7 +170,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient downloadByFileNameWithOptions(WriteStream stream, String fileName, GridFsDownloadOptions options, Handler<AsyncResult<Long>> resultHandler) {
+  public MongoGridFsClient downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options, Handler<AsyncResult<Long>> resultHandler) {
     GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions();
     downloadOptions.revision(options.getRevision());
 
@@ -189,7 +190,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient downloadById(WriteStream stream, String id, Handler<AsyncResult<Long>> resultHandler) {
+  public MongoGridFsClient downloadById(WriteStream<Buffer> stream, String id, Handler<AsyncResult<Long>> resultHandler) {
     ObjectId objectId = new ObjectId(id);
     GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
     Context context = vertx.getOrCreateContext();
