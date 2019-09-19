@@ -4,6 +4,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
@@ -22,13 +23,13 @@ public interface MongoGridFsClient {
   MongoGridFsClient delete(String id, Handler<AsyncResult<Void>> resultHandler);
 
   @Fluent
-  MongoGridFsClient downloadByFileName(WriteStream stream, String fileName, Handler<AsyncResult<Long>> resultHandler);
+  MongoGridFsClient downloadByFileName(WriteStream<Buffer> stream, String fileName, Handler<AsyncResult<Long>> resultHandler);
 
   @Fluent
-  MongoGridFsClient downloadByFileNameWithOptions(WriteStream stream, String fileName, GridFsDownloadOptions options, Handler<AsyncResult<Long>> resultHandler);
+  MongoGridFsClient downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options, Handler<AsyncResult<Long>> resultHandler);
 
   @Fluent
-  MongoGridFsClient downloadById(WriteStream stream, String id, Handler<AsyncResult<Long>> resultHandler);
+  MongoGridFsClient downloadById(WriteStream<Buffer> stream, String id, Handler<AsyncResult<Long>> resultHandler);
 
   /**
    * Downloads a file.
@@ -84,10 +85,10 @@ public interface MongoGridFsClient {
   MongoGridFsClient findIds(JsonObject query, Handler<AsyncResult<List<String>>> resultHandler);
 
   @Fluent
-  MongoGridFsClient uploadByFileName(ReadStream stream, String fileName, Handler<AsyncResult<String>> resultHandler);
+  MongoGridFsClient uploadByFileName(ReadStream<Buffer> stream, String fileName, Handler<AsyncResult<String>> resultHandler);
 
   @Fluent
-  MongoGridFsClient uploadByFileNameWithOptions(ReadStream stream, String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler);
+  MongoGridFsClient uploadByFileNameWithOptions(ReadStream<Buffer> stream, String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler);
 
   /**
    * Upload a file to gridfs
