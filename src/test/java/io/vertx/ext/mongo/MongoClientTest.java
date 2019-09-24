@@ -171,15 +171,36 @@ public class MongoClientTest extends MongoClientTestBase {
     mongoClient.createCollection(collection, onSuccess(res -> {
       insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
         mongoClient.aggregate(collection,
-                              new JsonArray().add(new JsonObject().put("$match", new JsonObject().put("foo", new JsonObject().put("$regex", "bar1"))))
-                                             .add(new JsonObject().put("$count", "foo_starting_with_bar1")))
-                   .exceptionHandler(this::fail)
-                   .endHandler(v -> latch.countDown())
-                   .handler(result -> count.set(result.getLong("foo_starting_with_bar1")));
+          new JsonArray().add(new JsonObject().put("$match", new JsonObject().put("foo", new JsonObject().put("$regex", "bar1"))))
+            .add(new JsonObject().put("$count", "foo_starting_with_bar1")))
+          .exceptionHandler(this::fail)
+          .endHandler(v -> latch.countDown())
+          .handler(result -> count.set(result.getLong("foo_starting_with_bar1")));
       }));
     }));
     awaitLatch(latch);
     assertEquals(111, count.longValue());
+  }
+
+  @Test
+  public void testAggregateWithOptions() throws Exception {
+    AggregateOptions aggregateOptions = new AggregateOptions();
+    aggregateOptions.setAllowDiskUse(true);
+
+    JsonArray pipeline = new JsonArray();
+    pipeline.add(new JsonObject().put("$addFields", new JsonObject().put("field", "test")));
+    int numDocs = 10;
+    final CountDownLatch latch = new CountDownLatch(1);
+    final String collection = randomCollection();
+
+    insertDocs(mongoClient, collection, numDocs, onSuccess(res -> {
+      mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions).exceptionHandler(e -> {
+      }).handler(item -> {
+        System.out.println(item.encodePrettily());
+      }).fetch(10).endHandler(v -> latch.countDown());
+    }));
+
+    awaitLatch(latch);
   }
 
   private void upsertDoc(String collection, JsonObject docToInsert, String expectedId, Consumer<JsonObject> doneFunction) {
