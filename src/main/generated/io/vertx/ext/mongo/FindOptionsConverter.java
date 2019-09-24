@@ -6,10 +6,11 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Converter for {@link io.vertx.ext.mongo.FindOptions}.
+ * Converter and mapper for {@link io.vertx.ext.mongo.FindOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.FindOptions} original class using Vert.x codegen.
  */
 public class FindOptionsConverter {
+
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, FindOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {

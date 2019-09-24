@@ -6,10 +6,11 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Converter for {@link io.vertx.ext.mongo.AggregateOptions}.
+ * Converter and mapper for {@link io.vertx.ext.mongo.AggregateOptions}.
  * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.AggregateOptions} original class using Vert.x codegen.
  */
 public class AggregateOptionsConverter {
+
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, AggregateOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
