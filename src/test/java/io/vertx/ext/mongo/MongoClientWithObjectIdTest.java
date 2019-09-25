@@ -207,7 +207,7 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
       assertNotNull(id);
       JsonObject replacement = createDoc();
       replacement.put("replacement", true);
-      mongoClient.replaceWithOptions(collection, new JsonObject().put("_id", new ObjectId().toHexString()), replacement, new UpdateOptions(true), onSuccess(v -> {
+      mongoClient.replaceDocumentsWithOptions(collection, new JsonObject().put("_id", new ObjectId().toHexString()), replacement, new UpdateOptions(true), onSuccess(v -> {
         mongoClient.find(collection, new JsonObject(), onSuccess(list -> {
           assertNotNull(list);
           assertEquals(2, list.size());
