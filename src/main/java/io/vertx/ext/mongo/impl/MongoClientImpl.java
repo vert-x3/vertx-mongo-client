@@ -48,6 +48,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.Closeable;
 import io.vertx.core.json.JsonArray;
@@ -125,6 +126,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable String> save(String collection, JsonObject document) {
+    Promise<String> promise = Promise.promise();
+    save(collection, document, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(document, "document cannot be null");
@@ -148,9 +156,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable String> saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption) {
+    Promise<String> promise = Promise.promise();
+    saveWithOptions(collection, document, writeOption, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
     insertWithOptions(collection, document, null, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<@Nullable String> insert(String collection, JsonObject document) {
+    Promise<String> promise = Promise.promise();
+    insert(collection, document, promise);
+    return promise.future();
   }
 
   @Override
@@ -173,9 +195,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable String> insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption) {
+    Promise<String> promise = Promise.promise();
+    insertWithOptions(collection, document, writeOption, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient updateCollection(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
     updateCollectionWithOptions(collection, query, update, DEFAULT_UPDATE_OPTIONS, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonObject update) {
+    Promise<MongoClientUpdateResult> promise = Promise.promise();
+    updateCollection(collection, query ,update, promise);
+    return promise.future();
   }
 
   @Override
@@ -199,6 +235,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       coll.updateOne(bquery, bupdate, mongoUpdateOptions(options), toMongoClientUpdateResult(resultHandler));
     }
     return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options) {
+    Promise<MongoClientUpdateResult> promise = Promise.promise();
+    updateCollectionWithOptions(collection, query, update, options, promise);
+    return promise.future();
   }
 
   private JsonObject generateIdIfNeeded(JsonObject query, JsonObject update, UpdateOptions options) {
@@ -245,6 +288,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<List<JsonObject>> find(String collection, JsonObject query) {
+    Promise<List<JsonObject>> promise = Promise.promise();
+    find(collection, query, promise);
+    return promise.future();
+  }
+
+  @Override
   public ReadStream<JsonObject> findBatch(String collection, JsonObject query) {
     return findBatchWithOptions(collection, query, DEFAULT_FIND_OPTIONS);
   }
@@ -262,6 +312,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       return results;
     }));
     return this;
+  }
+
+  @Override
+  public Future<List<JsonObject>> findWithOptions(String collection, JsonObject query, FindOptions options) {
+    Promise<List<JsonObject>> promise = Promise.promise();
+    findWithOptions(collection, query, options, promise);
+    return promise.future();
   }
 
   @Override
@@ -290,9 +347,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable JsonObject> findOne(String collection, JsonObject query, @Nullable JsonObject fields) {
+    Promise<JsonObject> promise = Promise.promise();
+    findOne(collection, query, fields, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) {
     findOneAndUpdateWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<@Nullable JsonObject> findOneAndUpdate(String collection, JsonObject query, JsonObject update) {
+    Promise<JsonObject> promise = Promise.promise();
+    findOneAndUpdate(collection, query, update, promise);
+    return promise.future();
   }
 
   @Override
@@ -325,9 +396,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable JsonObject> findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions) {
+    Promise<JsonObject> promise = Promise.promise();
+    findOneAndUpdateWithOptions(collection, query, update, findOptions, updateOptions, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) {
     findOneAndReplaceWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<@Nullable JsonObject> findOneAndReplace(String collection, JsonObject query, JsonObject replace) {
+    Promise<JsonObject> promise = Promise.promise();
+    findOneAndReplace(collection, query, replace, promise);
+    return promise.future();
   }
 
   @Override
@@ -353,9 +438,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable JsonObject> findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions) {
+    Promise<JsonObject> promise = Promise.promise();
+    findOneAndReplaceWithOptions(collection, query, replace, findOptions, updateOptions, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
     findOneAndDeleteWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<@Nullable JsonObject> findOneAndDelete(String collection, JsonObject query) {
+    Promise<JsonObject> promise = Promise.promise();
+    findOneAndDelete(collection, query, promise);
+    return promise.future();
   }
 
   @Override
@@ -378,6 +477,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable JsonObject> findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions) {
+    Promise<JsonObject> promise = Promise.promise();
+    findOneAndDeleteWithOptions(collection, query, findOptions, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
@@ -390,9 +496,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<Long> count(String collection, JsonObject query) {
+    Promise<Long> promise = Promise.promise();
+    count(collection, query, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
     removeDocumentsWithOptions(collection, query, null, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientDeleteResult> removeDocuments(String collection, JsonObject query) {
+    Promise<MongoClientDeleteResult> promise = Promise.promise();
+    removeDocuments(collection, query, promise);
+    return promise.future();
   }
 
   @Override
@@ -408,9 +528,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable MongoClientDeleteResult> removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption) {
+    Promise<MongoClientDeleteResult> promise = Promise.promise();
+    removeDocumentsWithOptions(collection, query, writeOption, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
     removeDocumentWithOptions(collection, query, null, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientDeleteResult> removeDocument(String collection, JsonObject query) {
+    Promise<MongoClientDeleteResult> promise = Promise.promise();
+    removeDocuments(collection, query, promise);
+    return promise.future();
   }
 
   @Override
@@ -426,9 +560,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable MongoClientDeleteResult> removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption) {
+    Promise<MongoClientDeleteResult> promise = Promise.promise();
+    removeDocumentWithOptions(collection, query, writeOption, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoClient bulkWrite(String collection, List<BulkOperation> operations, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
     bulkWriteWithOptions(collection, operations, DEFAULT_BULK_WRITE_OPTIONS, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientBulkWriteResult> bulkWrite(String collection, List<BulkOperation> operations) {
+    Promise<MongoClientBulkWriteResult> promise = Promise.promise();
+    bulkWrite(collection, operations, promise);
+    return promise.future();
   }
 
   @Override
@@ -443,6 +591,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       toMongoClientBulkWriteResult(resultHandler));
 
     return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientBulkWriteResult> bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions) {
+    Promise<MongoClientBulkWriteResult> promise = Promise.promise();
+    bulkWriteWithOptions(collection, operations, bulkWriteOptions, promise);
+    return promise.future();
   }
 
   private static com.mongodb.client.model.BulkWriteOptions mongoBulkWriteOptions(BulkWriteOptions bulkWriteOptions) {
@@ -498,6 +653,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<Void> createCollection(String collectionName) {
+    Promise<Void> promise = Promise.promise();
+    createCollection(collectionName, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
     requireNonNull(resultHandler, "resultHandler cannot be null");
     List<String> names = new ArrayList<>();
@@ -515,6 +677,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<List<String>> getCollections() {
+    Promise<List<String>> promise = Promise.promise();
+    getCollections(promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -525,8 +694,22 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<Void> dropCollection(String collection) {
+    Promise<Void> promise = Promise.promise();
+    dropCollection(collection, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler) {
     return createIndexWithOptions(collection, key, new IndexOptions(), resultHandler);
+  }
+
+  @Override
+  public Future<Void> createIndex(String collection, JsonObject key) {
+    Promise<Void> promise = Promise.promise();
+    createIndex(collection, key, promise);
+    return promise.future();
   }
 
   @Override
@@ -538,6 +721,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     com.mongodb.client.model.IndexOptions driverOpts = mongoIndexOptions(options);
     coll.createIndex(wrap(key), driverOpts, wrapCallback(toVoidAsyncResult(resultHandler)));
     return this;
+  }
+
+  @Override
+  public Future<Void> createIndexWithOptions(String collection, JsonObject key, IndexOptions options) {
+    Promise<Void> promise = Promise.promise();
+    createIndexWithOptions(collection, key, options, promise);
+    return promise.future();
   }
 
   @Override
@@ -553,6 +743,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     getCollection(collection).createIndexes(transformIndexes, wrapCallback(toVoidAsyncResult(resultHandler)));
     return this;
+  }
+
+  @Override
+  public Future<Void> createIndexes(String collection, List<IndexModel> indexes) {
+    Promise<Void> promise = Promise.promise();
+    createIndexes(collection, indexes, promise);
+    return promise.future();
   }
 
   @Nullable
@@ -573,6 +770,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<JsonArray> listIndexes(String collection) {
+    Promise<JsonArray> promise = Promise.promise();
+    listIndexes(collection, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(indexName, "indexName cannot be null");
@@ -580,6 +784,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection);
     coll.dropIndex(indexName, wrapCallback(resultHandler));
     return this;
+  }
+
+  @Override
+  public Future<Void> dropIndex(String collection, String indexName) {
+    Promise<Void> promise = Promise.promise();
+    dropIndex(collection, indexName, promise);
+    return promise.future();
   }
 
   @Override
@@ -606,8 +817,22 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command) {
+    Promise<JsonObject> promise = Promise.promise();
+    runCommand(commandName, command, promise);
+    return promise.future();
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
     return distinctWithQuery(collection, fieldName, resultClassname, new JsonObject(), resultHandler);
+  }
+
+  @Override
+  public Future<JsonArray> distinct(String collection, String fieldName, String resultClassname) {
+    Promise<JsonArray> promise = Promise.promise();
+    distinct(collection, fieldName, resultClassname, promise);
+    return promise.future();
   }
 
   @Override
@@ -621,6 +846,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       resultHandler.handle(Future.failedFuture(e));
     }
     return this;
+  }
+
+  @Override
+  public Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query) {
+    Promise<JsonArray> promise = Promise.promise();
+    distinctWithQuery(collection, fieldName, resultClassname, query, promise);
+    return promise.future();
   }
 
   @Override
@@ -650,10 +882,38 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<MongoGridFsClient> createDefaultGridFsBucketService() {
+    Promise<MongoGridFsClient> promise = Promise.promise();
+    createDefaultGridFsBucketService(promise);
+    return promise.future();
+  }
+
+  @Override
+  public Future<@Nullable MongoClientUpdateResult> replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options) {
+    Promise<MongoClientUpdateResult> promise = Promise.promise();
+    replaceDocumentsWithOptions(collection, query, replace, options, promise);
+    return promise.future();
+  }
+
+  @Override
+  public Future<@Nullable MongoClientUpdateResult> replaceDocuments(String collection, JsonObject query, JsonObject replace) {
+    Promise<MongoClientUpdateResult> promise = Promise.promise();
+    replaceDocuments(collection, query, replace, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoClient createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler) {
     MongoGridFsClientImpl impl = new MongoGridFsClientImpl(vertx, this, getGridFSBucket(bucketName));
     resultHandler.handle(Future.succeededFuture(impl));
     return this;
+  }
+
+  @Override
+  public Future<MongoGridFsClient> createGridFsBucketService(String bucketName) {
+    Promise<MongoGridFsClient> promise = Promise.promise();
+    createGridFsBucketService(bucketName, promise);
+    return promise.future();
   }
 
   private GridFSBucket getGridFSBucket(String bucketName) {
