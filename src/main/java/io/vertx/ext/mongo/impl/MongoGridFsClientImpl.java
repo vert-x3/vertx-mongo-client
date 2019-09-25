@@ -7,6 +7,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
@@ -71,6 +72,13 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
+  public Future<String> uploadByFileName(ReadStream<Buffer> stream, String fileName) {
+    Promise<String> promise = Promise.promise();
+    uploadByFileName(stream, fileName, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoGridFsClient uploadByFileNameWithOptions(ReadStream<Buffer> stream, String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler) {
 
     GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
@@ -97,12 +105,26 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
+  public Future<String> uploadByFileNameWithOptions(ReadStream<Buffer> stream, String fileName, GridFsUploadOptions options) {
+    Promise<String> promise = Promise.promise();
+    uploadByFileNameWithOptions(stream, fileName, options, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoGridFsClient uploadFile(String fileName, Handler<AsyncResult<String>> resultHandler) {
     requireNonNull(fileName, "fileName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     uploadFileWithOptions(fileName, null, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<String> uploadFile(String fileName) {
+    Promise<String> promise = Promise.promise();
+    uploadFile(fileName, promise);
+    return promise.future();
   }
 
   @Override
@@ -138,6 +160,13 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
+  public Future<String> uploadFileWithOptions(String fileName, GridFsUploadOptions options) {
+    Promise<String> promise = Promise.promise();
+    uploadFileWithOptions(fileName, options, promise);
+    return promise.future();
+  }
+
+  @Override
   public void close() {
   }
 
@@ -150,6 +179,13 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     bucket.delete(objectId, clientImpl.wrapCallback(resultHandler));
 
     return this;
+  }
+
+  @Override
+  public Future<Void> delete(String id) {
+    Promise<Void> promise = Promise.promise();
+    delete(id, promise);
+    return promise.future();
   }
 
   @Override
@@ -167,6 +203,13 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     });
 
     return this;
+  }
+
+  @Override
+  public Future<Long> downloadByFileName(WriteStream<Buffer> stream, String fileName) {
+    Promise<Long> promise = Promise.promise();
+    downloadByFileName(stream, fileName, promise);
+    return promise.future();
   }
 
   @Override
@@ -190,6 +233,13 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
+  public Future<Long> downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options) {
+    Promise<Long> promise = Promise.promise();
+    downloadByFileNameWithOptions(stream, fileName, options, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoGridFsClient downloadById(WriteStream<Buffer> stream, String id, Handler<AsyncResult<Long>> resultHandler) {
     ObjectId objectId = new ObjectId(id);
     GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
@@ -208,11 +258,25 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
+  public Future<Long> downloadById(WriteStream<Buffer> stream, String id) {
+    Promise<Long> promise = Promise.promise();
+    downloadById(stream, id, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoGridFsClient downloadFile(String fileName, Handler<AsyncResult<Long>> resultHandler) {
     requireNonNull(fileName, "fileName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     return downloadFileAs(fileName, fileName, resultHandler);
+  }
+
+  @Override
+  public Future<Long> downloadFile(String fileName) {
+    Promise<Long> promise = Promise.promise();
+    downloadFile(fileName, promise);
+    return promise.future();
   }
 
   @Override
@@ -248,6 +312,13 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
+  public Future<Long> downloadFileAs(String fileName, String newFileName) {
+    Promise<Long> promise = Promise.promise();
+    downloadFileAs(fileName, newFileName, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoGridFsClient downloadFileByID(String id, String fileName, Handler<AsyncResult<Long>> resultHandler) {
     requireNonNull(fileName, "fileName cannot be null");
     requireNonNull(resultHandler, "resultHandler cannot be null");
@@ -279,11 +350,25 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
+  public Future<Long> downloadFileByID(String id, String fileName) {
+    Promise<Long> promise = Promise.promise();
+    downloadFileByID(id, fileName, promise);
+    return promise.future();
+  }
+
+  @Override
   public MongoGridFsClient drop(Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     bucket.drop(clientImpl.wrapCallback(resultHandler));
     return this;
+  }
+
+  @Override
+  public Future<Void> drop() {
+    Promise<Void> promise = Promise.promise();
+    drop(promise);
+    return promise.future();
   }
 
   @Override
@@ -308,6 +393,13 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
         });
 
     return this;
+  }
+
+  @Override
+  public Future<List<String>> findAllIds() {
+    Promise<List<String>> promise = Promise.promise();
+    findAllIds(promise);
+    return promise.future();
   }
 
   @Override
@@ -338,5 +430,12 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
         });
 
     return this;
+  }
+
+  @Override
+  public Future<List<String>> findIds(JsonObject query) {
+    Promise<List<String>> promise = Promise.promise();
+    findIds(query, promise);
+    return promise.future();
   }
 }

@@ -4,6 +4,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -81,6 +82,8 @@ public interface MongoClient {
   @Fluent
   MongoClient save(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
 
+  Future<@Nullable String> save(String collection, JsonObject document);
+
   /**
    * Save a document in the specified collection with the specified write option
    * <p>
@@ -94,6 +97,8 @@ public interface MongoClient {
   @Fluent
   MongoClient saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
 
+  Future<@Nullable String> saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption);
+
   /**
    * Insert a document in the specified collection
    * <p>
@@ -105,6 +110,8 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
+
+  Future<@Nullable String> insert(String collection, JsonObject document);
 
   /**
    * Insert a document in the specified collection with the specified write option
@@ -119,6 +126,8 @@ public interface MongoClient {
   @Fluent
   MongoClient insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
 
+  Future<@Nullable String> insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption);
+
   /**
    * Update matching documents in the specified collection and return the handler with MongoClientUpdateResult result
    *
@@ -130,6 +139,8 @@ public interface MongoClient {
   @Fluent
   MongoClient updateCollection(String collection, JsonObject query, JsonObject update,
                                Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
+
+  Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonObject update);
 
   /**
    * Update matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
@@ -144,6 +155,8 @@ public interface MongoClient {
   MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options,
                                           Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
+  Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options);
+
   /**
    * Replace matching documents in the specified collection and return the handler with MongoClientUpdateResult result
    *
@@ -154,6 +167,8 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
+
+  Future<@Nullable MongoClientUpdateResult> replaceDocuments(String collection, JsonObject query, JsonObject replace);
 
   /**
    * Replace matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
@@ -166,6 +181,8 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
+
+  Future<@Nullable MongoClientUpdateResult> replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options);
 
   /**
    * Execute a bulk operation. Can insert, update, replace, and/or delete multiple documents with one request.
@@ -180,6 +197,11 @@ public interface MongoClient {
   @Fluent
   MongoClient bulkWrite(String collection, List<BulkOperation> operations,
                         Handler<AsyncResult<@Nullable MongoClientBulkWriteResult>> resultHandler);
+
+  /**
+   * Like {@link #bulkWrite(String, List, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable MongoClientBulkWriteResult> bulkWrite(String collection, List<BulkOperation> operations);
 
   /**
    * Execute a bulk operation with the specified write options. Can insert, update, replace, and/or delete multiple
@@ -199,6 +221,11 @@ public interface MongoClient {
                                    Handler<AsyncResult<@Nullable MongoClientBulkWriteResult>> resultHandler);
 
   /**
+   * Like {@link #bulkWriteWithOptions(String, List, BulkWriteOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable MongoClientBulkWriteResult> bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions);
+
+  /**
    * Find matching documents in the specified collection
    *
    * @param collection  the collection
@@ -207,6 +234,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+
+  /**
+   * Like {@link #find(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<List<JsonObject>> find(String collection, JsonObject query);
 
   /**
    * Find matching documents in the specified collection.
@@ -228,6 +260,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
+
+  /**
+   * Like {@link #findWithOptions(String, JsonObject, FindOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<List<JsonObject>> findWithOptions(String collection, JsonObject query, FindOptions options);
 
   /**
    * Find matching documents in the specified collection, specifying options.
@@ -254,6 +291,11 @@ public interface MongoClient {
   MongoClient findOne(String collection, JsonObject query, @Nullable JsonObject fields, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
+   * Like {@link #findOne(String, JsonObject, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable JsonObject> findOne(String collection, JsonObject query, @Nullable JsonObject fields);
+
+  /**
    * Find a single matching document in the specified collection and update it.
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
@@ -265,6 +307,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
+
+  /**
+   * Like {@link #findOneAndUpdate(String, JsonObject, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable JsonObject> findOneAndUpdate(String collection, JsonObject query, JsonObject update);
 
   /**
    * Find a single matching document in the specified collection and update it.
@@ -282,6 +329,11 @@ public interface MongoClient {
   MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
+   * Like {@link #findOneAndUpdateWithOptions(String, JsonObject, JsonObject, FindOptions, UpdateOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable JsonObject> findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions);
+
+  /**
    * Find a single matching document in the specified collection and replace it.
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
@@ -293,6 +345,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
+
+  /**
+   * Like {@link #findOneAndReplace(String, JsonObject, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable JsonObject> findOneAndReplace(String collection, JsonObject query, JsonObject replace);
 
   /**
    * Find a single matching document in the specified collection and replace it.
@@ -310,6 +367,11 @@ public interface MongoClient {
   MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
+   * Like {@link #findOneAndReplaceWithOptions(String, JsonObject, JsonObject, FindOptions, UpdateOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable JsonObject> findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions);
+
+  /**
    * Find a single matching document in the specified collection and delete it.
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
@@ -320,6 +382,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
+
+  /**
+   * Like {@link #findOneAndDelete(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable JsonObject> findOneAndDelete(String collection, JsonObject query);
 
   /**
    * Find a single matching document in the specified collection and delete it.
@@ -335,6 +402,11 @@ public interface MongoClient {
   MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
+   * Like {@link #findOneAndDeleteWithOptions(String, JsonObject, FindOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable JsonObject> findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions);
+
+  /**
    * Count matching documents in a collection.
    *
    * @param collection  the collection
@@ -345,6 +417,11 @@ public interface MongoClient {
   MongoClient count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler);
 
   /**
+   * Like {@link #count(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Long> count(String collection, JsonObject query);
+
+  /**
    * Remove matching documents from a collection and return the handler with MongoClientDeleteResult result
    *
    * @param collection  the collection
@@ -353,6 +430,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
+
+  /**
+   * Like {@link #removeDocuments(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable MongoClientDeleteResult> removeDocuments(String collection, JsonObject query);
 
   /**
    * Remove matching documents from a collection with the specified write option and return the handler with MongoClientDeleteResult result
@@ -366,6 +448,11 @@ public interface MongoClient {
   MongoClient removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
+   * Like {@link #removeDocumentsWithOptions(String, JsonObject, WriteOption, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable MongoClientDeleteResult> removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption);
+
+  /**
    * Remove a single matching document from a collection and return the handler with MongoClientDeleteResult result
    *
    * @param collection  the collection
@@ -374,6 +461,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
+
+  /**
+   * Like {@link #removeDocument(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable MongoClientDeleteResult> removeDocument(String collection, JsonObject query);
 
   /**
    * Remove a single matching document from a collection with the specified write option and return the handler with MongoClientDeleteResult result
@@ -387,6 +479,11 @@ public interface MongoClient {
   MongoClient removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
+   * Like {@link #removeDocumentWithOptions(String, JsonObject, WriteOption, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable MongoClientDeleteResult> removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption);
+
+  /**
    * Create a new collection
    *
    * @param collectionName  the name of the collection
@@ -394,6 +491,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Like {@link #createCollection(String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> createCollection(String collectionName);
 
   /**
    * Get a list of all collections in the database.
@@ -404,6 +506,11 @@ public interface MongoClient {
   MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler);
 
   /**
+   * Like {@link #getCollections(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<List<String>> getCollections();
+
+  /**
    * Drop a collection
    *
    * @param collection  the collection
@@ -411,6 +518,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Like {@link #dropCollection(String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> dropCollection(String collection);
 
   /**
    * Creates an index.
@@ -423,6 +535,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Like {@link #createIndex(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> createIndex(String collection, JsonObject key);
 
   /**
    * Creates an index.
@@ -438,6 +555,11 @@ public interface MongoClient {
   MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   /**
+   * Like {@link #createIndexWithOptions(String, JsonObject, IndexOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> createIndexWithOptions(String collection, JsonObject key, IndexOptions options);
+
+  /**
    * creates an indexes
    * @param collection the collection
    * @param indexes A model that contains pairs of document and indexOptions, document contains the field and value pairs
@@ -449,6 +571,11 @@ public interface MongoClient {
   MongoClient createIndexes(String collection, List<IndexModel> indexes, Handler<AsyncResult<Void>> resultHandler);
 
   /**
+   * Like {@link #createIndexes(String, List, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> createIndexes(String collection, List<IndexModel> indexes);
+
+  /**
    * Get all the indexes in this collection.
    *
    * @param collection  the collection
@@ -456,6 +583,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  /**
+   * Like {@link #listIndexes(String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<JsonArray> listIndexes(String collection);
 
   /**
    * Drops the index given its name.
@@ -468,6 +600,11 @@ public interface MongoClient {
   MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler);
 
   /**
+   * Like {@link #dropIndex(String, String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> dropIndex(String collection, String indexName);
+
+  /**
    * Run an arbitrary MongoDB command.
    *
    * @param commandName  the name of the command
@@ -476,6 +613,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
+
+  /**
+   * Like {@link #runCommand(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command);
 
   /**
    * Gets the distinct values of the specified field name.
@@ -489,6 +631,11 @@ public interface MongoClient {
   MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
+   * Like {@link #distinct(String, String, String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<JsonArray> distinct(String collection, String fieldName, String resultClassname);
+
+  /**
    * Gets the distinct values of the specified field name filtered by specified query.
    * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
    *
@@ -499,6 +646,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  /**
+   * Like {@link #distinctWithQuery(String, String, String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query);
 
   /**
    * Gets the distinct values of the specified field name.
@@ -563,6 +715,11 @@ public interface MongoClient {
   MongoClient createDefaultGridFsBucketService(Handler<AsyncResult<MongoGridFsClient>> resultHandler);
 
   /**
+   * Like {@link #createDefaultGridFsBucketService(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<MongoGridFsClient> createDefaultGridFsBucketService();
+
+  /**
    * Creates a {@link MongoGridFsClient} used to interact with Mongo GridFS.
    *
    * @param bucketName  the name of the GridFS bucket
@@ -570,6 +727,11 @@ public interface MongoClient {
    */
   @Fluent
   MongoClient createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler);
+
+  /**
+   * Like {@link #createGridFsBucketService(String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<MongoGridFsClient> createGridFsBucketService(String bucketName);
 
   /**
    * Close the client and release its resources
