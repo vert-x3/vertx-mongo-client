@@ -126,6 +126,7 @@ public interface MongoClient {
    * @param query  query used to match the documents
    * @param update used to describe how the documents will be updated
    * @param resultHandler will be called when complete
+   * @deprecated instead use {@link #updateCollection(String, JsonObject, JsonObject, Handler)}
    */
   @Deprecated @Fluent
   MongoClient update(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<Void>> resultHandler);
@@ -150,6 +151,7 @@ public interface MongoClient {
    * @param update used to describe how the documents will be updated
    * @param options options to configure the update
    * @param resultHandler will be called when complete
+   * @deprecated use instead {@link #updateCollectionWithOptions(String, JsonObject, JsonObject, UpdateOptions, Handler)}
    */
   @Deprecated @Fluent
   MongoClient updateWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
@@ -176,6 +178,7 @@ public interface MongoClient {
    * @param query  query used to match the documents
    * @param replace  all matching documents will be replaced with this
    * @param resultHandler will be called when complete
+   * @deprecated instead use {@link #replaceDocuments(String, JsonObject, JsonObject, Handler)}
    */
   @Deprecated @Fluent
   MongoClient replace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<Void>> resultHandler);
@@ -201,6 +204,7 @@ public interface MongoClient {
    * @param replace  all matching documents will be replaced with this
    * @param options options to configure the replace
    * @param resultHandler will be called when complete
+   * @deprecated instead use {@link #replaceDocumentsWithOptions(String, JsonObject, JsonObject, UpdateOptions, Handler)}
    */
   @Deprecated @Fluent
   MongoClient replaceWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<Void>> resultHandler);
@@ -400,6 +404,7 @@ public interface MongoClient {
    * @param collection  the collection
    * @param query  query used to match documents
    * @param resultHandler will be called when complete
+   * @deprecated use instead {@link #removeDocuments(String, JsonObject, Handler)}
    */
   @Deprecated @Fluent
   MongoClient remove(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
@@ -421,6 +426,7 @@ public interface MongoClient {
    * @param query  query used to match documents
    * @param writeOption  the write option to use
    * @param resultHandler will be called when complete
+   * @deprecated instead use {@link #removeDocumentsWithOptions(String, JsonObject, WriteOption, Handler)}
    */
   @Deprecated @Fluent
   MongoClient removeWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
@@ -442,6 +448,7 @@ public interface MongoClient {
    * @param collection  the collection
    * @param query  query used to match document
    * @param resultHandler will be called when complete
+   * @deprecated instead use {@link #removeDocument(String, JsonObject, Handler)}
    */
   @Deprecated @Fluent
   MongoClient removeOne(String collection, JsonObject query, Handler<AsyncResult<Void>> resultHandler);
@@ -463,6 +470,7 @@ public interface MongoClient {
    * @param query  query used to match document
    * @param writeOption  the write option to use
    * @param resultHandler will be called when complete
+   * @deprecated instead use {@link #removeDocumentsWithOptions(String, JsonObject, WriteOption, Handler)}
    */
   @Deprecated @Fluent
   MongoClient removeOneWithOptions(String collection, JsonObject query, WriteOption writeOption, Handler<AsyncResult<Void>> resultHandler);
