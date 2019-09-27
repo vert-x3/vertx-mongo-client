@@ -105,7 +105,7 @@ public class MongoClientTest extends MongoClientTestBase {
 
     String collection = randomCollection();
     CountDownLatch latch = new CountDownLatch(1);
-    AtomicReference<List<String>> foos = new AtomicReference();
+    AtomicReference<List<String>> foos = new AtomicReference<>();
     mongoClient.createCollection(collection, onSuccess(res -> {
       insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
         FindOptions findOptions = new FindOptions().setSort(new JsonObject().put("foo", 1));
