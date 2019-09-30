@@ -123,6 +123,67 @@ public class MongoClientTest extends MongoClientTestBase {
     streamReference.get().handler(null).exceptionHandler(null).endHandler(null);
   }
 
+  @Test
+  public void testFindSmallBatchResumePause() throws Exception {
+    testFindSmallBatch((latch, stream) -> {
+      List<String> foos = new ArrayList<>();
+      stream
+        .exceptionHandler(this::fail)
+        .endHandler(v -> latch.countDown())
+        .handler(result -> {
+          foos.add(result.getString("foo"));
+          stream.pause();
+          vertx.setTimer(10, id -> {
+            stream.resume();
+          });
+        });
+      return foos;
+    });
+  }
+
+  @Test
+  public void testFindSmallBatchFetch() throws Exception {
+    testFindSmallBatch((latch, stream) -> {
+      List<String> foos = new ArrayList<>();
+      stream
+        .exceptionHandler(this::fail)
+        .endHandler(v -> latch.countDown())
+        .handler(result -> {
+          foos.add(result.getString("foo"));
+          vertx.setTimer(10, id -> {
+            stream.fetch(1);
+          });
+        });
+      stream.pause();
+      stream.fetch(1);
+      return foos;
+    });
+  }
+
+  private void testFindSmallBatch(BiFunction<CountDownLatch, ReadStream<JsonObject>, List<String>> checker) throws Exception {
+    int numDocs = 10;
+
+    AtomicReference<ReadStream<JsonObject>> streamReference = new AtomicReference<>();
+
+    String collection = randomCollection();
+    CountDownLatch latch = new CountDownLatch(1);
+    AtomicReference<List<String>> foos = new AtomicReference<>();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
+        FindOptions findOptions = new FindOptions().setSort(new JsonObject().put("foo", 1));
+        ReadStream<JsonObject> stream = mongoClient.findBatchWithOptions(collection, new JsonObject(), findOptions);
+        streamReference.set(stream);
+        foos.set(checker.apply(latch, stream));
+      }));
+    }));
+    awaitLatch(latch);
+    assertEquals(numDocs, foos.get().size());
+    assertEquals("bar0", foos.get().get(0));
+    assertEquals("bar9", foos.get().get(numDocs - 1));
+
+    // Make sure stream handlers can be set to null after closing
+    streamReference.get().handler(null).exceptionHandler(null).endHandler(null);
+  }
 
   @Test
   public void testUpsertCreatesHexIfRecordDoesNotExist() throws Exception {
