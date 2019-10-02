@@ -34,6 +34,15 @@ class MongoIterableStream implements ReadStream<JsonObject> {
     this.batchSize = batchSize;
     this.queue = new InboundBuffer<>(context);
     queue.drainHandler(v -> doRead());
+    queue.emptyHandler(v -> {
+      synchronized (this) {
+        if (closed) {
+          if (endHandler != null) {
+            endHandler.handle(null);
+          }
+        }
+      }
+    });
   }
 
   @Override
@@ -76,33 +85,18 @@ class MongoIterableStream implements ReadStream<JsonObject> {
 
   @Override
   public MongoIterableStream pause() {
-    synchronized (this) {
-      if (closed) {
-        return this;
-      }
-    }
     queue.pause();
     return this;
   }
 
   @Override
   public MongoIterableStream resume() {
-    synchronized (this) {
-      if (closed) {
-        return this;
-      }
-    }
     queue.resume();
     return this;
   }
 
   @Override
   public ReadStream<JsonObject> fetch(long amount) {
-    synchronized (this) {
-      if (closed) {
-        return this;
-      }
-    }
     queue.fetch(amount);
     return this;
   }
@@ -127,8 +121,10 @@ class MongoIterableStream implements ReadStream<JsonObject> {
             }
           } else {
             close();
-            if (endHandler != null) {
-              endHandler.handle(null);
+            if (queue.isEmpty()) {
+              if (endHandler != null) {
+                endHandler.handle(null);
+              }
             }
           }
         } else {
