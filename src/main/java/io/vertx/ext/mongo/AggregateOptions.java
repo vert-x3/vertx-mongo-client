@@ -132,25 +132,6 @@ public class AggregateOptions {
     return this;
   }
 
-  /**
-   *
-   * @return the max await time in ms
-   */
-  public long getMaxAwaitTime() {
-    return maxAwaitTime;
-  }
-
-  /**
-   * The maximum amount of time for the server to wait on new documents to satisfy a $changeStream aggregation.
-   *
-   * @param maxAwaitTime the max await time in ms
-   * @return reference to this, for fluency
-   */
-  public AggregateOptions setMaxAwaitTime(final long maxAwaitTime) {
-    this.maxAwaitTime = maxAwaitTime;
-    return this;
-  }
-
   @Override
   public boolean equals(final Object o) {
     if (this == o) {
