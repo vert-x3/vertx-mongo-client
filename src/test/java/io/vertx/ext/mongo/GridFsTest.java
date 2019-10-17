@@ -7,7 +7,6 @@ import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.FutureFactory;
-import io.vertx.test.core.Repeat;
 import org.junit.Test;
 
 import java.io.File;
@@ -330,7 +329,6 @@ public class GridFsTest extends MongoTestBase {
   }
 
   @Test
-  @Repeat(times = 100)
   public void testDownloadStream() {
     long fileLength = (1024 * 3) + 70;
     String fileName = createTempFileWithContent(fileLength);
@@ -375,7 +373,6 @@ public class GridFsTest extends MongoTestBase {
   }
 
   @Test
-  @Repeat(times = 100)
   public void testDownloadStreamById() {
     long fileLength = (1027) + 7000;
     String fileName = createTempFileWithContent(fileLength);
