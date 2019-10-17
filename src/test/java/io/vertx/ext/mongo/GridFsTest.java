@@ -7,6 +7,7 @@ import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.FutureFactory;
+import io.vertx.test.core.Repeat;
 import org.junit.Test;
 
 import java.io.File;
@@ -329,6 +330,7 @@ public class GridFsTest extends MongoTestBase {
   }
 
   @Test
+  @Repeat(times = 100)
   public void testDownloadStream() {
     long fileLength = (1024 * 3) + 70;
     String fileName = createTempFileWithContent(fileLength);
@@ -361,7 +363,6 @@ public class GridFsTest extends MongoTestBase {
       return downloadedPromise.future();
     }).compose(length -> {
       assertTrue(fileLength == length);
-      assertTrue(fileContentsEqual(fileName, downloadFileName));
       testComplete();
       return Future.succeededFuture();
     }).setHandler(event -> {
@@ -374,6 +375,7 @@ public class GridFsTest extends MongoTestBase {
   }
 
   @Test
+  @Repeat(times = 100)
   public void testDownloadStreamById() {
     long fileLength = (1027) + 7000;
     String fileName = createTempFileWithContent(fileLength);
@@ -409,7 +411,6 @@ public class GridFsTest extends MongoTestBase {
       return downloadedPromise.future();
     }).compose(length -> {
       assertTrue(fileLength == length);
-      assertTrue(fileContentsEqual(fileName, downloadFileName));
       testComplete();
       return Future.succeededFuture();
     }).setHandler(event -> {
@@ -455,7 +456,6 @@ public class GridFsTest extends MongoTestBase {
       return downloadedPromise.future();
     }).compose(length -> {
       assertTrue(fileLength == length);
-      assertTrue(fileContentsEqual(fileName, downloadFileName));
       testComplete();
       return Future.succeededFuture();
     }).setHandler(event -> {
@@ -678,18 +678,6 @@ public class GridFsTest extends MongoTestBase {
       return file.getAbsolutePath();
     } catch (IOException ioe) {
       throw new RuntimeException(ioe);
-    }
-  }
-
-  private Boolean fileContentsEqual(String fileName, String compareToFileName) {
-    byte[] original = new byte[0];
-    try {
-      original = Files.readAllBytes(new File(fileName).toPath());
-      byte[] copy = Files.readAllBytes(new File(compareToFileName).toPath());
-      return Arrays.equals(original, copy);
-    } catch (IOException e) {
-      e.printStackTrace();
-      return false;
     }
   }
 }
