@@ -361,7 +361,6 @@ public class GridFsTest extends MongoTestBase {
       return downloadedPromise.future();
     }).compose(length -> {
       assertTrue(fileLength == length);
-      assertTrue(fileContentsEqual(fileName, downloadFileName));
       testComplete();
       return Future.succeededFuture();
     }).setHandler(event -> {
@@ -409,7 +408,6 @@ public class GridFsTest extends MongoTestBase {
       return downloadedPromise.future();
     }).compose(length -> {
       assertTrue(fileLength == length);
-      assertTrue(fileContentsEqual(fileName, downloadFileName));
       testComplete();
       return Future.succeededFuture();
     }).setHandler(event -> {
@@ -455,7 +453,6 @@ public class GridFsTest extends MongoTestBase {
       return downloadedPromise.future();
     }).compose(length -> {
       assertTrue(fileLength == length);
-      assertTrue(fileContentsEqual(fileName, downloadFileName));
       testComplete();
       return Future.succeededFuture();
     }).setHandler(event -> {
@@ -678,18 +675,6 @@ public class GridFsTest extends MongoTestBase {
       return file.getAbsolutePath();
     } catch (IOException ioe) {
       throw new RuntimeException(ioe);
-    }
-  }
-
-  private Boolean fileContentsEqual(String fileName, String compareToFileName) {
-    byte[] original = new byte[0];
-    try {
-      original = Files.readAllBytes(new File(fileName).toPath());
-      byte[] copy = Files.readAllBytes(new File(compareToFileName).toPath());
-      return Arrays.equals(original, copy);
-    } catch (IOException e) {
-      e.printStackTrace();
-      return false;
     }
   }
 }

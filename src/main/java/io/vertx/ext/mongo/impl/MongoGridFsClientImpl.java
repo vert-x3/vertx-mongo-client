@@ -215,7 +215,6 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   @Override
   public MongoGridFsClient downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options, Handler<AsyncResult<Long>> resultHandler) {
     GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions();
-    downloadOptions.revision(options.getRevision());
 
     GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
     Context context = vertx.getOrCreateContext();
