@@ -210,7 +210,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   @Override
   public Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonObject update) {
     Promise<MongoClientUpdateResult> promise = Promise.promise();
-    updateCollection(collection, query ,update, promise);
+    updateCollection(collection, query, update, promise);
     return promise.future();
   }
 
@@ -979,9 +979,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     if (aggregateOptions.getMaxTime() > 0) {
       aggregate.maxTime(aggregateOptions.getMaxTime(), TimeUnit.MILLISECONDS);
     }
-    if (aggregateOptions.getMaxAwaitTime() > 0) {
-      aggregate.maxAwaitTime(aggregateOptions.getMaxAwaitTime(), TimeUnit.MILLISECONDS);
-    }
     if (aggregateOptions.getAllowDiskUse() != null) {
       aggregate.allowDiskUse(aggregateOptions.getAllowDiskUse());
     }
@@ -1079,7 +1076,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return new MongoClientBulkWriteResult(insertedCount, matchedCount, deletedCount, modifiedCount, upsertResult);
   }
 
-  protected  <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
+  protected <T> SingleResultCallback<T> wrapCallback(Handler<AsyncResult<T>> resultHandler) {
     Context context = vertx.getOrCreateContext();
     return (result, error) -> {
       context.runOnContext(v -> {

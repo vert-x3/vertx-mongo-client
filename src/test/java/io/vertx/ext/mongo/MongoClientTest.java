@@ -224,7 +224,7 @@ public class MongoClientTest extends MongoClientTestBase {
 
     JsonArray pipeline = new JsonArray();
     pipeline.add(new JsonObject().put("$addFields", new JsonObject().put("field", "test")));
-    int numDocs = 10;
+    int numDocs = 25;
     final CountDownLatch latch = new CountDownLatch(1);
     final String collection = randomCollection();
 
@@ -232,7 +232,7 @@ public class MongoClientTest extends MongoClientTestBase {
       mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions).exceptionHandler(e -> {
       }).handler(item -> {
         System.out.println(item.encodePrettily());
-      }).fetch(10).endHandler(v -> latch.countDown());
+      }).fetch(25).endHandler(v -> latch.countDown());
     }));
 
     awaitLatch(latch);
