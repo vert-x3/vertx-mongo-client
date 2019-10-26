@@ -1,6 +1,8 @@
 package io.vertx.ext.mongo;
 
+import com.mongodb.async.client.MongoClientSettings;
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -69,6 +71,18 @@ public interface MongoClient {
     return new MongoClientImpl(vertx, config, DEFAULT_POOL_NAME);
   }
 
+  /**
+   * Constructor targeting the jvm
+   * @param vertx the Vert.x instance
+   * @param config the configuration use only to provide objectId and database name
+   * @param dataSourceName the data source name
+   * @param settings the native java mongo settings
+   * @return the client
+   */
+  @GenIgnore
+  static MongoClient createShared(Vertx vertx, JsonObject config, String dataSourceName, MongoClientSettings settings) {
+    return new MongoClientImpl(vertx, config, dataSourceName, settings);
+  }
 
   /**
    * Save a document in the specified collection
