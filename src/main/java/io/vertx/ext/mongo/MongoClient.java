@@ -72,7 +72,8 @@ public interface MongoClient {
   }
 
   /**
-   * Constructor targeting the jvm
+   * Constructor targeting the jvm, like standard constructor {@link #createShared(Vertx, JsonObject, String)}, but it accepts default mongoClientSettings
+   * to configure mongo
    * @param vertx the Vert.x instance
    * @param config the configuration use only to provide objectId and database name
    * @param dataSourceName the data source name
@@ -80,7 +81,7 @@ public interface MongoClient {
    * @return the client
    */
   @GenIgnore
-  static MongoClient createShared(Vertx vertx, JsonObject config, String dataSourceName, MongoClientSettings settings) {
+  static MongoClient createWithMongoSettings(Vertx vertx, JsonObject config, String dataSourceName, MongoClientSettings settings) {
     return new MongoClientImpl(vertx, config, dataSourceName, settings);
   }
 
