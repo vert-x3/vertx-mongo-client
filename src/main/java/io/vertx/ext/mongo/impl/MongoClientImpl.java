@@ -22,6 +22,7 @@ import com.mongodb.async.client.AggregateIterable;
 import com.mongodb.async.client.DistinctIterable;
 import com.mongodb.async.client.FindIterable;
 import com.mongodb.async.client.ListIndexesIterable;
+import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
@@ -111,6 +112,19 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     context.addCloseHook(this);
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo();
+    this.useObjectId = config.getBoolean("useObjectId", false);
+  }
+
+  public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName, MongoClientSettings settings) {
+    Objects.requireNonNull(vertx);
+    Objects.requireNonNull(config);
+    Objects.requireNonNull(dataSourceName);
+    Objects.requireNonNull(settings);
+    this.vertx = vertx;
+    Context context = vertx.getOrCreateContext();
+    context.addCloseHook(this);
+    this.holder = lookupHolder(dataSourceName, config);
+    this.mongo = holder.mongo(settings);
     this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
@@ -1222,6 +1236,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       if (mongo == null) {
         MongoClientOptionsParser parser = new MongoClientOptionsParser(config);
         mongo = MongoClients.create(parser.settings());
+        db = mongo.getDatabase(parser.database());
+      }
+      return mongo;
+    }
+
+    synchronized com.mongodb.async.client.MongoClient mongo(MongoClientSettings settings) {
+      if (mongo == null) {
+        MongoClientOptionsParser parser = new MongoClientOptionsParser(config);
+        mongo = MongoClients.create(settings);
         db = mongo.getDatabase(parser.database());
       }
       return mongo;
