@@ -749,8 +749,13 @@ public interface MongoClient {
   Future<MongoGridFsClient> createGridFsBucketService(String bucketName);
 
   /**
+   * Like {@link #close(Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> close();
+
+  /**
    * Close the client and release its resources
    */
-  void close();
+  void close(Handler<AsyncResult<Void>> handler);
 
 }

@@ -52,6 +52,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.Closeable;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.PromiseInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.impl.logging.Logger;
@@ -129,8 +131,17 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
-  public void close() {
+  public void close(Promise<Void> completionHandler) {
     holder.close();
+    completionHandler.complete();
+  }
+
+  @Override
+  public Future<Void> close() {
+    ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
+    PromiseInternal<Void> promise = ctx.promise();
+    close(promise);
+    return promise.future();
   }
 
   @Override
@@ -1216,8 +1227,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public void close(Handler<AsyncResult<Void>> handler) {
-    holder.close();
-    handler.handle(Future.succeededFuture());
+    ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
+    close(ctx.promise(handler));
   }
 
   private static class MongoHolder implements Shareable {
