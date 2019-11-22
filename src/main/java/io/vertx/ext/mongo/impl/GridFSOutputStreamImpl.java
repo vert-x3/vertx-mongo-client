@@ -1,10 +1,12 @@
 package io.vertx.ext.mongo.impl;
 
-import com.mongodb.async.SingleResultCallback;
+import com.mongodb.reactivestreams.client.Success;
+import com.mongodb.reactivestreams.client.internal.SingleResultObservableToPublisher;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.mongo.GridFSOutputStream;
+import org.reactivestreams.Publisher;
 
 import java.nio.ByteBuffer;
 
@@ -20,9 +22,9 @@ import static io.netty.buffer.Unpooled.copiedBuffer;
  */
 public class GridFSOutputStreamImpl implements GridFSOutputStream {
 
-  ByteBuffer pendingByteBuffer = null;
-  WriteStream<Buffer> writeStream;
-  Throwable throwable = null;
+  private ByteBuffer pendingByteBuffer = null;
+  private WriteStream<Buffer> writeStream;
+  private Throwable throwable = null;
 
   public GridFSOutputStreamImpl(WriteStream<Buffer> writeStream) {
 
@@ -35,21 +37,23 @@ public class GridFSOutputStreamImpl implements GridFSOutputStream {
   }
 
   @Override
-  public void write(ByteBuffer byteBuffer, SingleResultCallback<Integer> singleResultCallback) {
-    if (throwable != null) {
-      singleResultCallback.onResult(null, throwable);
-      return;
-    }
-    if (writeStream.writeQueueFull()) {
-      pendingByteBuffer = byteBuffer;
-      writeStream.drainHandler(this::drainHandler);
-    } else {
-      //  Buffer does not expose the internal ByteBuffer hence this is the only way to correctly set position and limit
-      final ByteBuf byteBuf = copiedBuffer(byteBuffer);
-      final Buffer buffer = Buffer.buffer(byteBuf);
-      writeStream.write(buffer);
-      singleResultCallback.onResult(byteBuf.readableBytes(), null);
-    }
+  public Publisher<Integer> write(ByteBuffer byteBuffer) {
+    return new SingleResultObservableToPublisher<>(singleResultCallback -> {
+      if (throwable != null) {
+        singleResultCallback.onResult(null, throwable);
+        return;
+      }
+      if (writeStream.writeQueueFull()) {
+        pendingByteBuffer = byteBuffer;
+        writeStream.drainHandler(GridFSOutputStreamImpl.this::drainHandler);
+      } else {
+        //  Buffer does not expose the internal ByteBuffer hence this is the only way to correctly set position and limit
+        final ByteBuf byteBuf = copiedBuffer(byteBuffer);
+        final Buffer buffer = Buffer.buffer(byteBuf);
+        writeStream.write(buffer);
+        singleResultCallback.onResult(byteBuf.readableBytes(), null);
+      }
+    });
   }
 
   private void drainHandler(Void aVoid) {
@@ -61,8 +65,21 @@ public class GridFSOutputStreamImpl implements GridFSOutputStream {
   }
 
   @Override
-  public void close(SingleResultCallback<Void> singleResultCallback) {
-    writeStream.end();
-    singleResultCallback.onResult(null, throwable);
+  public Publisher<Success> close() {
+    return new SingleResultObservableToPublisher<>(
+      callback -> {
+        if (throwable == null) {
+          writeStream.end(result -> {
+            if (result.failed()) {
+              callback.onResult(null, result.cause());
+            } else {
+              callback.onResult(Success.SUCCESS, null);
+            }
+          });
+        } else {
+          writeStream.end();
+          callback.onResult(null, throwable);
+        }
+      });
   }
 }

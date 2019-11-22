@@ -50,6 +50,10 @@
       <artifactId>vertx-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-reactive-streams</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-reactivestreams</artifactId>
       <version>${mongodb.driver.reactivestreams.version}</version>
@@ -74,6 +78,11 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.21</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>de.flapdoodle.embed</groupId>
