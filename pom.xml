@@ -29,7 +29,7 @@
 
   <properties>
     <stack.version>4.0.0-SNAPSHOT</stack.version>
-    <mongo.async.version>3.11.1</mongo.async.version>
+    <mongodb.driver.reactivestreams.version>1.12.0</mongodb.driver.reactivestreams.version>
   </properties>
 
   <dependencyManagement>
@@ -51,8 +51,8 @@
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
-      <artifactId>mongodb-driver-async</artifactId>
-      <version>${mongo.async.version}</version>
+      <artifactId>mongodb-driver-reactivestreams</artifactId>
+      <version>${mongodb.driver.reactivestreams.version}</version>
       <exclusions>
         <exclusion>
           <groupId>io.netty</groupId>
