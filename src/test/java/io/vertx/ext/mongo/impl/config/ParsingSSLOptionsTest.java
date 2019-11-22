@@ -1,6 +1,6 @@
 package io.vertx.ext.mongo.impl.config;
 
-import com.mongodb.async.client.MongoClientSettings;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.connection.SslSettings;
 import io.vertx.core.json.JsonObject;
 import org.junit.Rule;
