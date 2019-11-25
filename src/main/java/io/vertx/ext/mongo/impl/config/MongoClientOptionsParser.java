@@ -1,7 +1,7 @@
 package io.vertx.ext.mongo.impl.config;
 
 import com.mongodb.*;
-import com.mongodb.async.client.MongoClientSettings;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.connection.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
@@ -38,26 +38,30 @@ public class MongoClientOptionsParser {
 
     // ClusterSettings
     ClusterSettings clusterSettings = new ClusterSettingsParser(connectionString, config).settings();
-    options.clusterSettings(clusterSettings);
+    options.applyToClusterSettings(builder -> builder.applySettings(clusterSettings));
 
     // ConnectionPoolSettings
     ConnectionPoolSettings connectionPoolSettings = new ConnectionPoolSettingsParser(connectionString, config).settings();
-    options.connectionPoolSettings(connectionPoolSettings);
+    options.applyToConnectionPoolSettings(builder -> builder.applySettings(connectionPoolSettings));
 
     // Credentials
+    // The previous mongo client supported credentials list but their new impleemntation supports only
+    // one credentials. The deprecated code path resorts to using the last credentials if a list is passed
+    // we are doing the same here.
     List<MongoCredential> credentials = new CredentialListParser(connectionString, config).credentials();
-    options.credentialList(credentials);
+    if (!credentials.isEmpty())
+      options.credential(credentials.get(credentials.size() - 1));
 
     // SocketSettings
     SocketSettings socketSettings = new SocketSettingsParser(connectionString, config).settings();
-    options.socketSettings(socketSettings);
+    options.applyToSocketSettings(builder -> builder.applySettings(socketSettings));
 
     // Transport type
     new StreamTypeParser(connectionString, config).streamFactory().ifPresent(options::streamFactoryFactory);
 
     // SSLSettings
     SslSettings sslSettings = new SSLSettingsParser(connectionString, config).settings();
-    options.sslSettings(sslSettings);
+    options.applyToSslSettings(builder -> builder.applySettings(sslSettings));
 
     // WriteConcern
     WriteConcern writeConcern = new WriteConcernParser(connectionString, config).writeConcern();
@@ -74,16 +78,9 @@ public class MongoClientOptionsParser {
       options.readPreference(readPreference);
     }
 
-    // Heartbeat SocketSettings
-    JsonObject hbConfig = config.getJsonObject("heartbeat.socket");
-    if (hbConfig != null) {
-      SocketSettings heartBeatSocketSettings = new SocketSettingsParser(null, hbConfig).settings();
-      options.heartbeatSocketSettings(heartBeatSocketSettings);
-    }
-
     // ServerSettings
     ServerSettings serverSettings = new ServerSettingsParser(config).settings();
-    options.serverSettings(serverSettings);
+    options.applyToServerSettings(builder -> builder.applySettings(serverSettings));
 
     this.settings = options.build();
   }

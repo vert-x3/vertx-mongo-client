@@ -1,6 +1,8 @@
 package io.vertx.ext.mongo.impl;
 
 import com.mongodb.async.SingleResultCallback;
+import com.mongodb.reactivestreams.client.Success;
+import com.mongodb.reactivestreams.client.internal.SingleResultObservableToPublisher;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -8,6 +10,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.mongo.GridFSInputStream;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.reactivestreams.Publisher;
 
 import java.nio.ByteBuffer;
 
@@ -19,9 +22,13 @@ import java.nio.ByteBuffer;
  *
  * @author <a href="https://github.com/st-h">Steve Hummingbird</a>
  */
+
+// Even though SingleResultCallback is deprecated SingleResultObservableToPublisher which internally uses
+// SingleResultCallback is not. Also SingleResultObservableToPublisher is heavily used inside mongo-reactive-streams library
+@SuppressWarnings("deprecation")
 public class GridFSInputStreamImpl implements GridFSInputStream {
 
-  public static int DEFAULT_BUFFER_SIZE = 8192;
+  private static int DEFAULT_BUFFER_SIZE = 8192;
   private int writeQueueMaxSize;
   private final CircularFifoQueue<Byte> buffer;
   private Handler<Void> drainHandler;
@@ -39,15 +46,19 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     writeQueueMaxSize = queueSize;
   }
 
-  public void read(ByteBuffer buffer, SingleResultCallback<Integer> resultCallback) {
-    synchronized (this.buffer) {
-      //If nothing pending and the stream is still open, store the callback for future processing
-      if (this.buffer.isEmpty() && !closed) {
-        storeCallback(buffer, resultCallback);
-      } else {
-        doCallback(buffer, resultCallback);
-      }
-    }
+  @Override
+  public Publisher<Integer> read(ByteBuffer buffer) {
+    return new SingleResultObservableToPublisher<>(
+      callback -> {
+        synchronized (this.buffer) {
+          //If nothing pending and the stream is still open, store the callback for future processing
+          if (this.buffer.isEmpty() && !closed) {
+            storeCallback(buffer, callback);
+          } else {
+            doCallback(buffer, callback);
+          }
+        }
+      });
   }
 
   private void storeCallback(final ByteBuffer buffer, final SingleResultCallback<Integer> resultCallback) {
@@ -98,7 +109,7 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
   }
 
   @Override
-  public void skip(long bytesToSkip, SingleResultCallback<Long> callback) {
+  public Publisher<Long> skip(long bytesToSkip) {
     throw new IllegalStateException("Not implemented");
   }
 
@@ -112,7 +123,7 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     final int remaining = outputBuffer.remaining();
     if (remaining > 0) {
       // If more space left in the output buffer we directly drain the input buffer
-      final int newBytesWritten = remaining > wrapper.capacity() ? wrapper.capacity() : remaining;
+      final int newBytesWritten = Math.min(remaining, wrapper.capacity());
       // Store current limit to restore it in case we don't drain then whole buffer
       final int limit = wrapper.limit();
       wrapper.limit(newBytesWritten);
@@ -130,9 +141,11 @@ public class GridFSInputStreamImpl implements GridFSInputStream {
     c.onResult(bytesWritten, null);
   }
 
-  public void close(SingleResultCallback<Void> singleResultCallback) {
+  @Override
+  public Publisher<Success> close() {
     closed = true;
-    singleResultCallback.onResult(null, null);
+    return new SingleResultObservableToPublisher<>(
+      callback -> callback.onResult(Success.SUCCESS, null));
   }
 
   public void end(Handler<AsyncResult<Void>> resultHandler) {

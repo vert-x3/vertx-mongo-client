@@ -1,6 +1,6 @@
 package io.vertx.ext.mongo;
 
-import com.mongodb.async.client.gridfs.AsyncOutputStream;
+import com.mongodb.reactivestreams.client.gridfs.AsyncOutputStream;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.mongo.impl.GridFSOutputStreamImpl;
