@@ -16,11 +16,14 @@
 
 package io.vertx.ext.mongo;
 
+import io.vertx.codegen.annotations.VertxGen;
+
 /**
  * Enum representing the mongoDB Java Driver's {@link com.mongodb.WriteConcern}
  *
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
+@VertxGen
 public enum WriteOption {
   /**
    * @see com.mongodb.WriteConcern#ACKNOWLEDGED
