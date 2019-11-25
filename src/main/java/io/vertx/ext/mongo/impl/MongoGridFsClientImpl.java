@@ -1,10 +1,9 @@
 package io.vertx.ext.mongo.impl;
 
-import com.mongodb.async.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -25,11 +24,10 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
+import static io.vertx.ext.mongo.Utils.*;
 
 /**
  * The implementation of the {@link MongoGridFsClient}. This implementation is based on the async driver
@@ -57,17 +55,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     stream.endHandler(endHandler -> gridFsInputStream.end());
     Pump.pump(stream, gridFsInputStream).start();
 
-    Context context = vertx.getOrCreateContext();
-    bucket.uploadFromStream(fileName, gridFsInputStream, (bsonId, throwable) -> {
-      context.runOnContext(nothing -> {
-        if (throwable != null) {
-          resultHandler.handle(Future.failedFuture(throwable));
-        } else {
-          resultHandler.handle(Future.succeededFuture(bsonId.toHexString()));
-        }
-      });
-    });
-
+    bucket.uploadFromStream(fileName, gridFsInputStream)
+      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(convertResult(resultHandler, ObjectId::toHexString))));
     return this;
   }
 
@@ -90,16 +79,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     stream.endHandler(endHandler -> gridFsInputStream.end());
     Pump.pump(stream, gridFsInputStream).start();
 
-    Context context = vertx.getOrCreateContext();
-    bucket.uploadFromStream(fileName, gridFsInputStream, uploadOptions, (bsonId, throwable) -> {
-      context.runOnContext(nothing -> {
-        if (throwable != null) {
-          resultHandler.handle(Future.failedFuture(throwable));
-        } else {
-          resultHandler.handle(Future.succeededFuture(bsonId.toHexString()));
-        }
-      });
-    });
+    bucket.uploadFromStream(fileName, gridFsInputStream, uploadOptions)
+      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(convertResult(resultHandler, ObjectId::toHexString))));
 
     return this;
   }
@@ -143,14 +124,16 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
         Pump.pump(file, gridFSInputStream).start();
 
         if (options == null) {
-          bucket.uploadFromStream(fileName, gridFSInputStream, clientImpl.convertCallback(resultHandler, ObjectId::toHexString));
+          bucket.uploadFromStream(fileName, gridFSInputStream)
+            .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(convertResult(resultHandler, ObjectId::toHexString))));
         } else {
           GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
           uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
           if (options.getMetadata() != null) {
             uploadOptions.metadata(new Document(options.getMetadata().getMap()));
           }
-          bucket.uploadFromStream(fileName, gridFSInputStream, uploadOptions, clientImpl.convertCallback(resultHandler, ObjectId::toHexString));
+          bucket.uploadFromStream(fileName, gridFSInputStream, uploadOptions)
+            .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(convertResult(resultHandler, ObjectId::toHexString))));
         }
       } else {
         resultHandler.handle(Future.failedFuture(asyncResultHandler.cause()));
@@ -176,7 +159,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
     ObjectId objectId = new ObjectId(id);
-    bucket.delete(objectId, clientImpl.wrapCallback(resultHandler));
+    bucket.delete(objectId)
+      .subscribe(new ObservableSubscriber<>(vertx, toVoidResult(resultHandler)));
 
     return this;
   }
@@ -191,16 +175,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   @Override
   public MongoGridFsClient downloadByFileName(WriteStream<Buffer> stream, String fileName, Handler<AsyncResult<Long>> resultHandler) {
     GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
-    Context context = vertx.getOrCreateContext();
-    bucket.downloadToStream(fileName, gridFsOutputStream, (length, throwable) -> {
-      context.runOnContext(nothing -> {
-        if (throwable != null) {
-          resultHandler.handle(Future.failedFuture(throwable));
-        } else {
-          resultHandler.handle(Future.succeededFuture(length));
-        }
-      });
-    });
+    bucket.downloadToStream(fileName, gridFsOutputStream)
+      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
 
     return this;
   }
@@ -217,17 +193,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions();
 
     GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
-    Context context = vertx.getOrCreateContext();
-    bucket.downloadToStream(fileName, gridFsOutputStream, downloadOptions, (length, throwable) -> {
-      context.runOnContext(nothing -> {
-        if (throwable != null) {
-          resultHandler.handle(Future.failedFuture(throwable));
-        } else {
-          resultHandler.handle(Future.succeededFuture(length));
-        }
-      });
-    });
-
+    bucket.downloadToStream(fileName, gridFsOutputStream, downloadOptions)
+      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
     return this;
   }
 
@@ -242,16 +209,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   public MongoGridFsClient downloadById(WriteStream<Buffer> stream, String id, Handler<AsyncResult<Long>> resultHandler) {
     ObjectId objectId = new ObjectId(id);
     GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
-    Context context = vertx.getOrCreateContext();
-    bucket.downloadToStream(objectId, gridFsOutputStream, (length, throwable) -> {
-      context.runOnContext(nothing -> {
-        if (throwable != null) {
-          resultHandler.handle(Future.failedFuture(throwable));
-        } else {
-          resultHandler.handle(Future.succeededFuture(length));
-        }
-      });
-    });
+    bucket.downloadToStream(objectId, gridFsOutputStream)
+      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
 
     return this;
   }
@@ -290,18 +249,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
       if (asyncFileAsyncResult.succeeded()) {
         AsyncFile file = asyncFileAsyncResult.result();
         GridFSOutputStream gridFSOutputStream = GridFSOutputStream.create(file);
-        bucket.downloadToStream(fileName, gridFSOutputStream, (result, error) -> {
-          file.close();
-          Context context = vertx.getOrCreateContext();
-          context.runOnContext(v -> {
-            if (error != null) {
-              resultHandler.handle(Future.failedFuture(error));
-            } else {
-              resultHandler.handle(Future.succeededFuture(result));
-            }
-          });
-        });
-
+        bucket.downloadToStream(fileName, gridFSOutputStream)
+          .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
       } else {
         resultHandler.handle(Future.failedFuture(asyncFileAsyncResult.cause()));
       }
@@ -329,17 +278,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
         AsyncFile file = asyncFileAsyncResult.result();
         GridFSOutputStream gridFSOutputStream = GridFSOutputStream.create(file);
         ObjectId objectId = new ObjectId(id);
-        bucket.downloadToStream(objectId, gridFSOutputStream, (result, error) -> {
-          file.close();
-          Context context = vertx.getOrCreateContext();
-          context.runOnContext(v -> {
-            if (error != null) {
-              resultHandler.handle(Future.failedFuture(error));
-            } else {
-              resultHandler.handle(Future.succeededFuture(result));
-            }
-          });
-        });
+        bucket.downloadToStream(objectId, gridFSOutputStream)
+          .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
       } else {
         resultHandler.handle(Future.failedFuture(asyncFileAsyncResult.cause()));
       }
@@ -359,7 +299,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   public MongoGridFsClient drop(Handler<AsyncResult<Void>> resultHandler) {
     requireNonNull(resultHandler, "resultHandler cannot be null");
 
-    bucket.drop(clientImpl.wrapCallback(resultHandler));
+    bucket.drop().subscribe(new ObservableSubscriber<>(vertx, toVoidResult(resultHandler)));
     return this;
   }
 
@@ -373,23 +313,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   @Override
   public MongoGridFsClient findAllIds(Handler<AsyncResult<List<String>>> resultHandler) {
     requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    List<String> ids = new ArrayList<>();
-
-    Context context = vertx.getOrCreateContext();
     bucket.find()
-      .forEach(gridFSFile -> {
-          ids.add(gridFSFile.getObjectId().toHexString());
-        },
-        (result, throwable) -> {
-          context.runOnContext(v -> {
-            if (throwable != null) {
-              resultHandler.handle(Future.failedFuture(throwable));
-            } else {
-              resultHandler.handle(Future.succeededFuture(ids));
-            }
-          });
-        });
+      .subscribe(new MappingObservableSubscriber<>(vertx, gridFSFile -> gridFSFile.getObjectId().toHexString(), resultHandler));
 
     return this;
   }
@@ -409,24 +334,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     JsonObject encodedQuery = clientImpl.encodeKeyWhenUseObjectId(query);
 
     Bson bquery = clientImpl.wrap(encodedQuery);
-
-    List<String> ids = new ArrayList<>();
-
-    Context context = vertx.getOrCreateContext();
     bucket.find(bquery)
-      .forEach(gridFSFile -> {
-          ids.add(gridFSFile.getObjectId().toHexString());
-        },
-        (result, throwable) -> {
-          context.runOnContext(voidHandler -> {
-            if (throwable != null) {
-              resultHandler.handle(Future.failedFuture(throwable));
-            } else {
-              List<String> idsCopy = ids.stream().map(String::new).collect(Collectors.toList());
-              resultHandler.handle(Future.succeededFuture(idsCopy));
-            }
-          });
-        });
+      .subscribe(new MappingObservableSubscriber<>(vertx, gridFSFile -> gridFSFile.getObjectId().toHexString(), resultHandler));
 
     return this;
   }

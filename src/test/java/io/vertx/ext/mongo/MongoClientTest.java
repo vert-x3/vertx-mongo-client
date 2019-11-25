@@ -1,10 +1,13 @@
 package io.vertx.ext.mongo;
 
-import com.mongodb.async.client.MongoClients;
-import com.mongodb.async.client.MongoDatabase;
+import com.mongodb.reactivestreams.client.MongoClients;
+import com.mongodb.reactivestreams.client.MongoDatabase;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
+import org.bson.Document;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -20,7 +23,7 @@ import java.util.function.Consumer;
  */
 public class MongoClientTest extends MongoClientTestBase {
 
-  private com.mongodb.async.client.MongoClient actualMongo;
+  private com.mongodb.reactivestreams.client.MongoClient actualMongo;
   private MongoDatabase db;
 
   @Override
@@ -143,7 +146,7 @@ public class MongoClientTest extends MongoClientTestBase {
     AtomicReference<List<String>> foos = new AtomicReference<>();
     mongoClient.createCollection(collection, onSuccess(res -> {
       insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
-        FindOptions findOptions = new FindOptions().setSort(new JsonObject().put("counter", 1));
+        FindOptions findOptions = new FindOptions().setSort(new JsonObject().put("counter", 1)).setBatchSize(1);
         ReadStream<JsonObject> stream = mongoClient.findBatchWithOptions(collection, new JsonObject(), findOptions);
         streamReference.set(stream);
         foos.set(checker.apply(latch, stream));
@@ -267,17 +270,22 @@ public class MongoClientTest extends MongoClientTestBase {
         db
           .getCollection(collection)
           .find()
+          .first()
+          .subscribe(new Utils.ObservableSubscriber<Document>(vertx, Utils.toSingleResult(new Handler<AsyncResult<Document>>() {
+            @Override
+            public void handle(AsyncResult<Document> savedDocResult) {
+              if (savedDocResult.failed())
+                throw new RuntimeException(savedDocResult.cause());
 
-          .first((savedDoc, error) -> {
-            vertx.runOnContext(IGNORE -> {
+              Document savedDoc = savedDocResult.result();
               if (expectedId != null) {
                 assertEquals(expectedId, savedDoc.getString(MongoClientUpdateResult.ID_FIELD));
               } else {
                 assertEquals(res.getDocUpsertedId().getString(MongoClientUpdateResult.ID_FIELD), savedDoc.getString(MongoClientUpdateResult.ID_FIELD));
               }
               doneFunction.accept(new JsonObject(savedDoc.toJson()));
-            });
-          });
+            }
+          })));
       }));
   }
 
