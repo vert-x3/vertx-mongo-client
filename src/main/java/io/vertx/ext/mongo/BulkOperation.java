@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -25,6 +26,7 @@ public class BulkOperation {
   /**
    * Enum for the different possible operations
    */
+  @VertxGen
   public enum BulkOperationType {
     UPDATE,
     REPLACE,
