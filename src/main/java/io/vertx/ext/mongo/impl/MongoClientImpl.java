@@ -16,52 +16,48 @@
 
 package io.vertx.ext.mongo.impl;
 
-import com.mongodb.WriteConcern;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.WriteConcern;
+import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.*;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import com.mongodb.reactivestreams.client.*;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBuckets;
 import io.vertx.codegen.annotations.Nullable;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.Closeable;
+import io.vertx.core.*;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.PromiseInternal;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.core.streams.ReadStream;
-import io.vertx.ext.mongo.*;
 import io.vertx.ext.mongo.BulkWriteOptions;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.IndexModel;
 import io.vertx.ext.mongo.IndexOptions;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.*;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
-import io.vertx.ext.reactivestreams.ReactiveReadStream;
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
+import org.reactivestreams.Publisher;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static io.vertx.ext.mongo.impl.Utils.ID_FIELD;
+import static io.vertx.ext.mongo.impl.Utils.setHandler;
 import static java.util.Objects.requireNonNull;
-import static io.vertx.ext.mongo.Utils.*;
 
 /**
  * The implementation of the {@link io.vertx.ext.mongo.MongoClient}. This implementation is based on the async driver
@@ -77,7 +73,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
 
-  private final Vertx vertx;
+  private final VertxInternal vertx;
   protected com.mongodb.reactivestreams.client.MongoClient mongo;
 
   private final MongoHolder holder;
@@ -87,7 +83,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Objects.requireNonNull(vertx);
     Objects.requireNonNull(config);
     Objects.requireNonNull(dataSourceName);
-    this.vertx = vertx;
+    this.vertx = (VertxInternal) vertx;
     Context context = vertx.getOrCreateContext();
     context.addCloseHook(this);
     this.holder = lookupHolder(dataSourceName, config);
@@ -100,7 +96,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Objects.requireNonNull(config);
     Objects.requireNonNull(dataSourceName);
     Objects.requireNonNull(settings);
-    this.vertx = vertx;
+    this.vertx = (VertxInternal) vertx;
     Context context = vertx.getOrCreateContext();
     context.addCloseHook(this);
     this.holder = lookupHolder(dataSourceName, config);
@@ -110,125 +106,119 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public void close(Promise<Void> completionHandler) {
-    holder.close();
-    completionHandler.complete();
+    Future<Void> future = close();
+    setHandler(future, completionHandler);
   }
 
   @Override
   public Future<Void> close() {
-    ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
-    PromiseInternal<Void> promise = ctx.promise();
-    close(promise);
-    return promise.future();
+    holder.close();
+    return vertx.getOrCreateContext().succeededFuture();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient save(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
-    saveWithOptions(collection, document, null, resultHandler);
+    Future<String> future = save(collection, document);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable String> save(String collection, JsonObject document) {
-    Promise<String> promise = Promise.promise();
-    save(collection, document, promise);
-    return promise.future();
+    return saveWithOptions(collection, document, null);
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(document, "document cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    Object id = document.getValue(ID_FIELD);
-    if (id == null) {
-      coll.insertOne(document)
-        .subscribe(new ObservableSubscriber<>(vertx,
-          convertResult(resultHandler, result -> useObjectId ?
-            document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) :
-            document.getString(ID_FIELD))));
-    } else {
-      JsonObject filter = new JsonObject();
-      JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
-      filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
-
-      com.mongodb.client.model.ReplaceOptions replaceOptions = new com.mongodb.client.model.ReplaceOptions()
-        .upsert(true);
-      coll.replaceOne(wrap(filter), encodedDocument, replaceOptions)
-        .subscribe(new ObservableSubscriber<>(vertx, convertResult(resultHandler, result -> null)));
-    }
+    Future<String> future = saveWithOptions(collection, document, writeOption);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable String> saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption) {
-    Promise<String> promise = Promise.promise();
-    saveWithOptions(collection, document, writeOption, promise);
-    return promise.future();
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(document, "document cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    Object id = document.getValue(ID_FIELD);
+
+    if (id == null) {
+      Promise<Void> promise = vertx.promise();
+      coll.insertOne(document).subscribe(new CompletionSubscriber<>(promise));
+      return promise.future().map(v -> useObjectId ? document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) : document.getString(ID_FIELD));
+    }
+
+    JsonObject filter = new JsonObject();
+    JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
+    filter.put(ID_FIELD, encodedDocument.getValue(ID_FIELD));
+
+    ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
+
+    Promise<Void> promise = vertx.promise();
+    coll.replaceOne(wrap(filter), encodedDocument, replaceOptions).subscribe(new CompletionSubscriber<>(promise));
+    return promise.future().mapEmpty();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<String>> resultHandler) {
-    insertWithOptions(collection, document, null, resultHandler);
+    Future<String> future = insert(collection, document);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable String> insert(String collection, JsonObject document) {
-    Promise<String> promise = Promise.promise();
-    insert(collection, document, promise);
-    return promise.future();
+    return insertWithOptions(collection, document, null);
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<String>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(document, "document cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
-    boolean hasCustomId = document.containsKey(ID_FIELD);
-
-    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    coll.insertOne(encodedDocument)
-      .subscribe(new ObservableSubscriber<>(vertx, convertResult(resultHandler, wr -> {
-        if (hasCustomId) return null;
-
-        JsonObject decodedDocument = decodeKeyWhenUseObjectId(encodedDocument);
-        return decodedDocument.getString(ID_FIELD);
-      })));
+    Future<String> future = insertWithOptions(collection, document, writeOption);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable String> insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption) {
-    Promise<String> promise = Promise.promise();
-    insertWithOptions(collection, document, writeOption, promise);
-    return promise.future();
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(document, "document cannot be null");
+
+    JsonObject encodedDocument = encodeKeyWhenUseObjectId(document);
+    boolean hasCustomId = document.containsKey(ID_FIELD);
+
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+
+    Promise<Void> promise = vertx.promise();
+    coll.insertOne(encodedDocument).subscribe(new CompletionSubscriber<>(promise));
+    return promise.future().map(v -> hasCustomId ? null : decodeKeyWhenUseObjectId(encodedDocument).getString(ID_FIELD));
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient updateCollection(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
-    updateCollectionWithOptions(collection, query, update, DEFAULT_UPDATE_OPTIONS, resultHandler);
+    Future<MongoClientUpdateResult> future = updateCollection(collection, query, update);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonObject update) {
-    Promise<MongoClientUpdateResult> promise = Promise.promise();
-    updateCollection(collection, query, update, promise);
-    return promise.future();
+    return updateCollectionWithOptions(collection, query, update, DEFAULT_UPDATE_OPTIONS);
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+    Future<MongoClientUpdateResult> future = updateCollectionWithOptions(collection, query, update, options);
+    setHandler(future, resultHandler);
+    return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(update, "update cannot be null");
     requireNonNull(options, "options cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
     Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
@@ -242,22 +232,16 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       updateOptions.arrayFilters(bArrayFilters);
     }
 
-
+    Publisher<UpdateResult> publisher;
     if (options.isMulti()) {
-      coll.updateMany(bquery, bupdate, updateOptions)
-        .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(toMongoClientUpdateResult(resultHandler))));
+      publisher = coll.updateMany(bquery, bupdate, updateOptions);
     } else {
-      coll.updateOne(bquery, bupdate, updateOptions)
-        .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(toMongoClientUpdateResult(resultHandler))));
+      publisher = coll.updateOne(bquery, bupdate, updateOptions);
     }
-    return this;
-  }
 
-  @Override
-  public Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options) {
-    Promise<MongoClientUpdateResult> promise = Promise.promise();
-    updateCollectionWithOptions(collection, query, update, options, promise);
-    return promise.future();
+    Promise<UpdateResult> promise = vertx.promise();
+    publisher.subscribe(new SingleResultSubscriber<>(promise));
+    return promise.future().map(Utils::toMongoClientUpdateResult);
   }
 
   private JsonObject generateIdIfNeeded(JsonObject query, JsonObject update, UpdateOptions options) {
@@ -279,36 +263,65 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
-    replaceDocumentsWithOptions(collection, query, replace, DEFAULT_UPDATE_OPTIONS, resultHandler);
+    Future<MongoClientUpdateResult> future = replaceDocumentsWithOptions(collection, query, replace, DEFAULT_UPDATE_OPTIONS);
+    setHandler(future, resultHandler);
     return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientUpdateResult> replaceDocuments(String collection, JsonObject query, JsonObject replace) {
+    return replaceDocumentsWithOptions(collection, query, replace, DEFAULT_UPDATE_OPTIONS);
   }
 
   @Override
   public MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(query, "query cannot be null");
-    requireNonNull(replace, "update cannot be null");
-    requireNonNull(options, "options cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
-    com.mongodb.client.model.ReplaceOptions replaceOptions = new com.mongodb.client.model.ReplaceOptions().upsert(options.isUpsert());
-    coll.replaceOne(bquery, encodeKeyWhenUseObjectId(replace), replaceOptions)
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(toMongoClientUpdateResult(resultHandler))));
+    Future<MongoClientUpdateResult> future = replaceDocumentsWithOptions(collection, query, replace, options);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
+  public Future<@Nullable MongoClientUpdateResult> replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(replace, "update cannot be null");
+    requireNonNull(options, "options cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    com.mongodb.client.model.ReplaceOptions replaceOptions = new com.mongodb.client.model.ReplaceOptions().upsert(options.isUpsert());
+    Promise<UpdateResult> promise = vertx.promise();
+    coll.replaceOne(bquery, encodeKeyWhenUseObjectId(replace), replaceOptions).subscribe(new SingleResultSubscriber<>(promise));
+    return promise.future().map(Utils::toMongoClientUpdateResult);
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-    findWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
+    Future<List<JsonObject>> future = find(collection, query);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<List<JsonObject>> find(String collection, JsonObject query) {
-    Promise<List<JsonObject>> promise = Promise.promise();
-    find(collection, query, promise);
+    return findWithOptions(collection, query, DEFAULT_FIND_OPTIONS);
+  }
+
+  @Override
+  public io.vertx.ext.mongo.MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    Future<List<JsonObject>> future = findWithOptions(collection, query, options);
+    setHandler(future, resultHandler);
+    return this;
+  }
+
+  @Override
+  public Future<List<JsonObject>> findWithOptions(String collection, JsonObject query, FindOptions options) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+
+    Promise<List<JsonObject>> promise = vertx.promise();
+    doFind(collection, encodeKeyWhenUseObjectId(query), options)
+      .subscribe(new MappingAndBufferingSubscriber<>(this::decodeKeyWhenUseObjectId, promise));
     return promise.future();
   }
 
@@ -318,79 +331,60 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(query, "query cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    doFind(collection, encodeKeyWhenUseObjectId(query), options)
-      .subscribe(new MappingObservableSubscriber<>(vertx, this::decodeKeyWhenUseObjectId, resultHandler));
-    return this;
-  }
-
-  @Override
-  public Future<List<JsonObject>> findWithOptions(String collection, JsonObject query, FindOptions options) {
-    Promise<List<JsonObject>> promise = Promise.promise();
-    findWithOptions(collection, query, options, promise);
-    return promise.future();
-  }
-
-  @Override
   public ReadStream<JsonObject> findBatchWithOptions(String collection, JsonObject query, FindOptions options) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
-    ReactiveReadStream<JsonObject> readStream = ReactiveReadStream.readStream(options.getBatchSize());
     FindPublisher<JsonObject> view = doFind(collection, query, options);
-    view.subscribe(new InContextSubscriber<>(vertx, readStream));
-    return readStream;
+    return new PublisherAdapter<>(vertx.getOrCreateContext(), view, options.getBatchSize());
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient findOne(String collection, JsonObject query, @Nullable JsonObject fields, Handler<AsyncResult<JsonObject>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(query, "query cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
-
-    Bson bquery = wrap(encodedQuery);
-    Bson bfields = wrap(fields);
-    getCollection(collection).find(bquery).projection(bfields).first()
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(convertResult(resultHandler, object -> {
-        if (object == null) return null;
-        return decodeKeyWhenUseObjectId(object);
-      }))));
+    Future<JsonObject> future = findOne(collection, query, fields);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable JsonObject> findOne(String collection, JsonObject query, @Nullable JsonObject fields) {
-    Promise<JsonObject> promise = Promise.promise();
-    findOne(collection, query, fields, promise);
-    return promise.future();
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+
+    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+
+    Bson bquery = wrap(encodedQuery);
+    Bson bfields = wrap(fields);
+    Promise<JsonObject> promise = vertx.promise();
+    getCollection(collection).find(bquery).projection(bfields).first().subscribe(new SingleResultSubscriber<>(promise));
+    return promise.future().map(object -> object == null ? null : decodeKeyWhenUseObjectId(object));
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) {
-    findOneAndUpdateWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS, resultHandler);
+    Future<JsonObject> future = findOneAndUpdate(collection, query, update);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable JsonObject> findOneAndUpdate(String collection, JsonObject query, JsonObject update) {
-    Promise<JsonObject> promise = Promise.promise();
-    findOneAndUpdate(collection, query, update, promise);
-    return promise.future();
+    return findOneAndUpdateWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS);
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+    Future<JsonObject> future = findOneAndUpdateWithOptions(collection, query, update, findOptions, updateOptions);
+    setHandler(future, resultHandler);
+    return this;
+  }
+
+  @Override
+  public Future<@Nullable JsonObject> findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(update, "update cannot be null");
     requireNonNull(findOptions, "find options cannot be null");
     requireNonNull(updateOptions, "update options cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
 
@@ -408,38 +402,36 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     }
 
     MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.findOneAndUpdate(bquery, bupdate, foauOptions)
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
-    return this;
-  }
-
-  @Override
-  public Future<@Nullable JsonObject> findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions) {
-    Promise<JsonObject> promise = Promise.promise();
-    findOneAndUpdateWithOptions(collection, query, update, findOptions, updateOptions, promise);
+    Promise<JsonObject> promise = vertx.promise();
+    coll.findOneAndUpdate(bquery, bupdate, foauOptions).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<JsonObject>> resultHandler) {
-    findOneAndReplaceWithOptions(collection, query, update, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS, resultHandler);
+  public io.vertx.ext.mongo.MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<JsonObject>> resultHandler) {
+    Future<JsonObject> future = findOneAndReplace(collection, query, replace);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable JsonObject> findOneAndReplace(String collection, JsonObject query, JsonObject replace) {
-    Promise<JsonObject> promise = Promise.promise();
-    findOneAndReplace(collection, query, replace, promise);
-    return promise.future();
+    return findOneAndReplaceWithOptions(collection, query, replace, DEFAULT_FIND_OPTIONS, DEFAULT_UPDATE_OPTIONS);
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+    Future<JsonObject> future = findOneAndReplaceWithOptions(collection, query, replace, findOptions, updateOptions);
+    setHandler(future, resultHandler);
+    return this;
+  }
+
+  @Override
+  public Future<@Nullable JsonObject> findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(findOptions, "find options cannot be null");
     requireNonNull(updateOptions, "update options cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
 
@@ -451,37 +443,35 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     foarOptions.returnDocument(updateOptions.isReturningNewDocument() ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
 
     MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.findOneAndReplace(bquery, replace, foarOptions)
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
-    return this;
-  }
-
-  @Override
-  public Future<@Nullable JsonObject> findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions) {
-    Promise<JsonObject> promise = Promise.promise();
-    findOneAndReplaceWithOptions(collection, query, replace, findOptions, updateOptions, promise);
+    Promise<JsonObject> promise = vertx.promise();
+    coll.findOneAndReplace(bquery, replace, foarOptions).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<JsonObject>> resultHandler) {
-    findOneAndDeleteWithOptions(collection, query, DEFAULT_FIND_OPTIONS, resultHandler);
+    Future<JsonObject> future = findOneAndDelete(collection, query);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable JsonObject> findOneAndDelete(String collection, JsonObject query) {
-    Promise<JsonObject> promise = Promise.promise();
-    findOneAndDelete(collection, query, promise);
-    return promise.future();
+    return findOneAndDeleteWithOptions(collection, query, DEFAULT_FIND_OPTIONS);
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<JsonObject>> resultHandler) {
+    Future<JsonObject> future = findOneAndDeleteWithOptions(collection, query, findOptions);
+    setHandler(future, resultHandler);
+    return this;
+  }
+
+  @Override
+  public Future<@Nullable JsonObject> findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions) {
     requireNonNull(collection, "collection cannot be null");
     requireNonNull(query, "query cannot be null");
     requireNonNull(findOptions, "find options cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
 
@@ -491,137 +481,122 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     foadOptions.projection(wrap(findOptions.getFields()));
 
     MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.findOneAndDelete(bquery, foadOptions)
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
-    return this;
-  }
-
-  @Override
-  public Future<@Nullable JsonObject> findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions) {
-    Promise<JsonObject> promise = Promise.promise();
-    findOneAndDeleteWithOptions(collection, query, findOptions, promise);
+    Promise<JsonObject> promise = vertx.promise();
+    coll.findOneAndDelete(bquery, foadOptions).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(query, "query cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
-    MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.countDocuments(bquery)
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
+    Future<Long> future = count(collection, query);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<Long> count(String collection, JsonObject query) {
-    Promise<Long> promise = Promise.promise();
-    count(collection, query, promise);
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    Promise<Long> promise = vertx.promise();
+    coll.countDocuments(bquery).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
-    removeDocumentsWithOptions(collection, query, null, resultHandler);
+    Future<MongoClientDeleteResult> future = removeDocuments(collection, query);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable MongoClientDeleteResult> removeDocuments(String collection, JsonObject query) {
-    Promise<MongoClientDeleteResult> promise = Promise.promise();
-    removeDocuments(collection, query, promise);
-    return promise.future();
+    return removeDocumentsWithOptions(collection, query, null);
   }
 
   @Override
   public MongoClient removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(query, "query cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
-    coll.deleteMany(bquery)
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(toMongoClientDeleteResult(resultHandler))));
+    Future<MongoClientDeleteResult> future = removeDocumentsWithOptions(collection, query, writeOption);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable MongoClientDeleteResult> removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption) {
-    Promise<MongoClientDeleteResult> promise = Promise.promise();
-    removeDocumentsWithOptions(collection, query, writeOption, promise);
-    return promise.future();
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Promise<DeleteResult> promise = vertx.promise();
+    coll.deleteMany(bquery).subscribe(new SingleResultSubscriber<>(promise));
+    return promise.future().map(Utils::toMongoClientDeleteResult);
   }
 
   @Override
   public MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
-    removeDocumentWithOptions(collection, query, null, resultHandler);
+    Future<MongoClientDeleteResult> future = removeDocument(collection, query);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable MongoClientDeleteResult> removeDocument(String collection, JsonObject query) {
-    Promise<MongoClientDeleteResult> promise = Promise.promise();
-    removeDocuments(collection, query, promise);
-    return promise.future();
+    return removeDocumentWithOptions(collection, query, null);
   }
 
   @Override
   public MongoClient removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<MongoClientDeleteResult>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(query, "query cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
-    coll.deleteOne(bquery)
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(toMongoClientDeleteResult(resultHandler))));
+    Future<MongoClientDeleteResult> future = removeDocumentWithOptions(collection, query, writeOption);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable MongoClientDeleteResult> removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption) {
-    Promise<MongoClientDeleteResult> promise = Promise.promise();
-    removeDocumentWithOptions(collection, query, writeOption, promise);
-    return promise.future();
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Promise<DeleteResult> promise = vertx.promise();
+    coll.deleteOne(bquery).subscribe(new SingleResultSubscriber<>(promise));
+    return promise.future().map(Utils::toMongoClientDeleteResult);
   }
 
   @Override
   public MongoClient bulkWrite(String collection, List<BulkOperation> operations, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
-    bulkWriteWithOptions(collection, operations, DEFAULT_BULK_WRITE_OPTIONS, resultHandler);
+    Future<MongoClientBulkWriteResult> future = bulkWrite(collection, operations);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable MongoClientBulkWriteResult> bulkWrite(String collection, List<BulkOperation> operations) {
-    Promise<MongoClientBulkWriteResult> promise = Promise.promise();
-    bulkWrite(collection, operations, promise);
-    return promise.future();
+    return bulkWriteWithOptions(collection, operations, DEFAULT_BULK_WRITE_OPTIONS);
   }
 
   @Override
   public MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions, Handler<AsyncResult<MongoClientBulkWriteResult>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(operations, "operations cannot be null");
-    requireNonNull(bulkWriteOptions, "bulkWriteOptions cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-    MongoCollection<JsonObject> coll = getCollection(collection, bulkWriteOptions.getWriteOption());
-    List<WriteModel<JsonObject>> bulkOperations = convertBulkOperations(operations);
-    com.mongodb.client.model.BulkWriteOptions options = new com.mongodb.client.model.BulkWriteOptions().ordered(bulkWriteOptions.isOrdered());
-    coll.bulkWrite(bulkOperations, options)
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(toMongoClientBulkWriteResult(resultHandler))));
-
+    Future<MongoClientBulkWriteResult> future = bulkWriteWithOptions(collection, operations, bulkWriteOptions);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<@Nullable MongoClientBulkWriteResult> bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions) {
-    Promise<MongoClientBulkWriteResult> promise = Promise.promise();
-    bulkWriteWithOptions(collection, operations, bulkWriteOptions, promise);
-    return promise.future();
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(operations, "operations cannot be null");
+    requireNonNull(bulkWriteOptions, "bulkWriteOptions cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection, bulkWriteOptions.getWriteOption());
+    List<WriteModel<JsonObject>> bulkOperations = convertBulkOperations(operations);
+    com.mongodb.client.model.BulkWriteOptions options = new com.mongodb.client.model.BulkWriteOptions().ordered(bulkWriteOptions.isOrdered());
+    Promise<BulkWriteResult> promise = vertx.promise();
+    coll.bulkWrite(bulkOperations, options).subscribe(new SingleResultSubscriber<>(promise));
+    return promise.future().map(Utils::toMongoClientBulkWriteResult);
   }
 
   private List<WriteModel<JsonObject>> convertBulkOperations(List<BulkOperation> operations) {
@@ -662,88 +637,93 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
-  public io.vertx.ext.mongo.MongoClient createCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    holder.db.createCollection(collection).subscribe(
-      new ObservableSubscriber<>(vertx, toVoidResult(resultHandler)));
+  public io.vertx.ext.mongo.MongoClient createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler) {
+    Future<Void> future = createCollection(collectionName);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<Void> createCollection(String collectionName) {
-    Promise<Void> promise = Promise.promise();
-    createCollection(collectionName, promise);
+    requireNonNull(collectionName, "collectionName cannot be null");
+
+    Promise<Void> promise = vertx.promise();
+    holder.db.createCollection(collectionName).subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler) {
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-    holder.db.listCollectionNames().subscribe(new ObservableSubscriber<>(vertx, resultHandler));
+    Future<List<String>> future = getCollections();
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<List<String>> getCollections() {
-    Promise<List<String>> promise = Promise.promise();
-    getCollections(promise);
+    Promise<List<String>> promise = vertx.promise();
+    holder.db.listCollectionNames().subscribe(new BufferingSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-
-    MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.drop().subscribe(new ObservableSubscriber<>(vertx, toVoidResult(resultHandler)));
+    Future<Void> future = dropCollection(collection);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<Void> dropCollection(String collection) {
-    Promise<Void> promise = Promise.promise();
-    dropCollection(collection, promise);
+    requireNonNull(collection, "collection cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    Promise<Void> promise = vertx.promise();
+    coll.drop().subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler) {
-    return createIndexWithOptions(collection, key, new IndexOptions(), resultHandler);
+    Future<Void> future = createIndex(collection, key);
+    setHandler(future, resultHandler);
+    return this;
   }
 
   @Override
   public Future<Void> createIndex(String collection, JsonObject key) {
-    Promise<Void> promise = Promise.promise();
-    createIndex(collection, key, promise);
-    return promise.future();
+    return createIndexWithOptions(collection, key, new IndexOptions());
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(key, "fieldName cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-    MongoCollection<JsonObject> coll = getCollection(collection);
-    com.mongodb.client.model.IndexOptions driverOpts = mongoIndexOptions(options);
-    coll.createIndex(wrap(key), driverOpts)
-      .subscribe(new ObservableSubscriber<>(vertx, toVoidResult(resultHandler)));
+    Future<Void> future = createIndexWithOptions(collection, key, options);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<Void> createIndexWithOptions(String collection, JsonObject key, IndexOptions options) {
-    Promise<Void> promise = Promise.promise();
-    createIndexWithOptions(collection, key, options, promise);
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(key, "fieldName cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    com.mongodb.client.model.IndexOptions driverOpts = mongoIndexOptions(options);
+    Promise<Void> promise = vertx.promise();
+    coll.createIndex(wrap(key), driverOpts).subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient createIndexes(String collection, List<IndexModel> indexes, Handler<AsyncResult<Void>> resultHandler) {
+    Future<Void> future = createIndexes(collection, indexes);
+    setHandler(future, resultHandler);
+    return this;
+  }
+
+  @Override
+  public Future<Void> createIndexes(String collection, List<IndexModel> indexes) {
     requireNonNull(collection, "collection cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
 
     final List<com.mongodb.client.model.IndexModel> transformIndexes = indexes.stream().map(it -> {
       if (it.getOptions() != null)
@@ -751,63 +731,59 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       else return new com.mongodb.client.model.IndexModel(wrap(it.getKey()));
     }).collect(Collectors.toList());
 
-    getCollection(collection).createIndexes(transformIndexes)
-      .subscribe(new ObservableSubscriber<>(vertx, toVoidResult(resultHandler)));
-    return this;
-  }
-
-  @Override
-  public Future<Void> createIndexes(String collection, List<IndexModel> indexes) {
-    Promise<Void> promise = Promise.promise();
-    createIndexes(collection, indexes, promise);
+    Promise<Void> promise = vertx.promise();
+    getCollection(collection).createIndexes(transformIndexes).subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
-  @Nullable
   private static Bson toBson(@Nullable JsonObject json) {
     return json == null ? null : BsonDocument.parse(json.encode());
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-    MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.listIndexes(JsonObject.class)
-      .subscribe(new ObservableSubscriber<>(vertx, toJsonArrayResult(resultHandler)));
+    Future<JsonArray> future = listIndexes(collection);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<JsonArray> listIndexes(String collection) {
-    Promise<JsonArray> promise = Promise.promise();
-    listIndexes(collection, promise);
-    return promise.future();
+    requireNonNull(collection, "collection cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    Promise<List<JsonObject>> promise = vertx.promise();
+    coll.listIndexes(JsonObject.class).subscribe(new BufferingSubscriber<>(promise));
+    return promise.future().map(JsonArray::new);
   }
 
   @Override
   public MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler) {
-    requireNonNull(collection, "collection cannot be null");
-    requireNonNull(indexName, "indexName cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
-    MongoCollection<JsonObject> coll = getCollection(collection);
-    coll.dropIndex(indexName)
-      .subscribe(new ObservableSubscriber<>(vertx, toVoidResult(resultHandler)));
+    Future<Void> future = dropIndex(collection, indexName);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<Void> dropIndex(String collection, String indexName) {
-    Promise<Void> promise = Promise.promise();
-    dropIndex(collection, indexName, promise);
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(indexName, "indexName cannot be null");
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    Promise<Void> promise = vertx.promise();
+    coll.dropIndex(indexName).subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<JsonObject>> resultHandler) {
+    Future<JsonObject> future = runCommand(commandName, command);
+    setHandler(future, resultHandler);
+    return this;
+  }
+
+  @Override
+  public Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command) {
     requireNonNull(commandName, "commandName cannot be null");
     requireNonNull(command, "command cannot be null");
-    requireNonNull(resultHandler, "resultHandler cannot be null");
     // The command name must be the first entry in the bson, so to ensure this we must recreate and add the command
     // name as first (JsonObject is internally ordered)
     JsonObject json = new JsonObject();
@@ -822,46 +798,39 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       }
     });
 
-    holder.db.runCommand(wrap(json), JsonObject.class)
-      .subscribe(new ObservableSubscriber<>(vertx, toSingleResult(resultHandler)));
-    return this;
-  }
-
-  @Override
-  public Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command) {
-    Promise<JsonObject> promise = Promise.promise();
-    runCommand(commandName, command, promise);
+    Promise<JsonObject> promise = vertx.promise();
+    holder.db.runCommand(wrap(json), JsonObject.class).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
-    return distinctWithQuery(collection, fieldName, resultClassname, new JsonObject(), resultHandler);
+    Future<JsonArray> future = distinct(collection, fieldName, resultClassname);
+    setHandler(future, resultHandler);
+    return this;
   }
 
   @Override
   public Future<JsonArray> distinct(String collection, String fieldName, String resultClassname) {
-    Promise<JsonArray> promise = Promise.promise();
-    distinct(collection, fieldName, resultClassname, promise);
-    return promise.future();
+    return distinctWithQuery(collection, fieldName, resultClassname, new JsonObject());
   }
 
   @Override
   public io.vertx.ext.mongo.MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
-    try {
-      findDistinctValuesWithQuery(collection, fieldName, resultClassname, query)
-        .subscribe(new ObservableSubscriber<Object>(vertx, toJsonArrayResult(resultHandler)));
-    } catch (ClassNotFoundException e) {
-      resultHandler.handle(Future.failedFuture(e));
-    }
+    Future<JsonArray> future = distinctWithQuery(collection, fieldName, resultClassname, query);
+    setHandler(future, resultHandler);
     return this;
   }
 
   @Override
   public Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query) {
-    Promise<JsonArray> promise = Promise.promise();
-    distinctWithQuery(collection, fieldName, resultClassname, query, promise);
-    return promise.future();
+    try {
+      PromiseInternal<List<Object>> promise = vertx.promise();
+      findDistinctValuesWithQuery(collection, fieldName, resultClassname, query).subscribe(new BufferingSubscriber<>(promise));
+      return promise.future().map(JsonArray::new);
+    } catch (ClassNotFoundException e) {
+      return vertx.getOrCreateContext().failedFuture(e);
+    }
   }
 
   @Override
@@ -877,10 +846,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   @Override
   public ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, int batchSize) {
     try {
-      ReactiveReadStream<JsonObject> readStream = ReactiveReadStream.readStream(batchSize);
-      DistinctPublisher distinctValuesWithQuery = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query);
-      distinctValuesWithQuery.subscribe(new InContextMappingSubscribe<>(vertx, readStream, value -> new JsonObject().put(fieldName, value)));
-      return readStream;
+      DistinctPublisher<?> distinctValuesWithQuery = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query);
+      PublisherAdapter<?> readStream = new PublisherAdapter<>(vertx.getOrCreateContext(), distinctValuesWithQuery, batchSize);
+      return new MappingStream<>(readStream, value -> new JsonObject().put(fieldName, value));
     } catch (ClassNotFoundException e) {
       return new FailedStream(e);
     }
@@ -895,20 +863,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   public Future<MongoGridFsClient> createDefaultGridFsBucketService() {
     Promise<MongoGridFsClient> promise = Promise.promise();
     createDefaultGridFsBucketService(promise);
-    return promise.future();
-  }
-
-  @Override
-  public Future<@Nullable MongoClientUpdateResult> replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options) {
-    Promise<MongoClientUpdateResult> promise = Promise.promise();
-    replaceDocumentsWithOptions(collection, query, replace, options, promise);
-    return promise.future();
-  }
-
-  @Override
-  public Future<@Nullable MongoClientUpdateResult> replaceDocuments(String collection, JsonObject query, JsonObject replace) {
-    Promise<MongoClientUpdateResult> promise = Promise.promise();
-    replaceDocuments(collection, query, replace, promise);
     return promise.future();
   }
 
@@ -937,10 +891,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public ReadStream<JsonObject> aggregateWithOptions(final String collection, final JsonArray pipeline, final AggregateOptions options) {
-    ReactiveReadStream<JsonObject> readStream = ReactiveReadStream.readStream(options.getBatchSize());
     AggregatePublisher<JsonObject> view = doAggregate(collection, pipeline, options);
-    view.subscribe(new InContextSubscriber<>(vertx.getOrCreateContext(), readStream));
-    return readStream;
+    return new PublisherAdapter<>(vertx.getOrCreateContext(), view, options.getBatchSize());
   }
 
   private DistinctPublisher<?> findDistinctValuesWithQuery(String collection, String fieldName, String resultClassname, JsonObject query) throws ClassNotFoundException {
@@ -998,7 +950,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Object idString = ((JsonObject) idField).getValue(JsonObjectCodec.OID_FIELD, null);
     if (!(idString instanceof String)) return json;
 
-    json.put(ID_FIELD, (String) idString);
+    json.put(ID_FIELD, idString);
 
     return json;
   }
@@ -1084,7 +1036,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public void close(Handler<AsyncResult<Void>> handler) {
-    ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
+    ContextInternal ctx = vertx.getOrCreateContext();
     close(ctx.promise(handler));
   }
 
@@ -1134,102 +1086,4 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     }
   }
 
-  private static class InContextMappingSubscribe<T, R> implements Subscriber<T> {
-    private final Context context;
-    private final Subscriber<R> delegate;
-    private final Function<T, R> converter;
-
-
-    private InContextMappingSubscribe(Context context, Subscriber<R> delegate, Function<T, R> converter) {
-      this.context = context;
-      this.delegate = delegate;
-      this.converter = converter;
-    }
-
-    private InContextMappingSubscribe(Vertx vertx, Subscriber<R> delegate, Function<T, R> converter) {
-      this(vertx.getOrCreateContext(), delegate, converter);
-    }
-
-    @Override
-    public void onSubscribe(Subscription subscription) {
-      delegate.onSubscribe(subscription);
-    }
-
-    @Override
-    public void onNext(T t) {
-      R result = converter.apply(t);
-      if (context == Vertx.currentContext()) {
-        delegate.onNext(result);
-      } else {
-        context.runOnContext(u -> delegate.onNext(result));
-      }
-    }
-
-    @Override
-    public void onError(Throwable throwable) {
-      if (context == Vertx.currentContext()) {
-        delegate.onError(throwable);
-      } else {
-        context.runOnContext(u -> delegate.onError(throwable));
-      }
-    }
-
-    @Override
-    public void onComplete() {
-      if (context == Vertx.currentContext()) {
-        delegate.onComplete();
-      } else {
-        context.runOnContext(u -> delegate.onComplete());
-      }
-    }
-  }
-
-  private static class InContextSubscriber<T> extends InContextMappingSubscribe<T, T> {
-    private InContextSubscriber(Context context, Subscriber<T> delegate) {
-      super(context, delegate, u -> u);
-    }
-
-    private InContextSubscriber(Vertx vertx, Subscriber<T> delegate) {
-      this(vertx.getOrCreateContext(), delegate);
-    }
-  }
-
-  private static class FailedStream implements ReadStream<JsonObject> {
-    private final ClassNotFoundException e;
-
-    FailedStream(ClassNotFoundException e) {
-      this.e = e;
-    }
-
-    @Override
-    public ReadStream<JsonObject> exceptionHandler(Handler<Throwable> handler) {
-      handler.handle(e);
-      return this;
-    }
-
-    @Override
-    public ReadStream<JsonObject> handler(Handler<JsonObject> handler) {
-      return this;
-    }
-
-    @Override
-    public ReadStream<JsonObject> pause() {
-      return this;
-    }
-
-    @Override
-    public ReadStream<JsonObject> fetch(long l) {
-      return this;
-    }
-
-    @Override
-    public ReadStream<JsonObject> resume() {
-      return this;
-    }
-
-    @Override
-    public ReadStream<JsonObject> endHandler(Handler<Void> endHandler) {
-      return this;
-    }
-  }
 }
