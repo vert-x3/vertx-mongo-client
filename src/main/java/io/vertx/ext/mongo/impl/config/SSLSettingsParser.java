@@ -2,22 +2,19 @@ package io.vertx.ext.mongo.impl.config;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.connection.SslSettings;
+import io.vertx.core.Vertx;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.net.PemKeyCertOptions;
+import io.vertx.core.net.PemTrustOptions;
+import io.vertx.core.net.impl.KeyStoreHelper;
 import io.vertx.core.net.impl.TrustAllTrustManager;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import javax.net.ssl.*;
 import java.security.*;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
@@ -32,30 +29,36 @@ class SSLSettingsParser {
     this.config = config;
   }
 
-  public SslSettings settings() {
+  public SslSettings settings(final Vertx vertx) {
     final SslSettings.Builder builder = fromConnectionString().orElseGet(this::fromConfiguration);
-    if (config.getBoolean("trustAll", false)) {
-      log.warn("Mongo client has been set to trust ALL certificates, this can open you up to security issues. Make sure you know the risks.");
-      try {
-        final SSLContext context = SSLContext.getInstance("TLS");
-        context.init(null, new TrustManager[]{TrustAllTrustManager.INSTANCE}, new SecureRandom());
-        builder.context(context);
-      } catch (final NoSuchAlgorithmException | KeyManagementException e) {
-        //fail silently on error
-      }
+    final SslSettings settings = builder.build();
+    if (!settings.isEnabled()) {
+      return settings;
     }
+    final PemKeyCertOptions pemKeyCertOptions = new PemKeyCertOptions();
+    final PemTrustOptions pemTrustOptions = new PemTrustOptions();
     if (config.containsKey("caPath")) {
-      final String caPath = config.getString("caPath");
-      try {
-        final TrustManagerFactory tmf = buildTrustManagerFactory(caPath);
-        final SSLContext context = SSLContext.getInstance("TLS");
-        context.init(null, tmf.getTrustManagers(), new SecureRandom());
-        builder.context(context);
-      } catch (final FileNotFoundException e) {
-        throw new IllegalArgumentException("Invalid caPath " + e.getMessage());
-      } catch (final NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException | KeyManagementException e) {
-        throw new IllegalArgumentException("Unable to load certificate from caPath '" + caPath + "' " + e.getMessage());
+      pemTrustOptions.addCertPath(config.getString("caPath"));
+    }
+    if (config.containsKey("keyPath") && config.containsKey("certPath")) {
+      pemKeyCertOptions.addKeyPath(config.getString("keyPath"));
+      pemKeyCertOptions.addCertPath(config.getString("certPath"));
+    }
+    try {
+      final TrustManager[] tms;
+      if (config.getBoolean("trustAll", false)) {
+        log.warn("Mongo client has been set to trust ALL certificates, this can open you up to security issues. Make sure you know the risks.");
+        tms = new TrustManager[]{TrustAllTrustManager.INSTANCE};
+      } else {
+        final KeyStoreHelper pemTrustStore = KeyStoreHelper.create((VertxInternal) vertx, pemTrustOptions);
+        tms = pemTrustStore.getTrustMgrs((VertxInternal) vertx);
       }
+      final KeyStoreHelper pemKeyCertStore = KeyStoreHelper.create((VertxInternal) vertx, pemKeyCertOptions);
+      final SSLContext context = SSLContext.getInstance("TLS");
+      context.init(pemKeyCertStore.getKeyMgr(), tms, new SecureRandom());
+      builder.context(context);
+    } catch (final Exception e) {
+      throw new IllegalArgumentException(e);
     }
     return builder.build();
   }
@@ -71,21 +74,5 @@ class SSLSettingsParser {
     return SslSettings.builder()
       .enabled(config.getBoolean("ssl", false))
       .invalidHostNameAllowed(config.getBoolean("sslInvalidHostNameAllowed", false));
-  }
-
-  private static TrustManagerFactory buildTrustManagerFactory(final String caPath)
-    throws NoSuchAlgorithmException, CertificateException, KeyStoreException, IOException {
-    final CertificateFactory fact = CertificateFactory.getInstance("X.509");
-    final FileInputStream is = new FileInputStream(caPath);
-    final X509Certificate cert = (X509Certificate) fact.generateCertificate(is);
-
-    final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-    ks.load(null, null);
-    ks.setCertificateEntry("1", cert);
-
-    final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-    trustManagerFactory.init(ks);
-
-    return trustManagerFactory;
   }
 }

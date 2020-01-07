@@ -477,6 +477,14 @@ For more information on the format of the connection string please consult the d
   // Server Settings
   "heartbeatFrequencyMS" :    1000 // long
   "minHeartbeatFrequencyMS" : 500 // long
+
+  // SSL Settings
+  "ssl" :    false                    // boolean
+  "sslInvalidHostNameAllowed" : false // boolean
+  "trustAll" : false                  // boolean
+  "keyPath" : "key.pem"               // string
+  "certPath" : "cert.pem"             // string
+  "caPath" : "ca.pem"                 // string
 }
 ----
 
@@ -511,7 +519,10 @@ For more information on the format of the connection string please consult the d
 `heartbeatFrequencyMS`:: The frequency that the cluster monitor attempts to reach each server. Default is `5000` (5 seconds)
 `minHeartbeatFrequencyMS`:: The minimum heartbeat frequency. The default value is `1000` (1 second)
 `ssl`:: Enable ssl between the vertx-mongo-client and mongo
+`sslInvalidHostNameAllowed`:: trust hostnames not matching the certificate common name.
 `trustAll`:: When using ssl, trust _ALL_ certificates. *WARNING* - Trusting _ALL_ certificates will open you up to potential security issues such as MITM attacks.
+`keyPath`:: Set a path to a file that contains a private key that will be used to authenticate SSL connections to mongo.
+`certPath`:: Set a path to a file that contains a certificate that will be used to authenticate SSL connections to mongo.
 `caPath`:: Set a path to a file that contains a certificate that will be used as a source of trust when making SSL connections to mongo.
 
 NOTE: Most of the default values listed above use the default values of the MongoDB Java Driver.

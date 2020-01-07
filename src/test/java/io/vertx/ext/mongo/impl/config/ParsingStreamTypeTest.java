@@ -4,9 +4,12 @@ import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.connection.AsynchronousSocketChannelStreamFactoryFactory;
 import com.mongodb.connection.StreamFactoryFactory;
 import com.mongodb.connection.netty.NettyStreamFactoryFactory;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -17,6 +20,17 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(JUnitParamsRunner.class)
 public class ParsingStreamTypeTest {
+  private Vertx vertx;
+
+  @Before
+  public void setUp() {
+    vertx = Vertx.vertx();
+  }
+
+  @After
+  public void tearDown() {
+    vertx.close();
+  }
 
   @Test
   public void should_not_include_any_stream_type_by_default_for_backwards_compatibility() {
@@ -26,7 +40,7 @@ public class ParsingStreamTypeTest {
     );
 
     // when
-    final MongoClientSettings parsedSettings = new MongoClientOptionsParser(noStreamTypeProvided).settings();
+    final MongoClientSettings parsedSettings = new MongoClientOptionsParser(vertx, noStreamTypeProvided).settings();
 
     // then
     assertNull(parsedSettings.getStreamFactoryFactory());
@@ -42,7 +56,7 @@ public class ParsingStreamTypeTest {
     );
 
     // when
-    final MongoClientSettings parsedSettings = new MongoClientOptionsParser(cfgWithStreamTypeProvided).settings();
+    final MongoClientSettings parsedSettings = new MongoClientOptionsParser(vertx, cfgWithStreamTypeProvided).settings();
 
     // then
     assertThat(parsedSettings.getStreamFactoryFactory(), instanceOf(streamType));
@@ -57,7 +71,7 @@ public class ParsingStreamTypeTest {
     );
 
     // expect thrown
-    new MongoClientOptionsParser(withInvalidStreamType).settings();
+    new MongoClientOptionsParser(vertx, withInvalidStreamType).settings();
   }
 
   @Parameters(method = "validSteamTypes")
@@ -67,7 +81,7 @@ public class ParsingStreamTypeTest {
     final JsonObject cfgWithStreamTypeProvided = new JsonObject().put("streamType", streamTypeString);
 
     // when
-    final MongoClientSettings parsedSettings = new MongoClientOptionsParser(cfgWithStreamTypeProvided).settings();
+    final MongoClientSettings parsedSettings = new MongoClientOptionsParser(vertx, cfgWithStreamTypeProvided).settings();
 
     // then
     assertThat(parsedSettings.getStreamFactoryFactory(), instanceOf(streamType));
@@ -79,7 +93,7 @@ public class ParsingStreamTypeTest {
     final JsonObject withInvalidStreamType = new JsonObject().put("streamType", "unrecognized");
 
     // expect thrown
-    new MongoClientOptionsParser(withInvalidStreamType).settings();
+    new MongoClientOptionsParser(vertx, withInvalidStreamType).settings();
   }
 
   private Object[] validSteamTypes() {

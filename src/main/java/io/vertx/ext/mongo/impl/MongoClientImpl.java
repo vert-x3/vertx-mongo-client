@@ -113,7 +113,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
     Objects.requireNonNull(dataSourceName);
     this.vertx = vertx;
     this.holder = lookupHolder(dataSourceName, config);
-    this.mongo = holder.mongo();
+    this.mongo = holder.mongo(vertx);
     this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
@@ -960,9 +960,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient {
       this.closeRunner = closeRunner;
     }
 
-    synchronized com.mongodb.async.client.MongoClient mongo() {
+    synchronized com.mongodb.async.client.MongoClient mongo(final Vertx vertx) {
       if (mongo == null) {
-        MongoClientOptionsParser parser = new MongoClientOptionsParser(config);
+        MongoClientOptionsParser parser = new MongoClientOptionsParser(vertx, config);
         mongo = MongoClients.create(parser.settings());
         db = mongo.getDatabase(parser.database());
       }
