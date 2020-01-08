@@ -7,7 +7,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.MongoClientImpl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static com.mongodb.AuthenticationMechanism.*;

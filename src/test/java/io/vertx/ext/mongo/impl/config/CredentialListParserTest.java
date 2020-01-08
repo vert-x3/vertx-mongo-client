@@ -151,6 +151,22 @@ public class CredentialListParserTest {
   }
 
   @Test
+  public void testAuth_MONGODB_X509_without_username() {
+    JsonObject config = new JsonObject();
+    String authSource = TestUtils.randomAlphaString(10);
+    config.put("authSource", authSource);
+    config.put("authMechanism", "MONGODB-X509");
+
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
+    assertEquals(1, credentials.size());
+    MongoCredential credential = credentials.get(0);
+    assertNull(credential.getUserName());
+    assertNotEquals(authSource, credential.getSource()); // It should ignore the source we pass in
+
+    assertEquals(AuthenticationMechanism.MONGODB_X509, credential.getAuthenticationMechanism());
+  }
+
+  @Test
   public void testAuth_SCRAM_SHA_1() {
     JsonObject config = new JsonObject();
     String username = TestUtils.randomAlphaString(8);
