@@ -2,11 +2,12 @@ package io.vertx.ext.mongo;
 
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoDatabase;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
+import io.vertx.ext.mongo.impl.SingleResultSubscriber;
 import org.bson.Document;
 import org.junit.Test;
 
@@ -267,27 +268,23 @@ public class MongoClientTest extends MongoClientTestBase {
         }
 
         //need to check actual DB, not through the Vertx client, in order to make sure the id is a string
+        Promise<Document> promise = ((VertxInternal) vertx).promise();
         db
           .getCollection(collection)
           .find()
           .first()
-          .subscribe(new Utils.ObservableSubscriber<Document>(vertx, Utils.toSingleResult(new Handler<AsyncResult<Document>>() {
-            @Override
-            public void handle(AsyncResult<Document> savedDocResult) {
-              if (savedDocResult.failed())
-                throw new RuntimeException(savedDocResult.cause());
+          .subscribe(new SingleResultSubscriber<>(promise));
 
-              Document savedDoc = savedDocResult.result();
-              if (expectedId != null) {
-                assertEquals(expectedId, savedDoc.getString(MongoClientUpdateResult.ID_FIELD));
-              } else {
-                assertEquals(res.getDocUpsertedId().getString(MongoClientUpdateResult.ID_FIELD), savedDoc.getString(MongoClientUpdateResult.ID_FIELD));
-              }
-              doneFunction.accept(new JsonObject(savedDoc.toJson()));
+        promise.future()
+          .onFailure(Throwable::printStackTrace)
+          .onSuccess(savedDoc -> {
+            if (expectedId != null) {
+              assertEquals(expectedId, savedDoc.getString(MongoClientUpdateResult.ID_FIELD));
+            } else {
+              assertEquals(res.getDocUpsertedId().getString(MongoClientUpdateResult.ID_FIELD), savedDoc.getString(MongoClientUpdateResult.ID_FIELD));
             }
-          })));
+            doneFunction.accept(new JsonObject(savedDoc.toJson()));
+          });
       }));
   }
-
-
 }
