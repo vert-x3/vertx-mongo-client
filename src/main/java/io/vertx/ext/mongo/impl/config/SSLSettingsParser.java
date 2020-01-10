@@ -14,7 +14,6 @@ import io.vertx.core.net.impl.TrustAllTrustManager;
 
 import javax.net.ssl.*;
 import java.security.*;
-import java.util.*;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
@@ -30,7 +29,10 @@ class SSLSettingsParser {
   }
 
   public SslSettings settings(final Vertx vertx) {
-    final SslSettings.Builder builder = fromConnectionString().orElseGet(this::fromConfiguration);
+    final SslSettings.Builder builder = SslSettings.builder();
+    fromConnectionString(builder);
+    fromConfiguration(builder);
+
     final SslSettings settings = builder.build();
     if (!settings.isEnabled()) {
       return settings;
@@ -63,16 +65,18 @@ class SSLSettingsParser {
     return builder.build();
   }
 
-  private Optional<SslSettings.Builder> fromConnectionString() {
-    return Optional.ofNullable(connectionString).map(cs ->
-      SslSettings.builder()
-        .applyConnectionString(cs)
-    );
+  private void fromConnectionString(SslSettings.Builder builder) {
+    if (connectionString != null) {
+      builder.applyConnectionString(connectionString);
+    }
   }
 
-  private SslSettings.Builder fromConfiguration() {
-    return SslSettings.builder()
-      .enabled(config.getBoolean("ssl", false))
-      .invalidHostNameAllowed(config.getBoolean("sslInvalidHostNameAllowed", false));
+  private void fromConfiguration(SslSettings.Builder builder) {
+    if (config.containsKey("ssl")) {
+      builder.enabled(config.getBoolean("ssl", false));
+    }
+    if (config.containsKey("sslInvalidHostNameAllowed")) {
+      builder.invalidHostNameAllowed(config.getBoolean("sslInvalidHostNameAllowed", false));
+    }
   }
 }
