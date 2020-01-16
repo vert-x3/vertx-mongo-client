@@ -45,7 +45,7 @@ public class MongoClientExamples {
   }
 
   public void exampleCreateNonShared(Vertx vertx, JsonObject config) {
-    MongoClient client = MongoClient.createNonShared(vertx, config);
+    MongoClient client = MongoClient.create(vertx, config);
   }
 
   public void example1(MongoClient mongoClient) {
@@ -538,7 +538,7 @@ public class MongoClientExamples {
       }
     });
   }
-  
+
   public void example28(MongoGridFsClient gridFsClient) {
     gridFsClient.downloadFileAs("file.name", "new_file.name", res -> {
       if (res.succeeded()) {

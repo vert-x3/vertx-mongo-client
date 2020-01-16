@@ -38,13 +38,21 @@ public interface MongoClient {
   String DEFAULT_DB_NAME = "DEFAULT_DB";
 
   /**
+   * @deprecated use {@link #create(Vertx, JsonObject)} instead
+   */
+  @Deprecated
+  static MongoClient createNonShared(Vertx vertx, JsonObject config) {
+    return create(vertx, config);
+  }
+
+  /**
    * Create a Mongo client which maintains its own data source.
    *
    * @param vertx  the Vert.x instance
-   * @param config  the configuration
+   * @param config the configuration
    * @return the client
    */
-  static MongoClient createNonShared(Vertx vertx, JsonObject config) {
+  static MongoClient create(Vertx vertx, JsonObject config) {
     return new MongoClientImpl(vertx, config, UUID.randomUUID().toString());
   }
 
@@ -52,9 +60,9 @@ public interface MongoClient {
    * Create a Mongo client which shares its data source with any other Mongo clients created with the same
    * data source name
    *
-   * @param vertx  the Vert.x instance
-   * @param config  the configuration
-   * @param dataSourceName  the data source name
+   * @param vertx          the Vert.x instance
+   * @param config         the configuration
+   * @param dataSourceName the data source name
    * @return the client
    */
   static MongoClient createShared(Vertx vertx, JsonObject config, String dataSourceName) {
