@@ -1,6 +1,9 @@
 package io.vertx.ext.mongo.impl.config;
 
-import com.mongodb.*;
+import com.mongodb.ConnectionString;
+import com.mongodb.ReadPreference;
+import com.mongodb.Tag;
+import com.mongodb.TagSet;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
@@ -49,12 +52,12 @@ public class ReadPreferenceParserTest {
     new ReadPreferenceParser(null, config).readPreference();
   }
 
-  @Test(expected = ClassCastException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testInvalidTypeReadPreference() {
     JsonObject config = new JsonObject();
     config.put("readPreference", 123);
 
-    new ReadPreferenceParser(null, config).readPreference();
+    new ReadPreferenceParser(null, config);
   }
 
   @Test
