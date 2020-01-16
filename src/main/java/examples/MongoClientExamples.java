@@ -40,7 +40,7 @@ public class MongoClientExamples {
   }
 
   public void exampleCreateNonShared(Vertx vertx, JsonObject config) {
-    MongoClient client = MongoClient.createNonShared(vertx, config);
+    MongoClient client = MongoClient.create(vertx, config);
   }
 
   public void example1(MongoClient mongoClient) {
