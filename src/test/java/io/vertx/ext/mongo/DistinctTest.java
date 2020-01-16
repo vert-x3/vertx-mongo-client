@@ -32,7 +32,7 @@ public class DistinctTest extends MongoTestBase {
   public void setUp() throws Exception {
     super.setUp();
     JsonObject config = getConfig();
-    mongoClient = MongoClient.createNonShared(vertx, config);
+    mongoClient = MongoClient.create(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);
     awaitLatch(latch);
