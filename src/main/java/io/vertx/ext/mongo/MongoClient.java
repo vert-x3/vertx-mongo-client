@@ -38,14 +38,6 @@ public interface MongoClient {
   String DEFAULT_DB_NAME = "DEFAULT_DB";
 
   /**
-   * @deprecated use {@link #create(Vertx, JsonObject)} instead
-   */
-  @Deprecated
-  static MongoClient createNonShared(Vertx vertx, JsonObject config) {
-    return create(vertx, config);
-  }
-
-  /**
    * Create a Mongo client which maintains its own data source.
    *
    * @param vertx  the Vert.x instance
