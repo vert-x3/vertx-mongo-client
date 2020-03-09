@@ -70,7 +70,7 @@ public class GridFsTest extends MongoTestBase {
       Promise<Void> deletePromise = Promise.promise();
       gridFsClient.get().delete(id, deletePromise);
       return deletePromise.future();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.succeeded()) {
         testComplete();
       } else {
@@ -110,7 +110,7 @@ public class GridFsTest extends MongoTestBase {
     }).compose(length -> {
       assertNotNull(length);
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       } else {
@@ -151,7 +151,7 @@ public class GridFsTest extends MongoTestBase {
     }).compose(length -> {
       assertEquals(originalLength, length.longValue());
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       } else {
@@ -192,7 +192,7 @@ public class GridFsTest extends MongoTestBase {
       assertNotNull(id);
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -236,7 +236,7 @@ public class GridFsTest extends MongoTestBase {
       assertTrue(list.size() > 0);
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -274,7 +274,7 @@ public class GridFsTest extends MongoTestBase {
       assertTrue(list.size() == 1);
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -301,7 +301,7 @@ public class GridFsTest extends MongoTestBase {
     }).compose(dropped -> {
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -345,7 +345,7 @@ public class GridFsTest extends MongoTestBase {
       assertTrue(fileLength == length);
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -391,7 +391,7 @@ public class GridFsTest extends MongoTestBase {
       assertTrue(fileLength == length);
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -436,7 +436,7 @@ public class GridFsTest extends MongoTestBase {
       assertTrue(fileLength == length);
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -472,7 +472,7 @@ public class GridFsTest extends MongoTestBase {
       assertEquals(1024L, length.longValue());
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -509,7 +509,7 @@ public class GridFsTest extends MongoTestBase {
       assertNotNull(id);
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -549,7 +549,7 @@ public class GridFsTest extends MongoTestBase {
       assertNotNull(id);
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -586,7 +586,7 @@ public class GridFsTest extends MongoTestBase {
       assertEquals(1024L, length.longValue());
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
@@ -623,7 +623,7 @@ public class GridFsTest extends MongoTestBase {
       assertEquals(1024L, length.longValue());
       testComplete();
       return Future.succeededFuture();
-    }).setHandler(event -> {
+    }).onComplete(event -> {
       if (event.failed()) {
         fail(event.cause());
       }
