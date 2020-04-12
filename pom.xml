@@ -29,7 +29,7 @@
 
   <properties>
     <stack.version>4.0.0-SNAPSHOT</stack.version>
-    <mongodb.driver.reactivestreams.version>1.12.0</mongodb.driver.reactivestreams.version>
+    <mongodb.driver.reactivestreams.version>4.0.2</mongodb.driver.reactivestreams.version>
   </properties>
 
   <dependencyManagement>

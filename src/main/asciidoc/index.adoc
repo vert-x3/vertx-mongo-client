@@ -716,7 +716,6 @@ For more information on the format of the connection string please consult the d
   "minPoolSize" : 25,                // int
   "maxIdleTimeMS" : 300000,          // long
   "maxLifeTimeMS" : 3600000,         // long
-  "waitQueueMultiple"  : 10,         // int
   "waitQueueTimeoutMS" : 10000,      // long
   "maintenanceFrequencyMS" : 2000,   // long
   "maintenanceInitialDelayMS" : 500, // long
@@ -734,16 +733,6 @@ For more information on the format of the connection string please consult the d
   "socketTimeoutMS"  : 100000, // int
   "sendBufferSize"    : 8192,  // int
   "receiveBufferSize" : 8192,  // int
-  "keepAlive" : true           // boolean
-
-  // Heartbeat socket settings
-  "heartbeat.socket" : {
-  "connectTimeoutMS" : 300000, // int
-  "socketTimeoutMS"  : 100000, // int
-  "sendBufferSize"    : 8192,  // int
-  "receiveBufferSize" : 8192,  // int
-  "keepAlive" : true           // boolean
-  }
 
   // Server Settings
   "heartbeatFrequencyMS" :    1000 // long
@@ -764,7 +753,6 @@ For more information on the format of the connection string please consult the d
 `minPoolSize`:: The minimum number of connections in the connection pool. The default value is `0`
 `maxIdleTimeMS`:: The maximum idle time of a pooled connection. The default value is `0` which means there is no limit
 `maxLifeTimeMS`:: The maximum time a pooled connection can live for. The default value is `0` which means there is no limit
-`waitQueueMultiple`:: The maximum number of waiters for a connection to become available from the pool. Default value is `500`
 `waitQueueTimeoutMS`:: The maximum time that a thread may wait for a connection to become available. Default value is `120000` (2 minutes)
 `maintenanceFrequencyMS`:: The time period between runs of the maintenance job. Default is `0`.
 `maintenanceInitialDelayMS`:: The period of time to wait before running the first maintenance job on the connection pool. Default is `0`.
@@ -777,8 +765,6 @@ For more information on the format of the connection string please consult the d
 `socketTimeoutMS`:: The time in milliseconds to attempt a send or receive on a socket before the attempt times out. Default is `0` meaning there is no timeout
 `sendBufferSize`:: Sets the send buffer size (SO_SNDBUF) for the socket. Default is `0`, meaning it will use the OS default for this option.
 `receiveBufferSize`:: Sets the receive buffer size (SO_RCVBUF) for the socket. Default is `0`, meaning it will use the OS default for this option.
-`keepAlive`:: Sets the keep alive (SO_KEEPALIVE) for the socket. Default is `false`
-`heartbeat.socket`:: Configures the socket settings for the cluster monitor of the MongoDB java driver.
 `heartbeatFrequencyMS`:: The frequency that the cluster monitor attempts to reach each server. Default is `5000` (5 seconds)
 `minHeartbeatFrequencyMS`:: The minimum heartbeat frequency. The default value is `1000` (1 second)
 `ssl`:: Enable ssl between the vertx-mongo-client and mongo

@@ -9,8 +9,6 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -30,34 +28,6 @@ public class ParsingStreamTypeTest {
 
     // then
     assertNull(parsedSettings.getStreamFactoryFactory());
-  }
-
-  @Parameters(method = "validSteamTypes")
-  @Test
-  public void should_parse_stream_type_from_connection_string(String streamTypeString, Class<StreamFactoryFactory> streamType) {
-    // given
-    final JsonObject cfgWithStreamTypeProvided = new JsonObject().put(
-      "connection_string",
-      format("mongodb://localhost:27017/mydb?replicaSet=myRs&streamType=%s", streamTypeString)
-    );
-
-    // when
-    final MongoClientSettings parsedSettings = new MongoClientOptionsParser(cfgWithStreamTypeProvided).settings();
-
-    // then
-    assertThat(parsedSettings.getStreamFactoryFactory(), instanceOf(streamType));
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void only_valid_stream_type_values_allowed_in_connection_string() {
-    // given
-    final JsonObject withInvalidStreamType = new JsonObject().put(
-      "connection_string",
-      "mongodb://localhost:27017/mydb?replicaSet=myRs&streamType=unrecognized"
-    );
-
-    // expect thrown
-    new MongoClientOptionsParser(withInvalidStreamType).settings();
   }
 
   @Parameters(method = "validSteamTypes")
