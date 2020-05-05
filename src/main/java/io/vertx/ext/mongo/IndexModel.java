@@ -33,6 +33,10 @@ public class IndexModel {
    */
   public IndexOptions getOptions() { return options; }
 
+  public JsonObject toJson() {
+    return key;
+  }
+
   @Override
   public String toString() {
     return "IndexModel{"
