@@ -3,6 +3,7 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
+import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadPublisher;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -18,8 +19,11 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.function.Function;
 
+import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.vertx.ext.mongo.impl.Utils.setHandler;
 import static java.util.Objects.requireNonNull;
 
@@ -149,9 +153,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
   @Override
   public Future<Long> downloadByFileName(WriteStream<Buffer> stream, String fileName) {
-    Promise<Long> promise = vertx.promise();
-    bucket.downloadToPublisher(fileName).subscribe(new GridFSWriteStreamSubscriber(stream, promise));
-    return promise.future();
+    GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName);
+    return handleDownload(publisher, stream);
   }
 
   @Override
@@ -164,9 +167,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   @Override
   public Future<Long> downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options) {
     GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions();
-    Promise<Long> promise = vertx.promise();
-    bucket.downloadToPublisher(fileName, downloadOptions).subscribe(new GridFSWriteStreamSubscriber(stream, promise));
-    return promise.future();
+    GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName, downloadOptions);
+    return handleDownload(publisher, stream);
   }
 
   @Override
@@ -179,9 +181,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   @Override
   public Future<Long> downloadById(WriteStream<Buffer> stream, String id) {
     ObjectId objectId = new ObjectId(id);
-    Promise<Long> promise = vertx.promise();
-    bucket.downloadToPublisher(objectId).subscribe(new GridFSWriteStreamSubscriber(stream, promise));
-    return promise.future();
+    GridFSDownloadPublisher publisher = bucket.downloadToPublisher(objectId);
+    return handleDownload(publisher, stream);
   }
 
   @Override
@@ -214,9 +215,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     return vertx.fileSystem().open(newFileName, options)
       .flatMap(file -> {
-        Promise<Long> promise = vertx.promise();
-        bucket.downloadToPublisher(fileName).subscribe(new GridFSWriteStreamSubscriber(file, promise));
-        return promise.future();
+        GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName);
+        return handleDownload(publisher, file);
       });
   }
 
@@ -236,9 +236,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     return vertx.fileSystem().open(fileName, options)
       .flatMap(file -> {
         ObjectId objectId = new ObjectId(id);
-        Promise<Long> promise = vertx.promise();
-        bucket.downloadToPublisher(objectId).subscribe(new GridFSWriteStreamSubscriber(file, promise));
-        return promise.future();
+        GridFSDownloadPublisher publisher = bucket.downloadToPublisher(objectId);
+        return handleDownload(publisher, file);
       });
   }
 
@@ -287,5 +286,23 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     Promise<List<String>> promise = vertx.promise();
     bucket.find(bquery).subscribe(new MappingAndBufferingSubscriber<>(gridFSFile -> gridFSFile.getObjectId().toHexString(), promise));
     return promise.future();
+  }
+
+  private Future<Long> handleDownload(GridFSDownloadPublisher publisher, WriteStream<Buffer> stream) {
+    ReadStream<ByteBuffer> adapter = new PublisherAdapter<>(vertx.getOrCreateContext(), publisher, 16);
+    MapAndCountBuffer mapper = new MapAndCountBuffer();
+    MappingStream<ByteBuffer, Buffer> rs = new MappingStream<>(adapter, mapper);
+    return rs.pipeTo(stream).map(v -> mapper.count);
+  }
+
+  private static class MapAndCountBuffer implements Function<ByteBuffer, Buffer> {
+    private long count = 0;
+
+    @Override
+    public Buffer apply(ByteBuffer bb) {
+      Buffer buffer = Buffer.buffer(copiedBuffer(bb));
+      count += buffer.length();
+      return buffer;
+    }
   }
 }
