@@ -23,21 +23,21 @@ public class WriteConcernParserTest {
   @Test
   public void testWriteConcern() {
     JsonObject config = new JsonObject();
-    config.put("writeConcern", "SAFE");
+    config.put("writeConcern", "ACKNOWLEDGED");
 
     WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
     assertNotNull(wc);
-    assertEquals(WriteConcern.SAFE, wc);
+    assertEquals(WriteConcern.ACKNOWLEDGED, wc);
   }
 
   @Test
   public void testWriteConcernCaseInsensitive() {
     JsonObject config = new JsonObject();
-    config.put("writeConcern", "safe");
+    config.put("writeConcern", "acknowledged");
 
     WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
     assertNotNull(wc);
-    assertEquals(WriteConcern.SAFE, wc);
+    assertEquals(WriteConcern.ACKNOWLEDGED, wc);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -58,11 +58,10 @@ public class WriteConcernParserTest {
 
   @Test
   public void testAdvancedWriteConcern_w_int() {
-    WriteConcern expected = new WriteConcern(3, 25, true, true);
+    WriteConcern expected = new WriteConcern(3).withWTimeout(25, TimeUnit.MILLISECONDS).withJournal(true);
     JsonObject config = new JsonObject();
     config.put("w", 3);
     config.put("wtimeoutMS", 25);
-    config.put("fsync", true);
     config.put("j", true);
 
     WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
@@ -72,11 +71,10 @@ public class WriteConcernParserTest {
 
   @Test
   public void testAdvancedWriteConcern_w_string() {
-    WriteConcern expected = new WriteConcern("majority", 1, false, true);
+    WriteConcern expected = WriteConcern.MAJORITY.withWTimeout(1, TimeUnit.MILLISECONDS).withJournal(true);
     JsonObject config = new JsonObject();
     config.put("w", "majority");
     config.put("wtimeoutMS", 1);
-    config.put("fsync", false);
     config.put("j", true);
 
     WriteConcern wc = new WriteConcernParser(null, config).writeConcern();
@@ -112,7 +110,6 @@ public class WriteConcernParserTest {
     JsonObject config = new JsonObject();
     config.put("w", "majority");
     config.put("wtimeoutMS", 1);
-    config.put("fsync", false);
     config.put("j", true);
     // this overwrites the other options
     config.put("writeConcern", "journaled");
@@ -149,7 +146,7 @@ public class WriteConcernParserTest {
   @Test
   public void testConnStringSimpleAndAdvancedWriteConcern() {
     final ConnectionString connString = new ConnectionString("mongodb://localhost:27017/mydb?replicaSet=myapp" +
-        "&w=majority&wtimeoutms=20&journal=false");
+      "&w=majority&wtimeoutms=20&journal=false");
     WriteConcern expected = new WriteConcern("majority").withWTimeout(20, TimeUnit.MILLISECONDS).withJournal(false);
     WriteConcern wc = new WriteConcernParser(connString, new JsonObject()).writeConcern();
     assertNotNull(wc);

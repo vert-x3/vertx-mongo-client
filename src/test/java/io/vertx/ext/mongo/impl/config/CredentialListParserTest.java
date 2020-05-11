@@ -3,7 +3,6 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.AuthenticationMechanism;
 import com.mongodb.MongoCredential;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.impl.MongoClientImpl;
 import io.vertx.test.core.TestUtils;
 import org.junit.Test;
 
@@ -24,7 +23,7 @@ public class CredentialListParserTest {
     config.put("password", password);
 
 
-    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -43,7 +42,7 @@ public class CredentialListParserTest {
     config.put("password", password);
     config.put("authSource", authSource);
 
-    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -60,7 +59,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "GSSAPI");
 
-    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -80,7 +79,7 @@ public class CredentialListParserTest {
     config.put("authMechanism", "GSSAPI");
     config.put("gssapiServiceName", serviceName);
 
-    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -101,7 +100,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "PLAIN");
 
-    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -109,27 +108,6 @@ public class CredentialListParserTest {
     assertEquals(authSource, credential.getSource());
 
     assertEquals(AuthenticationMechanism.PLAIN, credential.getAuthenticationMechanism());
-  }
-
-  @Test
-  public void testAuth_MONGODB_CR() {
-    JsonObject config = new JsonObject();
-    String username = TestUtils.randomAlphaString(8);
-    String password = TestUtils.randomAlphaString(20);
-    String authSource = TestUtils.randomAlphaString(10);
-    config.put("username", username);
-    config.put("password", password);
-    config.put("authSource", authSource);
-    config.put("authMechanism", "MONGODB-CR");
-
-    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
-    assertEquals(1, credentials.size());
-    MongoCredential credential = credentials.get(0);
-    assertEquals(username, credential.getUserName());
-    assertArrayEquals(password.toCharArray(), credential.getPassword());
-    assertEquals(authSource, credential.getSource());
-
-    assertEquals(AuthenticationMechanism.MONGODB_CR, credential.getAuthenticationMechanism());
   }
 
   @Test
@@ -141,7 +119,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "MONGODB-X509");
 
-    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -161,7 +139,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "SCRAM-SHA-1");
 
-    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -169,6 +147,27 @@ public class CredentialListParserTest {
     assertEquals(authSource, credential.getSource());
 
     assertEquals(AuthenticationMechanism.SCRAM_SHA_1, credential.getAuthenticationMechanism());
+  }
+
+  @Test
+  public void testAuth_SCRAM_SHA_256() {
+    JsonObject config = new JsonObject();
+    String username = TestUtils.randomAlphaString(8);
+    String password = TestUtils.randomAlphaString(20);
+    String authSource = TestUtils.randomAlphaString(10);
+    config.put("username", username);
+    config.put("password", password);
+    config.put("authSource", authSource);
+    config.put("authMechanism", "SCRAM-SHA-256");
+
+    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    assertEquals(1, credentials.size());
+    MongoCredential credential = credentials.get(0);
+    assertEquals(username, credential.getUserName());
+    assertArrayEquals(password.toCharArray(), credential.getPassword());
+    assertEquals(authSource, credential.getSource());
+
+    assertEquals(AuthenticationMechanism.SCRAM_SHA_256, credential.getAuthenticationMechanism());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -182,7 +181,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "FOO-BAR");
 
-    new CredentialListParser(null, config).credentials();
+    new CredentialListParser(config).credentials();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -191,6 +190,6 @@ public class CredentialListParserTest {
     String username = TestUtils.randomAlphaString(8);
     config.put("username", username);
 
-    new CredentialListParser(null, config).credentials();
+    new CredentialListParser(config).credentials();
   }
 }

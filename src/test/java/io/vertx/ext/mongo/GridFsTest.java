@@ -83,7 +83,8 @@ public class GridFsTest extends MongoTestBase {
   @Test
   public void testFileUpload() {
 
-    String fileName = createTempFileWithContent((1024 * 3) + 70);
+    long fileLength = (1024 * 3) + 70;
+    String fileName = createTempFileWithContent(fileLength);
     String downloadFileName = createTempFile();
 
     AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
@@ -108,7 +109,7 @@ public class GridFsTest extends MongoTestBase {
       gridFsClient.get().downloadFileAs(fileName, downloadFileName, downloadPromise);
       return downloadPromise.future();
     }).compose(length -> {
-      assertNotNull(length);
+      assertEquals((long)length, fileLength);
       return Future.succeededFuture();
     }).onComplete(event -> {
       if (event.failed()) {

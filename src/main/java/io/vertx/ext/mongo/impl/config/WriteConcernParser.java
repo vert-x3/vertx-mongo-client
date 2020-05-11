@@ -34,13 +34,12 @@ class WriteConcernParser {
         Boolean safe = config.getBoolean("safe");
         Object w = config.getValue("w");
         Integer wtimeout = config.getInteger("wtimeoutMS", null);
-        Boolean fsync = config.getBoolean("fsync", null); // This doesn't exist in mongo docs, but you can specify it for driver...
         Boolean j = config.getBoolean("j", null);
         if (j == null) {
           j = config.getBoolean("journal", null); //TODO: Inconsistency with driver and mongo docs, support both ?
         }
 
-        if (w != null || wtimeout != null || (fsync != null && fsync) || (j != null && j)) {
+        if (w != null || wtimeout != null || (j != null && j)) {
           if (w == null) {
             wc = new WriteConcern(1);
           } else {
@@ -53,10 +52,6 @@ class WriteConcernParser {
           if (j != null) {
             wc = wc.withJournal(j);
           }
-          if (fsync != null) {
-            wc = wc.withFsync(fsync);
-          }
-
         } else if (safe != null) {
           wc = safe ? WriteConcern.ACKNOWLEDGED : WriteConcern.UNACKNOWLEDGED;
         } else {
