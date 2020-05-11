@@ -45,10 +45,10 @@ public class MongoClientOptionsParser {
     options.applyToConnectionPoolSettings(builder -> builder.applySettings(connectionPoolSettings));
 
     // Credentials
-    // The previous mongo client supported credentials list but their new impleemntation supports only
+    // The previous mongo client supported credentials list but their new implementation supports only
     // one credentials. The deprecated code path resorts to using the last credentials if a list is passed
     // we are doing the same here.
-    List<MongoCredential> credentials = new CredentialListParser(connectionString, config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
     if (!credentials.isEmpty())
       options.credential(credentials.get(credentials.size() - 1));
 
@@ -57,7 +57,7 @@ public class MongoClientOptionsParser {
     options.applyToSocketSettings(builder -> builder.applySettings(socketSettings));
 
     // Transport type
-    new StreamTypeParser(connectionString, config).streamFactory().ifPresent(options::streamFactoryFactory);
+    new StreamTypeParser(config).streamFactory().ifPresent(options::streamFactoryFactory);
 
     // SSLSettings
     SslSettings sslSettings = new SSLSettingsParser(connectionString, config).settings();

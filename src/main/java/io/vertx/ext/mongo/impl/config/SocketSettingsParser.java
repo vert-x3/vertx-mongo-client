@@ -25,10 +25,6 @@ class SocketSettingsParser {
       if (socketTimeoutMS != null) {
         settings.readTimeout(socketTimeoutMS, MILLISECONDS);
       }
-      Boolean keepAlive = config.getBoolean("keepAlive");
-      if (keepAlive != null) {
-        settings.keepAlive(keepAlive);
-      }
       Integer receiveBufferSize = config.getInteger("receiveBufferSize");
       if (receiveBufferSize != null) {
         settings.receiveBufferSize(receiveBufferSize);

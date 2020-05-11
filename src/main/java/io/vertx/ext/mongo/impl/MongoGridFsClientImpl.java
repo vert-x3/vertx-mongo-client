@@ -3,6 +3,7 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
+import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadPublisher;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -11,7 +12,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.streams.Pump;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.mongo.*;
@@ -19,8 +19,11 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.function.Function;
 
+import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.vertx.ext.mongo.impl.Utils.setHandler;
 import static java.util.Objects.requireNonNull;
 
@@ -51,13 +54,9 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
   @Override
   public Future<String> uploadByFileName(ReadStream<Buffer> stream, String fileName) {
-    GridFSInputStream gridFsInputStream = new GridFSInputStreamImpl();
-
-    stream.endHandler(endHandler -> gridFsInputStream.end());
-    Pump.pump(stream, gridFsInputStream).start();
-
+    GridFSReadStreamPublisher publisher = new GridFSReadStreamPublisher(stream);
     Promise<ObjectId> promise = vertx.promise();
-    bucket.uploadFromStream(fileName, gridFsInputStream).subscribe(new SingleResultSubscriber<>(promise));
+    bucket.uploadFromPublisher(fileName, publisher).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(ObjectId::toHexString);
   }
 
@@ -74,13 +73,9 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
     if (options.getMetadata() != null) uploadOptions.metadata(new Document(options.getMetadata().getMap()));
 
-    GridFSInputStream gridFsInputStream = new GridFSInputStreamImpl();
-
-    stream.endHandler(endHandler -> gridFsInputStream.end());
-    Pump.pump(stream, gridFsInputStream).start();
-
+    GridFSReadStreamPublisher publisher = new GridFSReadStreamPublisher(stream);
     Promise<ObjectId> promise = vertx.promise();
-    bucket.uploadFromStream(fileName, gridFsInputStream, uploadOptions).subscribe(new SingleResultSubscriber<>(promise));
+    bucket.uploadFromPublisher(fileName, publisher, uploadOptions).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(ObjectId::toHexString);
   }
 
@@ -112,22 +107,18 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     return vertx.fileSystem().open(fileName, openOptions)
       .flatMap(file -> {
-        GridFSInputStream gridFSInputStream = GridFSInputStream.create();
-        file.endHandler(endHandler -> gridFSInputStream.end());
-        Pump.pump(file, gridFSInputStream).start();
-
-        if (options == null) {
-          Promise<ObjectId> promise = vertx.promise();
-          bucket.uploadFromStream(fileName, gridFSInputStream).subscribe(new SingleResultSubscriber<>(promise));
-          return promise.future().map(ObjectId::toHexString);
-        }
-        GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
-        uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
-        if (options.getMetadata() != null) {
-          uploadOptions.metadata(new Document(options.getMetadata().getMap()));
-        }
+        GridFSReadStreamPublisher publisher = new GridFSReadStreamPublisher(file);
         Promise<ObjectId> promise = vertx.promise();
-        bucket.uploadFromStream(fileName, gridFSInputStream, uploadOptions).subscribe(new SingleResultSubscriber<>(promise));
+        if (options == null) {
+          bucket.uploadFromPublisher(fileName, publisher).subscribe(new SingleResultSubscriber<>(promise));
+        } else {
+          GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
+          uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
+          if (options.getMetadata() != null) {
+            uploadOptions.metadata(new Document(options.getMetadata().getMap()));
+          }
+          bucket.uploadFromPublisher(fileName, publisher, uploadOptions).subscribe(new SingleResultSubscriber<>(promise));
+        }
         return promise.future().map(ObjectId::toHexString);
       });
   }
@@ -162,10 +153,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
   @Override
   public Future<Long> downloadByFileName(WriteStream<Buffer> stream, String fileName) {
-    GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
-    Promise<Long> promise = vertx.promise();
-    bucket.downloadToStream(fileName, gridFsOutputStream).subscribe(new SingleResultSubscriber<>(promise));
-    return promise.future();
+    GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName);
+    return handleDownload(publisher, stream);
   }
 
   @Override
@@ -178,11 +167,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   @Override
   public Future<Long> downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options) {
     GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions();
-
-    GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
-    Promise<Long> promise = vertx.promise();
-    bucket.downloadToStream(fileName, gridFsOutputStream, downloadOptions).subscribe(new SingleResultSubscriber<>(promise));
-    return promise.future();
+    GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName, downloadOptions);
+    return handleDownload(publisher, stream);
   }
 
   @Override
@@ -195,10 +181,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   @Override
   public Future<Long> downloadById(WriteStream<Buffer> stream, String id) {
     ObjectId objectId = new ObjectId(id);
-    GridFSOutputStream gridFsOutputStream = new GridFSOutputStreamImpl(stream);
-    Promise<Long> promise = vertx.promise();
-    bucket.downloadToStream(objectId, gridFsOutputStream).subscribe(new SingleResultSubscriber<>(promise));
-    return promise.future();
+    GridFSDownloadPublisher publisher = bucket.downloadToPublisher(objectId);
+    return handleDownload(publisher, stream);
   }
 
   @Override
@@ -231,10 +215,8 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     return vertx.fileSystem().open(newFileName, options)
       .flatMap(file -> {
-        GridFSOutputStream gridFSOutputStream = GridFSOutputStream.create(file);
-        Promise<Long> promise = vertx.promise();
-        bucket.downloadToStream(fileName, gridFSOutputStream).subscribe(new SingleResultSubscriber<>(promise));
-        return promise.future();
+        GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName);
+        return handleDownload(publisher, file);
       });
   }
 
@@ -253,11 +235,9 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     return vertx.fileSystem().open(fileName, options)
       .flatMap(file -> {
-        GridFSOutputStream gridFSOutputStream = GridFSOutputStream.create(file);
         ObjectId objectId = new ObjectId(id);
-        Promise<Long> promise = vertx.promise();
-        bucket.downloadToStream(objectId, gridFSOutputStream).subscribe(new SingleResultSubscriber<>(promise));
-        return promise.future();
+        GridFSDownloadPublisher publisher = bucket.downloadToPublisher(objectId);
+        return handleDownload(publisher, file);
       });
   }
 
@@ -306,5 +286,23 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     Promise<List<String>> promise = vertx.promise();
     bucket.find(bquery).subscribe(new MappingAndBufferingSubscriber<>(gridFSFile -> gridFSFile.getObjectId().toHexString(), promise));
     return promise.future();
+  }
+
+  private Future<Long> handleDownload(GridFSDownloadPublisher publisher, WriteStream<Buffer> stream) {
+    ReadStream<ByteBuffer> adapter = new PublisherAdapter<>(vertx.getOrCreateContext(), publisher, 16);
+    MapAndCountBuffer mapper = new MapAndCountBuffer();
+    MappingStream<ByteBuffer, Buffer> rs = new MappingStream<>(adapter, mapper);
+    return rs.pipeTo(stream).map(v -> mapper.count);
+  }
+
+  private static class MapAndCountBuffer implements Function<ByteBuffer, Buffer> {
+    private long count = 0;
+
+    @Override
+    public Buffer apply(ByteBuffer bb) {
+      Buffer buffer = Buffer.buffer(copiedBuffer(bb));
+      count += buffer.length();
+      return buffer;
+    }
   }
 }

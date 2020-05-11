@@ -4,7 +4,6 @@ import com.mongodb.ConnectionString;
 import com.mongodb.ServerAddress;
 import com.mongodb.connection.ClusterConnectionMode;
 import com.mongodb.connection.ClusterSettings;
-import com.mongodb.connection.ClusterType;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -19,10 +18,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 class ClusterSettingsParser {
 
   private final ClusterSettings settings;
-  /*
-  * The Default Mongo Driver maxWaitQueueSize @see <a href="https://github.com/mongodb/mongo-java-driver/blob/master/driver-core/src/main/com/mongodb/connection/ClusterSettings.java">maxWaitQueueSize</a>
-  */
-  public static final Integer DEFAULT_MONGO_DRIVER_WAIT_Q_SIZE = 500;
 
   public ClusterSettingsParser(ConnectionString connectionString, JsonObject config) {
     ClusterSettings.Builder settings = ClusterSettings.builder();
@@ -49,12 +44,6 @@ class ClusterSettingsParser {
       Long serverSelectionTimeoutMS = config.getLong("serverSelectionTimeoutMS");
       if(serverSelectionTimeoutMS != null) {
         settings.serverSelectionTimeout(serverSelectionTimeoutMS, MILLISECONDS);
-      }
-
-      Integer waitQueueMultiple = config.getInteger("waitQueueMultiple");
-      if (waitQueueMultiple != null) {
-        Integer waitQueueSize = waitQueueMultiple * DEFAULT_MONGO_DRIVER_WAIT_Q_SIZE;
-        settings.maxWaitQueueSize(waitQueueSize);
       }
     }
 

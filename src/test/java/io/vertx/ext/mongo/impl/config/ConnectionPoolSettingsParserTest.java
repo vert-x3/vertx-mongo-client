@@ -19,7 +19,6 @@ public class ConnectionPoolSettingsParserTest {
     long maxIdleTimeMS = Math.abs(randomLong());
     long maxLifeTimeMS = Math.abs(randomLong());
     // Do not use long because of rounding.
-    int waitQueueMultiple = 5432;
     long waitQueueTimeoutMS = Math.abs(randomLong());
     long maintenanceInitialDelayMS = Math.abs(randomLong());
     long maintenanceFrequencyMS = Math.abs(randomLong());
@@ -29,7 +28,6 @@ public class ConnectionPoolSettingsParserTest {
     config.put("minPoolSize", minPoolSize);
     config.put("maxIdleTimeMS", maxIdleTimeMS);
     config.put("maxLifeTimeMS", maxLifeTimeMS);
-    config.put("waitQueueMultiple", waitQueueMultiple);
     config.put("waitQueueTimeoutMS", waitQueueTimeoutMS);
     config.put("maintenanceInitialDelayMS", maintenanceInitialDelayMS);
     config.put("maintenanceFrequencyMS", maintenanceFrequencyMS);
@@ -39,7 +37,6 @@ public class ConnectionPoolSettingsParserTest {
     assertEquals(minPoolSize, settings.getMinSize());
     assertEquals(maxIdleTimeMS, settings.getMaxConnectionIdleTime(MILLISECONDS));
     assertEquals(maxLifeTimeMS, settings.getMaxConnectionLifeTime(MILLISECONDS));
-    assertEquals(waitQueueMultiple, 5432);
     assertEquals(waitQueueTimeoutMS, settings.getMaxWaitTime(MILLISECONDS));
     assertEquals(maintenanceInitialDelayMS, settings.getMaintenanceInitialDelay(MILLISECONDS));
     assertEquals(maintenanceFrequencyMS, settings.getMaintenanceFrequency(MILLISECONDS));
