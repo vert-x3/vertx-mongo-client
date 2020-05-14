@@ -87,7 +87,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Context context = vertx.getOrCreateContext();
     context.addCloseHook(this);
     this.holder = lookupHolder(dataSourceName, config);
-    this.mongo = holder.mongo();
+    this.mongo = holder.mongo(vertx);
     this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
@@ -100,7 +100,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Context context = vertx.getOrCreateContext();
     context.addCloseHook(this);
     this.holder = lookupHolder(dataSourceName, config);
-    this.mongo = holder.mongo(settings);
+    this.mongo = holder.mongo(vertx, settings);
     this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
@@ -1052,18 +1052,18 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       this.closeRunner = closeRunner;
     }
 
-    synchronized com.mongodb.reactivestreams.client.MongoClient mongo() {
+    synchronized com.mongodb.reactivestreams.client.MongoClient mongo(Vertx vertx) {
       if (mongo == null) {
-        MongoClientOptionsParser parser = new MongoClientOptionsParser(config);
+        MongoClientOptionsParser parser = new MongoClientOptionsParser(vertx, config);
         mongo = MongoClients.create(parser.settings());
         db = mongo.getDatabase(parser.database());
       }
       return mongo;
     }
 
-    synchronized com.mongodb.reactivestreams.client.MongoClient mongo(MongoClientSettings settings) {
+    synchronized com.mongodb.reactivestreams.client.MongoClient mongo(Vertx vertx, MongoClientSettings settings) {
       if (mongo == null) {
-        MongoClientOptionsParser parser = new MongoClientOptionsParser(config);
+        MongoClientOptionsParser parser = new MongoClientOptionsParser(vertx, config);
         mongo = MongoClients.create(settings);
         db = mongo.getDatabase(parser.database());
       }

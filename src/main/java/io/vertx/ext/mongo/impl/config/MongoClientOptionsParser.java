@@ -3,6 +3,7 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.*;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.connection.*;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
@@ -24,7 +25,7 @@ public class MongoClientOptionsParser {
   private final MongoClientSettings settings;
   private final String database;
 
-  public MongoClientOptionsParser(JsonObject config) {
+  public MongoClientOptionsParser(Vertx vertx, JsonObject config) {
     Objects.requireNonNull(config);
 
     MongoClientSettings.Builder options = MongoClientSettings.builder();
@@ -60,7 +61,7 @@ public class MongoClientOptionsParser {
     new StreamTypeParser(config).streamFactory().ifPresent(options::streamFactoryFactory);
 
     // SSLSettings
-    SslSettings sslSettings = new SSLSettingsParser(connectionString, config).settings();
+    SslSettings sslSettings = new SSLSettingsParser(connectionString, config).settings(vertx);
     options.applyToSslSettings(builder -> builder.applySettings(sslSettings));
 
     // WriteConcern
