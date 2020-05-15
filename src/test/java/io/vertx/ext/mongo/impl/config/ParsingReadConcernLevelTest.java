@@ -1,9 +1,12 @@
 package io.vertx.ext.mongo.impl.config;
 
 import com.mongodb.ReadConcern;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -11,6 +14,17 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnitParamsRunner.class)
 public class ParsingReadConcernLevelTest {
+  private Vertx vertx;
+
+  @Before
+  public void setUp() {
+    vertx = Vertx.vertx();
+  }
+
+  @After
+  public void tearDown() {
+    vertx.close();
+  }
 
   @Parameters(method = "validReadConcernValues")
   @Test
@@ -22,7 +36,7 @@ public class ParsingReadConcernLevelTest {
     );
 
     // when
-    final ReadConcern parsedReadConcern = new MongoClientOptionsParser(configWithConnectionString)
+    final ReadConcern parsedReadConcern = new MongoClientOptionsParser(vertx, configWithConnectionString)
       .settings()
       .getReadConcern();
 
@@ -39,7 +53,7 @@ public class ParsingReadConcernLevelTest {
     );
 
     // when
-    new MongoClientOptionsParser(configWithConnectionString).settings().getReadConcern();
+    new MongoClientOptionsParser(vertx, configWithConnectionString).settings().getReadConcern();
   }
 
   @Parameters(method = "validReadConcernValues")
@@ -51,7 +65,7 @@ public class ParsingReadConcernLevelTest {
       .put("readConcernLevel", readConcernString);
 
     // when
-    final ReadConcern parsedReadConcern = new MongoClientOptionsParser(configWithReadConcernAsSeparateProperty)
+    final ReadConcern parsedReadConcern = new MongoClientOptionsParser(vertx, configWithReadConcernAsSeparateProperty)
       .settings()
       .getReadConcern();
 
@@ -67,7 +81,7 @@ public class ParsingReadConcernLevelTest {
       .put("readConcernLevel", "unrecognized");
 
     // when
-    new MongoClientOptionsParser(configWithReadConcernAsSeparateProperty).settings().getReadConcern();
+    new MongoClientOptionsParser(vertx, configWithReadConcernAsSeparateProperty).settings().getReadConcern();
   }
 
   @Test
@@ -79,7 +93,7 @@ public class ParsingReadConcernLevelTest {
     );
 
     // when
-    final ReadConcern parsedReadConcern = new MongoClientOptionsParser(configWithConnectionString)
+    final ReadConcern parsedReadConcern = new MongoClientOptionsParser(vertx, configWithConnectionString)
       .settings()
       .getReadConcern();
 
@@ -95,7 +109,7 @@ public class ParsingReadConcernLevelTest {
       .put("readConcernLevel", "linearizable");
 
     // when
-    final ReadConcern parsedReadConcern = new MongoClientOptionsParser(configWithReadConcernPassedTwice)
+    final ReadConcern parsedReadConcern = new MongoClientOptionsParser(vertx, configWithReadConcernPassedTwice)
       .settings()
       .getReadConcern();
 
