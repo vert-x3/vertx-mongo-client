@@ -74,6 +74,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   private static final String DS_LOCAL_MAP_NAME = "__vertx.MongoClient.datasources";
 
   private final VertxInternal vertx;
+  private final ContextInternal creatingContext;
   protected com.mongodb.reactivestreams.client.MongoClient mongo;
 
   private final MongoHolder holder;
@@ -84,11 +85,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Objects.requireNonNull(config);
     Objects.requireNonNull(dataSourceName);
     this.vertx = (VertxInternal) vertx;
-    Context context = vertx.getOrCreateContext();
-    context.addCloseHook(this);
+    this.creatingContext = this.vertx.getOrCreateContext();
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo(vertx);
     this.useObjectId = config.getBoolean("useObjectId", false);
+
+    creatingContext.addCloseHook(this);
   }
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName, MongoClientSettings settings) {
@@ -97,22 +99,24 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Objects.requireNonNull(dataSourceName);
     Objects.requireNonNull(settings);
     this.vertx = (VertxInternal) vertx;
-    Context context = vertx.getOrCreateContext();
-    context.addCloseHook(this);
+    this.creatingContext = this.vertx.getOrCreateContext();
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo(vertx, settings);
     this.useObjectId = config.getBoolean("useObjectId", false);
+
+    creatingContext.addCloseHook(this);
   }
 
   @Override
   public void close(Promise<Void> completionHandler) {
-    Future<Void> future = close();
-    setHandler(future, completionHandler);
+    holder.close();
+    completionHandler.complete();
   }
 
   @Override
   public Future<Void> close() {
     holder.close();
+    creatingContext.removeCloseHook(this);
     return vertx.getOrCreateContext().succeededFuture();
   }
 
