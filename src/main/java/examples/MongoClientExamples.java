@@ -20,13 +20,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.docgen.Source;
-import io.vertx.ext.mongo.GridFsDownloadOptions;
-import io.vertx.ext.mongo.FindOptions;
-import io.vertx.ext.mongo.GridFsUploadOptions;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.MongoGridFsClient;
-import io.vertx.ext.mongo.UpdateOptions;
+import io.vertx.ext.mongo.*;
 import org.bson.types.ObjectId;
 
 import java.util.List;
@@ -275,41 +269,30 @@ public class MongoClientExamples {
       .put("title", "The Hobbit")
       //ISO-8601 date
       .put("publicationDate", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00"));
-    mongoService.save("publishedBooks", document, res -> {
+    mongoService.save("publishedBooks", document).compose(id -> {
+      return mongoService.findOne("publishedBooks", new JsonObject().put("_id", id), null);
+    }).onComplete(res -> {
       if (res.succeeded()) {
-        String id = res.result();
-        mongoService.findOne("publishedBooks", new JsonObject().put("_id", id), null, res2 -> {
-          if (res2.succeeded()) {
-            System.out.println("To retrieve ISO-8601 date : "
-              + res2.result().getJsonObject("publicationDate").getString("$date"));
-          } else {
-            res2.cause().printStackTrace();
-          }
-        });
+        System.out.println("To retrieve ISO-8601 date : "
+          + res.result().getJsonObject("publicationDate").getString("$date"));
       } else {
         res.cause().printStackTrace();
       }
     });
   }
 
-  @Source(translate = false)
   public void example14_01_dl(MongoClient mongoService) {
     //This could be a serialized object or the contents of a pdf file, etc,  in real life
     byte[] binaryObject = new byte[40];
     JsonObject document = new JsonObject()
       .put("name", "Alan Turing")
       .put("binaryStuff", new JsonObject().put("$binary", binaryObject));
-    mongoService.save("smartPeople", document, res -> {
+    mongoService.save("smartPeople", document).compose(id -> {
+      return mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null);
+    }).onComplete(res -> {
       if (res.succeeded()) {
-        String id = res.result();
-        mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
-          if (res2.succeeded()) {
-            byte[] reconstitutedBinaryObject = res2.result().getJsonObject("binaryStuff").getBinary("$binary");
-            //This could now be de-serialized into an object in real life
-          } else {
-            res2.cause().printStackTrace();
-          }
-        });
+        byte[] reconstitutedBinaryObject = res.result().getJsonObject("binaryStuff").getBinary("$binary");
+        //This could now be de-serialized into an object in real life
       } else {
         res.cause().printStackTrace();
       }
@@ -322,17 +305,12 @@ public class MongoClientExamples {
     JsonObject document = new JsonObject()
       .put("name", "Alan Turing")
       .put("binaryStuff", new JsonObject().put("$binary", base64EncodedString));
-    mongoService.save("smartPeople", document, res -> {
+    mongoService.save("smartPeople", document).compose(id -> {
+      return mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null);
+    }).onComplete(res -> {
       if (res.succeeded()) {
-        String id = res.result();
-        mongoService.findOne("smartPeople", new JsonObject().put("_id", id), null, res2 -> {
-          if (res2.succeeded()) {
-            String reconstitutedBase64EncodedString = res2.result().getJsonObject("binaryStuff").getString("$binary");
-            //This could now converted back to bytes from the base 64 string
-          } else {
-            res2.cause().printStackTrace();
-          }
-        });
+        String reconstitutedBase64EncodedString = res.result().getJsonObject("binaryStuff").getString("$binary");
+        //This could now converted back to bytes from the base 64 string
       } else {
         res.cause().printStackTrace();
       }
@@ -344,18 +322,12 @@ public class MongoClientExamples {
     JsonObject document = new JsonObject()
       .put("name", "Stephen Hawking")
       .put("individualId", new JsonObject().put("$oid", individualId));
-    mongoService.save("smartPeople", document, res -> {
+    mongoService.save("smartPeople", document).compose(id -> {
+      JsonObject query = new JsonObject().put("_id", id);
+      return mongoService.findOne("smartPeople", query, null);
+    }).onComplete(res -> {
       if (res.succeeded()) {
-        String id = res.result();
-        JsonObject query = new JsonObject().put("_id", id);
-        mongoService.findOne("smartPeople", query, null, res2 -> {
-          if (res2.succeeded()) {
-            String reconstitutedIndividualId = res2.result()
-              .getJsonObject("individualId").getString("$oid");
-          } else {
-            res2.cause().printStackTrace();
-          }
-        });
+        String reconstitutedIndividualId = res.result().getJsonObject("individualId").getString("$oid");
       } else {
         res.cause().printStackTrace();
       }
@@ -365,11 +337,11 @@ public class MongoClientExamples {
   public void example16(MongoClient mongoClient) {
     JsonObject document = new JsonObject()
       .put("title", "The Hobbit");
-    mongoClient.save("books", document, res -> {
+    mongoClient.save("books", document).compose(v -> {
+      return mongoClient.distinct("books", "title", String.class.getName());
+    }).onComplete(res -> {
       if (res.succeeded()) {
-        mongoClient.distinct("books", "title", String.class.getName(), res2 -> {
-          System.out.println("Title is : " + res2.result().getJsonArray(0));
-        });
+        System.out.println("Title is : " + res.result().getJsonArray(0));
       } else {
         res.cause().printStackTrace();
       }
@@ -396,11 +368,11 @@ public class MongoClientExamples {
     JsonObject query = new JsonObject()
       .put("publicationDate",
         new JsonObject().put("$gte", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00")));
-    mongoClient.save("books", document, res -> {
+    mongoClient.save("books", document).compose(v -> {
+      return mongoClient.distinctWithQuery("books", "title", String.class.getName(), query);
+    }).onComplete(res -> {
       if (res.succeeded()) {
-        mongoClient.distinctWithQuery("books", "title", String.class.getName(), query, res2 -> {
-          System.out.println("Title is : " + res2.result().getJsonArray(0));
-        });
+        System.out.println("Title is : " + res.result().getJsonArray(0));
       }
     });
   }
