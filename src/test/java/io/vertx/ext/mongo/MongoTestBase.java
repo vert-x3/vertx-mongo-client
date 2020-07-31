@@ -21,7 +21,10 @@ import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.IMongodConfig;
 import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Feature;
+import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
 import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.mongo.distribution.Versions;
 import de.flapdoodle.embed.process.runtime.Network;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -70,7 +73,7 @@ public abstract class MongoTestBase extends VertxTestBase {
   public static void startMongo() throws Exception {
     String uri = getConnectionString();
     if (uri == null ) {
-      Version.Main version = Version.Main.V3_4;
+      Version.Main version = Version.Main.V4_0;
       int port = 27018;
       System.out.println("Starting Mongo " + version + " on port " + port);
       IMongodConfig config = new MongodConfigBuilder().
