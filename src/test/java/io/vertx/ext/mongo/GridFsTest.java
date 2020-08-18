@@ -2,11 +2,9 @@ package io.vertx.ext.mongo;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.FutureFactory;
 import org.junit.Test;
 
 import java.io.File;
@@ -26,8 +24,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class GridFsTest extends MongoTestBase {
 
   protected MongoClient mongoClient;
-
-  private FutureFactory factory = ServiceHelper.loadFactory(FutureFactory.class);
 
   @Override
   public void setUp() throws Exception {
@@ -364,28 +360,28 @@ public class GridFsTest extends MongoTestBase {
     AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
     AtomicReference<String> idCreated = new AtomicReference<>();
 
-    Promise<MongoGridFsClient> gridFsClientPromise = factory.promise();
+    Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
     mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
-      Promise<Void> dropPromise = factory.promise();
+      Promise<Void> dropPromise = Promise.promise();
       mongoGridFsClient.drop(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
-      Promise<String> uploadPromise = factory.promise();
+      Promise<String> uploadPromise = Promise.promise();
       gridFsClient.get().uploadFile(fileName, uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
       idCreated.set(id);
-      Promise<AsyncFile> openPromise = factory.promise();
+      Promise<AsyncFile> openPromise = Promise.promise();
       vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true), openPromise);
       return openPromise.future();
     }).compose(asyncFile -> {
-      Promise<Long> downloadedPromise = factory.promise();
+      Promise<Long> downloadedPromise = Promise.promise();
       gridFsClient.get().downloadById(asyncFile, idCreated.get(), downloadedPromise);
       return downloadedPromise.future();
     }).compose(length -> {
