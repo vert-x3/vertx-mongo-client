@@ -28,6 +28,7 @@ public class GridFsTest extends MongoTestBase {
   @Override
   public void setUp() throws Exception {
     super.setUp();
+    disableThreadChecks();
     JsonObject config = getConfig();
     mongoClient = MongoClient.create(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
