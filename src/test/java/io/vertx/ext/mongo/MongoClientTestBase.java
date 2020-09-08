@@ -168,10 +168,11 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
     JsonObject command = new JsonObject()
       .put("aggregate", "collection_name")
-      .put("pipeline", new JsonArray());
+      .put("pipeline", new JsonArray())
+      .put("cursor", new JsonObject());
 
     mongoClient.runCommand("aggregate", command, onSuccess(resultObj -> {
-      JsonArray resArr = resultObj.getJsonArray("result");
+      JsonArray resArr = resultObj.getJsonObject("cursor").getJsonArray("firstBatch");
       assertNotNull(resArr);
       assertEquals(0, resArr.size());
       testComplete();

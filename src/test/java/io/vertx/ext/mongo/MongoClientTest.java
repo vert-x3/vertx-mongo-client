@@ -244,7 +244,7 @@ public class MongoClientTest extends MongoClientTestBase {
 
   private void upsertDoc(String collection, JsonObject docToInsert, String expectedId, Consumer<JsonObject> doneFunction) {
     JsonObject insertStatement = new JsonObject()
-      .put("$set", docToInsert);
+      .put("$setOnInsert", docToInsert);
 
     upsertDoc(collection, docToInsert, insertStatement, expectedId, doneFunction);
   }
