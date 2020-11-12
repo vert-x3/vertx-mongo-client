@@ -3,6 +3,8 @@ package io.vertx.ext.mongo;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
 @DataObject
 public class IndexModel {
   private JsonObject key;
@@ -43,5 +45,19 @@ public class IndexModel {
       + "keys="+key
       + ", options="+options
       + '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    IndexModel that = (IndexModel) o;
+    return Objects.equals(key, that.key) &&
+      Objects.equals(options, that.options);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, options);
   }
 }
