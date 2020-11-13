@@ -137,7 +137,7 @@ Set the sort document
 |===
 ^|Name | Type ^| Description
 |[[key]]`@key`|`Json object`|+++
-Get the index key
+Sets the index key
 +++
 |===
 

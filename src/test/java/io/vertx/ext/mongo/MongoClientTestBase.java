@@ -94,11 +94,11 @@ public abstract class MongoClientTestBase extends MongoTestBase {
     mongoClient.createCollection(collection, onSuccess(res -> {
       List<IndexModel> indexes = new ArrayList<>();
       JsonObject key = new JsonObject().put("field", 1);
-      IndexModel index = new IndexModel(key);
+      IndexModel index = new IndexModel().setKey(key);
       indexes.add(index);
 
       JsonObject key2 = new JsonObject().put("field1", 1);
-      IndexModel index2 = new IndexModel(key2);
+      IndexModel index2 = new IndexModel().setKey(key2);
       indexes.add(index2);
 
       mongoClient.createIndexes(collection, indexes, onSuccess(res2 -> {
