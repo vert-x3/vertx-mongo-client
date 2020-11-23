@@ -2,6 +2,7 @@ package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+
 import java.util.Objects;
 
 @DataObject(generateConverter = true)
@@ -17,6 +18,7 @@ public class IndexModel {
 
   /**
    * Json constructor
+   *
    * @param json - the json object
    */
   public IndexModel(JsonObject json) {
@@ -30,12 +32,16 @@ public class IndexModel {
 
   /**
    * Get the index key
+   *
    * @return - the index keys
    */
-  public JsonObject getKey() { return key; }
+  public JsonObject getKey() {
+    return key;
+  }
 
   /**
    * Sets the index key
+   *
    * @param key - the index keys
    * @return this for fluency
    */
@@ -46,12 +52,16 @@ public class IndexModel {
 
   /**
    * Get the index options
+   *
    * @return - the index options
    */
-  public IndexOptions getOptions() { return options; }
+  public IndexOptions getOptions() {
+    return options;
+  }
 
   /**
    * Sets the index options
+   *
    * @param options - the index options
    * @return this for fluency
    */
@@ -62,6 +72,7 @@ public class IndexModel {
 
   /**
    * Convert to JSON
+   *
    * @return the JSON
    */
   public JsonObject toJson() {
@@ -73,8 +84,8 @@ public class IndexModel {
   @Override
   public String toString() {
     return "IndexModel{"
-      + "keys="+key
-      + ", options="+options
+      + "keys=" + key
+      + ", options=" + options
       + '}';
   }
 
