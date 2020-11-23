@@ -1,6 +1,6 @@
 = Mongo Client
 
-image:https://travis-ci.org/vert-x3/vertx-mongo-client.svg?branch=master["Build Status", link="https://travis-ci.org/vert-x3/vertx-mongo-client"]
+image:https://github.com/vert-x3/vertx-mongo-client/workflows/CI/badge.svg?branch=master["Build Status", link="https://github.com/vert-x3/vertx-mongo-client/actions?query=workflow%3ACI"]
 
 An asynchronous client for interacting with a MongoDB database
 
