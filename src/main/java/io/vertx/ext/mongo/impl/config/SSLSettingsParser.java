@@ -3,13 +3,11 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.ConnectionString;
 import com.mongodb.connection.SslSettings;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.impl.KeyStoreHelper;
 import io.vertx.core.net.impl.TrustAllTrustManager;
 
 import javax.net.ssl.*;
@@ -53,12 +51,11 @@ class SSLSettingsParser {
         log.warn("Mongo client has been set to trust ALL certificates, this can open you up to security issues. Make sure you know the risks.");
         tms = new TrustManager[]{TrustAllTrustManager.INSTANCE};
       } else {
-        final KeyStoreHelper pemTrustStore = KeyStoreHelper.create((VertxInternal) vertx, pemTrustOptions);
-        tms = pemTrustStore.getTrustMgrs((VertxInternal) vertx);
+        tms = pemTrustOptions.getTrustManagerFactory((Vertx) vertx).getTrustManagers();
       }
-      final KeyStoreHelper pemKeyCertStore = KeyStoreHelper.create((VertxInternal) vertx, pemKeyCertOptions);
       final SSLContext context = SSLContext.getInstance("TLS");
-      context.init(pemKeyCertStore.getKeyMgr(), tms, new SecureRandom());
+      KeyManager[] mgr = pemKeyCertOptions.getKeyManagerFactory(vertx).getKeyManagers();
+      context.init(mgr, tms, new SecureRandom());
       builder.context(context);
     } catch (final Exception e) {
       throw new IllegalArgumentException(e);
