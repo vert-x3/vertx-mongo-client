@@ -50,8 +50,10 @@ class SSLSettingsParser {
       if (config.getBoolean("trustAll", false)) {
         log.warn("Mongo client has been set to trust ALL certificates, this can open you up to security issues. Make sure you know the risks.");
         tms = new TrustManager[]{TrustAllTrustManager.INSTANCE};
+      } else if (!pemTrustOptions.getCertPaths().isEmpty()) {
+        tms = pemTrustOptions.getTrustManagerFactory(vertx).getTrustManagers();
       } else {
-        tms = pemTrustOptions.getTrustManagerFactory((Vertx) vertx).getTrustManagers();
+        tms = null;
       }
       final SSLContext context = SSLContext.getInstance("TLS");
       KeyManager[] mgr = pemKeyCertOptions.getKeyManagerFactory(vertx).getKeyManagers();
