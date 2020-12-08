@@ -1,12 +1,11 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 
 /**
  * Contains all data needed for one operation of a bulk write operation.
- * 
+ *
  * @author sschmitt
  *
  */
@@ -23,17 +22,6 @@ public class BulkOperation {
    */
   private static final boolean DEFAULT_UPSERT = false;
 
-  /**
-   * Enum for the different possible operations
-   */
-  @VertxGen
-  public enum BulkOperationType {
-    UPDATE,
-    REPLACE,
-    INSERT,
-    DELETE;
-  }
-
   private BulkOperationType type;
   private JsonObject filter;
   private JsonObject document;
@@ -42,7 +30,7 @@ public class BulkOperation {
 
   /**
    * Constructor for a new instance with the given type
-   * 
+   *
    * @param type
    *          the type
    */
@@ -56,7 +44,7 @@ public class BulkOperation {
 
   /**
    * Json constructor
-   * 
+   *
    * @param json
    *          the json object
    */
@@ -72,7 +60,7 @@ public class BulkOperation {
 
   /**
    * Generate a json from this object
-   * 
+   *
    * @return the json representation
    */
   public JsonObject toJson() {
@@ -87,7 +75,7 @@ public class BulkOperation {
 
   /**
    * Create a new delete operation with the given filter
-   * 
+   *
    * @param filter
    *          the filter
    * @return a new delete operation instance
@@ -98,7 +86,7 @@ public class BulkOperation {
 
   /**
    * Create a new insert operation with the given document
-   * 
+   *
    * @param document
    *          the document to insert
    * @return a new insert operation instance
@@ -109,7 +97,7 @@ public class BulkOperation {
 
   /**
    * Create a new replace operation with the given filter and replace document
-   * 
+   *
    * @param filter
    *          the filter
    * @param document
@@ -122,7 +110,7 @@ public class BulkOperation {
 
   /**
    * Create a new replace operation with the given filter, replace document, and the upsert flag
-   * 
+   *
    * @param filter
    *          the filter
    * @param document
@@ -137,7 +125,7 @@ public class BulkOperation {
 
   /**
    * Create a new update operation with the given filter and update document
-   * 
+   *
    * @param filter
    *          the filter
    * @param document
@@ -150,7 +138,7 @@ public class BulkOperation {
 
   /**
    * Create a new update operation with the given filter, update document, the upsert flag, and multi flag
-   * 
+   *
    * @param filter
    *          the filter
    * @param document
@@ -168,7 +156,7 @@ public class BulkOperation {
 
   /**
    * Returns the operation type
-   * 
+   *
    * @return the operation type
    */
   public BulkOperationType getType() {
@@ -177,7 +165,7 @@ public class BulkOperation {
 
   /**
    * Sets the operation type
-   * 
+   *
    * @param type
    *          the operation type
    * @return this for fluency
@@ -189,7 +177,7 @@ public class BulkOperation {
 
   /**
    * Returns the filter document, used by replace, update, and delete operations
-   * 
+   *
    * @return the filter document
    */
   public JsonObject getFilter() {
@@ -198,7 +186,7 @@ public class BulkOperation {
 
   /**
    * Sets the filter document, used by replace, update, and delete operations
-   * 
+   *
    * @param filter
    *          the filter document
    * @return this for fluency
@@ -210,7 +198,7 @@ public class BulkOperation {
 
   /**
    * Returns the document, used by insert, replace, and update operations
-   * 
+   *
    * @return the document
    */
   public JsonObject getDocument() {
@@ -219,7 +207,7 @@ public class BulkOperation {
 
   /**
    * Sets the document, used by insert, replace, and update operations
-   * 
+   *
    * @param document
    *          the document
    * @return this for fluency
@@ -231,7 +219,7 @@ public class BulkOperation {
 
   /**
    * Returns the upsert flag, used by update and replace operations
-   * 
+   *
    * @return the upsert flag
    */
   public boolean isUpsert() {
@@ -240,7 +228,7 @@ public class BulkOperation {
 
   /**
    * Sets the upsert flag, used by update and replace operations
-   * 
+   *
    * @param upsert
    *          the upsert flag
    * @return this for fluency
@@ -252,7 +240,7 @@ public class BulkOperation {
 
   /**
    * Returns the multi flag, used by update and delete operations
-   * 
+   *
    * @return the multi flag
    */
   public boolean isMulti() {
@@ -261,7 +249,7 @@ public class BulkOperation {
 
   /**
    * Sets the multi flag, used by update and delete operations
-   * 
+   *
    * @param multi
    *          the mutli flag
    * @return this for fluency
