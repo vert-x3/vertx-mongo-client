@@ -13,10 +13,10 @@ public class BulkOperationTest {
     BulkOperation a = BulkOperation.createUpdate(new JsonObject(), new JsonObject());
     BulkOperation b = BulkOperation.createUpdate(new JsonObject(), new JsonObject());
 
-    a.setType(BulkOperation.BulkOperationType.UPDATE);
-    b.setType(BulkOperation.BulkOperationType.INSERT);
+    a.setType(BulkOperationType.UPDATE);
+    b.setType(BulkOperationType.INSERT);
     assertNotEquals(a, b);
-    b.setType(BulkOperation.BulkOperationType.UPDATE);
+    b.setType(BulkOperationType.UPDATE);
     assertEquals(a, b);
 
     a.setFilter(new JsonObject().put("foo", "bar"));
@@ -51,9 +51,9 @@ public class BulkOperationTest {
     BulkOperation a = BulkOperation.createUpdate(new JsonObject().put("foo", "bar"), new JsonObject().put("bar", "foo"), true, true);
     int hash = a.hashCode();
 
-    a.setType(BulkOperation.BulkOperationType.INSERT);
+    a.setType(BulkOperationType.INSERT);
     assertNotEquals(hash, a.hashCode());
-    a.setType(BulkOperation.BulkOperationType.UPDATE);
+    a.setType(BulkOperationType.UPDATE);
     assertEquals(hash, a.hashCode());
 
     a.setFilter(new JsonObject().put("foo", "eek"));
