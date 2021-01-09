@@ -365,11 +365,53 @@ public class JsonObjectCodecTest {
   }
 
   @Test
+  public void writeDocument_supportNumberInt() {
+
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    int i = 24;
+
+    JsonObject value = new JsonObject();
+
+    value.put("test", i);
+
+    BsonDocument bsonResult = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+    codec.writeDocument(writer,"", value, EncoderContext.builder().build());
+
+    BsonValue resutlValue = bsonResult.get("test");
+    assertEquals(BsonType.INT32, resutlValue.getBsonType());
+
+    BsonInt32 bsonInt32 = resutlValue.asInt32();
+    assertEquals(i, bsonInt32.getValue());
+  }
+
+  @Test
+  public void readDocument_supportNumberInt() {
+
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    int i = 24;
+
+    BsonDocument bson = new BsonDocument();
+    bson.append("test", new BsonInt32(i));
+
+    BsonDocumentReader reader = new BsonDocumentReader(bson);
+
+    JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
+
+    int numberIntValue = result.getInteger("test");
+
+    assertEquals(i, numberIntValue);
+  }
+
+  @Test
   public void writeDocument_supportNumberLong() {
 
     JsonObjectCodec codec = new JsonObjectCodec(options);
 
-    long l = 248934988;
+    long l = Long.MAX_VALUE;
 
     JsonObject value = new JsonObject();
 
@@ -394,11 +436,11 @@ public class JsonObjectCodecTest {
 
     JsonObjectCodec codec = new JsonObjectCodec(options);
 
-    long v = 24;
+    long l = Long.MAX_VALUE;
 
     BsonDocument bson = new BsonDocument();
     BsonDocument numberLong = new BsonDocument();
-    numberLong.append(JsonObjectCodec.LONG_FIELD, new BsonInt64(v));
+    numberLong.append(JsonObjectCodec.LONG_FIELD, new BsonInt64(l));
     bson.append("test", numberLong);
 
     BsonDocumentReader reader = new BsonDocumentReader(bson);
@@ -407,7 +449,91 @@ public class JsonObjectCodecTest {
 
     long numberLongValue = result.getJsonObject("test").getLong(JsonObjectCodec.LONG_FIELD);
 
-    assertEquals(v, numberLongValue);
+    assertEquals(l, numberLongValue);
+  }
+
+  @Test
+  public void writeDocument_supportNumberDouble() {
+
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    double d = Double.MAX_VALUE;
+
+    JsonObject value = new JsonObject();
+
+    value.put("test", d);
+
+    BsonDocument bsonResult = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+    codec.writeDocument(writer,"", value, EncoderContext.builder().build());
+
+    BsonValue resutlValue = bsonResult.get("test");
+    assertEquals(BsonType.DOUBLE, resutlValue.getBsonType());
+
+    BsonDouble bsonDouble = resutlValue.asDouble();
+    assertEquals(d, bsonDouble.getValue(), 0.0d);
+  }
+
+  @Test
+  public void readDocument_supportNumberDouble() {
+
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    double d = Double.MAX_VALUE;
+
+    BsonDocument bson = new BsonDocument();
+    bson.append("test", new BsonDouble(d));
+
+    BsonDocumentReader reader = new BsonDocumentReader(bson);
+
+    JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
+
+    double numberDoubleValue = result.getDouble("test");
+
+    assertEquals(d, numberDoubleValue, 0.0d);
+  }
+
+  @Test
+  public void writeDocument_supportNumberFloat() {
+
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    float f = 1.123f;
+
+    JsonObject value = new JsonObject();
+
+    value.put("test", f);
+
+    BsonDocument bsonResult = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+    codec.writeDocument(writer,"", value, EncoderContext.builder().build());
+
+    BsonValue resutlValue = bsonResult.get("test");
+    assertEquals(BsonType.DOUBLE, resutlValue.getBsonType());
+
+    BsonDouble bsonDouble = resutlValue.asDouble();
+    assertEquals(f, bsonDouble.getValue(), 0.0d);
+  }
+
+  @Test
+  public void readDocument_supportNumberFloat() {
+
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    float f = 1.123f;
+
+    BsonDocument bson = new BsonDocument();
+    bson.append("test", new BsonDouble(f));
+
+    BsonDocumentReader reader = new BsonDocumentReader(bson);
+
+    JsonObject result = codec.readDocument(reader, DecoderContext.builder().build());
+
+    float numberFloatValue = result.getFloat("test");
+
+    assertEquals(f, numberFloatValue, 0.0d);
   }
 
   @Test
@@ -452,5 +578,23 @@ public class JsonObjectCodecTest {
     String decimalValue = result.getJsonObject("test").getString(JsonObjectCodec.DECIMAL_FIELD);
 
     assertEquals(v, decimalValue);
+  }
+
+  @Test
+  public void writeDocument_supportBsonStringFromInstant() {
+    JsonObjectCodec codec = new JsonObjectCodec(options);
+
+    Instant now = Instant.now();
+    JsonObject value = new JsonObject();
+    value.put("test", now);
+
+    BsonDocument bsonResult = new BsonDocument();
+    BsonDocumentWriter writer = new BsonDocumentWriter(bsonResult);
+
+    codec.writeDocument(writer, "", value, EncoderContext.builder().build());
+
+    BsonValue resultValue = bsonResult.get("test");
+    assertEquals(BsonType.STRING, resultValue.getBsonType());
+    assertEquals(now.toString(), resultValue.asString().getValue());
   }
 }

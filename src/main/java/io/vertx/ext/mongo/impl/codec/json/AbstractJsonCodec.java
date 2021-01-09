@@ -159,6 +159,8 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
       return BsonType.NULL;
     } else if (value instanceof Boolean) {
       return BsonType.BOOLEAN;
+    } else if (value instanceof Float) {
+      return BsonType.DOUBLE;
     } else if (value instanceof Double) {
       return BsonType.DOUBLE;
     } else if (value instanceof Integer) {
@@ -202,7 +204,11 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
   }
 
   protected void writeDouble(BsonWriter writer, String name, Object value, EncoderContext ctx) {
-    writer.writeDouble((double) value);
+    if (value instanceof Float) {
+      writer.writeDouble(((Float) value).doubleValue());
+    } else {
+      writer.writeDouble((double) value);
+    }
   }
 
   protected Object readInt32(BsonReader reader, DecoderContext ctx) {
