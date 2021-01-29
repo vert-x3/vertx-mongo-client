@@ -11,7 +11,7 @@ as it natively handles JSON (BSON) documents.
 * Supports a majority of the configuration options from the MongoDB Java Driver
 
 This client is based on the
-http://mongodb.github.io/mongo-java-driver/3.2/driver-async/getting-started[MongoDB Async Driver].
+https://mongodb.github.io/mongo-java-driver/4.1/driver-reactive/getting-started/quick-start/[MongoDB ReactiveStreams Driver].
 
 == Using Vert.x MongoDB Client
 
