@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo.impl.config;
 
 import com.mongodb.AuthenticationMechanism;
+import com.mongodb.ConnectionString;
 import com.mongodb.MongoCredential;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
@@ -14,6 +15,28 @@ import static org.junit.Assert.*;
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 public class CredentialListParserTest {
+
+  @Test
+  public void testConnectionString() {
+    String username = TestUtils.randomAlphaString(8);
+    String password = TestUtils.randomAlphaString(20);
+
+    ConnectionString connectionString = new ConnectionString(
+      String.format(
+        "mongodb://%s:%s@%s/%s",
+        username,
+        password,
+        "localhost:27017",
+        "my-datasource"));
+
+    List<MongoCredential> credentials = new CredentialListParser(connectionString, null).credentials();
+    assertEquals(1, credentials.size());
+    MongoCredential credential = credentials.get(0);
+    assertEquals(username, credential.getUserName());
+    assertArrayEquals(password.toCharArray(), credential.getPassword());
+    assertEquals("my-datasource", credential.getSource());
+  }
+
   @Test
   public void testSimpleAuth() {
     JsonObject config = new JsonObject().put("db_name", "my-datasource");
@@ -23,7 +46,7 @@ public class CredentialListParserTest {
     config.put("password", password);
 
 
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -42,7 +65,7 @@ public class CredentialListParserTest {
     config.put("password", password);
     config.put("authSource", authSource);
 
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -59,7 +82,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "GSSAPI");
 
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -79,7 +102,7 @@ public class CredentialListParserTest {
     config.put("authMechanism", "GSSAPI");
     config.put("gssapiServiceName", serviceName);
 
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -100,7 +123,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "PLAIN");
 
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -119,7 +142,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "MONGODB-X509");
 
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -135,7 +158,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "MONGODB-X509");
 
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertNull(credential.getUserName());
@@ -155,7 +178,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "SCRAM-SHA-1");
 
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -176,7 +199,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "SCRAM-SHA-256");
 
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(null, config).credentials();
     assertEquals(1, credentials.size());
     MongoCredential credential = credentials.get(0);
     assertEquals(username, credential.getUserName());
@@ -197,7 +220,7 @@ public class CredentialListParserTest {
     config.put("authSource", authSource);
     config.put("authMechanism", "FOO-BAR");
 
-    new CredentialListParser(config).credentials();
+    new CredentialListParser(null, config).credentials();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -206,6 +229,6 @@ public class CredentialListParserTest {
     String username = TestUtils.randomAlphaString(8);
     config.put("username", username);
 
-    new CredentialListParser(config).credentials();
+    new CredentialListParser(null, config).credentials();
   }
 }
