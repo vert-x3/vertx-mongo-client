@@ -1,7 +1,6 @@
 package io.vertx.ext.mongo.impl.config;
 
 import com.mongodb.*;
-import com.mongodb.MongoClientSettings;
 import com.mongodb.connection.*;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -49,7 +48,7 @@ public class MongoClientOptionsParser {
     // The previous mongo client supported credentials list but their new implementation supports only
     // one credentials. The deprecated code path resorts to using the last credentials if a list is passed
     // we are doing the same here.
-    List<MongoCredential> credentials = new CredentialListParser(config).credentials();
+    List<MongoCredential> credentials = new CredentialListParser(connectionString, config).credentials();
     if (!credentials.isEmpty())
       options.credential(credentials.get(credentials.size() - 1));
 
