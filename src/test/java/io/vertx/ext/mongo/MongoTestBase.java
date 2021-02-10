@@ -16,16 +16,6 @@
 
 package io.vertx.ext.mongo;
 
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.IMongodConfig;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Feature;
-import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.mongo.distribution.Versions;
-import de.flapdoodle.embed.process.runtime.Network;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -36,8 +26,11 @@ import io.vertx.test.core.VertxTestBase;
 import org.bson.types.ObjectId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,31 +60,19 @@ public abstract class MongoTestBase extends VertxTestBase {
     return null;
   }
 
-  private static MongodExecutable exe;
+  private static MongoDBContainer mongoDBContainer;
 
   @BeforeClass
   public static void startMongo() throws Exception {
-    String uri = getConnectionString();
-    if (uri == null ) {
-      Version.Main version = Version.Main.V4_0;
-      int port = 27018;
-      System.out.println("Starting Mongo " + version + " on port " + port);
-      IMongodConfig config = new MongodConfigBuilder().
-        version(version).
-        net(new Net(port, Network.localhostIsIPv6())).
-        build();
-      exe = MongodStarter.getDefaultInstance().prepare(config);
-      exe.start();
-    } else {
-      System.out.println("Using existing Mongo " + uri);
-    }
+    int port = 27018;
+    mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
+    mongoDBContainer.setPortBindings(Collections.singletonList(port+":27017"));
+    mongoDBContainer.start();
   }
 
   @AfterClass
   public static void stopMongo() {
-    if (exe != null) {
-      exe.stop();
-    }
+    mongoDBContainer.stop();
   }
 
   protected static JsonObject getConfig() {
