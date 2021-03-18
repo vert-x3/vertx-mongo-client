@@ -105,8 +105,8 @@ public class ParsingReadConcernLevelTest {
   public void should_prefer_read_concern_passed_via_connection_string_over_property_value() throws Exception {
     // given
     final JsonObject configWithReadConcernPassedTwice = new JsonObject()
-      .put("connection_string", "mongodb://localhost:27017/mydb?replicaSet=myRs&readconcernlevel=majority")
-      .put("readConcernLevel", "linearizable");
+      .put("connection_string", "mongodb://localhost:27017/mydb?replicaSet=myRs&readconcernlevel=linearizable")
+      .put("readConcernLevel", "majority");
 
     // when
     final ReadConcern parsedReadConcern = new MongoClientOptionsParser(vertx, configWithReadConcernPassedTwice)
