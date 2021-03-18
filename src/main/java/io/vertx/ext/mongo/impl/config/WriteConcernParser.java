@@ -13,54 +13,49 @@ class WriteConcernParser {
   private final WriteConcern writeConcern;
 
   WriteConcernParser(ConnectionString connectionString, JsonObject config) {
-    WriteConcern connStringWriteConcern = null;
-    if (connectionString != null) {
-      // WRITE_CONCERN_KEYS("safe", "w", "wtimeoutms", "fsync", "journal");
-      connStringWriteConcern = connectionString.getWriteConcern();
+    WriteConcern writeConcern = fromConfig(config);
+    if (writeConcern == null && connectionString != null) {
+      writeConcern = connectionString.getWriteConcern();
     }
-    if (connStringWriteConcern != null) {
-      // Prefer connection string's write concern
-      writeConcern = connStringWriteConcern;
+    this.writeConcern = writeConcern;
+  }
+
+  private WriteConcern fromConfig(JsonObject config) {
+    WriteConcern writeConcern = null;
+    // Allow convenient string value for writeConcern e.g. ACKNOWLEDGED, SAFE, MAJORITY, etc
+    String wcs = config.getString("writeConcern");
+    if (wcs != null) {
+      writeConcern = WriteConcern.valueOf(wcs);
+      if (writeConcern == null) throw new IllegalArgumentException("Invalid WriteConcern " + wcs);
     } else {
-      // Allow convenient string value for writeConcern e.g. ACKNOWLEDGED, SAFE, MAJORITY, etc
-      WriteConcern wc;
-      String wcs = config.getString("writeConcern");
-      if (wcs != null) {
-        wc = WriteConcern.valueOf(wcs);
-        if (wc == null) throw new IllegalArgumentException("Invalid WriteConcern " + wcs);
-      } else {
-        // Support advanced write concern options. There's some inconsistencies between driver options
-        // and mongo docs [http://bit.ly/10SYO6x] but we'll be consistent with the driver for this.
-        Boolean safe = config.getBoolean("safe");
-        Object w = config.getValue("w");
-        Integer wtimeout = config.getInteger("wtimeoutMS", null);
-        Boolean j = config.getBoolean("j", null);
-        if (j == null) {
-          j = config.getBoolean("journal", null); //TODO: Inconsistency with driver and mongo docs, support both ?
-        }
-
-        if (w != null || wtimeout != null || (j != null && j)) {
-          if (w == null) {
-            wc = new WriteConcern(1);
-          } else {
-            wc = getWriteConcern(w);
-          }
-
-          if (wtimeout != null) {
-            wc = wc.withWTimeout(wtimeout, TimeUnit.MILLISECONDS);
-          }
-          if (j != null) {
-            wc = wc.withJournal(j);
-          }
-        } else if (safe != null) {
-          wc = safe ? WriteConcern.ACKNOWLEDGED : WriteConcern.UNACKNOWLEDGED;
-        } else {
-          wc = null; // no write concern
-        }
+      // Support advanced write concern options. There's some inconsistencies between driver options
+      // and mongo docs [http://bit.ly/10SYO6x] but we'll be consistent with the driver for this.
+      Boolean safe = config.getBoolean("safe");
+      Object w = config.getValue("w");
+      Integer wtimeout = config.getInteger("wtimeoutMS", null);
+      Boolean j = config.getBoolean("j", null);
+      if (j == null) {
+        j = config.getBoolean("journal", null); //TODO: Inconsistency with driver and mongo docs, support both ?
       }
 
-      writeConcern = wc;
+      if (w != null || wtimeout != null || (j != null && j)) {
+        if (w == null) {
+          writeConcern = new WriteConcern(1);
+        } else {
+          writeConcern = getWriteConcern(w);
+        }
+
+        if (wtimeout != null) {
+          writeConcern = writeConcern.withWTimeout(wtimeout, TimeUnit.MILLISECONDS);
+        }
+        if (j != null) {
+          writeConcern = writeConcern.withJournal(j);
+        }
+      } else if (safe != null) {
+        writeConcern = safe ? WriteConcern.ACKNOWLEDGED : WriteConcern.UNACKNOWLEDGED;
+      }
     }
+    return writeConcern;
   }
 
   private WriteConcern getWriteConcern(Object w) {
