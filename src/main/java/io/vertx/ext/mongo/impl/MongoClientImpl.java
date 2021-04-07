@@ -211,6 +211,18 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public io.vertx.ext.mongo.MongoClient updateCollection(String collection, JsonObject query, JsonArray update, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
+    Future<MongoClientUpdateResult> future = updateCollection(collection, query, update);
+    setHandler(future, resultHandler);
+    return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonArray update) {
+    return updateCollectionWithOptions(collection, query, update, DEFAULT_UPDATE_OPTIONS);
+  }
+
+  @Override
   public io.vertx.ext.mongo.MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options, Handler<AsyncResult<MongoClientUpdateResult>> resultHandler) {
     Future<MongoClientUpdateResult> future = updateCollectionWithOptions(collection, query, update, options);
     setHandler(future, resultHandler);
@@ -228,7 +240,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     Bson bupdate = wrap(encodeKeyWhenUseObjectId(generateIdIfNeeded(query, update, options)));
 
-
     com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
     if (options.getArrayFilters() != null && !options.getArrayFilters().isEmpty()) {
       final List<Bson> bArrayFilters = new ArrayList<>(options.getArrayFilters().size());
@@ -242,6 +253,41 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     } else {
       publisher = coll.updateOne(bquery, bupdate, updateOptions);
     }
+
+    Promise<UpdateResult> promise = vertx.promise();
+    publisher.subscribe(new SingleResultSubscriber<>(promise));
+    return promise.future().map(Utils::toMongoClientUpdateResult);
+  }
+
+  @Override
+  public MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonArray update, UpdateOptions options, Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler) {
+    Future<MongoClientUpdateResult> future = updateCollectionWithOptions(collection, query, update, options);
+    setHandler(future, resultHandler);
+    return this;
+  }
+
+  @Override
+  public Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonArray pipeline, UpdateOptions options) {
+    requireNonNull(collection, "collection cannot be null");
+    requireNonNull(query, "query cannot be null");
+    requireNonNull(pipeline, "pipeline cannot be null");
+    requireNonNull(options, "options cannot be null");
+
+    MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
+    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    List<Bson> bpipeline = new ArrayList<>(pipeline.size());
+    for (int i=0 ; i<pipeline.size() ; i++) {
+      bpipeline.add(wrap(pipeline.getJsonObject(i)));
+    }
+
+    com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
+    if (options.getArrayFilters() != null && !options.getArrayFilters().isEmpty()) {
+      final List<Bson> bArrayFilters = new ArrayList<>(options.getArrayFilters().size());
+      options.getArrayFilters().getList().forEach(entry -> bArrayFilters.add(wrap(JsonObject.mapFrom(entry))));
+      updateOptions.arrayFilters(bArrayFilters);
+    }
+
+    Publisher<UpdateResult> publisher = coll.updateMany(bquery, bpipeline, updateOptions);
 
     Promise<UpdateResult> promise = vertx.promise();
     publisher.subscribe(new SingleResultSubscriber<>(promise));

@@ -158,6 +158,21 @@ public interface MongoClient {
   Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonObject update);
 
   /**
+   * Use an aggregation pipeline to update documents in the specified collection and return the handler with MongoClientUpdateResult result
+   *
+   * @param collection  the collection
+   * @param query  query used to match the documents
+   * @param update used to describe how the documents will be updated
+   * @param resultHandler will be called when complete
+   */
+  @Fluent
+  MongoClient updateCollection(String collection, JsonObject query, JsonArray update,
+                               Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
+
+  Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonArray update);
+
+
+  /**
    * Update matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
    *
    * @param collection  the collection
@@ -171,6 +186,21 @@ public interface MongoClient {
                                           Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
   Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options);
+
+  /**
+   * Use an aggregation pipeline to update documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+   *
+   * @param collection  the collection
+   * @param query  query used to match the documents
+   * @param update aggregation pipeline used to describe how documents will be updated
+   * @param options options to configure the update
+   * @param resultHandler will be called when complete
+   */
+  @Fluent
+  MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonArray update, UpdateOptions options,
+                                          Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
+
+  Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonArray update, UpdateOptions options);
 
   /**
    * Replace matching documents in the specified collection and return the handler with MongoClientUpdateResult result
