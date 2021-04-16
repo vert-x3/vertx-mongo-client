@@ -682,8 +682,6 @@ Defaults to `false`.
 The mongo client tries to support most options that are allowed by the driver. There are two ways to configure mongo
 for use by the driver, either by a connection string or by separate configuration options.
 
-NOTE: If the connection string is used the mongo client will ignore any driver configuration options.
-
 `connection_string`:: The connection string the driver uses to create the client. E.g. `mongodb://localhost:27017`.
 For more information on the format of the connection string please consult the driver documentation.
 
