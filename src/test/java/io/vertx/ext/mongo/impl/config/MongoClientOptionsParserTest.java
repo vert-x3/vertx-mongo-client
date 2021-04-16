@@ -6,7 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class MongoClientOptionsParserTest {
   private Vertx vertx;
@@ -23,8 +23,8 @@ public class MongoClientOptionsParserTest {
 
   @Test
   public void testConnStringDbName() {
-    String connectionString = "mongodb://localhost:27017/mydb";
-    JsonObject config = new JsonObject().put("connection_string", connectionString).put("db_name", "unused_db");
+    String connectionString = "mongodb://localhost:27017/unused_db";
+    JsonObject config = new JsonObject().put("connection_string", connectionString).put("db_name", "mydb");
 
     MongoClientOptionsParser parser = new MongoClientOptionsParser(vertx, config);
     assertEquals("mydb", parser.database());

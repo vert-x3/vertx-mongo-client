@@ -12,7 +12,6 @@ import org.bson.codecs.configuration.CodecRegistry;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
@@ -34,7 +33,7 @@ public class MongoClientOptionsParser {
     String cs = config.getString("connection_string");
     ConnectionString connectionString = (cs == null) ? null : new ConnectionString(cs);
     String csDatabase = (connectionString != null) ? connectionString.getDatabase() : null;
-    this.database = csDatabase != null ? csDatabase : config.getString("db_name", MongoClient.DEFAULT_DB_NAME);
+    this.database = config.getString("db_name", csDatabase != null ? csDatabase : MongoClient.DEFAULT_DB_NAME);
 
     // ClusterSettings
     ClusterSettings clusterSettings = new ClusterSettingsParser(connectionString, config).settings();
@@ -70,7 +69,10 @@ public class MongoClientOptionsParser {
     }
 
     // ReadConcern
-    maybeReadConcern(connectionString, config).ifPresent(options::readConcern);
+    ReadConcern readConcern = new ReadConcernLevelParser(connectionString, config).readConcern();
+    if (readConcern != null) {
+      options.readConcern(readConcern);
+    }
 
     // ReadPreference
     ReadPreference readPreference = new ReadPreferenceParser(connectionString, config).readPreference();
@@ -91,9 +93,5 @@ public class MongoClientOptionsParser {
 
   public String database() {
     return database;
-  }
-
-  private Optional<ReadConcern> maybeReadConcern(ConnectionString connectionString, JsonObject config) {
-    return new ReadConcernLevelParser(connectionString, config).readConcern();
   }
 }

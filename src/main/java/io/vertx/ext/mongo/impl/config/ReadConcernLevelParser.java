@@ -5,35 +5,24 @@ import com.mongodb.ReadConcern;
 import com.mongodb.ReadConcernLevel;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Optional;
-
 class ReadConcernLevelParser {
 
-  private final ConnectionString connectionString;
-  private final JsonObject config;
+  private final ReadConcern readConcern;
 
   ReadConcernLevelParser(ConnectionString connectionString, JsonObject config) {
-    this.connectionString = connectionString;
-    this.config = config;
+    ReadConcern readConcern = fromConfig(config);
+    if (readConcern == null && connectionString != null) {
+      readConcern = connectionString.getReadConcern();
+    }
+    this.readConcern = readConcern;
   }
 
-  Optional<ReadConcern> readConcern() {
-    return tryToParseFromConnectionString().map(this::lift).orElseGet(this::tryToParseFromConfig);
+  private ReadConcern fromConfig(JsonObject config) {
+    String readConcernLevel = config.getString("readConcernLevel");
+    return readConcernLevel != null ? new ReadConcern(ReadConcernLevel.fromString(readConcernLevel)) : null;
   }
 
-  private Optional<ReadConcern> lift(ReadConcern readConcern) {
-    return Optional.ofNullable(readConcern);
-  }
-
-  private Optional<ReadConcern> tryToParseFromConnectionString() {
-    return Optional.ofNullable(connectionString)
-      .flatMap(cs -> Optional.ofNullable(cs.getReadConcern()));
-  }
-
-  private Optional<ReadConcern> tryToParseFromConfig() {
-    return Optional.ofNullable(config)
-      .flatMap(cfg -> Optional.ofNullable(cfg.getString("readConcernLevel")))
-      .map(ReadConcernLevel::fromString)
-      .map(ReadConcern::new);
+  ReadConcern readConcern() {
+    return readConcern;
   }
 }

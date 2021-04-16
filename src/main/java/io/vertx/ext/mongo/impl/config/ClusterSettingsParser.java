@@ -21,12 +21,14 @@ class ClusterSettingsParser {
 
   public ClusterSettingsParser(ConnectionString connectionString, JsonObject config) {
     ClusterSettings.Builder settings = ClusterSettings.builder();
-    // ConnectionString takes precedence
+
     if (connectionString != null) {
       settings.applyConnectionString(connectionString);
-    } else {
-      // hosts
-      List<ServerAddress> hosts = parseHosts(config);
+    }
+
+    // hosts
+    List<ServerAddress> hosts = parseHosts(connectionString, config);
+    if (!hosts.isEmpty()) {
       settings.hosts(hosts);
 
       // replica set / mode
@@ -39,12 +41,12 @@ class ClusterSettingsParser {
       if (replicaSet != null) {
         settings.requiredReplicaSetName(replicaSet);
       }
+    }
 
-      // serverSelectionTimeoutMS
-      Long serverSelectionTimeoutMS = config.getLong("serverSelectionTimeoutMS");
-      if(serverSelectionTimeoutMS != null) {
-        settings.serverSelectionTimeout(serverSelectionTimeoutMS, MILLISECONDS);
-      }
+    // serverSelectionTimeoutMS
+    Long serverSelectionTimeoutMS = config.getLong("serverSelectionTimeoutMS");
+    if (serverSelectionTimeoutMS != null) {
+      settings.serverSelectionTimeout(serverSelectionTimeoutMS, MILLISECONDS);
     }
 
     this.settings = settings.build();
@@ -54,22 +56,26 @@ class ClusterSettingsParser {
     return settings;
   }
 
-  private static List<ServerAddress> parseHosts(JsonObject config) {
+  private static List<ServerAddress> parseHosts(ConnectionString connectionString, JsonObject config) {
     List<ServerAddress> hosts = new ArrayList<>();
     JsonArray jsonHosts = config.getJsonArray("hosts");
     if (jsonHosts != null) {
-      jsonHosts.forEach(jsonHost -> {
+      for (Object jsonHost : jsonHosts) {
         ServerAddress address = serverAddress((JsonObject) jsonHost);
         if (address != null) {
           hosts.add(address);
         }
-      });
+      }
     } else {
-      // Support host / port properties and if not present use default ServerAddress (127.0.0.1:27017)
+      // Support host / port properties
       ServerAddress address = serverAddress(config);
-      hosts.add(address == null ? new ServerAddress() : address);
+      if (address != null) {
+        hosts.add(address);
+      }
     }
-
+    if (hosts.isEmpty() && connectionString == null) {
+      hosts.add(new ServerAddress());
+    }
     return hosts;
   }
 
