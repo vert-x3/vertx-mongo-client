@@ -41,6 +41,11 @@ public class FindOptionsConverter {
             obj.setSort(((JsonObject)member.getValue()).copy());
           }
           break;
+        case "hint":
+          if (member.getValue() instanceof String) {
+            obj.setHint("");
+          }
+          break;
       }
     }
   }
@@ -58,6 +63,9 @@ public class FindOptionsConverter {
     json.put("skip", obj.getSkip());
     if (obj.getSort() != null) {
       json.put("sort", obj.getSort());
+    }
+    if (!obj.getHint().isEmpty()) {
+      json.put("hint", obj.getHint());
     }
   }
 }
