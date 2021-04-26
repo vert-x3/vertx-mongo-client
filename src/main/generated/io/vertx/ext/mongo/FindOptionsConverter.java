@@ -26,6 +26,11 @@ public class FindOptionsConverter {
             obj.setFields(((JsonObject)member.getValue()).copy());
           }
           break;
+        case "hint":
+          if (member.getValue() instanceof String) {
+            obj.setHint((String)member.getValue());
+          }
+          break;
         case "limit":
           if (member.getValue() instanceof Number) {
             obj.setLimit(((Number)member.getValue()).intValue());
@@ -41,11 +46,6 @@ public class FindOptionsConverter {
             obj.setSort(((JsonObject)member.getValue()).copy());
           }
           break;
-        case "hint":
-          if (member.getValue() instanceof String) {
-            obj.setHint("");
-          }
-          break;
       }
     }
   }
@@ -59,13 +59,13 @@ public class FindOptionsConverter {
     if (obj.getFields() != null) {
       json.put("fields", obj.getFields());
     }
+    if (obj.getHint() != null) {
+      json.put("hint", obj.getHint());
+    }
     json.put("limit", obj.getLimit());
     json.put("skip", obj.getSkip());
     if (obj.getSort() != null) {
       json.put("sort", obj.getSort());
-    }
-    if (!obj.getHint().isEmpty()) {
-      json.put("hint", obj.getHint());
     }
   }
 }
