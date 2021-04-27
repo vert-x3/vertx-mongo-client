@@ -208,7 +208,7 @@ public class FindOptions {
     if (skip != that.skip) return false;
     if (batchSize != that.batchSize) return false;
     if (fields != null ? !fields.equals(that.fields) : that.fields != null) return false;
-    if (!hint.equals(that.hint)) return false;
+    if (hint != null ? !hint.equals(that.hint) : that.hint != null) return false;
     return sort != null ? sort.equals(that.sort) : that.sort == null;
   }
 
@@ -219,7 +219,7 @@ public class FindOptions {
     result = 31 * result + limit;
     result = 31 * result + skip;
     result = 31 * result + batchSize;
-    result = 31 * result + hint.hashCode();
+    result = 31 * result + (hint != null ? hint.hashCode() : 0);
     return result;
   }
 }
