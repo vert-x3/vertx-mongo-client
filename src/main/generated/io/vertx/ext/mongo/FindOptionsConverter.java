@@ -26,6 +26,11 @@ public class FindOptionsConverter {
             obj.setFields(((JsonObject)member.getValue()).copy());
           }
           break;
+        case "hint":
+          if (member.getValue() instanceof String) {
+            obj.setHint((String)member.getValue());
+          }
+          break;
         case "limit":
           if (member.getValue() instanceof Number) {
             obj.setLimit(((Number)member.getValue()).intValue());
@@ -53,6 +58,9 @@ public class FindOptionsConverter {
     json.put("batchSize", obj.getBatchSize());
     if (obj.getFields() != null) {
       json.put("fields", obj.getFields());
+    }
+    if (obj.getHint() != null) {
+      json.put("hint", obj.getHint());
     }
     json.put("limit", obj.getLimit());
     json.put("skip", obj.getSkip());

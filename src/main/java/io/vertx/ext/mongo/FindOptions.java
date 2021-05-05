@@ -31,6 +31,7 @@ public class FindOptions {
   private int limit;
   private int skip;
   private int batchSize;
+  private String hint;
 
   /**
    * Default constructor
@@ -41,6 +42,7 @@ public class FindOptions {
     this.limit = DEFAULT_LIMIT;
     this.skip = DEFAULT_SKIP;
     this.batchSize = DEFAULT_BATCH_SIZE;
+    this.hint = new String();
   }
 
   /**
@@ -54,6 +56,7 @@ public class FindOptions {
     this.limit = options.limit;
     this.skip = options.skip;
     this.batchSize = options.batchSize;
+    this.hint = options.hint;
   }
 
   /**
@@ -174,6 +177,26 @@ public class FindOptions {
     return this;
   }
 
+  /**
+   * Get the hint. This determines the index to use.
+   *
+   * @return  the hint
+   */
+  public String getHint() {
+    return hint;
+  }
+
+  /**
+   * Set the hint
+   *
+   * @param hint  the hint
+   * @return reference to this, for fluency
+   */
+  public FindOptions setHint(String hint) {
+    this.hint = hint;
+    return this;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -185,6 +208,7 @@ public class FindOptions {
     if (skip != that.skip) return false;
     if (batchSize != that.batchSize) return false;
     if (fields != null ? !fields.equals(that.fields) : that.fields != null) return false;
+    if (hint != null ? !hint.equals(that.hint) : that.hint != null) return false;
     return sort != null ? sort.equals(that.sort) : that.sort == null;
   }
 
@@ -195,6 +219,7 @@ public class FindOptions {
     result = 31 * result + limit;
     result = 31 * result + skip;
     result = 31 * result + batchSize;
+    result = 31 * result + (hint != null ? hint.hashCode() : 0);
     return result;
   }
 }
