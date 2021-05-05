@@ -975,6 +975,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     if (options.getFields() != null) {
       find.projection(wrap(options.getFields()));
     }
+    if (options.getHint() != null && !options.getHint().isEmpty()) {
+      find.hintString(options.getHint());
+    }
     return find;
   }
 
