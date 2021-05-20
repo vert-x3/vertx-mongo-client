@@ -1,7 +1,10 @@
 package io.vertx.ext.mongo;
 
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.client.model.changestream.OperationType;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoDatabase;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonArray;
@@ -12,6 +15,7 @@ import org.bson.Document;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
@@ -240,6 +244,80 @@ public class MongoClientTest extends MongoClientTestBase {
     }));
 
     awaitLatch(latch);
+  }
+
+  @Test
+  public void testWatch() throws Exception {
+    final JsonArray operationTypes = new JsonArray(Arrays.asList("insert", "update", "replace", "delete"));
+    final JsonObject match = new JsonObject().put("operationType", new JsonObject().put("$in", operationTypes));
+    final JsonArray pipeline = new JsonArray().add(new JsonObject().put("$match", match));
+    final JsonObject fields = new JsonObject()
+      .put("operationType", true)
+      .put("namespaceDocument", true)
+      .put("destinationNamespaceDocument", true)
+      .put("documentKey", true)
+      .put("updateDescription", true)
+      .put("fullDocument", true);
+    pipeline.add(new JsonObject().put("$project", fields));
+
+    final String collection = randomCollection();
+    final JsonObject doc = createDoc();
+    final CountDownLatch latch = new CountDownLatch(4);
+    final AtomicReference<ReadStream<ChangeStreamDocument<JsonObject>>> streamReference = new AtomicReference<>();
+
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      ReadStream<ChangeStreamDocument<JsonObject>> stream =
+        mongoClient.watch(collection, pipeline, true, 1)
+          .handler(changeStreamDocument -> {
+            OperationType operationType = changeStreamDocument.getOperationType();
+            assertNotNull(operationType);
+            JsonObject fullDocument = changeStreamDocument.getFullDocument();
+            switch (operationType.getValue()) {
+              case "insert":
+                assertNotNull(fullDocument);
+                assertNotNull(fullDocument.getString(MongoClientUpdateResult.ID_FIELD));
+                assertEquals("bar", fullDocument.getString("foo"));
+                break;
+              case "update":
+                assertNotNull(fullDocument);
+                assertEquals("updatedValue", fullDocument.getString("fieldToUpdate"));
+                break;
+              case "replace":
+                assertNotNull(fullDocument);
+                assertEquals("replacedValue", fullDocument.getString("fieldToReplace"));
+                break;
+              case "delete":
+                assertNull(fullDocument);
+                break;
+              default:
+            }
+            latch.countDown();
+            if (latch.getCount() == 1) {
+              mongoClient.removeDocuments(collection, new JsonObject());
+            }
+          })
+          .endHandler(v -> assertEquals(0, latch.getCount()))
+          .exceptionHandler(this::fail)
+          .fetch(1);
+      streamReference.set(stream);
+
+      // give the watch some time to start
+      vertx.setTimer(50, v -> {
+        mongoClient.insert(collection, doc)
+          .compose(idString -> {
+            doc.put(MongoClientUpdateResult.ID_FIELD, idString);
+            doc.put("fieldToUpdate", "updatedValue");
+            final JsonObject query = new JsonObject().put(MongoClientUpdateResult.ID_FIELD, idString);
+            final JsonObject updateField = new JsonObject().put("fieldToUpdate", "updatedValue");
+            return CompositeFuture.all(
+              mongoClient.updateCollection(collection, query, new JsonObject().put("$set", updateField)),
+              mongoClient.save(collection, doc.put("fieldToReplace", "replacedValue")));
+          });
+      });
+    }));
+
+    awaitLatch(latch);
+    streamReference.get().handler(null);
   }
 
   private void upsertDoc(String collection, JsonObject docToInsert, String expectedId, Consumer<JsonObject> doneFunction) {
