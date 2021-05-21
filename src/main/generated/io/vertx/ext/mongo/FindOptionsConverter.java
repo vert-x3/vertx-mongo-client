@@ -36,6 +36,11 @@ public class FindOptionsConverter {
             obj.setLimit(((Number)member.getValue()).intValue());
           }
           break;
+        case "readPreference":
+          if (member.getValue() instanceof String) {
+            obj.setReadPreference((String)member.getValue());
+          }
+          break;
         case "skip":
           if (member.getValue() instanceof Number) {
             obj.setSkip(((Number)member.getValue()).intValue());
@@ -63,6 +68,9 @@ public class FindOptionsConverter {
       json.put("hint", obj.getHint());
     }
     json.put("limit", obj.getLimit());
+    if (obj.getReadPreference() != null) {
+      json.put("readPreference", obj.getReadPreference());
+    }
     json.put("skip", obj.getSkip());
     if (obj.getSort() != null) {
       json.put("sort", obj.getSort());

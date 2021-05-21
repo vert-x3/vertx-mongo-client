@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo;
 
 import com.mongodb.MongoClientSettings;
+import com.mongodb.ReadPreference;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -310,6 +311,19 @@ public interface MongoClient {
    * Like {@link #findOne(String, JsonObject, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
    */
   Future<@Nullable JsonObject> findOne(String collection, JsonObject query, @Nullable JsonObject fields);
+
+  /**
+   * Like {@link #findOne(String, JsonObject, JsonObject, Handler)} but give an option to set ReadPreference
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  @Fluent
+  MongoClient findOne(String collection, JsonObject query, @Nullable JsonObject fields, @Nullable ReadPreference readPreference, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
+
+  /**
+   * Like {@link #findOne(String, JsonObject, JsonObject)} but give an option to set ReadPreference
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  Future<@Nullable JsonObject> findOne(String collection, JsonObject query, @Nullable JsonObject fields, @Nullable ReadPreference readPreference);
 
   /**
    * Find a single matching document in the specified collection and update it.
