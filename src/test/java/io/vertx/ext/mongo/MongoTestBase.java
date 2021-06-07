@@ -63,9 +63,9 @@ public abstract class MongoTestBase extends VertxTestBase {
   private static MongoDBContainer mongoDBContainer;
 
   @BeforeClass
-  public static void startMongo() throws Exception {
+  public static void startMongo() {
     int port = 27018;
-    mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
+    mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.2.1"));
     mongoDBContainer.setPortBindings(Collections.singletonList(port+":27017"));
     mongoDBContainer.start();
   }
