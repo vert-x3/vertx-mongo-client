@@ -156,7 +156,7 @@ public interface MongoClient {
   Future<@Nullable String> insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption);
 
   /**
-   * Update matching documents in the specified collection and return the handler with MongoClientUpdateResult result
+   * Update matching documents in the specified collection and return the handler with {@code MongoClientUpdateResult} result
    *
    * @param collection  the collection
    * @param query  query used to match the documents
@@ -173,7 +173,7 @@ public interface MongoClient {
   Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonObject update);
 
   /**
-   * Use an aggregation pipeline to update documents in the specified collection and return the handler with MongoClientUpdateResult result
+   * Use an aggregation pipeline to update documents in the specified collection and return the handler with {@code MongoClientUpdateResult} result
    *
    * @param collection  the collection
    * @param query  query used to match the documents
@@ -191,7 +191,7 @@ public interface MongoClient {
 
 
   /**
-   * Update matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+   * Update matching documents in the specified collection, specifying options and return the handler with {@code MongoClientUpdateResult} result
    *
    * @param collection  the collection
    * @param query  query used to match the documents
@@ -209,7 +209,7 @@ public interface MongoClient {
   Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options);
 
   /**
-   * Use an aggregation pipeline to update documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+   * Use an aggregation pipeline to update documents in the specified collection, specifying options and return the handler with {@code MongoClientUpdateResult} result
    *
    * @param collection  the collection
    * @param query  query used to match the documents
@@ -227,7 +227,7 @@ public interface MongoClient {
   Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonArray update, UpdateOptions options);
 
   /**
-   * Replace matching documents in the specified collection and return the handler with MongoClientUpdateResult result
+   * Replace matching documents in the specified collection and return the handler with {@code MongoClientUpdateResult} result
    *
    * @param collection  the collection
    * @param query  query used to match the documents
@@ -243,7 +243,7 @@ public interface MongoClient {
   Future<@Nullable MongoClientUpdateResult> replaceDocuments(String collection, JsonObject query, JsonObject replace);
 
   /**
-   * Replace matching documents in the specified collection, specifying options and return the handler with MongoClientUpdateResult result
+   * Replace matching documents in the specified collection, specifying options and return the handler with {@code MongoClientUpdateResult} result
    *
    * @param collection  the collection
    * @param query  query used to match the documents
@@ -497,7 +497,7 @@ public interface MongoClient {
   Future<Long> count(String collection, JsonObject query);
 
   /**
-   * Remove matching documents from a collection and return the handler with MongoClientDeleteResult result
+   * Remove matching documents from a collection and return the handler with {@code MongoClientDeleteResult} result
    *
    * @param collection  the collection
    * @param query  query used to match documents
@@ -512,7 +512,7 @@ public interface MongoClient {
   Future<@Nullable MongoClientDeleteResult> removeDocuments(String collection, JsonObject query);
 
   /**
-   * Remove matching documents from a collection with the specified write option and return the handler with MongoClientDeleteResult result
+   * Remove matching documents from a collection with the specified write option and return the handler with {@code MongoClientDeleteResult} result
    *
    * @param collection  the collection
    * @param query  query used to match documents
@@ -528,7 +528,7 @@ public interface MongoClient {
   Future<@Nullable MongoClientDeleteResult> removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption);
 
   /**
-   * Remove a single matching document from a collection and return the handler with MongoClientDeleteResult result
+   * Remove a single matching document from a collection and return the handler with {@code MongoClientDeleteResult} result
    *
    * @param collection  the collection
    * @param query  query used to match document
@@ -543,7 +543,7 @@ public interface MongoClient {
   Future<@Nullable MongoClientDeleteResult> removeDocument(String collection, JsonObject query);
 
   /**
-   * Remove a single matching document from a collection with the specified write option and return the handler with MongoClientDeleteResult result
+   * Remove a single matching document from a collection with the specified write option and return the handler with {@code MongoClientDeleteResult} result
    *
    * @param collection  the collection
    * @param query  query used to match document
