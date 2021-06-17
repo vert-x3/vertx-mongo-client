@@ -1,7 +1,10 @@
 package io.vertx.ext.mongo;
 
+import com.mongodb.ReadPreference;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+
+import java.util.Objects;
 
 /**
  * Options used to configure find operations.
@@ -32,6 +35,7 @@ public class FindOptions {
   private int skip;
   private int batchSize;
   private String hint;
+  private ReadPreference readPreference;
 
   /**
    * Default constructor
@@ -43,6 +47,7 @@ public class FindOptions {
     this.skip = DEFAULT_SKIP;
     this.batchSize = DEFAULT_BATCH_SIZE;
     this.hint = new String();
+    this.readPreference = null;
   }
 
   /**
@@ -57,6 +62,7 @@ public class FindOptions {
     this.skip = options.skip;
     this.batchSize = options.batchSize;
     this.hint = options.hint;
+    this.readPreference = options.readPreference;
   }
 
   /**
@@ -197,6 +203,33 @@ public class FindOptions {
     return this;
   }
 
+  /**
+   * Get the readPreference. This determines the operation readPreference to use.
+   *
+   * @return the readPreference
+   */
+  public ReadPreference getReadPreference(boolean returnObj) {
+    return readPreference;
+  }
+  public String getReadPreference() {
+    return readPreference == null ? null : readPreference.getName();
+  }
+
+  /**
+   * Set the readPreference
+   *
+   * @param readPreference the readPreference
+   * @return reference to this, for fluency
+   */
+  public FindOptions setReadPreference(ReadPreference readPreference) {
+    this.readPreference = readPreference;
+    return this;
+  }
+  public FindOptions setReadPreference(String readPreferenceName) {
+    this.readPreference = (readPreferenceName == null ? null : ReadPreference.valueOf(readPreferenceName));
+    return this;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -209,6 +242,7 @@ public class FindOptions {
     if (batchSize != that.batchSize) return false;
     if (fields != null ? !fields.equals(that.fields) : that.fields != null) return false;
     if (hint != null ? !hint.equals(that.hint) : that.hint != null) return false;
+    if (!Objects.equals(readPreference, that.readPreference)) return false;
     return sort != null ? sort.equals(that.sort) : that.sort == null;
   }
 
@@ -220,6 +254,7 @@ public class FindOptions {
     result = 31 * result + skip;
     result = 31 * result + batchSize;
     result = 31 * result + (hint != null ? hint.hashCode() : 0);
+    result = 31 * result + (readPreference != null ? readPreference.hashCode() : 0);
     return result;
   }
 }
