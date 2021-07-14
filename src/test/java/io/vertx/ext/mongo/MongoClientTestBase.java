@@ -141,10 +141,16 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
     JsonObject command = new JsonObject()
       .put("aggregate", "collection_name")
+      // the aggregate function requires the cursor option
+      // to be specified in Mongo >= 3.6,
+      // use a cursor with default batch size as we expect
+      // the collection to be empty anyway
+      .put("cursor", new JsonObject())
       .put("pipeline", new JsonArray());
 
     mongoClient.runCommand("aggregate", command, onSuccess(resultObj -> {
-      JsonArray resArr = resultObj.getJsonArray("result");
+      JsonObject cursor = resultObj.getJsonObject("cursor");
+      JsonArray resArr = cursor.getJsonArray("firstBatch");
       assertNotNull(resArr);
       assertEquals(0, resArr.size());
       testComplete();
