@@ -244,8 +244,12 @@ public class MongoClientTest extends MongoClientTestBase {
   }
 
   private void upsertDoc(String collection, JsonObject docToInsert, String expectedId, Consumer<JsonObject> doneFunction) {
+    JsonObject updatesToApply = docToInsert.copy();
+    // remove _id field because Mongo DB >= 3.6 will reject
+    // attempts to update the _id field of an existing document
+    updatesToApply.remove(MongoClientUpdateResult.ID_FIELD);
     JsonObject insertStatement = new JsonObject()
-      .put("$set", docToInsert);
+      .put("$set", updatesToApply);
 
     upsertDoc(collection, docToInsert, insertStatement, expectedId, doneFunction);
   }
