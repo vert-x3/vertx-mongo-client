@@ -14,141 +14,258 @@
   ~
   ~  You may elect to redistribute this code under either of these licenses.
   --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <artifactId>vertx-ext-parent</artifactId>
-    <groupId>io.vertx</groupId>
-    <version>38</version>
-  </parent>
-
-  <modelVersion>4.0.0</modelVersion>
-
-  <artifactId>vertx-mongo-client</artifactId>
-  <version>3.9.9-SNAPSHOT</version>
-
-  <properties>
-    <stack.version>3.9.9-SNAPSHOT</stack.version>
-    <mongo.async.version>3.12.8</mongo.async.version>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
+      
+    <parent>
+            
+        <artifactId>vertx-ext-parent</artifactId>
+            
         <groupId>io.vertx</groupId>
-        <artifactId>vertx-dependencies</artifactId>
-        <version>${stack.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+            
+        <version>38</version>
+          
+    </parent>
+      
+    <modelVersion>4.0.0</modelVersion>
+      
+    <artifactId>vertx-mongo-client</artifactId>
+      
+    <version>3.9.9</version>
+      
+    <properties>
+            
+        <stack.version>3.9.9</stack.version>
+            
+        <mongo.async.version>3.12.8</mongo.async.version>
+          
+    </properties>
+      
+    <dependencyManagement>
+            
+        <dependencies>
+                  
+            <dependency>
+                        
+                <groupId>io.vertx</groupId>
+                        
+                <artifactId>vertx-dependencies</artifactId>
+                        
+                <version>${stack.version}</version>
+                        
+                <type>pom</type>
+                        
+                <scope>import</scope>
+                      
+            </dependency>
+                
+        </dependencies>
+          
+    </dependencyManagement>
+      
+    <dependencies>
+            
+        <dependency>
+                  
+            <groupId>io.vertx</groupId>
+                  
+            <artifactId>vertx-core</artifactId>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>org.mongodb</groupId>
+                  
+            <artifactId>mongodb-driver-async</artifactId>
+                  
+            <version>${mongo.async.version}</version>
+                  
+            <exclusions>
+                        
+                <exclusion>
+                              
+                    <groupId>io.netty</groupId>
+                              
+                    <artifactId>netty-transport</artifactId>
+                            
+                </exclusion>
+                        
+                <exclusion>
+                              
+                    <groupId>io.netty</groupId>
+                              
+                    <artifactId>netty-buffer</artifactId>
+                            
+                </exclusion>
+                        
+                <exclusion>
+                              
+                    <groupId>io.netty</groupId>
+                              
+                    <artifactId>netty-handler</artifactId>
+                            
+                </exclusion>
+                      
+            </exclusions>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <!-- declare this dependency to force flapdoodle to use this one. It is the version used by vert.x -->
+                  
+            <groupId>org.slf4j</groupId>
+                  
+            <artifactId>slf4j-api</artifactId>
+                  
+            <version>1.7.21</version>
+                  
+            <scope>provided</scope>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>de.flapdoodle.embed</groupId>
+                  
+            <artifactId>de.flapdoodle.embed.mongo</artifactId>
+                  
+            <version>2.2.0</version>
+                  
+            <scope>test</scope>
+                  
+            <exclusions>
+                        
+                <exclusion>
+                              
+                    <groupId>org.slf4j</groupId>
+                              
+                    <artifactId>slf4j-api</artifactId>
+                            
+                </exclusion>
+                      
+            </exclusions>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>io.vertx</groupId>
+                  
+            <artifactId>vertx-codegen</artifactId>
+                  
+            <optional>true</optional>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>io.vertx</groupId>
+                  
+            <artifactId>vertx-docgen</artifactId>
+                  
+            <optional>true</optional>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>io.vertx</groupId>
+                  
+            <artifactId>vertx-core</artifactId>
+                  
+            <type>test-jar</type>
+                  
+            <scope>test</scope>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>junit</groupId>
+                  
+            <artifactId>junit</artifactId>
+                  
+            <scope>test</scope>
+                  
+            <version>4.13.1</version>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>pl.pragmatists</groupId>
+                  
+            <artifactId>JUnitParams</artifactId>
+                  
+            <version>1.1.1</version>
+                  
+            <scope>test</scope>
+                
+        </dependency>
+          
     </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongodb-driver-async</artifactId>
-      <version>${mongo.async.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-buffer</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-handler</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!-- declare this dependency to force flapdoodle to use this one. It is the version used by vert.x -->
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.21</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>de.flapdoodle.embed</groupId>
-      <artifactId>de.flapdoodle.embed.mongo</artifactId>
-      <version>2.2.0</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-codegen</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-docgen</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-      <version>4.13.1</version>
-    </dependency>
-    <dependency>
-      <groupId>pl.pragmatists</groupId>
-      <artifactId>JUnitParams</artifactId>
-      <version>1.1.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-          </archive>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>biz.aQute.bnd</groupId>
-        <artifactId>bnd-maven-plugin</artifactId>
-        <version>3.2.0</version>
-        <executions>
-          <execution>
-            <id>default-bnd-process</id>
-            <goals>
-              <goal>bnd-process</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <bnd><![CDATA[
+      
+    <build>
+            
+        <plugins>
+                  
+            <plugin>
+                        
+                <groupId>org.apache.maven.plugins</groupId>
+                        
+                <artifactId>maven-jar-plugin</artifactId>
+                        
+                <configuration>
+                              
+                    <archive>
+                                    
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                                  
+                    </archive>
+                            
+                </configuration>
+                      
+            </plugin>
+                  
+            <plugin>
+                        
+                <groupId>biz.aQute.bnd</groupId>
+                        
+                <artifactId>bnd-maven-plugin</artifactId>
+                        
+                <version>3.2.0</version>
+                        
+                <executions>
+                              
+                    <execution>
+                                    
+                        <id>default-bnd-process</id>
+                                    
+                        <goals>
+                                          
+                            <goal>bnd-process</goal>
+                                        
+                        </goals>
+                                  
+                    </execution>
+                            
+                </executions>
+                        
+                <configuration>
+                              
+                    <bnd><![CDATA[
           Import-Package: \
             io.vertx.codegen.annotations;resolution:=optional,\
             *
           -exportcontents: !*impl, !examples, *
           ]]></bnd>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
+                            
+                </configuration>
+                      
+            </plugin>
+                
+        </plugins>
+          
+    </build>
+    
 </project>
