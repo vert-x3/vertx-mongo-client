@@ -29,6 +29,8 @@ import org.junit.BeforeClass;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,7 +68,7 @@ public abstract class MongoTestBase extends VertxTestBase {
   public static void startMongo() {
     int port = 27018;
     mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.2.1"));
-    mongoDBContainer.setPortBindings(Collections.singletonList(port+":27017"));
+    mongoDBContainer.setPortBindings(Collections.singletonList(port + ":27017"));
     mongoDBContainer.start();
   }
 
@@ -145,23 +147,42 @@ public abstract class MongoTestBase extends VertxTestBase {
   }
 
   protected JsonObject createDoc() {
-    return new JsonObject().put("foo", "bar").put("num", 123).put("big", true).putNull("nullentry").
-            put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
-            put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
-            put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
-            put("other", new JsonObject().put("quux", "flib").put("myarr",
-                    new JsonArray().add("blah").add(true).add(312)));
+    return new JsonObject()
+      .put("foo", "bar")
+      .put("num", 123)
+      .put("big", true)
+      .putNull("nullentry")
+      .put("bigDec", BigDecimal.ONE)
+      .put("arr", new JsonArray()
+        .add("x")
+        .add(true)
+        .add(12)
+        .add(1.23)
+        .addNull()
+        .add(BigDecimal.ONE)
+        .add(new JsonObject()
+          .put("wib", "wob")))
+      .put("date", new JsonObject()
+        .put("$date", "2015-05-30T22:50:02Z"))
+      .put("object_id", new JsonObject()
+        .put("$oid", new ObjectId().toHexString()))
+      .put("other", new JsonObject()
+        .put("quux", "flib")
+        .put("myarr", new JsonArray()
+          .add("blah")
+          .add(true)
+          .add(312)));
   }
 
   protected JsonObject createDoc(int num) {
     return new JsonObject().put("foo", "bar" + (num != -1 ? num : "")).put("num", 123).put("big", true).putNull("nullentry").
-            put("counter", num).
-            put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
-            put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
-            put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
-            put("other", new JsonObject().put("quux", "flib").put("myarr",
-                    new JsonArray().add("blah").add(true).add(312))).
-            put("longval", 123456789L).put("dblval", 1.23);
+      put("counter", num).
+      put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob"))).
+      put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z")).
+      put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString())).
+      put("other", new JsonObject().put("quux", "flib").put("myarr",
+        new JsonArray().add("blah").add(true).add(312))).
+      put("longval", 123456789L).put("dblval", 1.23);
   }
 
 }
