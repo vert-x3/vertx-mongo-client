@@ -8,6 +8,8 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -163,6 +165,8 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
       return BsonType.DOUBLE;
     } else if (value instanceof Double) {
       return BsonType.DOUBLE;
+    } else if (value instanceof BigDecimal) {
+      return BsonType.DECIMAL128;
     } else if (value instanceof Integer) {
       return BsonType.INT32;
     } else if (value instanceof Long) {
