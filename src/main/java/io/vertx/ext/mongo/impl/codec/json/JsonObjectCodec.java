@@ -10,6 +10,7 @@ import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -250,17 +251,19 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
 
   @Override
   protected void writeNumberDecimal(BsonWriter writer, String name, Object value, EncoderContext ctx) {
-    final String decimal = ((JsonObject) value).getString(DECIMAL_FIELD);
-    if (decimal.contains(".")) {
-      writer.writeDecimal128(new Decimal128(new BigDecimal(decimal)));
-    } else {
-      writer.writeDecimal128(new Decimal128(Long.parseLong(decimal)));
+    // json notation decimal128
+    if (value instanceof JsonObject) {
+      final String decimal = ((JsonObject) value).getString(DECIMAL_FIELD);
+      writer.writeDecimal128(Decimal128.parse(decimal));
+      return;
     }
+
+    writer.writeDecimal128(new Decimal128((BigDecimal) value));
   }
 
   @Override
   protected Object readNumberDecimal(BsonReader reader, DecoderContext ctx) {
     final Decimal128 decimal128 = reader.readDecimal128();
-    return decimal128.toString();
+    return decimal128.bigDecimalValue();
   }
 }
