@@ -1,9 +1,9 @@
 package io.vertx.ext.mongo;
 
-import java.util.Objects;
-
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+
+import java.util.Objects;
 
 /**
  * Options used to configure aggregate operations.
@@ -15,11 +15,11 @@ public class AggregateOptions {
   /**
    * The default value of batchSize = 10.
    */
-  public static final int  DEFAULT_BATCH_SIZE     = 20;
+  public static final int DEFAULT_BATCH_SIZE = 20;
   /**
    * The default value of maxTime = 0.
    */
-  public static final long DEFAULT_MAX_TIME       = 0L;
+  public static final long DEFAULT_MAX_TIME = 0L;
   /**
    * The default value of maxAwaitTime = 1000.
    */
@@ -29,6 +29,7 @@ public class AggregateOptions {
   private long    maxTime;
   private long    maxAwaitTime;
   private Boolean allowDiskUse;
+  private CollationOptions collationOptions;
 
   /**
    * Default constructor
@@ -37,6 +38,7 @@ public class AggregateOptions {
     this.batchSize = DEFAULT_BATCH_SIZE;
     this.maxTime = DEFAULT_MAX_TIME;
     this.maxAwaitTime = DEFAULT_MAX_AWAIT_TIME;
+    this.collationOptions = null;
   }
 
   /**
@@ -49,6 +51,7 @@ public class AggregateOptions {
     this.maxTime = options.maxTime;
     this.maxAwaitTime = options.maxAwaitTime;
     this.allowDiskUse = options.allowDiskUse;
+    this.collationOptions = options.collationOptions;
   }
 
   /**
@@ -59,6 +62,27 @@ public class AggregateOptions {
   public AggregateOptions(JsonObject options) {
     this();
     AggregateOptionsConverter.fromJson(options, this);
+  }
+
+  /**
+   * @return Configured collationOptions
+   */
+  public CollationOptions getCollationOptions() {
+    return collationOptions;
+  }
+
+  /**
+   * Optional.
+   *
+   * Specifies the collation to use for the operation.
+   *
+   * Collation allows users to specify language-specific rules for string comparison, such as rules for lettercase and accent marks.
+   * @param collationOptions
+   * @return reference to this, for fluency
+   */
+  public AggregateOptions setCollationOptions(CollationOptions collationOptions) {
+    this.collationOptions = collationOptions;
+    return this;
   }
 
   /**
@@ -102,14 +126,26 @@ public class AggregateOptions {
   }
 
   /**
+   * Set the batch size for methods loading found data in batches.
+   *
+   * @param batchSize the number of documents in a batch
+   * @return reference to this, for fluency
+   */
+  public AggregateOptions setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
+    return this;
+  }
+
+  /**
    * Get the flag if writing to temporary files is enabled.
    * When set to true, aggregation operations can write data to the _tmp subdirectory in the dbPath directory.
    *
    * @return true if writing to temporary files is enabled.
    */
-  public Boolean getAllowDiskUse(){
+  public Boolean getAllowDiskUse() {
     return allowDiskUse;
   }
+
   /**
    * Set the flag if writing to temporary files is enabled.
    *
@@ -118,17 +154,6 @@ public class AggregateOptions {
    */
   public AggregateOptions setAllowDiskUse(final Boolean allowDiskUse) {
     this.allowDiskUse = allowDiskUse;
-    return this;
-  }
-
-  /**
-   * Set the batch size for methods loading found data in batches.
-   *
-   * @param batchSize the number of documents in a batch
-   * @return reference to this, for fluency
-   */
-  public AggregateOptions setBatchSize(int batchSize) {
-    this.batchSize = batchSize;
     return this;
   }
 

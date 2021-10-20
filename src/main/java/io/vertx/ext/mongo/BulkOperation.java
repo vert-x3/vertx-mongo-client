@@ -7,7 +7,6 @@ import io.vertx.core.json.JsonObject;
  * Contains all data needed for one operation of a bulk write operation.
  *
  * @author sschmitt
- *
  */
 @DataObject
 public class BulkOperation {
@@ -28,11 +27,20 @@ public class BulkOperation {
   private boolean upsert;
   private boolean multi;
 
+  public CollationOptions getCollation() {
+    return collation;
+  }
+
+  public void setCollation(CollationOptions collation) {
+    this.collation = collation;
+  }
+
+  private CollationOptions collation;
+
   /**
    * Constructor for a new instance with the given type
    *
-   * @param type
-   *          the type
+   * @param type the type
    */
   private BulkOperation(BulkOperationType type) {
     this.type = type;
@@ -45,8 +53,7 @@ public class BulkOperation {
   /**
    * Json constructor
    *
-   * @param json
-   *          the json object
+   * @param json the json object
    */
   public BulkOperation(JsonObject json) {
     String typeValue = json.getString("type");
@@ -76,8 +83,7 @@ public class BulkOperation {
   /**
    * Create a new delete operation with the given filter
    *
-   * @param filter
-   *          the filter
+   * @param filter the filter
    * @return a new delete operation instance
    */
   public static BulkOperation createDelete(JsonObject filter) {
@@ -87,8 +93,7 @@ public class BulkOperation {
   /**
    * Create a new insert operation with the given document
    *
-   * @param document
-   *          the document to insert
+   * @param document the document to insert
    * @return a new insert operation instance
    */
   public static BulkOperation createInsert(JsonObject document) {
@@ -98,10 +103,8 @@ public class BulkOperation {
   /**
    * Create a new replace operation with the given filter and replace document
    *
-   * @param filter
-   *          the filter
-   * @param document
-   *          the replace document
+   * @param filter   the filter
+   * @param document the replace document
    * @return a new replace operation instance
    */
   public static BulkOperation createReplace(JsonObject filter, JsonObject document) {
@@ -111,12 +114,9 @@ public class BulkOperation {
   /**
    * Create a new replace operation with the given filter, replace document, and the upsert flag
    *
-   * @param filter
-   *          the filter
-   * @param document
-   *          the replace document
-   * @param upsert
-   *          the upsert flag
+   * @param filter   the filter
+   * @param document the replace document
+   * @param upsert   the upsert flag
    * @return a new replace operation instance
    */
   public static BulkOperation createReplace(JsonObject filter, JsonObject document, boolean upsert) {
@@ -126,10 +126,8 @@ public class BulkOperation {
   /**
    * Create a new update operation with the given filter and update document
    *
-   * @param filter
-   *          the filter
-   * @param document
-   *          the update document
+   * @param filter   the filter
+   * @param document the update document
    * @return a new update operation instance
    */
   public static BulkOperation createUpdate(JsonObject filter, JsonObject document) {
@@ -139,19 +137,15 @@ public class BulkOperation {
   /**
    * Create a new update operation with the given filter, update document, the upsert flag, and multi flag
    *
-   * @param filter
-   *          the filter
-   * @param document
-   *          the update document
-   * @param upsert
-   *          the upsert flag
-   * @param multi
-   *          the multi flag
+   * @param filter   the filter
+   * @param document the update document
+   * @param upsert   the upsert flag
+   * @param multi    the multi flag
    * @return a new update operation instance
    */
   public static BulkOperation createUpdate(JsonObject filter, JsonObject document, boolean upsert, boolean multi) {
     return new BulkOperation(BulkOperationType.UPDATE).setFilter(filter).setDocument(document).setUpsert(upsert)
-        .setMulti(multi);
+      .setMulti(multi);
   }
 
   /**
@@ -166,8 +160,7 @@ public class BulkOperation {
   /**
    * Sets the operation type
    *
-   * @param type
-   *          the operation type
+   * @param type the operation type
    * @return this for fluency
    */
   public BulkOperation setType(BulkOperationType type) {
@@ -187,8 +180,7 @@ public class BulkOperation {
   /**
    * Sets the filter document, used by replace, update, and delete operations
    *
-   * @param filter
-   *          the filter document
+   * @param filter the filter document
    * @return this for fluency
    */
   public BulkOperation setFilter(JsonObject filter) {
@@ -208,8 +200,7 @@ public class BulkOperation {
   /**
    * Sets the document, used by insert, replace, and update operations
    *
-   * @param document
-   *          the document
+   * @param document the document
    * @return this for fluency
    */
   public BulkOperation setDocument(JsonObject document) {
@@ -229,8 +220,7 @@ public class BulkOperation {
   /**
    * Sets the upsert flag, used by update and replace operations
    *
-   * @param upsert
-   *          the upsert flag
+   * @param upsert the upsert flag
    * @return this for fluency
    */
   public BulkOperation setUpsert(boolean upsert) {
@@ -250,8 +240,7 @@ public class BulkOperation {
   /**
    * Sets the multi flag, used by update and delete operations
    *
-   * @param multi
-   *          the mutli flag
+   * @param multi the mutli flag
    * @return this for fluency
    */
   public BulkOperation setMulti(boolean multi) {

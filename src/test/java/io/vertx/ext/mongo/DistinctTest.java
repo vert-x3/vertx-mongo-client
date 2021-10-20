@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DistinctTest extends MongoTestBase {
 
@@ -305,5 +307,21 @@ public class DistinctTest extends MongoTestBase {
     }));
     await();
     assertEquals(numDocs, results.size());
+  }
+
+  @Test
+  public void testDistinctOptionsSetting() {
+    String collection = randomCollection();
+    mongoClient.distinctWithQuery(collection, "num", Integer.class.getName(), new JsonObject(), new DistinctOptions().setCollation(new CollationOptions()));
+    int numDocs = 10;
+    List<JsonObject> results = Collections.synchronizedList(new ArrayList<>());
+    insertDocs(mongoClient, collection, numDocs, this::createDocWithAmbiguitiesDependingOnLocale, onSuccess(inserted -> {
+      mongoClient.distinctBatchWithQuery(collection, "foo", String.class.getName(), new JsonObject(), new DistinctOptions().setCollation(new CollationOptions().setLocale("de_AT")))
+        .exceptionHandler(this::fail)
+        .endHandler(v -> testComplete())
+        .handler(results::add);
+    }));
+    await();
+    assertEquals(2, results.size());
   }
 }
