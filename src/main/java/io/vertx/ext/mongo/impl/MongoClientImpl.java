@@ -1061,7 +1061,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   private com.mongodb.client.model.IndexOptions mongoIndexOptions(IndexOptions options) {
-    return new com.mongodb.client.model.IndexOptions()
+    CollationOptions co = options.getCollation();
+    com.mongodb.client.model.IndexOptions o = new com.mongodb.client.model.IndexOptions()
       .background(options.isBackground())
       .unique(options.isUnique())
       .name(options.getName())
@@ -1079,6 +1080,22 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       .bucketSize(options.getBucketSize())
       .storageEngine(toBson(options.getStorageEngine()))
       .partialFilterExpression(toBson(options.getPartialFilterExpression()));
+      if (co != null) {
+        o.collation(Collation.builder()
+          .collationAlternate(CollationAlternate.fromString(co.getAlternate()))
+            .backwards(co.isBackwards())
+            .caseLevel(co.isCaseLevel())
+            .collationCaseFirst(CollationCaseFirst.fromString(co.getCaseFirst().name()))
+            .collationMaxVariable(CollationMaxVariable.fromString(co.getMaxVariable().name()))
+            .collationStrength(CollationStrength.fromInt(co.getStrength()))
+            .locale(co.getLocale())
+            .numericOrdering(co.isNumericOrdering())
+            .collationAlternate(CollationAlternate.fromString(co.getAlternate()))
+            .normalization(co.isNormalization())
+          .build()
+        );
+      }
+      return o;
   }
 
   @Nullable JsonObjectBsonAdapter wrap(@Nullable JsonObject jsonObject) {

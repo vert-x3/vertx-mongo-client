@@ -125,7 +125,31 @@ public abstract class MongoClientTestBase extends MongoTestBase {
           long cnt = res3.stream()
                   .filter(o -> ((JsonObject) o).getJsonObject("key").containsKey("field"))
                   .count();
-          assertEquals(cnt, 1);
+          assertEquals(1, cnt);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testCreateIndexWithCollation() {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection, onSuccess(res -> {
+      JsonObject key = new JsonObject().put("field", 1);
+      IndexOptions options = new IndexOptions()
+        .setCollation(new CollationOptions("en_US"));
+      System.out.println(options.toJson().toString());
+      mongoClient.createIndexWithOptions(collection, key, options, onSuccess(res2 -> {
+        mongoClient.listIndexes(collection, onSuccess(res3 -> {
+          System.out.println(res3.encodePrettily());
+          long keyCount = res3.stream()
+            .filter(o -> ((JsonObject) o).getJsonObject("key").containsKey("field"))
+            .count();
+          assertEquals(1, keyCount);
+          long collationCount = res3.stream().filter(o -> ((JsonObject) o).containsKey("collation")).count();
+          assertEquals(1, collationCount);
           testComplete();
         }));
       }));
