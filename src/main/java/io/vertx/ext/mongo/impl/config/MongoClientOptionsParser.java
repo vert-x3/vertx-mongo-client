@@ -10,13 +10,19 @@ import org.bson.codecs.*;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import static java.util.Arrays.asList;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 public class MongoClientOptionsParser {
+
+  private static final Set<String> TRUE_VALUES = new HashSet<String>(asList("true", "yes", "1"));
+  private static final Set<String> FALSE_VALUES = new HashSet<String>(asList("false", "no", "0"));
 
   private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
     new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec());
@@ -84,7 +90,35 @@ public class MongoClientOptionsParser {
     ServerSettings serverSettings = new ServerSettingsParser(config).settings();
     options.applyToServerSettings(builder -> builder.applySettings(serverSettings));
 
+    //retryable settings
+    applyRetryableSetting(options,connectionString,config);
+
     this.settings = options.build();
+  }
+
+  public void applyRetryableSetting(MongoClientSettings.Builder options,ConnectionString cs,JsonObject config){
+    if(cs != null){
+      options.retryWrites(cs.getRetryWritesValue());
+      options.retryReads(cs.getRetryReads());
+    }else {
+      Boolean retryWrites = parseBoolean(config.getString("retryWrites"));
+      Boolean retryReads = parseBoolean(config.getString("retryReads"));
+      if(retryWrites != null){
+        options.retryWrites(retryWrites);
+      }
+      if(retryReads != null){
+        options.retryReads(retryReads);
+      }
+    }
+  }
+
+  private Boolean parseBoolean(String value){
+    if(value == null){
+      return null;
+    }
+    String trim = value.toLowerCase().trim();
+
+    return TRUE_VALUES.contains(trim) || !FALSE_VALUES.contains(trim);
   }
 
   public MongoClientSettings settings() {
