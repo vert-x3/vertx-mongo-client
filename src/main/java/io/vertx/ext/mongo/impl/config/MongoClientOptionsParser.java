@@ -13,8 +13,6 @@ import org.bson.codecs.configuration.CodecRegistry;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import static java.util.Arrays.asList;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
