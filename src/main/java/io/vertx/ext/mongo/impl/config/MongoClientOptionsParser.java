@@ -10,7 +10,6 @@ import org.bson.codecs.*;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
