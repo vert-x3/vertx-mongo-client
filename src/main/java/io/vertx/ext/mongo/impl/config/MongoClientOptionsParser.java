@@ -101,8 +101,8 @@ public class MongoClientOptionsParser {
       options.retryWrites(cs.getRetryWritesValue());
       options.retryReads(cs.getRetryReads());
     }else {
-      Boolean retryWrites = parseBoolean(config.getString("retryWrites"));
-      Boolean retryReads = parseBoolean(config.getString("retryReads"));
+      Boolean retryWrites = config.getBoolean("retryWrites");
+      Boolean retryReads = config.getBoolean("retryReads");
       if(retryWrites != null){
         options.retryWrites(retryWrites);
       }
