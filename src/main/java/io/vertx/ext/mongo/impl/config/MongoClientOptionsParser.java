@@ -12,6 +12,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
@@ -84,7 +85,25 @@ public class MongoClientOptionsParser {
     ServerSettings serverSettings = new ServerSettingsParser(config).settings();
     options.applyToServerSettings(builder -> builder.applySettings(serverSettings));
 
+    //retryable settings
+    applyRetryableSetting(options, connectionString, config);
+
     this.settings = options.build();
+  }
+
+  public void applyRetryableSetting(MongoClientSettings.Builder options, ConnectionString connectionString, JsonObject config) {
+    Boolean retryWrites = Optional.ofNullable(connectionString)
+      .flatMap(cs -> Optional.ofNullable(cs.getRetryWritesValue()))
+      .orElse(config.getBoolean("retryWrites"));
+    if (retryWrites != null) {
+      options.retryWrites(retryWrites);
+    }
+    Boolean retryReads = Optional.ofNullable(connectionString)
+      .flatMap(cs -> Optional.ofNullable(cs.getRetryReads()))
+      .orElse(config.getBoolean("retryReads"));
+    if (retryReads != null) {
+      options.retryReads(retryReads);
+    }
   }
 
   public MongoClientSettings settings() {
