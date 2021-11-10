@@ -112,15 +112,6 @@ public class MongoClientOptionsParser {
     }
   }
 
-  private Boolean parseBoolean(String value){
-    if(value == null){
-      return null;
-    }
-    String trim = value.toLowerCase().trim();
-
-    return TRUE_VALUES.contains(trim) || !FALSE_VALUES.contains(trim);
-  }
-
   public MongoClientSettings settings() {
     return settings;
   }
