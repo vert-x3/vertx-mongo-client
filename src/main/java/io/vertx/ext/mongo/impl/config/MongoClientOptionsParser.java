@@ -18,6 +18,7 @@ import java.util.Objects;
  */
 public class MongoClientOptionsParser {
 
+
   private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
     new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec());
   private final MongoClientSettings settings;
@@ -84,7 +85,26 @@ public class MongoClientOptionsParser {
     ServerSettings serverSettings = new ServerSettingsParser(config).settings();
     options.applyToServerSettings(builder -> builder.applySettings(serverSettings));
 
+    //retryable settings
+    applyRetryableSetting(options,connectionString,config);
+
     this.settings = options.build();
+  }
+
+  public void applyRetryableSetting(MongoClientSettings.Builder options,ConnectionString cs,JsonObject config){
+    if(cs != null){
+      options.retryWrites(cs.getRetryWritesValue());
+      options.retryReads(cs.getRetryReads());
+    }else {
+      Boolean retryWrites = config.getBoolean("retryWrites");
+      Boolean retryReads = config.getBoolean("retryReads");
+      if(retryWrites != null){
+        options.retryWrites(retryWrites);
+      }
+      if(retryReads != null){
+        options.retryReads(retryReads);
+      }
+    }
   }
 
   public MongoClientSettings settings() {
