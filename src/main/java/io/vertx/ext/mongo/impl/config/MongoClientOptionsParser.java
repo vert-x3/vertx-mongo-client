@@ -21,8 +21,6 @@ import static java.util.Arrays.asList;
  */
 public class MongoClientOptionsParser {
 
-  private static final Set<String> TRUE_VALUES = new HashSet<String>(asList("true", "yes", "1"));
-  private static final Set<String> FALSE_VALUES = new HashSet<String>(asList("false", "no", "0"));
 
   private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
     new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec());
