@@ -4,7 +4,6 @@ import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.client.model.changestream.OperationType;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoDatabase;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonArray;
@@ -261,9 +260,11 @@ public class MongoClientTest extends MongoClientTestBase {
     pipeline.add(new JsonObject().put("$project", fields));
 
     final String collection = randomCollection();
-    final JsonObject doc = createDoc();
     final CountDownLatch latch = new CountDownLatch(4);
     final AtomicReference<ReadStream<ChangeStreamDocument<JsonObject>>> streamReference = new AtomicReference<>();
+
+    AtomicReference<String> watchedDocumentId = new AtomicReference<>();
+    long timerId = vertx.setPeriodic(100, l -> mongoClient.insert(collection, createDoc()));
 
     mongoClient.createCollection(collection, onSuccess(res -> {
       ReadStream<ChangeStreamDocument<JsonObject>> stream =
@@ -272,48 +273,41 @@ public class MongoClientTest extends MongoClientTestBase {
             OperationType operationType = changeStreamDocument.getOperationType();
             assertNotNull(operationType);
             JsonObject fullDocument = changeStreamDocument.getFullDocument();
-            switch (operationType.getValue()) {
-              case "insert":
-                assertNotNull(fullDocument);
-                assertNotNull(fullDocument.getString(MongoClientUpdateResult.ID_FIELD));
-                assertEquals("bar", fullDocument.getString("foo"));
+            switch (operationType) {
+              case INSERT:
+                String id = fullDocument.getString("_id");
+                assertNotNull(id);
+                if (watchedDocumentId.compareAndSet(null, id)) {
+                  vertx.cancelTimer(timerId);
+                  assertEquals("bar", fullDocument.getString("foo"));
+                  fullDocument.put("_id", id);
+                  fullDocument.put("fieldToUpdate", "updatedValue");
+                  JsonObject query = new JsonObject().put("_id", id);
+                  JsonObject updateField = new JsonObject().put("fieldToUpdate", "updatedValue");
+                  mongoClient.updateCollection(collection, query, new JsonObject().put("$set", updateField), onSuccess(update -> {
+                    mongoClient.save(collection, fullDocument.put("fieldToReplace", "replacedValue"));
+                  }));
+                } else {
+                  return;
+                }
                 break;
-              case "update":
-                assertNotNull(fullDocument);
+              case UPDATE:
                 assertEquals("updatedValue", fullDocument.getString("fieldToUpdate"));
                 break;
-              case "replace":
-                assertNotNull(fullDocument);
+              case REPLACE:
                 assertEquals("replacedValue", fullDocument.getString("fieldToReplace"));
+                mongoClient.removeDocuments(collection, new JsonObject());
                 break;
-              case "delete":
+              case DELETE:
                 assertNull(fullDocument);
                 break;
-              default:
             }
             latch.countDown();
-            if (latch.getCount() == 1) {
-              mongoClient.removeDocuments(collection, new JsonObject());
-            }
           })
           .endHandler(v -> assertEquals(0, latch.getCount()))
           .exceptionHandler(this::fail)
           .fetch(1);
       streamReference.set(stream);
-
-      // give the watch some time to start
-      vertx.setTimer(50, v -> {
-        mongoClient.insert(collection, doc)
-          .compose(idString -> {
-            doc.put(MongoClientUpdateResult.ID_FIELD, idString);
-            doc.put("fieldToUpdate", "updatedValue");
-            final JsonObject query = new JsonObject().put(MongoClientUpdateResult.ID_FIELD, idString);
-            final JsonObject updateField = new JsonObject().put("fieldToUpdate", "updatedValue");
-            return CompositeFuture.all(
-              mongoClient.updateCollection(collection, query, new JsonObject().put("$set", updateField)),
-              mongoClient.save(collection, doc.put("fieldToReplace", "replacedValue")));
-          });
-      });
     }));
 
     awaitLatch(latch);
@@ -357,9 +351,9 @@ public class MongoClientTest extends MongoClientTestBase {
           .onFailure(Throwable::printStackTrace)
           .onSuccess(savedDoc -> {
             if (expectedId != null) {
-              assertEquals(expectedId, savedDoc.getString(MongoClientUpdateResult.ID_FIELD));
+              assertEquals(expectedId, savedDoc.getString("_id"));
             } else {
-              assertEquals(res.getDocUpsertedId().getString(MongoClientUpdateResult.ID_FIELD), savedDoc.getString(MongoClientUpdateResult.ID_FIELD));
+              assertEquals(res.getDocUpsertedId().getString("_id"), savedDoc.getString("_id"));
             }
             doneFunction.accept(new JsonObject(savedDoc.toJson()));
           });
