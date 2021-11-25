@@ -12,12 +12,12 @@ import org.bson.codecs.configuration.CodecRegistry;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 public class MongoClientOptionsParser {
-
 
   private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
     new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec());
@@ -86,24 +86,23 @@ public class MongoClientOptionsParser {
     options.applyToServerSettings(builder -> builder.applySettings(serverSettings));
 
     //retryable settings
-    applyRetryableSetting(options,connectionString,config);
+    applyRetryableSetting(options, connectionString, config);
 
     this.settings = options.build();
   }
 
-  public void applyRetryableSetting(MongoClientSettings.Builder options,ConnectionString cs,JsonObject config){
-    if(cs != null){
-      options.retryWrites(cs.getRetryWritesValue());
-      options.retryReads(cs.getRetryReads());
-    }else {
-      Boolean retryWrites = config.getBoolean("retryWrites");
-      Boolean retryReads = config.getBoolean("retryReads");
-      if(retryWrites != null){
-        options.retryWrites(retryWrites);
-      }
-      if(retryReads != null){
-        options.retryReads(retryReads);
-      }
+  public void applyRetryableSetting(MongoClientSettings.Builder options, ConnectionString connectionString, JsonObject config) {
+    Boolean retryWrites = Optional.ofNullable(connectionString)
+      .flatMap(cs -> Optional.ofNullable(cs.getRetryWritesValue()))
+      .orElse(config.getBoolean("retryWrites"));
+    if (retryWrites != null) {
+      options.retryWrites(retryWrites);
+    }
+    Boolean retryReads = Optional.ofNullable(connectionString)
+      .flatMap(cs -> Optional.ofNullable(cs.getRetryReads()))
+      .orElse(config.getBoolean("retryReads"));
+    if (retryReads != null) {
+      options.retryReads(retryReads);
     }
   }
 
