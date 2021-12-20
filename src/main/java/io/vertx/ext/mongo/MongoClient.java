@@ -64,8 +64,9 @@ public interface MongoClient {
 
   /**
    * Like {@link #createShared(io.vertx.core.Vertx, JsonObject, String)} but with the default data source name
+   *
    * @param vertx  the Vert.x instance
-   * @param config  the configuration
+   * @param config the configuration
    * @return the client
    */
   static MongoClient createShared(Vertx vertx, JsonObject config) {
@@ -75,10 +76,11 @@ public interface MongoClient {
   /**
    * Constructor targeting the jvm, like standard constructor {@link #createShared(Vertx, JsonObject, String)}, but it accepts default mongoClientSettings
    * to configure mongo
-   * @param vertx the Vert.x instance
-   * @param config the configuration use only to provide objectId and database name
+   *
+   * @param vertx          the Vert.x instance
+   * @param config         the configuration use only to provide objectId and database name
    * @param dataSourceName the data source name
-   * @param settings the native java mongo settings
+   * @param settings       the native java mongo settings
    * @return the client
    */
   @GenIgnore
@@ -91,9 +93,9 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>document</i> parameter
    *
-   * @param collection  the collection
-   * @param document  the document
-   * @param resultHandler  result handler will be provided with the id if document didn't already have one
+   * @param collection    the collection
+   * @param document      the document
+   * @param resultHandler result handler will be provided with the id if document didn't already have one
    */
   @Fluent
   MongoClient save(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
@@ -108,10 +110,10 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>document</i> parameter
    *
-   * @param collection  the collection
-   * @param document  the document
-   * @param writeOption  the write option to use
-   * @param resultHandler  result handler will be provided with the id if document didn't already have one
+   * @param collection    the collection
+   * @param document      the document
+   * @param writeOption   the write option to use
+   * @param resultHandler result handler will be provided with the id if document didn't already have one
    */
   @Fluent
   MongoClient saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
@@ -126,9 +128,9 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>document</i> parameter
    *
-   * @param collection  the collection
-   * @param document  the document
-   * @param resultHandler  result handler will be provided with the id if document didn't already have one
+   * @param collection    the collection
+   * @param document      the document
+   * @param resultHandler result handler will be provided with the id if document didn't already have one
    */
   @Fluent
   MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
@@ -143,10 +145,10 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>document</i> parameter
    *
-   * @param collection  the collection
-   * @param document  the document
-   * @param writeOption  the write option to use
-   * @param resultHandler  result handler will be provided with the id if document didn't already have one
+   * @param collection    the collection
+   * @param document      the document
+   * @param writeOption   the write option to use
+   * @param resultHandler result handler will be provided with the id if document didn't already have one
    */
   @Fluent
   MongoClient insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
@@ -159,9 +161,9 @@ public interface MongoClient {
   /**
    * Update matching documents in the specified collection and return the handler with {@code MongoClientUpdateResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param update used to describe how the documents will be updated
+   * @param collection    the collection
+   * @param query         query used to match the documents
+   * @param update        used to describe how the documents will be updated
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
@@ -176,9 +178,9 @@ public interface MongoClient {
   /**
    * Use an aggregation pipeline to update documents in the specified collection and return the handler with {@code MongoClientUpdateResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param update used to describe how the documents will be updated
+   * @param collection    the collection
+   * @param query         query used to match the documents
+   * @param update        used to describe how the documents will be updated
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
@@ -190,14 +192,13 @@ public interface MongoClient {
    */
   Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonArray update);
 
-
   /**
    * Update matching documents in the specified collection, specifying options and return the handler with {@code MongoClientUpdateResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param update used to describe how the documents will be updated
-   * @param options options to configure the update
+   * @param collection    the collection
+   * @param query         query used to match the documents
+   * @param update        used to describe how the documents will be updated
+   * @param options       options to configure the update
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
@@ -212,10 +213,10 @@ public interface MongoClient {
   /**
    * Use an aggregation pipeline to update documents in the specified collection, specifying options and return the handler with {@code MongoClientUpdateResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param update aggregation pipeline used to describe how documents will be updated
-   * @param options options to configure the update
+   * @param collection    the collection
+   * @param query         query used to match the documents
+   * @param update        aggregation pipeline used to describe how documents will be updated
+   * @param options       options to configure the update
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
@@ -230,9 +231,9 @@ public interface MongoClient {
   /**
    * Replace matching documents in the specified collection and return the handler with {@code MongoClientUpdateResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param replace  all matching documents will be replaced with this
+   * @param collection    the collection
+   * @param query         query used to match the documents
+   * @param replace       all matching documents will be replaced with this
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
@@ -246,10 +247,10 @@ public interface MongoClient {
   /**
    * Replace matching documents in the specified collection, specifying options and return the handler with {@code MongoClientUpdateResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match the documents
-   * @param replace  all matching documents will be replaced with this
-   * @param options options to configure the replace
+   * @param collection    the collection
+   * @param query         query used to match the documents
+   * @param replace       all matching documents will be replaced with this
+   * @param options       options to configure the replace
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
@@ -263,12 +264,9 @@ public interface MongoClient {
   /**
    * Execute a bulk operation. Can insert, update, replace, and/or delete multiple documents with one request.
    *
-   * @param collection
-   *          the collection
-   * @param operations
-   *          the operations to execute
-   * @param resultHandler
-   *          will be called with a {@link MongoClientBulkWriteResult} when complete
+   * @param collection    the collection
+   * @param operations    the operations to execute
+   * @param resultHandler will be called with a {@link MongoClientBulkWriteResult} when complete
    */
   @Fluent
   MongoClient bulkWrite(String collection, List<BulkOperation> operations,
@@ -283,14 +281,10 @@ public interface MongoClient {
    * Execute a bulk operation with the specified write options. Can insert, update, replace, and/or delete multiple
    * documents with one request.
    *
-   * @param collection
-   *          the collection
-   * @param operations
-   *          the operations to execute
-   * @param bulkWriteOptions
-   *          the write options
-   * @param resultHandler
-   *          will be called with a {@link MongoClientBulkWriteResult} when complete
+   * @param collection       the collection
+   * @param operations       the operations to execute
+   * @param bulkWriteOptions the write options
+   * @param resultHandler    will be called with a {@link MongoClientBulkWriteResult} when complete
    */
   @Fluent
   MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions,
@@ -304,9 +298,9 @@ public interface MongoClient {
   /**
    * Find matching documents in the specified collection
    *
-   * @param collection  the collection
-   * @param query  query used to match documents
-   * @param resultHandler  will be provided with list of documents
+   * @param collection    the collection
+   * @param query         query used to match documents
+   * @param resultHandler will be provided with list of documents
    */
   @Fluent
   MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
@@ -320,8 +314,8 @@ public interface MongoClient {
    * Find matching documents in the specified collection.
    * This method use batchCursor for returning each found document.
    *
-   * @param collection  the collection
-   * @param query  query used to match documents
+   * @param collection the collection
+   * @param query      query used to match documents
    * @return a {@link ReadStream} emitting found documents
    */
   ReadStream<JsonObject> findBatch(String collection, JsonObject query);
@@ -329,10 +323,10 @@ public interface MongoClient {
   /**
    * Find matching documents in the specified collection, specifying options
    *
-   * @param collection  the collection
-   * @param query  query used to match documents
-   * @param options options to configure the find
-   * @param resultHandler  will be provided with list of documents
+   * @param collection    the collection
+   * @param query         query used to match documents
+   * @param options       options to configure the find
+   * @param resultHandler will be provided with list of documents
    */
   @Fluent
   MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
@@ -346,9 +340,9 @@ public interface MongoClient {
    * Find matching documents in the specified collection, specifying options.
    * This method use batchCursor for returning each found document.
    *
-   * @param collection  the collection
-   * @param query  query used to match documents
-   * @param options options to configure the find
+   * @param collection the collection
+   * @param query      query used to match documents
+   * @param options    options to configure the find
    * @return a {@link ReadStream} emitting found documents
    */
   ReadStream<JsonObject> findBatchWithOptions(String collection, JsonObject query, FindOptions options);
@@ -358,9 +352,9 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
    *
-   * @param collection  the collection
-   * @param query  the query used to match the document
-   * @param fields  the fields
+   * @param collection    the collection
+   * @param query         the query used to match the document
+   * @param fields        the fields
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
@@ -376,9 +370,9 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
    *
-   * @param collection  the collection
-   * @param query  the query used to match the document
-   * @param update used to describe how the documents will be updated
+   * @param collection    the collection
+   * @param query         the query used to match the document
+   * @param update        used to describe how the documents will be updated
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
@@ -394,10 +388,10 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
    *
-   * @param collection  the collection
-   * @param query  the query used to match the document
-   * @param update used to describe how the documents will be updated
-   * @param findOptions options to configure the find
+   * @param collection    the collection
+   * @param query         the query used to match the document
+   * @param update        used to describe how the documents will be updated
+   * @param findOptions   options to configure the find
    * @param updateOptions options to configure the update
    * @param resultHandler will be provided with the document, if any
    */
@@ -414,9 +408,9 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
    *
-   * @param collection  the collection
-   * @param query  the query used to match the document
-   * @param replace  the replacement document
+   * @param collection    the collection
+   * @param query         the query used to match the document
+   * @param replace       the replacement document
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
@@ -432,10 +426,10 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
    *
-   * @param collection  the collection
-   * @param query  the query used to match the document
-   * @param replace  the replacement document
-   * @param findOptions options to configure the find
+   * @param collection    the collection
+   * @param query         the query used to match the document
+   * @param replace       the replacement document
+   * @param findOptions   options to configure the find
    * @param updateOptions options to configure the update
    * @param resultHandler will be provided with the document, if any
    */
@@ -452,8 +446,8 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
    *
-   * @param collection  the collection
-   * @param query  the query used to match the document
+   * @param collection    the collection
+   * @param query         the query used to match the document
    * @param resultHandler will be provided with the deleted document, if any
    */
   @Fluent
@@ -469,9 +463,9 @@ public interface MongoClient {
    * <p>
    * This operation might change <i>_id</i> field of <i>query</i> parameter
    *
-   * @param collection  the collection
-   * @param query  the query used to match the document
-   * @param findOptions options to configure the find
+   * @param collection    the collection
+   * @param query         the query used to match the document
+   * @param findOptions   options to configure the find
    * @param resultHandler will be provided with the deleted document, if any
    */
   @Fluent
@@ -485,8 +479,8 @@ public interface MongoClient {
   /**
    * Count matching documents in a collection.
    *
-   * @param collection  the collection
-   * @param query  query used to match documents
+   * @param collection    the collection
+   * @param query         query used to match documents
    * @param resultHandler will be provided with the number of matching documents
    */
   @Fluent
@@ -498,10 +492,26 @@ public interface MongoClient {
   Future<Long> count(String collection, JsonObject query);
 
   /**
+   * Count matching documents in a collection.
+   *
+   * @param collection    the collection
+   * @param query         query used to match documents
+   * @param countOptions
+   * @param resultHandler will be provided with the number of matching documents
+   */
+  @Fluent
+  MongoClient countWithOptions(String collection, JsonObject query, CountOptions countOptions, Handler<AsyncResult<Long>> resultHandler);
+
+  /**
+   * Like {@link #count(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<Long> countWithOptions(String collection, JsonObject query, CountOptions countOptions);
+
+  /**
    * Remove matching documents from a collection and return the handler with {@code MongoClientDeleteResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match documents
+   * @param collection    the collection
+   * @param query         query used to match documents
    * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
    */
   @Fluent
@@ -515,9 +525,9 @@ public interface MongoClient {
   /**
    * Remove matching documents from a collection with the specified write option and return the handler with {@code MongoClientDeleteResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match documents
-   * @param writeOption  the write option to use
+   * @param collection    the collection
+   * @param query         query used to match documents
+   * @param writeOption   the write option to use
    * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
    */
   @Fluent
@@ -531,8 +541,8 @@ public interface MongoClient {
   /**
    * Remove a single matching document from a collection and return the handler with {@code MongoClientDeleteResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match document
+   * @param collection    the collection
+   * @param query         query used to match document
    * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
    */
   @Fluent
@@ -546,9 +556,9 @@ public interface MongoClient {
   /**
    * Remove a single matching document from a collection with the specified write option and return the handler with {@code MongoClientDeleteResult} result
    *
-   * @param collection  the collection
-   * @param query  query used to match document
-   * @param writeOption  the write option to use
+   * @param collection    the collection
+   * @param query         query used to match document
+   * @param writeOption   the write option to use
    * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
    */
   @Fluent
@@ -562,11 +572,21 @@ public interface MongoClient {
   /**
    * Create a new collection
    *
-   * @param collectionName  the name of the collection
+   * @param collectionName the name of the collection
    * @param resultHandler  will be called when complete
    */
   @Fluent
   MongoClient createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Create a new collection with options
+   *
+   * @param collectionName    the name of the collection
+   * @param collectionOptions options of the collection
+   * @param resultHandler     will be called when complete
+   */
+  @Fluent
+  MongoClient createCollectionWithOptions(String collectionName, CreateCollectionOptions collectionOptions, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Like {@link #createCollection(String, Handler)} but returns a {@code Future} of the asynchronous result
@@ -574,9 +594,14 @@ public interface MongoClient {
   Future<Void> createCollection(String collectionName);
 
   /**
+   * Like {@link #createCollection(String, Handler)} but with options and returns a {@code Future} of the asynchronous result
+   */
+  Future<Void> createCollectionWithOptions(String collectionName, CreateCollectionOptions collectionOptions);
+
+  /**
    * Get a list of all collections in the database.
    *
-   * @param resultHandler  will be called with a list of collections.
+   * @param resultHandler will be called with a list of collections.
    */
   @Fluent
   MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler);
@@ -589,7 +614,7 @@ public interface MongoClient {
   /**
    * Drop a collection
    *
-   * @param collection  the collection
+   * @param collection    the collection
    * @param resultHandler will be called when complete
    */
   @Fluent
@@ -603,10 +628,10 @@ public interface MongoClient {
   /**
    * Creates an index.
    *
-   * @param collection  the collection
-   * @param key  A document that contains the field and value pairs where the field is the index key and the value
-   *             describes the type of index for that field. For an ascending index on a field,
-   *             specify a value of 1; for descending index, specify a value of -1.
+   * @param collection    the collection
+   * @param key           A document that contains the field and value pairs where the field is the index key and the value
+   *                      describes the type of index for that field. For an ascending index on a field,
+   *                      specify a value of 1; for descending index, specify a value of -1.
    * @param resultHandler will be called when complete
    */
   @Fluent
@@ -620,11 +645,11 @@ public interface MongoClient {
   /**
    * Creates an index.
    *
-   * @param collection  the collection
-   * @param key  A document that contains the field and value pairs where the field is the index key and the value
-   *             describes the type of index for that field. For an ascending index on a field,
-   *             specify a value of 1; for descending index, specify a value of -1.
-   * @param options  the options for the index
+   * @param collection    the collection
+   * @param key           A document that contains the field and value pairs where the field is the index key and the value
+   *                      describes the type of index for that field. For an ascending index on a field,
+   *                      specify a value of 1; for descending index, specify a value of -1.
+   * @param options       the options for the index
    * @param resultHandler will be called when complete
    */
   @Fluent
@@ -637,10 +662,11 @@ public interface MongoClient {
 
   /**
    * creates an indexes
-   * @param collection the collection
-   * @param indexes A model that contains pairs of document and indexOptions, document contains the field and value pairs
-   *                where the field is the index key and the value describes the type of index for that field.
-   *                For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
+   *
+   * @param collection    the collection
+   * @param indexes       A model that contains pairs of document and indexOptions, document contains the field and value pairs
+   *                      where the field is the index key and the value describes the type of index for that field.
+   *                      For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
    * @param resultHandler will be called when complete
    */
   @Fluent
@@ -654,7 +680,7 @@ public interface MongoClient {
   /**
    * Get all the indexes in this collection.
    *
-   * @param collection  the collection
+   * @param collection    the collection
    * @param resultHandler will be called when complete
    */
   @Fluent
@@ -668,8 +694,8 @@ public interface MongoClient {
   /**
    * Drops the index given its name.
    *
-   * @param collection  the collection
-   * @param indexName the name of the index to remove
+   * @param collection    the collection
+   * @param indexName     the name of the index to remove
    * @param resultHandler will be called when complete
    */
   @Fluent
@@ -683,9 +709,9 @@ public interface MongoClient {
   /**
    * Run an arbitrary MongoDB command.
    *
-   * @param commandName  the name of the command
-   * @param command  the command
-   * @param resultHandler  will be called with the result.
+   * @param commandName   the name of the command
+   * @param command       the command
+   * @param resultHandler will be called with the result.
    */
   @Fluent
   MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
@@ -699,12 +725,24 @@ public interface MongoClient {
    * Gets the distinct values of the specified field name.
    * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
    *
-   * @param collection  the collection
-   * @param fieldName  the field name
-   * @param resultHandler  will be provided with array of values.
+   * @param collection    the collection
+   * @param fieldName     the field name
+   * @param resultHandler will be provided with array of values.
    */
   @Fluent
   MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  /**
+   * Gets the distinct values of the specified field name.
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+   *
+   * @param collection      the collection
+   * @param fieldName       the field name
+   * @param resultHandler   will be provided with array of values.
+   * @param distinctOptions options (e.g. collation)
+   */
+  @Fluent
+  MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler, DistinctOptions distinctOptions);
 
   /**
    * Like {@link #distinct(String, String, String, Handler)} but returns a {@code Future} of the asynchronous result
@@ -712,16 +750,34 @@ public interface MongoClient {
   Future<JsonArray> distinct(String collection, String fieldName, String resultClassname);
 
   /**
+   * Like {@link #distinct(String, String, String, Handler, DistinctOptions)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<JsonArray> distinct(String collection, String fieldName, String resultClassname, DistinctOptions distinctOptions);
+
+  /**
    * Gets the distinct values of the specified field name filtered by specified query.
    * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
    *
-   * @param collection  the collection
-   * @param fieldName  the field name
-   * @param query the query
-   * @param resultHandler  will be provided with array of values.
+   * @param collection    the collection
+   * @param fieldName     the field name
+   * @param query         the query
+   * @param resultHandler will be provided with array of values.
    */
   @Fluent
   MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+
+  /**
+   * Gets the distinct values of the specified field name filtered by specified query.
+   * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
+   *
+   * @param collection      the collection
+   * @param fieldName       the field name
+   * @param query           the query
+   * @param resultHandler   will be provided with array of values.
+   * @param distinctOptions options (e.g. collation)
+   */
+  @Fluent
+  MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler, DistinctOptions distinctOptions);
 
   /**
    * Like {@link #distinctWithQuery(String, String, String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
@@ -729,27 +785,57 @@ public interface MongoClient {
   Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query);
 
   /**
+   * Like {@link #distinctWithQuery(String, String, String, JsonObject, Handler, DistinctOptions)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions);
+
+  /**
    * Gets the distinct values of the specified field name.
    * This method use batchCursor for returning each found value.
    * Each value is a json fragment with fieldName key (eg: {"num": 1}).
    *
-   * @param collection  the collection
+   * @param collection the collection
    * @param fieldName  the field name
    * @return a {@link ReadStream} emitting json fragments
    */
   ReadStream<JsonObject> distinctBatch(String collection, String fieldName, String resultClassname);
 
   /**
+   * Gets the distinct values of the specified field name.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   *
+   * @param collection      the collection
+   * @param fieldName       the field name
+   * @param distinctOptions options (e.g. collation)
+   * @return a {@link ReadStream} emitting json fragments
+   */
+  ReadStream<JsonObject> distinctBatch(String collection, String fieldName, String resultClassname, DistinctOptions distinctOptions);
+
+  /**
    * Gets the distinct values of the specified field name filtered by specified query.
    * This method use batchCursor for returning each found value.
    * Each value is a json fragment with fieldName key (eg: {"num": 1}).
    *
-   * @param collection  the collection
+   * @param collection the collection
    * @param fieldName  the field name
-   * @param query the query
+   * @param query      the query
    * @return a {@link ReadStream} emitting json fragments
    */
   ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query);
+
+  /**
+   * Gets the distinct values of the specified field name filtered by specified query.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   *
+   * @param collection      the collection
+   * @param fieldName       the field name
+   * @param query           the query
+   * @param distinctOptions options (e.g. collation)
+   * @return a {@link ReadStream} emitting json fragments
+   */
+  ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions);
 
   /**
    * Gets the distinct values of the specified field name filtered by specified query.
@@ -764,6 +850,19 @@ public interface MongoClient {
    */
   ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, int batchSize);
 
+  /**
+   * Gets the distinct values of the specified field name filtered by specified query.
+   * This method use batchCursor for returning each found value.
+   * Each value is a json fragment with fieldName key (eg: {"num": 1}).
+   *
+   * @param collection      the collection
+   * @param fieldName       the field name
+   * @param query           the query
+   * @param batchSize       the number of documents to load in a batch
+   * @param distinctOptions options (e.g. collation)
+   * @return a {@link ReadStream} emitting json fragments
+   */
+  ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, int batchSize, DistinctOptions distinctOptions);
 
   /**
    * Run aggregate MongoDB command with default {@link AggregateOptions}.
@@ -784,10 +883,11 @@ public interface MongoClient {
 
   /**
    * Watch the collection change.
-   * @param collection the collection
-   * @param pipeline   watching pipeline to be executed
+   *
+   * @param collection     the collection
+   * @param pipeline       watching pipeline to be executed
    * @param withUpdatedDoc whether to get updated fullDocument for "update" operation
-   * @param batchSize  the number of documents to load in a batch
+   * @param batchSize      the number of documents to load in a batch
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   ReadStream<ChangeStreamDocument<JsonObject>> watch(String collection, JsonArray pipeline, boolean withUpdatedDoc, int batchSize);
@@ -795,7 +895,7 @@ public interface MongoClient {
   /**
    * Creates a {@link MongoGridFsClient} used to interact with Mongo GridFS.
    *
-   * @param resultHandler  the {@link MongoGridFsClient} to interact with the bucket named bucketName
+   * @param resultHandler the {@link MongoGridFsClient} to interact with the bucket named bucketName
    */
   @Fluent
   MongoClient createDefaultGridFsBucketService(Handler<AsyncResult<MongoGridFsClient>> resultHandler);
@@ -808,8 +908,8 @@ public interface MongoClient {
   /**
    * Creates a {@link MongoGridFsClient} used to interact with Mongo GridFS.
    *
-   * @param bucketName  the name of the GridFS bucket
-   * @param resultHandler  the {@link MongoGridFsClient} to interact with the bucket named bucketName
+   * @param bucketName    the name of the GridFS bucket
+   * @param resultHandler the {@link MongoGridFsClient} to interact with the bucket named bucketName
    */
   @Fluent
   MongoClient createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler);

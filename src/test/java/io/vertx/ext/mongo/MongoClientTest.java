@@ -2,6 +2,7 @@ package io.vertx.ext.mongo;
 
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.client.model.changestream.OperationType;
+import com.mongodb.reactivestreams.client.DistinctPublisher;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import io.vertx.core.Promise;
@@ -9,6 +10,9 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
+import io.vertx.ext.mongo.*;
+import io.vertx.ext.mongo.impl.JsonObjectBsonAdapter;
+import io.vertx.ext.mongo.impl.MongoClientImpl;
 import io.vertx.ext.mongo.impl.SingleResultSubscriber;
 import org.bson.Document;
 import org.junit.Test;
@@ -49,6 +53,30 @@ public class MongoClientTest extends MongoClientTestBase {
     mongoClient.close();
     actualMongo.close();
     super.tearDown();
+  }
+
+  @Test
+  public void testCreateCollectionWithOptions() {
+    String expectedLocale = "de_AT";
+    String collection = randomCollection();
+    CreateCollectionOptions options = new CreateCollectionOptions()
+      .setCollation(new CollationOptions().setLocale(expectedLocale));
+    Promise<Document> promise = ((VertxInternal) vertx).promise();
+    mongoClient.createCollectionWithOptions(collection, options, onSuccess(res ->
+      db.listCollections().first().subscribe(new SingleResultSubscriber<>(promise))
+    ));
+    promise.future()
+      .onFailure(this::fail)
+      .onSuccess(d -> {
+        JsonObject json = new JsonObject(d.toJson());
+        assertEquals(expectedLocale, json
+          .getJsonObject("options", new JsonObject())
+          .getJsonObject("collation", new JsonObject())
+          .getString("locale")
+        );
+      })
+      .onComplete(d -> testComplete());
+    await();
   }
 
 
@@ -114,10 +142,10 @@ public class MongoClientTest extends MongoClientTestBase {
         .endHandler(v -> latch.countDown())
         .handler(result -> {
           foos.add(result.getString("foo"));
-           stream.pause();
-           vertx.setTimer(10, id -> {
-             stream.resume();
-           });
+          stream.pause();
+          vertx.setTimer(10, id -> {
+            stream.resume();
+          });
         });
       return foos;
     });
@@ -213,8 +241,8 @@ public class MongoClientTest extends MongoClientTestBase {
     mongoClient.createCollection(collection, onSuccess(res -> {
       insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
         mongoClient.aggregate(collection,
-          new JsonArray().add(new JsonObject().put("$match", new JsonObject().put("foo", new JsonObject().put("$regex", "bar1"))))
-            .add(new JsonObject().put("$count", "foo_starting_with_bar1")))
+            new JsonArray().add(new JsonObject().put("$match", new JsonObject().put("foo", new JsonObject().put("$regex", "bar1"))))
+              .add(new JsonObject().put("$count", "foo_starting_with_bar1")))
           .exceptionHandler(this::fail)
           .endHandler(v -> latch.countDown())
           .handler(result -> count.set(result.getLong("foo_starting_with_bar1")));
@@ -236,10 +264,10 @@ public class MongoClientTest extends MongoClientTestBase {
     final String collection = randomCollection();
 
     insertDocs(mongoClient, collection, numDocs, onSuccess(res -> {
-      mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions).exceptionHandler(e -> {
-      }).handler(item -> {
-        System.out.println(item.encodePrettily());
-      }).fetch(25).endHandler(v -> latch.countDown());
+      mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions).exceptionHandler(this::fail)
+        .handler(item -> {
+          System.out.println(item.encodePrettily());
+        }).fetch(25).endHandler(v -> latch.countDown());
     }));
 
     awaitLatch(latch);

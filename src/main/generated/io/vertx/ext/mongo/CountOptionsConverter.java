@@ -8,36 +8,31 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 /**
- * Converter and mapper for {@link io.vertx.ext.mongo.FindOptions}.
- * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.FindOptions} original class using Vert.x codegen.
+ * Converter and mapper for {@link io.vertx.ext.mongo.CountOptions}.
+ * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mongo.CountOptions} original class using Vert.x codegen.
  */
-public class FindOptionsConverter {
+public class CountOptionsConverter {
 
 
   private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
   private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
-  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, FindOptions obj) {
+  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, CountOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "batchSize":
-          if (member.getValue() instanceof Number) {
-            obj.setBatchSize(((Number)member.getValue()).intValue());
-          }
-          break;
         case "collation":
           if (member.getValue() instanceof JsonObject) {
             obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
-        case "fields":
+        case "hint":
           if (member.getValue() instanceof JsonObject) {
-            obj.setFields(((JsonObject)member.getValue()).copy());
+            obj.setHint(((JsonObject)member.getValue()).copy());
           }
           break;
-        case "hint":
+        case "hintString":
           if (member.getValue() instanceof String) {
-            obj.setHint((String)member.getValue());
+            obj.setHintString((String)member.getValue());
           }
           break;
         case "limit":
@@ -45,39 +40,36 @@ public class FindOptionsConverter {
             obj.setLimit(((Number)member.getValue()).intValue());
           }
           break;
+        case "maxTime":
+          if (member.getValue() instanceof Number) {
+            obj.setMaxTime(((Number)member.getValue()).longValue());
+          }
+          break;
         case "skip":
           if (member.getValue() instanceof Number) {
             obj.setSkip(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "sort":
-          if (member.getValue() instanceof JsonObject) {
-            obj.setSort(((JsonObject)member.getValue()).copy());
           }
           break;
       }
     }
   }
 
-  public static void toJson(FindOptions obj, JsonObject json) {
+  public static void toJson(CountOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
 
-  public static void toJson(FindOptions obj, java.util.Map<String, Object> json) {
-    json.put("batchSize", obj.getBatchSize());
+  public static void toJson(CountOptions obj, java.util.Map<String, Object> json) {
     if (obj.getCollation() != null) {
       json.put("collation", obj.getCollation().toJson());
-    }
-    if (obj.getFields() != null) {
-      json.put("fields", obj.getFields());
     }
     if (obj.getHint() != null) {
       json.put("hint", obj.getHint());
     }
-    json.put("limit", obj.getLimit());
-    json.put("skip", obj.getSkip());
-    if (obj.getSort() != null) {
-      json.put("sort", obj.getSort());
+    if (obj.getHintString() != null) {
+      json.put("hintString", obj.getHintString());
     }
+    json.put("limit", obj.getLimit());
+    json.put("maxTime", obj.getMaxTime());
+    json.put("skip", obj.getSkip());
   }
 }

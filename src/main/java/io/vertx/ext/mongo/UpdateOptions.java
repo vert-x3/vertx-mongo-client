@@ -32,6 +32,7 @@ public class UpdateOptions {
   private boolean multi;
   private boolean returnNewDocument; // uniquely valid on findOneAnd* methods
   private JsonArray arrayFilters;
+  private CollationOptions collation;
 
   /**
    * Default constructor
@@ -44,7 +45,8 @@ public class UpdateOptions {
 
   /**
    * Constructor specify upsert
-   * @param upsert  the value of upsert
+   *
+   * @param upsert the value of upsert
    */
   public UpdateOptions(boolean upsert) {
     this.upsert = upsert;
@@ -54,7 +56,8 @@ public class UpdateOptions {
 
   /**
    * Constructor specify upsert and multi
-   * @param upsert  the value of upsert
+   *
+   * @param upsert the value of upsert
    * @param multi  the value of multi
    */
   public UpdateOptions(boolean upsert, boolean multi) {
@@ -64,7 +67,8 @@ public class UpdateOptions {
 
   /**
    * Copy constructor
-   * @param other  the one to copy
+   *
+   * @param other the one to copy
    */
   public UpdateOptions(UpdateOptions other) {
     this.writeOption = other.writeOption;
@@ -72,12 +76,13 @@ public class UpdateOptions {
     this.multi = other.multi;
     this.returnNewDocument = other.returnNewDocument;
     this.arrayFilters = other.arrayFilters;
+    this.collation = other.collation;
   }
 
   /**
    * Constructor from JSON
    *
-   * @param json  the json
+   * @param json the json
    */
   public UpdateOptions(JsonObject json) {
     String wo = json.getString("writeOption");
@@ -88,6 +93,22 @@ public class UpdateOptions {
     multi = json.getBoolean("multi", DEFAULT_MULTI);
     returnNewDocument = json.getBoolean("return_new_document", DEFAULT_RETURN_NEW_DOCUMENT);
     arrayFilters = json.getJsonArray("arrayFilters", null);
+    if (json.getJsonObject("collation") != null) {
+      collation = new CollationOptions(json.getJsonObject("collation"));
+    }
+  }
+  
+  public CollationOptions getCollation() {
+    return collation;
+  }
+
+  /**
+   * Collation options
+   *
+   * @param collation
+   */
+  public void setCollation(CollationOptions collation) {
+    this.collation = collation;
   }
 
   /**
@@ -101,7 +122,8 @@ public class UpdateOptions {
 
   /**
    * Set the write option
-   * @param writeOption  the write option
+   *
+   * @param writeOption the write option
    * @return reference to this, for fluency
    */
   public UpdateOptions setWriteOption(WriteOption writeOption) {
@@ -121,7 +143,7 @@ public class UpdateOptions {
   /**
    * Set whether upsert is enabled
    *
-   * @param upsert  true if enabled
+   * @param upsert true if enabled
    * @return reference to this, for fluency
    */
   public UpdateOptions setUpsert(boolean upsert) {
@@ -141,8 +163,7 @@ public class UpdateOptions {
   /**
    * Set whether new document property is enabled. Valid only on findOneAnd* methods.
    *
-   * @param returnNewDocument  true if enabled
-   *
+   * @param returnNewDocument true if enabled
    * @return reference to this, for fluency
    */
   public UpdateOptions setReturningNewDocument(boolean returnNewDocument) {
@@ -162,7 +183,7 @@ public class UpdateOptions {
   /**
    * Set whether multi is enabled
    *
-   * @param multi  true if enabled
+   * @param multi true if enabled
    * @return reference to this, for fluency
    */
   public UpdateOptions setMulti(boolean multi) {
@@ -181,7 +202,8 @@ public class UpdateOptions {
 
   /**
    * Set the arrayFilters option
-   * @param arrayFilters  the arrayFilters option
+   *
+   * @param arrayFilters the arrayFilters option
    * @return reference to this, for fluency
    */
   public UpdateOptions setArrayFilters(JsonArray arrayFilters) {
@@ -222,6 +244,7 @@ public class UpdateOptions {
     if (writeOption != options.writeOption) return false;
     if (returnNewDocument != options.returnNewDocument) return false;
     if (arrayFilters != options.arrayFilters) return false;
+    if (collation != options.collation) return false;
 
     return true;
   }
@@ -233,6 +256,7 @@ public class UpdateOptions {
     result = 31 * result + (multi ? 1 : 0);
     result = 31 * result + (returnNewDocument ? 1 : 0);
     result = 31 * result + (arrayFilters != null ? arrayFilters.hashCode() : 0);
+    result = 31 * result + (collation != null ? collation.hashCode() : 0);
     return result;
   }
 }
