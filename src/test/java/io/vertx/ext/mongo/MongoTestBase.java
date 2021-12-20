@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -127,11 +128,13 @@ public abstract class MongoTestBase extends VertxTestBase {
   }
 
   protected void insertDocs(MongoClient mongoClient, String collection, int num, Handler<AsyncResult<Void>> resultHandler) {
+    insertDocs(mongoClient, collection, num, this::createDoc, resultHandler);
+  }
+  protected void insertDocs(MongoClient mongoClient, String collection, int num, Function<Integer, JsonObject> docSupplier, Handler<AsyncResult<Void>> resultHandler) {
     if (num != 0) {
       AtomicInteger cnt = new AtomicInteger();
       for (int i = 0; i < num; i++) {
-        JsonObject doc = createDoc(i);
-        mongoClient.insert(collection, doc, ar -> {
+        mongoClient.insert(collection, docSupplier.apply(i), ar -> {
           if (ar.succeeded()) {
             if (cnt.incrementAndGet() == num) {
               resultHandler.handle(Future.succeededFuture());
@@ -183,6 +186,20 @@ public abstract class MongoTestBase extends VertxTestBase {
       put("other", new JsonObject().put("quux", "flib").put("myarr",
         new JsonArray().add("blah").add(true).add(312))).
       put("longval", 123456789L).put("dblval", 1.23);
+  }
+
+  protected JsonObject createDocWithAmbiguitiesDependingOnLocale(int num) {
+    return new JsonObject()
+      .put("foo", num % 2 == 0 ? "bar" : "bär")
+      .put("num", 123).put("big", true)
+      .putNull("nullentry")
+      .put("counter", num)
+      .put("arr", new JsonArray().add("x").add(true).add(12).add(1.23).addNull().add(new JsonObject().put("wib", "wob")))
+      .put("date", new JsonObject().put("$date", "2015-05-30T22:50:02Z"))
+      .put("object_id", new JsonObject().put("$oid", new ObjectId().toHexString()))
+      .put("other", new JsonObject().put("quux", "flib")
+      .put("myarr", new JsonArray().add("blah").add(true).add(312)))
+      .put("longval", 123456789L).put("dblval", 1.23);
   }
 
 }

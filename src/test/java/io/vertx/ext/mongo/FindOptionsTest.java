@@ -4,12 +4,23 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 import org.junit.Test;
 
+import java.util.Locale;
+
 import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
 public class FindOptionsTest {
+  private static JsonObject randomJsonObject() {
+    JsonObject json = new JsonObject();
+    json.put("string", TestUtils.randomAlphaString(10));
+    json.put("int", TestUtils.randomInt());
+    json.put("boolean", TestUtils.randomBoolean());
+
+    return json;
+  }
+
   @Test
   public void testOptions() {
     FindOptions options = new FindOptions();
@@ -29,6 +40,10 @@ public class FindOptionsTest {
     int skip = TestUtils.randomInt();
     assertEquals(options, options.setSkip(skip));
     assertEquals(skip, options.getSkip());
+
+    CollationOptions collationOptions = new CollationOptions();
+    assertEquals(options, options.setCollation(collationOptions));
+    assertEquals(collationOptions, options.getCollation());
   }
 
   @Test
@@ -40,6 +55,7 @@ public class FindOptionsTest {
     assertTrue(options.getSort().isEmpty());
     assertEquals(FindOptions.DEFAULT_LIMIT, options.getLimit());
     assertEquals(FindOptions.DEFAULT_SKIP, options.getSkip());
+    assertNull(options.getCollation());
   }
 
   @Test
@@ -58,11 +74,24 @@ public class FindOptionsTest {
     int skip = TestUtils.randomInt();
     json.put("skip", skip);
 
+    JsonObject collationOptions = new JsonObject()
+      .put("locale", Locale.getDefault().toString())
+      .put("caseLevel", true)
+      .put("caseFirst", "lower")
+      .put("alternate", "non-ignorable") // this
+      .put("strength", 1)
+      .put("numericOrdering", true)
+      .put("maxVariable", "punct")
+      .put("backwards", false)
+      .put("normalization", true);
+    json.put("collation", collationOptions);
+
     FindOptions options = new FindOptions(json);
     assertEquals(fields, options.getFields());
     assertEquals(sort, options.getSort());
     assertEquals(limit, options.getLimit());
     assertEquals(skip, options.getSkip());
+    assertEquals(collationOptions, options.getCollation().toJson());
   }
 
   @Test
@@ -73,6 +102,7 @@ public class FindOptionsTest {
     assertEquals(def.getSort(), options.getSort());
     assertEquals(def.getLimit(), options.getLimit());
     assertEquals(def.getSkip(), options.getSkip());
+    assertEquals(def.getCollation(), options.getCollation());
   }
 
   @Test
@@ -82,25 +112,19 @@ public class FindOptionsTest {
     JsonObject sort = randomJsonObject();
     int limit = TestUtils.randomInt();
     int skip = TestUtils.randomInt();
+    CollationOptions collationOptions = new CollationOptions().setStrength(1);
     options.setFields(fields);
     options.setSort(sort);
     options.setLimit(limit);
     options.setSkip(skip);
+    options.setCollation(collationOptions);
 
     FindOptions copy = new FindOptions(options);
     assertEquals(options.getFields(), copy.getFields());
     assertEquals(options.getSort(), copy.getSort());
     assertEquals(options.getLimit(), copy.getLimit());
     assertEquals(options.getSkip(), copy.getSkip());
-  }
-
-  private static JsonObject randomJsonObject() {
-    JsonObject json = new JsonObject();
-    json.put("string", TestUtils.randomAlphaString(10));
-    json.put("int", TestUtils.randomInt());
-    json.put("boolean", TestUtils.randomBoolean());
-
-    return json;
+    assertEquals(options.getCollation(), copy.getCollation());
   }
 
   @Test
@@ -110,10 +134,12 @@ public class FindOptionsTest {
     JsonObject sort = randomJsonObject();
     int limit = TestUtils.randomPositiveInt();
     int skip = TestUtils.randomPositiveInt();
+    CollationOptions collationOptions = new CollationOptions().setStrength(1);
     options.setFields(fields);
     options.setSort(sort);
     options.setLimit(limit);
     options.setSkip(skip);
+    options.setCollation(collationOptions);
 
     assertEquals(options, new FindOptions(options.toJson()));
   }

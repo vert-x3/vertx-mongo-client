@@ -4,7 +4,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
@@ -44,20 +44,24 @@ public class AggregateOptionsTest {
     AggregateOptions options = new AggregateOptions(new JsonObject());
     AggregateOptions def = new AggregateOptions();
     assertEquals(def.getMaxTime(), options.getMaxTime());
+    assertNull(options.getCollationOptions());
   }
 
   @Test
   public void testCopyOptions() {
-    AggregateOptions options = new AggregateOptions();
+    CollationOptions collationOptions = new CollationOptions();
+    AggregateOptions options = new AggregateOptions().setCollationOptions(collationOptions);
     options.setMaxTime(TestUtils.randomLong());
 
     AggregateOptions copy = new AggregateOptions(options);
     assertEquals(options.getMaxTime(), copy.getMaxTime());
+    assertEquals(options.getCollationOptions(), copy.getCollationOptions());
   }
 
   @Test
   public void testToJson() {
-    AggregateOptions options = new AggregateOptions();
+    CollationOptions collationOptions = new CollationOptions();
+    AggregateOptions options = new AggregateOptions().setCollationOptions(collationOptions);
     long maxTime = TestUtils.randomPositiveLong();
     options.setMaxTime(maxTime);
 
