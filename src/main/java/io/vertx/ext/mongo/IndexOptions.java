@@ -3,6 +3,7 @@ package io.vertx.ext.mongo;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -94,7 +95,7 @@ public class IndexOptions {
     bucketSize = options.getDouble("bucketSize");
     storageEngine = options.getJsonObject("storageEngine");
     partialFilterExpression = options.getJsonObject("partialFilterExpression");
-    collation = new CollationOptions(options.getJsonObject("collation"));
+    collation = options.getJsonObject("collation") != null ? new CollationOptions(options.getJsonObject("collation")) : null;
   }
 
   public CollationOptions getCollation() {
@@ -546,55 +547,36 @@ public class IndexOptions {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
-    IndexOptions options = (IndexOptions) o;
-
-    if (background != options.background) return false;
-    if (unique != options.unique) return false;
-    if (name != null ? !name.equals(options.name) : options.name != null) return false;
-    if (sparse != options.sparse) return false;
-    if (expireAfterSeconds != null ? !expireAfterSeconds.equals(options.expireAfterSeconds) : options.expireAfterSeconds != null)
-      return false;
-    if (version != null ? !version.equals(options.version) : options.version != null) return false;
-    if (weights != null ? !weights.equals(options.weights) : options.weights != null) return false;
-    if (defaultLanguage != null ? !defaultLanguage.equals(options.defaultLanguage) : options.defaultLanguage != null)
-      return false;
-    if (languageOverride != null ? !languageOverride.equals(options.languageOverride) : options.languageOverride != null)
-      return false;
-    if (textVersion != null ? !textVersion.equals(options.textVersion) : options.textVersion != null) return false;
-    if (sphereVersion != null ? !sphereVersion.equals(options.sphereVersion) : options.sphereVersion != null)
-      return false;
-    if (bits != null ? !bits.equals(options.bits) : options.bits != null) return false;
-    if (min != null ? !min.equals(options.min) : options.min != null) return false;
-    if (max != null ? !max.equals(options.max) : options.max != null) return false;
-    if (bucketSize != null ? !bucketSize.equals(options.bucketSize) : options.bucketSize != null) return false;
-    if (storageEngine != null ? !storageEngine.equals(options.storageEngine) : options.storageEngine != null)
-      return false;
-    if (partialFilterExpression != null ? !partialFilterExpression.equals(options.partialFilterExpression) : options.partialFilterExpression != null)
-      return false;
-
-    return true;
+    IndexOptions that = (IndexOptions) o;
+    return background == that.background && unique == that.unique && sparse == that.sparse && Objects.equals(name, that.name) && Objects.equals(expireAfterSeconds, that.expireAfterSeconds) && Objects.equals(version, that.version) && Objects.equals(weights, that.weights) && Objects.equals(defaultLanguage, that.defaultLanguage) && Objects.equals(languageOverride, that.languageOverride) && Objects.equals(textVersion, that.textVersion) && Objects.equals(sphereVersion, that.sphereVersion) && Objects.equals(bits, that.bits) && Objects.equals(min, that.min) && Objects.equals(max, that.max) && Objects.equals(bucketSize, that.bucketSize) && Objects.equals(storageEngine, that.storageEngine) && Objects.equals(partialFilterExpression, that.partialFilterExpression) && Objects.equals(collation, that.collation);
   }
 
   @Override
   public int hashCode() {
-    int result = background ? 1 : 0;
-    result = 31 * result + (unique ? 1 : 0);
-    result = 31 * result + (name != null ? name.hashCode() : 0);
-    result = 31 * result + (sparse ? 1 : 0);
-    result = 31 * result + (expireAfterSeconds != null ? expireAfterSeconds.hashCode() : 0);
-    result = 31 * result + (version != null ? version.hashCode() : 0);
-    result = 31 * result + (weights != null ? weights.hashCode() : 0);
-    result = 31 * result + (defaultLanguage != null ? defaultLanguage.hashCode() : 0);
-    result = 31 * result + (languageOverride != null ? languageOverride.hashCode() : 0);
-    result = 31 * result + (textVersion != null ? textVersion.hashCode() : 0);
-    result = 31 * result + (sphereVersion != null ? sphereVersion.hashCode() : 0);
-    result = 31 * result + (bits != null ? bits.hashCode() : 0);
-    result = 31 * result + (min != null ? min.hashCode() : 0);
-    result = 31 * result + (max != null ? max.hashCode() : 0);
-    result = 31 * result + (bucketSize != null ? bucketSize.hashCode() : 0);
-    result = 31 * result + (storageEngine != null ? storageEngine.hashCode() : 0);
-    result = 31 * result + (partialFilterExpression != null ? partialFilterExpression.hashCode() : 0);
-    return result;
+    return Objects.hash(background, unique, name, sparse, expireAfterSeconds, version, weights, defaultLanguage, languageOverride, textVersion, sphereVersion, bits, min, max, bucketSize, storageEngine, partialFilterExpression, collation);
+  }
+
+  @Override
+  public String toString() {
+    return "IndexOptions{" +
+      "background=" + background +
+      ", unique=" + unique +
+      ", name='" + name + '\'' +
+      ", sparse=" + sparse +
+      ", expireAfterSeconds=" + expireAfterSeconds +
+      ", version=" + version +
+      ", weights=" + weights +
+      ", defaultLanguage='" + defaultLanguage + '\'' +
+      ", languageOverride='" + languageOverride + '\'' +
+      ", textVersion=" + textVersion +
+      ", sphereVersion=" + sphereVersion +
+      ", bits=" + bits +
+      ", min=" + min +
+      ", max=" + max +
+      ", bucketSize=" + bucketSize +
+      ", storageEngine=" + storageEngine +
+      ", partialFilterExpression=" + partialFilterExpression +
+      ", collation=" + collation +
+      '}';
   }
 }

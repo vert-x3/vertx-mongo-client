@@ -2,7 +2,6 @@ package io.vertx.ext.mongo;
 
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.client.model.changestream.OperationType;
-import com.mongodb.reactivestreams.client.DistinctPublisher;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import io.vertx.core.Promise;
@@ -10,9 +9,6 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
-import io.vertx.ext.mongo.*;
-import io.vertx.ext.mongo.impl.JsonObjectBsonAdapter;
-import io.vertx.ext.mongo.impl.MongoClientImpl;
 import io.vertx.ext.mongo.impl.SingleResultSubscriber;
 import org.bson.Document;
 import org.junit.Test;
@@ -260,17 +256,18 @@ public class MongoClientTest extends MongoClientTestBase {
     JsonArray pipeline = new JsonArray();
     pipeline.add(new JsonObject().put("$addFields", new JsonObject().put("field", "test")));
     int numDocs = 25;
-    final CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch fetchLatch = new CountDownLatch(numDocs);
+    final CountDownLatch endLatch = new CountDownLatch(1);
     final String collection = randomCollection();
-
     insertDocs(mongoClient, collection, numDocs, onSuccess(res -> {
-      mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions).exceptionHandler(this::fail)
-        .handler(item -> {
-          System.out.println(item.encodePrettily());
-        }).fetch(25).endHandler(v -> latch.countDown());
+      mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions)
+        .exceptionHandler(this::fail)
+        .handler(j -> fetchLatch.countDown())
+        .fetch(25).endHandler(v -> endLatch.countDown());
     }));
 
-    awaitLatch(latch);
+    awaitLatch(fetchLatch);
+    awaitLatch(endLatch);
   }
 
   @Test

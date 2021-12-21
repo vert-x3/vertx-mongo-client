@@ -24,7 +24,7 @@ public class FindOptions {
   public static final int DEFAULT_SKIP = 0;
 
   /**
-   * The default value of batchSize = 10.
+   * The default value of batchSize = 20.
    */
   public static final int DEFAULT_BATCH_SIZE = 20;
 
@@ -45,8 +45,6 @@ public class FindOptions {
     this.limit = DEFAULT_LIMIT;
     this.skip = DEFAULT_SKIP;
     this.batchSize = DEFAULT_BATCH_SIZE;
-    this.hint = "";
-    this.collation = null;
   }
 
   /**
@@ -221,25 +219,25 @@ public class FindOptions {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
     FindOptions that = (FindOptions) o;
-
-    if (limit != that.limit) return false;
-    if (skip != that.skip) return false;
-    if (batchSize != that.batchSize) return false;
-    if (!Objects.equals(fields, that.fields)) return false;
-    if (!Objects.equals(hint, that.hint)) return false;
-    return Objects.equals(sort, that.sort);
+    return limit == that.limit && skip == that.skip && batchSize == that.batchSize && Objects.equals(fields, that.fields) && Objects.equals(sort, that.sort) && Objects.equals(hint, that.hint) && Objects.equals(collation, that.collation);
   }
 
   @Override
   public int hashCode() {
-    int result = fields != null ? fields.hashCode() : 0;
-    result = 31 * result + (sort != null ? sort.hashCode() : 0);
-    result = 31 * result + limit;
-    result = 31 * result + skip;
-    result = 31 * result + batchSize;
-    result = 31 * result + (hint != null ? hint.hashCode() : 0);
-    return result;
+    return Objects.hash(fields, sort, limit, skip, batchSize, hint, collation);
+  }
+
+  @Override
+  public String toString() {
+    return "FindOptions{" +
+      "fields=" + fields +
+      ", sort=" + sort +
+      ", limit=" + limit +
+      ", skip=" + skip +
+      ", batchSize=" + batchSize +
+      ", hint='" + hint + '\'' +
+      ", collation=" + collation +
+      '}';
   }
 }
