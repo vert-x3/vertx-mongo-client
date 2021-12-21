@@ -55,16 +55,18 @@ public class GridFsUploadOptions {
     return metadata;
   }
 
-  public void setMetadata(JsonObject metadata) {
+  public GridFsUploadOptions setMetadata(JsonObject metadata) {
     this.metadata = metadata;
+    return this;
   }
 
   public Integer getChunkSizeBytes() {
     return chunkSizeBytes;
   }
 
-  public void setChunkSizeBytes(Integer chunkSizeBytes) {
+  public GridFsUploadOptions setChunkSizeBytes(Integer chunkSizeBytes) {
     this.chunkSizeBytes = chunkSizeBytes;
+    return this;
   }
 
 }

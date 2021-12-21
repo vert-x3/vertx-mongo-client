@@ -97,7 +97,7 @@ public class UpdateOptions {
       collation = new CollationOptions(json.getJsonObject("collation"));
     }
   }
-  
+
   public CollationOptions getCollation() {
     return collation;
   }
@@ -107,8 +107,9 @@ public class UpdateOptions {
    *
    * @param collation
    */
-  public void setCollation(CollationOptions collation) {
+  public UpdateOptions setCollation(CollationOptions collation) {
     this.collation = collation;
+    return this;
   }
 
   /**

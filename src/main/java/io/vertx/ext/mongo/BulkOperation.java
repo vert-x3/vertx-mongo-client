@@ -31,8 +31,9 @@ public class BulkOperation {
     return collation;
   }
 
-  public void setCollation(CollationOptions collation) {
+  public BulkOperation setCollation(CollationOptions collation) {
     this.collation = collation;
+    return this;
   }
 
   private CollationOptions collation;

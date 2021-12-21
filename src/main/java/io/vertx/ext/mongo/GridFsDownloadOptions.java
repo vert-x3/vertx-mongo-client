@@ -57,8 +57,9 @@ public class GridFsDownloadOptions {
     return revision;
   }
 
-  public void setRevision(Integer revision) {
+  public GridFsDownloadOptions setRevision(Integer revision) {
     this.revision = revision;
+    return this;
   }
 
 }

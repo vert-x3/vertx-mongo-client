@@ -94,7 +94,7 @@ public class IndexOptions {
     bucketSize = options.getDouble("bucketSize");
     storageEngine = options.getJsonObject("storageEngine");
     partialFilterExpression = options.getJsonObject("partialFilterExpression");
-    collation = new CollationOptions(options.getJsonObject("collation"));
+    collation = new CollationOptions(options.getJsonObject("collation", new JsonObject()));
   }
 
   public CollationOptions getCollation() {
