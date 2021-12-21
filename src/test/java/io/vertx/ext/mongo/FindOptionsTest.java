@@ -1,5 +1,6 @@
 package io.vertx.ext.mongo;
 
+import com.mongodb.client.model.CollationStrength;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
 import org.junit.Test;
@@ -112,7 +113,7 @@ public class FindOptionsTest {
     JsonObject sort = randomJsonObject();
     int limit = TestUtils.randomInt();
     int skip = TestUtils.randomInt();
-    CollationOptions collationOptions = new CollationOptions().setStrength(1);
+    CollationOptions collationOptions = new CollationOptions().setStrength(CollationStrength.PRIMARY);
     options.setFields(fields);
     options.setSort(sort);
     options.setLimit(limit);
@@ -134,7 +135,7 @@ public class FindOptionsTest {
     JsonObject sort = randomJsonObject();
     int limit = TestUtils.randomPositiveInt();
     int skip = TestUtils.randomPositiveInt();
-    CollationOptions collationOptions = new CollationOptions().setStrength(1);
+    CollationOptions collationOptions = new CollationOptions().setStrength(CollationStrength.PRIMARY);
     options.setFields(fields);
     options.setSort(sort);
     options.setLimit(limit);

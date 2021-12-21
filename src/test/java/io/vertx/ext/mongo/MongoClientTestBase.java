@@ -1,5 +1,6 @@
 package io.vertx.ext.mongo;
 
+import com.mongodb.client.model.CollationStrength;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
@@ -700,7 +701,7 @@ public abstract class MongoClientTestBase extends MongoTestBase {
         assertNotNull(id1);
         mongoClient.insert(collection, doc2, onSuccess(id2 -> {
           assertNotNull(id2);
-          mongoClient.countWithOptions(collection, new JsonObject().put("foo", "bar"), new CountOptions().setCollation(new CollationOptions().setLocale("de_AT").setStrength(3)), onSuccess(count -> {
+          mongoClient.countWithOptions(collection, new JsonObject().put("foo", "bar"), new CountOptions().setCollation(new CollationOptions().setLocale("de_AT").setStrength(CollationStrength.TERTIARY)), onSuccess(count -> {
             assertNotNull(count);
             assertEquals(1, count.intValue());
             testComplete();

@@ -3,6 +3,8 @@ package io.vertx.ext.mongo;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
 /**
  * Options used to configure downloads from GridFS.
  *
@@ -57,8 +59,28 @@ public class GridFsDownloadOptions {
     return revision;
   }
 
-  public void setRevision(Integer revision) {
+  public GridFsDownloadOptions setRevision(Integer revision) {
     this.revision = revision;
+    return this;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    GridFsDownloadOptions that = (GridFsDownloadOptions) o;
+    return Objects.equals(revision, that.revision);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(revision);
+  }
+
+  @Override
+  public String toString() {
+    return "GridFsDownloadOptions{" +
+      "revision=" + revision +
+      '}';
+  }
 }

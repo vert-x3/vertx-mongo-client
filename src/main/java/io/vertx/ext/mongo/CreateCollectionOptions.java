@@ -13,20 +13,27 @@ import java.util.Objects;
  */
 @DataObject(generateConverter = true)
 public class CreateCollectionOptions {
-  private long maxDocuments;
-  private boolean capped;
-  private long sizeInBytes;
-  private JsonObject storageEngineOptions = new JsonObject();
-  private JsonObject indexOptionDefaults = new JsonObject();
-  private ValidationOptions validationOptions = new ValidationOptions();
+  private Long maxDocuments;
+  private Boolean capped;
+  private Long sizeInBytes;
+  private JsonObject storageEngineOptions;
+  private JsonObject indexOptionDefaults;
+  private ValidationOptions validationOptions;
   private CollationOptions collation;
 
   public CreateCollectionOptions() {
+    this.maxDocuments = null;
+    this.capped = null;
+    this.sizeInBytes = null;
+    this.storageEngineOptions = null;
+    this.indexOptionDefaults = null;
+    this.validationOptions = null;
+    this.collation = null;
   }
 
   public CreateCollectionOptions(CreateCollectionOptions createCollectionOptions) {
     this.maxDocuments = createCollectionOptions.getMaxDocuments();
-    this.capped = createCollectionOptions.isCapped();
+    this.capped = createCollectionOptions.getCapped();
     this.sizeInBytes = createCollectionOptions.getSizeInBytes();
     this.storageEngineOptions = createCollectionOptions.getStorageEngineOptions();
     this.indexOptionDefaults = createCollectionOptions.getIndexOptionDefaults();
@@ -44,7 +51,7 @@ public class CreateCollectionOptions {
     return json;
   }
 
-  public long getMaxDocuments() {
+  public Long getMaxDocuments() {
     return this.maxDocuments;
   }
 
@@ -58,7 +65,7 @@ public class CreateCollectionOptions {
    * @param maxDocuments
    * @return CreateCollectionOptions
    */
-  public CreateCollectionOptions setMaxDocuments(long maxDocuments) {
+  public CreateCollectionOptions setMaxDocuments(Long maxDocuments) {
     this.maxDocuments = maxDocuments;
     return this;
   }
@@ -68,20 +75,31 @@ public class CreateCollectionOptions {
    * @return com.mongodb.client.model.CreateCollectionOptions
    */
   public com.mongodb.client.model.CreateCollectionOptions toMongoDriverObject() {
-    return new com.mongodb.client.model.CreateCollectionOptions()
-      .collation(collation.toMongoDriverObject())
-      .capped(capped)
-      .indexOptionDefaults(new IndexOptionDefaults()
+    com.mongodb.client.model.CreateCollectionOptions createCollectionOptions = new com.mongodb.client.model.CreateCollectionOptions();
+    if (capped != null) {
+      createCollectionOptions.capped(capped);
+    }
+    if (maxDocuments != null) {
+      createCollectionOptions.maxDocuments(maxDocuments);
+    }
+    if (sizeInBytes != null) {
+      createCollectionOptions.sizeInBytes(sizeInBytes);
+    }
+    if (collation != null) {
+      createCollectionOptions.collation(collation.toMongoDriverObject());
+    }
+    if (indexOptionDefaults != null) {
+      createCollectionOptions.indexOptionDefaults(new IndexOptionDefaults()
         .storageEngine(org.bson.BsonDocument.parse(indexOptionDefaults.encode()))
-      )
-      .validationOptions(validationOptions.toMongoDriverObject())
-      .storageEngineOptions(org.bson.BsonDocument.parse(storageEngineOptions.encode()))
-      .maxDocuments(maxDocuments)
-      .sizeInBytes(sizeInBytes);
-  }
-
-  public boolean isCapped() {
-    return this.capped;
+      );
+    }
+    if (validationOptions != null) {
+      createCollectionOptions.validationOptions(validationOptions.toMongoDriverObject());
+    }
+    if (storageEngineOptions != null) {
+      createCollectionOptions.storageEngineOptions(org.bson.BsonDocument.parse(storageEngineOptions.encode()));
+    }
+    return createCollectionOptions;
   }
 
   /**
@@ -89,12 +107,16 @@ public class CreateCollectionOptions {
    * @param capped
    * @return CreateCollectionOptions
    */
-  public CreateCollectionOptions setCapped(boolean capped) {
+  public CreateCollectionOptions setCapped(Boolean capped) {
     this.capped = capped;
     return this;
   }
 
-  public long getSizeInBytes() {
+  public Boolean getCapped() {
+    return capped;
+  }
+
+  public Long getSizeInBytes() {
     return this.sizeInBytes;
   }
 
@@ -104,7 +126,7 @@ public class CreateCollectionOptions {
    * @param sizeInBytes
    * @return CreateCollectionOptions
    */
-  public CreateCollectionOptions setSizeInBytes(long sizeInBytes) {
+  public CreateCollectionOptions setSizeInBytes(Long sizeInBytes) {
     this.sizeInBytes = sizeInBytes;
     return this;
   }
@@ -167,8 +189,17 @@ public class CreateCollectionOptions {
     return this;
   }
 
+  @Override
   public String toString() {
-    return "CreateCollectionOptions{, maxDocuments=" + this.maxDocuments + ", capped=" + this.capped + ", sizeInBytes=" + this.sizeInBytes + ", storageEngineOptions=" + this.storageEngineOptions + ", indexOptionDefaults=" + this.indexOptionDefaults + ", validationOptions=" + this.validationOptions + ", collation=" + this.collation + '}';
+    return "CreateCollectionOptions{" +
+      "maxDocuments=" + maxDocuments +
+      ", capped=" + capped +
+      ", sizeInBytes=" + sizeInBytes +
+      ", storageEngineOptions=" + storageEngineOptions +
+      ", indexOptionDefaults=" + indexOptionDefaults +
+      ", validationOptions=" + validationOptions +
+      ", collation=" + collation +
+      '}';
   }
 
   @Override
@@ -176,11 +207,11 @@ public class CreateCollectionOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CreateCollectionOptions that = (CreateCollectionOptions) o;
-    return getMaxDocuments() == that.getMaxDocuments() && isCapped() == that.isCapped() && getSizeInBytes() == that.getSizeInBytes() && Objects.equals(getStorageEngineOptions(), that.getStorageEngineOptions()) && Objects.equals(getIndexOptionDefaults(), that.getIndexOptionDefaults()) && Objects.equals(getValidationOptions(), that.getValidationOptions()) && Objects.equals(getCollation(), that.getCollation());
+    return Objects.equals(maxDocuments, that.maxDocuments) && Objects.equals(capped, that.capped) && Objects.equals(sizeInBytes, that.sizeInBytes) && Objects.equals(storageEngineOptions, that.storageEngineOptions) && Objects.equals(indexOptionDefaults, that.indexOptionDefaults) && Objects.equals(validationOptions, that.validationOptions) && Objects.equals(collation, that.collation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getMaxDocuments(), isCapped(), getSizeInBytes(), getStorageEngineOptions(), getIndexOptionDefaults(), getValidationOptions(), getCollation());
+    return Objects.hash(maxDocuments, capped, sizeInBytes, storageEngineOptions, indexOptionDefaults, validationOptions, collation);
   }
 }
