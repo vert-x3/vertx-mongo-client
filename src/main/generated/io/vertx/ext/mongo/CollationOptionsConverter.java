@@ -46,8 +46,8 @@ public class CollationOptionsConverter {
           }
           break;
         case "strength":
-          if (member.getValue() instanceof Number) {
-            obj.setStrength(((Number)member.getValue()).intValue());
+          if (member.getValue() instanceof String) {
+            obj.setStrength(com.mongodb.client.model.CollationStrength.valueOf((String)member.getValue()));
           }
           break;
       }
@@ -59,13 +59,23 @@ public class CollationOptionsConverter {
   }
 
   public static void toJson(CollationOptions obj, java.util.Map<String, Object> json) {
-    json.put("backwards", obj.isBackwards());
-    json.put("caseLevel", obj.isCaseLevel());
+    if (obj.isBackwards() != null) {
+      json.put("backwards", obj.isBackwards());
+    }
+    if (obj.isCaseLevel() != null) {
+      json.put("caseLevel", obj.isCaseLevel());
+    }
     if (obj.getLocale() != null) {
       json.put("locale", obj.getLocale());
     }
-    json.put("normalization", obj.isNormalization());
-    json.put("numericOrdering", obj.isNumericOrdering());
-    json.put("strength", obj.getStrength());
+    if (obj.isNormalization() != null) {
+      json.put("normalization", obj.isNormalization());
+    }
+    if (obj.isNumericOrdering() != null) {
+      json.put("numericOrdering", obj.isNumericOrdering());
+    }
+    if (obj.getStrength() != null) {
+      json.put("strength", obj.getStrength().name());
+    }
   }
 }

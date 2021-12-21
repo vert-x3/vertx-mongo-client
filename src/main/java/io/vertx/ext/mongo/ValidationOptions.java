@@ -41,10 +41,13 @@ public final class ValidationOptions {
    * @return com.mongodb.client.model.ValidationOptions
    */
   public com.mongodb.client.model.ValidationOptions toMongoDriverObject() {
-    return new com.mongodb.client.model.ValidationOptions()
-      .validator(org.bson.BsonDocument.parse(validator.encode()))
+    com.mongodb.client.model.ValidationOptions options = new com.mongodb.client.model.ValidationOptions()
       .validationAction(validationAction)
       .validationLevel(validationLevel);
+    if (validator != null && !validator.isEmpty()) {
+      options.validator(org.bson.BsonDocument.parse(validator.encode()));
+    }
+    return options;
   }
 
   @Nullable
@@ -94,8 +97,13 @@ public final class ValidationOptions {
     return this;
   }
 
+  @Override
   public String toString() {
-    return "ValidationOptions{validator=" + this.validator + ", validationLevel=" + this.validationLevel + ", validationAction=" + this.validationAction + '}';
+    return "ValidationOptions{" +
+      "validator=" + validator +
+      ", validationLevel=" + validationLevel +
+      ", validationAction=" + validationAction +
+      '}';
   }
 
   @Override
@@ -103,11 +111,11 @@ public final class ValidationOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ValidationOptions that = (ValidationOptions) o;
-    return Objects.equals(getValidator(), that.getValidator()) && getValidationLevel() == that.getValidationLevel() && getValidationAction() == that.getValidationAction();
+    return Objects.equals(validator, that.validator) && validationLevel == that.validationLevel && validationAction == that.validationAction;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getValidator(), getValidationLevel(), getValidationAction());
+    return Objects.hash(validator, validationLevel, validationAction);
   }
 }

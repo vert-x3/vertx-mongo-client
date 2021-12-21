@@ -4,6 +4,8 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
 /**
  * Options for configuring updates.
  *
@@ -63,6 +65,7 @@ public class UpdateOptions {
   public UpdateOptions(boolean upsert, boolean multi) {
     this.upsert = upsert;
     this.multi = multi;
+    this.returnNewDocument = DEFAULT_RETURN_NEW_DOCUMENT;
   }
 
   /**
@@ -97,7 +100,7 @@ public class UpdateOptions {
       collation = new CollationOptions(json.getJsonObject("collation"));
     }
   }
-  
+
   public CollationOptions getCollation() {
     return collation;
   }
@@ -107,8 +110,9 @@ public class UpdateOptions {
    *
    * @param collation
    */
-  public void setCollation(CollationOptions collation) {
+  public UpdateOptions setCollation(CollationOptions collation) {
     this.collation = collation;
+    return this;
   }
 
   /**
@@ -228,6 +232,9 @@ public class UpdateOptions {
     if (arrayFilters != null && !arrayFilters.isEmpty()) {
       json.put("arrayFilters", arrayFilters);
     }
+    if (collation != null) {
+      json.put("collation", collation.toJson());
+    }
 
     return json;
   }
@@ -236,27 +243,24 @@ public class UpdateOptions {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
-    UpdateOptions options = (UpdateOptions) o;
-
-    if (multi != options.multi) return false;
-    if (upsert != options.upsert) return false;
-    if (writeOption != options.writeOption) return false;
-    if (returnNewDocument != options.returnNewDocument) return false;
-    if (arrayFilters != options.arrayFilters) return false;
-    if (collation != options.collation) return false;
-
-    return true;
+    UpdateOptions that = (UpdateOptions) o;
+    return upsert == that.upsert && multi == that.multi && returnNewDocument == that.returnNewDocument && writeOption == that.writeOption && Objects.equals(arrayFilters, that.arrayFilters) && Objects.equals(collation, that.collation);
   }
 
   @Override
   public int hashCode() {
-    int result = writeOption != null ? writeOption.hashCode() : 0;
-    result = 31 * result + (upsert ? 1 : 0);
-    result = 31 * result + (multi ? 1 : 0);
-    result = 31 * result + (returnNewDocument ? 1 : 0);
-    result = 31 * result + (arrayFilters != null ? arrayFilters.hashCode() : 0);
-    result = 31 * result + (collation != null ? collation.hashCode() : 0);
-    return result;
+    return Objects.hash(writeOption, upsert, multi, returnNewDocument, arrayFilters, collation);
+  }
+
+  @Override
+  public String toString() {
+    return "UpdateOptions{" +
+      "writeOption=" + writeOption +
+      ", upsert=" + upsert +
+      ", multi=" + multi +
+      ", returnNewDocument=" + returnNewDocument +
+      ", arrayFilters=" + arrayFilters +
+      ", collation=" + collation +
+      '}';
   }
 }

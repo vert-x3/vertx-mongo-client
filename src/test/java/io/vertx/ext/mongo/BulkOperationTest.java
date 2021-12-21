@@ -43,6 +43,12 @@ public class BulkOperationTest {
     b.setUpsert(true);
     assertEquals(a, b);
 
+    a.setCollation(new CollationOptions());
+    b.setCollation(new CollationOptions().setLocale("de_AT"));
+    assertNotEquals(a,b);
+    b.setCollation(new CollationOptions());
+    assertEquals(a,b);
+
     assertNotEquals(a, null);
   }
 
@@ -75,5 +81,12 @@ public class BulkOperationTest {
     assertNotEquals(hash, a.hashCode());
     a.setUpsert(true);
     assertEquals(hash, a.hashCode());
+
+    a.setCollation(new CollationOptions());
+    assertNotEquals(hash, a.hashCode());
+    a.setCollation(null);
+    assertEquals(hash, a.hashCode());
+
+    assertNotEquals(a, null);
   }
 }

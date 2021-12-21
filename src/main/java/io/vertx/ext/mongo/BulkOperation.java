@@ -3,6 +3,8 @@ package io.vertx.ext.mongo;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
 /**
  * Contains all data needed for one operation of a bulk write operation.
  *
@@ -26,15 +28,6 @@ public class BulkOperation {
   private JsonObject document;
   private boolean upsert;
   private boolean multi;
-
-  public CollationOptions getCollation() {
-    return collation;
-  }
-
-  public void setCollation(CollationOptions collation) {
-    this.collation = collation;
-  }
-
   private CollationOptions collation;
 
   /**
@@ -48,6 +41,7 @@ public class BulkOperation {
     this.document = null;
     this.upsert = DEFAULT_UPSERT;
     this.multi = DEFAULT_MULTI;
+    this.collation = null;
   }
 
   /**
@@ -57,27 +51,12 @@ public class BulkOperation {
    */
   public BulkOperation(JsonObject json) {
     String typeValue = json.getString("type");
-    if (typeValue != null)
-      this.type = BulkOperationType.valueOf(typeValue.toUpperCase());
+    type = typeValue != null ? BulkOperationType.valueOf(typeValue.toUpperCase()): null;
     filter = json.getJsonObject("filter");
     document = json.getJsonObject("document");
     upsert = json.getBoolean("upsert");
     multi = json.getBoolean("multi");
-  }
-
-  /**
-   * Generate a json from this object
-   *
-   * @return the json representation
-   */
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    json.put("type", type);
-    json.put("filter", filter);
-    json.put("document", document);
-    json.put("upsert", upsert);
-    json.put("multi", multi);
-    return json;
+    collation = json.getJsonObject("collation") != null ? new CollationOptions(json.getJsonObject("collation")) : null;
   }
 
   /**
@@ -146,6 +125,31 @@ public class BulkOperation {
   public static BulkOperation createUpdate(JsonObject filter, JsonObject document, boolean upsert, boolean multi) {
     return new BulkOperation(BulkOperationType.UPDATE).setFilter(filter).setDocument(document).setUpsert(upsert)
       .setMulti(multi);
+  }
+
+  public CollationOptions getCollation() {
+    return collation;
+  }
+
+  public BulkOperation setCollation(CollationOptions collation) {
+    this.collation = collation;
+    return this;
+  }
+
+  /**
+   * Generate a json from this object
+   *
+   * @return the json representation
+   */
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    json.put("type", type);
+    json.put("filter", filter);
+    json.put("document", document);
+    json.put("upsert", upsert);
+    json.put("multi", multi);
+    json.put("collation", collation != null ? collation.toJson() : null);
+    return json;
   }
 
   /**
@@ -252,23 +256,24 @@ public class BulkOperation {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
-    BulkOperation other = (BulkOperation) o;
-
-    if (type != other.type) return false;
-    if (filter != null ? !filter.equals(other.filter) : other.filter != null) return false;
-    if (document != null ? !document.equals(other.document) : other.document != null) return false;
-
-    return upsert == other.upsert && multi == other.multi;
+    BulkOperation operation = (BulkOperation) o;
+    return upsert == operation.upsert && multi == operation.multi && type == operation.type && Objects.equals(filter, operation.filter) && Objects.equals(document, operation.document) && Objects.equals(collation, operation.collation);
   }
 
   @Override
   public int hashCode() {
-    int result = type.hashCode();
-    result = 31 * result + filter.hashCode();
-    result = 31 * result + document.hashCode();
-    result = 31 * result + (upsert ? 1 : 0);
-    result = 31 * result + (multi ? 1 : 0);
-    return result;
+    return Objects.hash(type, filter, document, upsert, multi, collation);
+  }
+
+  @Override
+  public String toString() {
+    return "BulkOperation{" +
+      "type=" + type +
+      ", filter=" + filter +
+      ", document=" + document +
+      ", upsert=" + upsert +
+      ", multi=" + multi +
+      ", collation=" + collation +
+      '}';
   }
 }

@@ -83,10 +83,10 @@ public class IndexModel {
 
   @Override
   public String toString() {
-    return "IndexModel{"
-      + "keys=" + key
-      + ", options=" + options
-      + '}';
+    return "IndexModel{" +
+      "key=" + key +
+      ", options=" + options +
+      '}';
   }
 
   @Override
@@ -94,8 +94,7 @@ public class IndexModel {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     IndexModel that = (IndexModel) o;
-    return Objects.equals(key, that.key) &&
-      Objects.equals(options, that.options);
+    return Objects.equals(key, that.key) && Objects.equals(options, that.options);
   }
 
   @Override

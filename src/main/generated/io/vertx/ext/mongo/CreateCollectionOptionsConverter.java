@@ -64,15 +64,21 @@ public class CreateCollectionOptionsConverter {
   }
 
   public static void toJson(CreateCollectionOptions obj, java.util.Map<String, Object> json) {
-    json.put("capped", obj.isCapped());
+    if (obj.getCapped() != null) {
+      json.put("capped", obj.getCapped());
+    }
     if (obj.getCollation() != null) {
       json.put("collation", obj.getCollation().toJson());
     }
     if (obj.getIndexOptionDefaults() != null) {
       json.put("indexOptionDefaults", obj.getIndexOptionDefaults());
     }
-    json.put("maxDocuments", obj.getMaxDocuments());
-    json.put("sizeInBytes", obj.getSizeInBytes());
+    if (obj.getMaxDocuments() != null) {
+      json.put("maxDocuments", obj.getMaxDocuments());
+    }
+    if (obj.getSizeInBytes() != null) {
+      json.put("sizeInBytes", obj.getSizeInBytes());
+    }
     if (obj.getStorageEngineOptions() != null) {
       json.put("storageEngineOptions", obj.getStorageEngineOptions());
     }

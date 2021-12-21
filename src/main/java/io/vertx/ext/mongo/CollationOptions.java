@@ -14,52 +14,26 @@ import java.util.Objects;
  */
 @DataObject(generateConverter = true)
 public class CollationOptions {
-
-  public static CollationAlternate alternateFromString(String s) {
-    return CollationAlternate.fromString(s);
-  }
-
-  public static String alternateToString(CollationAlternate value) {
-    return value.getValue();
-  }
-
-  public static final Boolean DEFAULT_CASE_LEVEL = false;
-  public static final CollationCaseFirst DEFAULT_CASE_FIRST = CollationCaseFirst.OFF;
-  public static final CollationAlternate DEFAULT_ALTERNATE = CollationAlternate.NON_IGNORABLE;
-  public static final Integer DEFAULT_STRENGTH = 3;
-  public static final Boolean DEFAULT_NUMERIC_ORDERING = false;
-  public static final Boolean DEFAULT_BACKWARDS = false;
-  public static final Boolean DEFAULT_NORMALIZATION = false;
-  public static final CollationMaxVariable DEFAULT_MAX_VARIABLE = CollationMaxVariable.PUNCT;
-
   /**
    * Default locale : {@code simple}
    */
   public static final String DEFAULT_LOCALE = "simple";
 
   private String locale;
-  private boolean caseLevel;
+  private Boolean caseLevel;
   private CollationCaseFirst caseFirst;
-  private int strength;
-  private boolean numericOrdering;
+  private CollationStrength strength;
+  private Boolean numericOrdering;
   private CollationAlternate alternate;
   private CollationMaxVariable maxVariable;
-  private boolean backwards;
-  private boolean normalization;
+  private Boolean backwards;
+  private Boolean normalization;
 
   /**
    * Default constructor for setting
    */
   public CollationOptions() {
-    this.locale = DEFAULT_LOCALE;
-    caseLevel = DEFAULT_CASE_LEVEL;
-    caseFirst = DEFAULT_CASE_FIRST;
-    strength = DEFAULT_STRENGTH;
-    numericOrdering = DEFAULT_NUMERIC_ORDERING;
-    backwards = DEFAULT_BACKWARDS;
-    maxVariable = DEFAULT_MAX_VARIABLE;
-    normalization = DEFAULT_NORMALIZATION;
-    alternate = DEFAULT_ALTERNATE;
+    locale = DEFAULT_LOCALE;
   }
 
   /**
@@ -80,7 +54,7 @@ public class CollationOptions {
   }
 
   public Collation toMongoDriverObject() {
-    if ("simple".equals(locale)) {
+    if (locale == null || "simple".equals(locale)) {
       return Collation.builder().locale("simple").build();
     } else {
       return Collation.builder()
@@ -88,7 +62,7 @@ public class CollationOptions {
         .caseLevel(isCaseLevel())
         .collationCaseFirst(getCaseFirst())
         .collationMaxVariable(getMaxVariable())
-        .collationStrength(CollationStrength.fromInt(getStrength()))
+        .collationStrength(getStrength())
         .locale(getLocale())
         .numericOrdering(isNumericOrdering())
         .collationAlternate(getAlternate())
@@ -103,6 +77,7 @@ public class CollationOptions {
    * @param json containing collation options
    */
   public CollationOptions(JsonObject json) {
+    this();
     CollationOptionsConverter.fromJson(json, this);
     if (json.getValue("alternate") instanceof String) {
       alternate = CollationAlternate.fromString(json.getString("alternate"));
@@ -113,22 +88,12 @@ public class CollationOptions {
     if (json.getValue("maxVariable") instanceof String) {
       maxVariable = CollationMaxVariable.fromString(json.getString("maxVariable"));
     }
+    if(json.getValue("strength") instanceof Integer) {
+      strength = CollationStrength.fromInt(json.getInteger("strength"));
+    }
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    CollationOptions that = (CollationOptions) o;
-    return isCaseLevel() == that.isCaseLevel() && getStrength() == that.getStrength() && isNumericOrdering() == that.isNumericOrdering() && isBackwards() == that.isBackwards() && isNormalization() == that.isNormalization() && Objects.equals(getLocale(), that.getLocale()) && getCaseFirst() == that.getCaseFirst() && getAlternate() == that.getAlternate() && getMaxVariable() == that.getMaxVariable();
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(getLocale(), isCaseLevel(), getCaseFirst(), getStrength(), isNumericOrdering(), getAlternate(), getMaxVariable(), isBackwards(), isNormalization());
-  }
-
-  public boolean isNormalization() {
+  public Boolean isNormalization() {
     return normalization;
   }
 
@@ -144,7 +109,7 @@ public class CollationOptions {
    * @return CollationOption
    * @see <a href="http://userguide.icu-project.org/collation/concepts#TOC-Normalization">TOC Normalization</a> for details.
    */
-  public CollationOptions setNormalization(boolean normalization) {
+  public CollationOptions setNormalization(Boolean normalization) {
     this.normalization = normalization;
     return this;
   }
@@ -165,6 +130,9 @@ public class CollationOptions {
     }
     if (maxVariable != null) {
       json.put("maxVariable", maxVariable.getValue());
+    }
+    if (strength != null) {
+      json.put("strength", strength.getIntRepresentation());
     }
     return json;
   }
@@ -198,7 +166,7 @@ public class CollationOptions {
    *
    * @return caseLevel
    */
-  public boolean isCaseLevel() {
+  public Boolean isCaseLevel() {
     return caseLevel;
   }
 
@@ -215,7 +183,7 @@ public class CollationOptions {
    * @return CollationOption
    * @see <a href="http://userguide.icu-project.org/collation/concepts#TOC-CaseLevel">ICU Collation: Case Level</a>
    */
-  public CollationOptions setCaseLevel(boolean caseLevel) {
+  public CollationOptions setCaseLevel(Boolean caseLevel) {
     this.caseLevel = caseLevel;
     return this;
   }
@@ -254,7 +222,7 @@ public class CollationOptions {
    *
    * @return strength level
    */
-  public int getStrength() {
+  public CollationStrength getStrength() {
     return strength;
   }
 
@@ -275,10 +243,7 @@ public class CollationOptions {
    * @return CollationOption
    * @see <a href="http://userguide.icu-project.org/collation/concepts#TOC-Comparison-Levels">ICU Collation: Comparison Levels</a>
    */
-  public CollationOptions setStrength(int strength) {
-    if (strength < 1 || strength > 5) {
-      throw new IllegalArgumentException("Unsupported strength level: Must be 1-5");
-    }
+  public CollationOptions setStrength(CollationStrength strength) {
     this.strength = strength;
     return this;
   }
@@ -288,7 +253,7 @@ public class CollationOptions {
    *
    * @return Numeric ordering
    */
-  public boolean isNumericOrdering() {
+  public Boolean isNumericOrdering() {
     return numericOrdering;
   }
 
@@ -303,7 +268,7 @@ public class CollationOptions {
    * @param numericOrdering value
    * @return CollationOption
    */
-  public CollationOptions setNumericOrdering(boolean numericOrdering) {
+  public CollationOptions setNumericOrdering(Boolean numericOrdering) {
     this.numericOrdering = numericOrdering;
     return this;
   }
@@ -369,7 +334,7 @@ public class CollationOptions {
    *
    * @return backwards
    */
-  public boolean isBackwards() {
+  public Boolean isBackwards() {
     return backwards;
   }
 
@@ -384,8 +349,36 @@ public class CollationOptions {
    * @param backwards
    * @return CollationOption
    */
-  public CollationOptions setBackwards(boolean backwards) {
+  public CollationOptions setBackwards(Boolean backwards) {
     this.backwards = backwards;
     return this;
+  }
+
+  @Override
+  public String toString() {
+    return "CollationOptions{" +
+      "locale='" + locale + '\'' +
+      ", caseLevel=" + caseLevel +
+      ", caseFirst=" + caseFirst +
+      ", strength=" + strength +
+      ", numericOrdering=" + numericOrdering +
+      ", alternate='" + alternate + '\'' +
+      ", maxVariable=" + maxVariable +
+      ", backwards=" + backwards +
+      ", normalization=" + normalization +
+      '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CollationOptions that = (CollationOptions) o;
+    return caseLevel == that.caseLevel && strength == that.strength && numericOrdering == that.numericOrdering && backwards == that.backwards && normalization == that.normalization && Objects.equals(locale, that.locale) && caseFirst == that.caseFirst && Objects.equals(alternate, that.alternate) && maxVariable == that.maxVariable;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(locale, caseLevel, caseFirst, strength, numericOrdering, alternate, maxVariable, backwards, normalization);
   }
 }

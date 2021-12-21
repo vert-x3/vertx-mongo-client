@@ -68,8 +68,14 @@ public class CountOptionsConverter {
     if (obj.getHintString() != null) {
       json.put("hintString", obj.getHintString());
     }
-    json.put("limit", obj.getLimit());
-    json.put("maxTime", obj.getMaxTime());
-    json.put("skip", obj.getSkip());
+    if (obj.getLimit() != null) {
+      json.put("limit", obj.getLimit());
+    }
+    if (obj.getMaxTime() != null) {
+      json.put("maxTime", obj.getMaxTime());
+    }
+    if (obj.getSkip() != null) {
+      json.put("skip", obj.getSkip());
+    }
   }
 }

@@ -30,9 +30,9 @@ public class AggregateOptionsConverter {
             obj.setBatchSize(((Number)member.getValue()).intValue());
           }
           break;
-        case "collationOptions":
+        case "collation":
           if (member.getValue() instanceof JsonObject) {
-            obj.setCollationOptions(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
+            obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "maxTime":
@@ -53,8 +53,8 @@ public class AggregateOptionsConverter {
       json.put("allowDiskUse", obj.getAllowDiskUse());
     }
     json.put("batchSize", obj.getBatchSize());
-    if (obj.getCollationOptions() != null) {
-      json.put("collationOptions", obj.getCollationOptions().toJson());
+    if (obj.getCollation() != null) {
+      json.put("collation", obj.getCollation().toJson());
     }
     json.put("maxTime", obj.getMaxTime());
   }

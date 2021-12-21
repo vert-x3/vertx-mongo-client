@@ -13,7 +13,7 @@ import java.util.Objects;
 @DataObject(generateConverter = true)
 public class AggregateOptions {
   /**
-   * The default value of batchSize = 10.
+   * The default value of batchSize = 20.
    */
   public static final int DEFAULT_BATCH_SIZE = 20;
   /**
@@ -25,12 +25,11 @@ public class AggregateOptions {
    */
   public static final long DEFAULT_MAX_AWAIT_TIME = 1000L;
 
-  private int     batchSize;
-  private long    maxTime;
-  private long    maxAwaitTime;
+  private int batchSize;
+  private long maxTime;
+  private long maxAwaitTime;
   private Boolean allowDiskUse;
-  private CollationOptions collationOptions;
-
+  private CollationOptions collation;
   /**
    * Default constructor
    */
@@ -38,7 +37,7 @@ public class AggregateOptions {
     this.batchSize = DEFAULT_BATCH_SIZE;
     this.maxTime = DEFAULT_MAX_TIME;
     this.maxAwaitTime = DEFAULT_MAX_AWAIT_TIME;
-    this.collationOptions = null;
+    this.collation = null;
   }
 
   /**
@@ -51,7 +50,7 @@ public class AggregateOptions {
     this.maxTime = options.maxTime;
     this.maxAwaitTime = options.maxAwaitTime;
     this.allowDiskUse = options.allowDiskUse;
-    this.collationOptions = options.collationOptions;
+    this.collation = options.collation;
   }
 
   /**
@@ -67,21 +66,22 @@ public class AggregateOptions {
   /**
    * @return Configured collationOptions
    */
-  public CollationOptions getCollationOptions() {
-    return collationOptions;
+  public CollationOptions getCollation() {
+    return collation;
   }
 
   /**
    * Optional.
-   *
+   * <p>
    * Specifies the collation to use for the operation.
-   *
+   * <p>
    * Collation allows users to specify language-specific rules for string comparison, such as rules for lettercase and accent marks.
-   * @param collationOptions
+   *
+   * @param collation
    * @return reference to this, for fluency
    */
-  public AggregateOptions setCollationOptions(CollationOptions collationOptions) {
-    this.collationOptions = collationOptions;
+  public AggregateOptions setCollation(CollationOptions collation) {
+    this.collation = collation;
     return this;
   }
 
@@ -158,19 +158,25 @@ public class AggregateOptions {
   }
 
   @Override
-  public boolean equals(final Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    final AggregateOptions that = (AggregateOptions) o;
-    return batchSize == that.batchSize && maxTime == that.maxTime && maxAwaitTime == that.maxAwaitTime && allowDiskUse == that.allowDiskUse;
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    AggregateOptions that = (AggregateOptions) o;
+    return batchSize == that.batchSize && maxTime == that.maxTime && Objects.equals(allowDiskUse, that.allowDiskUse) && Objects.equals(collation, that.collation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(batchSize, maxTime, maxAwaitTime, allowDiskUse);
+    return Objects.hash(batchSize, maxTime, allowDiskUse, collation);
+  }
+
+  @Override
+  public String toString() {
+    return "AggregateOptions{" +
+      "batchSize=" + batchSize +
+      ", maxTime=" + maxTime +
+      ", allowDiskUse=" + allowDiskUse +
+      ", collation=" + collation +
+      '}';
   }
 }
