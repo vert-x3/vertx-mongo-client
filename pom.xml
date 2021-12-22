@@ -29,11 +29,11 @@
       
     <artifactId>vertx-mongo-client</artifactId>
       
-    <version>4.1.8-SNAPSHOT</version>
+    <version>4.1.8</version>
       
     <properties>
             
-        <stack.version>4.1.8-SNAPSHOT</stack.version>
+        <stack.version>4.1.8</stack.version>
             
         <mongodb.driver.reactivestreams.version>4.1.0</mongodb.driver.reactivestreams.version>
             
