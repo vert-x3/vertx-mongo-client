@@ -3,9 +3,11 @@ package io.vertx.ext.mongo;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
 /**
  * Options for configuring bulk write operations.
- * 
+ *
  * @author sschmitt
  *
  */
@@ -39,7 +41,7 @@ public class BulkWriteOptions {
 
   /**
    * Constructor specifying ordered
-   * 
+   *
    * @param ordered
    *          the value of ordered
    */
@@ -49,7 +51,7 @@ public class BulkWriteOptions {
 
   /**
    * Copy constructor
-   * 
+   *
    * @param other
    *          the one to copy
    */
@@ -81,7 +83,7 @@ public class BulkWriteOptions {
 
   /**
    * Get the write option
-   * 
+   *
    * @return the write option
    */
   public WriteOption getWriteOption() {
@@ -90,7 +92,7 @@ public class BulkWriteOptions {
 
   /**
    * Set the write option
-   * 
+   *
    * @param writeOption
    *          the write option
    * @return fluent reference to this
@@ -102,7 +104,7 @@ public class BulkWriteOptions {
 
   /**
    * Get whether the operations will be executed in the given order
-   * 
+   *
    * @return if ordered is enabled
    */
   public boolean isOrdered() {
@@ -111,7 +113,7 @@ public class BulkWriteOptions {
 
   /**
    * Set the ordered option
-   * 
+   *
    * @param ordered
    *          the ordered option
    * @return fluent reference to this
@@ -125,19 +127,12 @@ public class BulkWriteOptions {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
-    BulkWriteOptions options = (BulkWriteOptions) o;
-
-    if (writeOption != options.writeOption) return false;
-    if (ordered != options.ordered) return false;
-
-    return true;
+    BulkWriteOptions that = (BulkWriteOptions) o;
+    return isOrdered() == that.isOrdered() && getWriteOption() == that.getWriteOption();
   }
 
   @Override
   public int hashCode() {
-    int result = writeOption != null ? writeOption.hashCode() : 0;
-    result = 31 * result + (ordered ? 1 : 0);
-    return result;
+    return Objects.hash(getWriteOption(), isOrdered());
   }
 }

@@ -47,12 +47,12 @@ public class CountOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CountOptions that = (CountOptions) o;
-    return getLimit() == that.getLimit() && getSkip() == that.getSkip() && maxTime == that.maxTime && Objects.equals(getHint(), that.getHint()) && Objects.equals(getHintString(), that.getHintString()) && Objects.equals(getCollation(), that.getCollation());
+    return getLimit() == that.getLimit() && getSkip() == that.getSkip() && getMaxTime() == that.getMaxTime() && Objects.equals(getHint(), that.getHint()) && Objects.equals(getHintString(), that.getHintString()) && Objects.equals(getCollation(), that.getCollation());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getHint(), getHintString(), getLimit(), getSkip(), maxTime, getCollation());
+    return Objects.hash(getHint(), getHintString(), getLimit(), getSkip(), getMaxTime(), getCollation());
   }
 
   /**

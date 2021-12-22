@@ -158,19 +158,15 @@ public class AggregateOptions {
   }
 
   @Override
-  public boolean equals(final Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    final AggregateOptions that = (AggregateOptions) o;
-    return batchSize == that.batchSize && maxTime == that.maxTime && maxAwaitTime == that.maxAwaitTime && allowDiskUse == that.allowDiskUse;
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    AggregateOptions that = (AggregateOptions) o;
+    return getBatchSize() == that.getBatchSize() && getMaxTime() == that.getMaxTime() && Objects.equals(getAllowDiskUse(), that.getAllowDiskUse()) && Objects.equals(getCollationOptions(), that.getCollationOptions());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(batchSize, maxTime, maxAwaitTime, allowDiskUse);
+    return Objects.hash(getBatchSize(), getMaxTime(), getAllowDiskUse(), getCollationOptions());
   }
 }

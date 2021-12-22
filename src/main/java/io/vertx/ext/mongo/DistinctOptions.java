@@ -3,6 +3,8 @@ package io.vertx.ext.mongo;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
 @DataObject(generateConverter = true)
 public class DistinctOptions {
   CollationOptions collation;
@@ -45,4 +47,16 @@ public class DistinctOptions {
     return this;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    DistinctOptions that = (DistinctOptions) o;
+    return Objects.equals(getCollation(), that.getCollation());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getCollation());
+  }
 }

@@ -4,6 +4,8 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
 /**
  * Options for configuring updates.
  *
@@ -241,27 +243,12 @@ public class UpdateOptions {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
-    UpdateOptions options = (UpdateOptions) o;
-
-    if (multi != options.multi) return false;
-    if (upsert != options.upsert) return false;
-    if (writeOption != options.writeOption) return false;
-    if (returnNewDocument != options.returnNewDocument) return false;
-    if (arrayFilters != options.arrayFilters) return false;
-    if (collation != options.collation) return false;
-
-    return true;
+    UpdateOptions that = (UpdateOptions) o;
+    return isUpsert() == that.isUpsert() && isMulti() == that.isMulti() && returnNewDocument == that.returnNewDocument && getWriteOption() == that.getWriteOption() && Objects.equals(getArrayFilters(), that.getArrayFilters()) && Objects.equals(getCollation(), that.getCollation());
   }
 
   @Override
   public int hashCode() {
-    int result = writeOption != null ? writeOption.hashCode() : 0;
-    result = 31 * result + (upsert ? 1 : 0);
-    result = 31 * result + (multi ? 1 : 0);
-    result = 31 * result + (returnNewDocument ? 1 : 0);
-    result = 31 * result + (arrayFilters != null ? arrayFilters.hashCode() : 0);
-    result = 31 * result + (collation != null ? collation.hashCode() : 0);
-    return result;
+    return Objects.hash(getWriteOption(), isUpsert(), isMulti(), returnNewDocument, getArrayFilters(), getCollation());
   }
 }

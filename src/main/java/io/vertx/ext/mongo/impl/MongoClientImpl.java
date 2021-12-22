@@ -940,11 +940,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler) {
-    return distinct(collection, fieldName, resultClassname, resultHandler, null);
+    return distinct(collection, fieldName, resultClassname, null, resultHandler);
   }
 
   @Override
-  public MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler, DistinctOptions distinctOptions) {
+  public MongoClient distinct(String collection, String fieldName, String resultClassname, DistinctOptions distinctOptions, Handler<AsyncResult<JsonArray>> resultHandler) {
     Future<JsonArray> future = distinct(collection, fieldName, resultClassname, distinctOptions);
     setHandler(future, resultHandler);
     return this;
@@ -962,11 +962,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
-    return distinctWithQuery(collection, fieldName, resultClassname, query, resultHandler, null);
+    return distinctWithQuery(collection, fieldName, resultClassname, query, null, resultHandler);
   }
 
   @Override
-  public MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler, DistinctOptions distinctOptions) {
+  public MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions, Handler<AsyncResult<JsonArray>> resultHandler) {
     Future<JsonArray> future = distinctWithQuery(collection, fieldName, resultClassname, query, distinctOptions);
     setHandler(future, resultHandler);
     return this;

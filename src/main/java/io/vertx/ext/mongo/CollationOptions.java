@@ -91,19 +91,6 @@ public class CollationOptions {
     CollationOptionsConverter.fromJson(json, this);
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    CollationOptions that = (CollationOptions) o;
-    return isCaseLevel() == that.isCaseLevel() && getStrength() == that.getStrength() && isNumericOrdering() == that.isNumericOrdering() && isBackwards() == that.isBackwards() && isNormalization() == that.isNormalization() && Objects.equals(getLocale(), that.getLocale()) && getCaseFirst() == that.getCaseFirst() && Objects.equals(getAlternate(), that.getAlternate()) && getMaxVariable() == that.getMaxVariable();
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(getLocale(), isCaseLevel(), getCaseFirst(), getStrength(), isNumericOrdering(), getAlternate(), getMaxVariable(), isBackwards(), isNormalization());
-  }
-
   public boolean isNormalization() {
     return normalization;
   }
@@ -378,5 +365,18 @@ public class CollationOptions {
       ", backwards=" + backwards +
       ", normalization=" + normalization +
       '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CollationOptions that = (CollationOptions) o;
+    return isCaseLevel() == that.isCaseLevel() && getStrength() == that.getStrength() && isNumericOrdering() == that.isNumericOrdering() && isBackwards() == that.isBackwards() && isNormalization() == that.isNormalization() && Objects.equals(getLocale(), that.getLocale()) && getCaseFirst() == that.getCaseFirst() && Objects.equals(getAlternate(), that.getAlternate()) && getMaxVariable() == that.getMaxVariable();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getLocale(), isCaseLevel(), getCaseFirst(), getStrength(), isNumericOrdering(), getAlternate(), getMaxVariable(), isBackwards(), isNormalization());
   }
 }

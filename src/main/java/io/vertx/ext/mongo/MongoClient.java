@@ -735,14 +735,13 @@ public interface MongoClient {
   /**
    * Gets the distinct values of the specified field name.
    * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
-   *
-   * @param collection      the collection
+   *  @param collection      the collection
    * @param fieldName       the field name
-   * @param resultHandler   will be provided with array of values.
    * @param distinctOptions options (e.g. collation)
+   * @param resultHandler   will be provided with array of values.
    */
   @Fluent
-  MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler, DistinctOptions distinctOptions);
+  MongoClient distinct(String collection, String fieldName, String resultClassname, DistinctOptions distinctOptions, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
    * Like {@link #distinct(String, String, String, Handler)} but returns a {@code Future} of the asynchronous result
@@ -750,7 +749,7 @@ public interface MongoClient {
   Future<JsonArray> distinct(String collection, String fieldName, String resultClassname);
 
   /**
-   * Like {@link #distinct(String, String, String, Handler, DistinctOptions)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #distinct(String, String, String, DistinctOptions, Handler)} but returns a {@code Future} of the asynchronous result
    */
   Future<JsonArray> distinct(String collection, String fieldName, String resultClassname, DistinctOptions distinctOptions);
 
@@ -769,15 +768,14 @@ public interface MongoClient {
   /**
    * Gets the distinct values of the specified field name filtered by specified query.
    * Return a JsonArray containing distinct values (eg: [ 1 , 89 ])
-   *
-   * @param collection      the collection
+   *  @param collection      the collection
    * @param fieldName       the field name
    * @param query           the query
-   * @param resultHandler   will be provided with array of values.
    * @param distinctOptions options (e.g. collation)
+   * @param resultHandler   will be provided with array of values.
    */
   @Fluent
-  MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler, DistinctOptions distinctOptions);
+  MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
    * Like {@link #distinctWithQuery(String, String, String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
@@ -785,7 +783,7 @@ public interface MongoClient {
   Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query);
 
   /**
-   * Like {@link #distinctWithQuery(String, String, String, JsonObject, Handler, DistinctOptions)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #distinctWithQuery(String, String, String, JsonObject, DistinctOptions, Handler)} but returns a {@code Future} of the asynchronous result
    */
   Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions);
 
