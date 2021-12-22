@@ -230,6 +230,10 @@ public class UpdateOptions {
       json.put("arrayFilters", arrayFilters);
     }
 
+    if (collation != null) {
+      json.put("collation", collation.toJson());
+    }
+
     return json;
   }
 
