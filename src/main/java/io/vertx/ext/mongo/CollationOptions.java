@@ -365,4 +365,18 @@ public class CollationOptions {
     return this;
   }
 
+  @Override
+  public String toString() {
+    return "CollationOptions{" +
+      "locale='" + locale + '\'' +
+      ", caseLevel=" + caseLevel +
+      ", caseFirst=" + caseFirst +
+      ", strength=" + strength +
+      ", numericOrdering=" + numericOrdering +
+      ", alternate='" + alternate + '\'' +
+      ", maxVariable=" + maxVariable +
+      ", backwards=" + backwards +
+      ", normalization=" + normalization +
+      '}';
+  }
 }

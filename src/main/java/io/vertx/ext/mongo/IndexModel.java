@@ -85,7 +85,7 @@ public class IndexModel {
   public String toString() {
     return "IndexModel{"
       + "keys=" + key
-      + ", options=" + options
+      + ", options=" + options.toString()
       + '}';
   }
 

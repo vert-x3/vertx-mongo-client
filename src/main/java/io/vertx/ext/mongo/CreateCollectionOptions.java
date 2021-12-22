@@ -168,7 +168,7 @@ public class CreateCollectionOptions {
   }
 
   public String toString() {
-    return "CreateCollectionOptions{, maxDocuments=" + this.maxDocuments + ", capped=" + this.capped + ", sizeInBytes=" + this.sizeInBytes + ", storageEngineOptions=" + this.storageEngineOptions + ", indexOptionDefaults=" + this.indexOptionDefaults + ", validationOptions=" + this.validationOptions + ", collation=" + this.collation + '}';
+    return "CreateCollectionOptions{, maxDocuments=" + this.maxDocuments + ", capped=" + this.capped + ", sizeInBytes=" + this.sizeInBytes + ", storageEngineOptions=" + this.storageEngineOptions.encode() + ", indexOptionDefaults=" + this.indexOptionDefaults.encode() + ", validationOptions=" + this.validationOptions.toString() + ", collation=" + this.collation.toString() + '}';
   }
 
   @Override

@@ -597,4 +597,28 @@ public class IndexOptions {
     result = 31 * result + (partialFilterExpression != null ? partialFilterExpression.hashCode() : 0);
     return result;
   }
+
+  @Override
+  public String toString() {
+    return "IndexOptions{" +
+      "background=" + background +
+      ", unique=" + unique +
+      ", name='" + name + '\'' +
+      ", sparse=" + sparse +
+      ", expireAfterSeconds=" + expireAfterSeconds +
+      ", version=" + version +
+      ", weights=" + weights +
+      ", defaultLanguage='" + defaultLanguage + '\'' +
+      ", languageOverride='" + languageOverride + '\'' +
+      ", textVersion=" + textVersion +
+      ", sphereVersion=" + sphereVersion +
+      ", bits=" + bits +
+      ", min=" + min +
+      ", max=" + max +
+      ", bucketSize=" + bucketSize +
+      ", storageEngine=" + storageEngine +
+      ", partialFilterExpression=" + partialFilterExpression +
+      ", collation=" + collation +
+      '}';
+  }
 }
