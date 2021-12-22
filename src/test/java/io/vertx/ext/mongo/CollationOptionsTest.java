@@ -2,7 +2,6 @@ package io.vertx.ext.mongo;
 
 import org.junit.Test;
 
-import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -10,8 +9,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class CollationOptionsTest {
-
-  private static final String DEFAULT_LOCALE = Locale.getDefault().toString();
 
   private static void assertNotEqual(BiConsumer<CollationOptions, CollationOptions> f) {
     CollationOptions a = new CollationOptions();

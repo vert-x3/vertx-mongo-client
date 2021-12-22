@@ -96,7 +96,7 @@ public class CollationOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CollationOptions that = (CollationOptions) o;
-    return isCaseLevel() == that.isCaseLevel() && getStrength() == that.getStrength() && isNumericOrdering() == that.isNumericOrdering() && isBackwards() == that.isBackwards() && isNormalization() == that.isNormalization() && Objects.equals(getLocale(), that.getLocale()) && getCaseFirst() == that.getCaseFirst() && getAlternate() == that.getAlternate() && getMaxVariable() == that.getMaxVariable();
+    return isCaseLevel() == that.isCaseLevel() && getStrength() == that.getStrength() && isNumericOrdering() == that.isNumericOrdering() && isBackwards() == that.isBackwards() && isNormalization() == that.isNormalization() && Objects.equals(getLocale(), that.getLocale()) && getCaseFirst() == that.getCaseFirst() && Objects.equals(getAlternate(), that.getAlternate()) && getMaxVariable() == that.getMaxVariable();
   }
 
   @Override
