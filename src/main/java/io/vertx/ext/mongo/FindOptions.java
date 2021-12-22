@@ -221,25 +221,12 @@ public class FindOptions {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
     FindOptions that = (FindOptions) o;
-
-    if (limit != that.limit) return false;
-    if (skip != that.skip) return false;
-    if (batchSize != that.batchSize) return false;
-    if (!Objects.equals(fields, that.fields)) return false;
-    if (!Objects.equals(hint, that.hint)) return false;
-    return Objects.equals(sort, that.sort);
+    return getLimit() == that.getLimit() && getSkip() == that.getSkip() && getBatchSize() == that.getBatchSize() && Objects.equals(getFields(), that.getFields()) && Objects.equals(getSort(), that.getSort()) && Objects.equals(getHint(), that.getHint()) && Objects.equals(getCollation(), that.getCollation());
   }
 
   @Override
   public int hashCode() {
-    int result = fields != null ? fields.hashCode() : 0;
-    result = 31 * result + (sort != null ? sort.hashCode() : 0);
-    result = 31 * result + limit;
-    result = 31 * result + skip;
-    result = 31 * result + batchSize;
-    result = 31 * result + (hint != null ? hint.hashCode() : 0);
-    return result;
+    return Objects.hash(getFields(), getSort(), getLimit(), getSkip(), getBatchSize(), getHint(), getCollation());
   }
 }
