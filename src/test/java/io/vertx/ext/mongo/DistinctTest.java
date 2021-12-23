@@ -22,9 +22,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class DistinctTest extends MongoTestBase {
 
@@ -52,7 +51,7 @@ public class DistinctTest extends MongoTestBase {
     insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
       mongoClient.distinct(collection, "num", Integer.class.getName(), onSuccess(distincted -> {
         assertEquals(1, distincted.size());
-        assertEquals(new Integer(123), distincted.getInteger(0));
+        assertEquals((Integer) 123, distincted.getInteger(0));
         testComplete();
       }));
     }));
@@ -90,7 +89,7 @@ public class DistinctTest extends MongoTestBase {
     insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
       mongoClient.distinct(collection, "dblval", Double.class.getName(), onSuccess(distincted -> {
         assertEquals(1, distincted.size());
-        assertEquals(new Double(1.23), distincted.getDouble(0));
+        assertEquals((Double) 1.23, distincted.getDouble(0));
         testComplete();
       }));
     }));
@@ -103,7 +102,7 @@ public class DistinctTest extends MongoTestBase {
     insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
       mongoClient.distinct(collection, "longval", Long.class.getName(), onSuccess(distincted -> {
         assertEquals(1, distincted.size());
-        assertEquals(new Long(123456789L), distincted.getLong(0));
+        assertEquals((Long) 123456789L, distincted.getLong(0));
         testComplete();
       }));
     }));
@@ -127,7 +126,7 @@ public class DistinctTest extends MongoTestBase {
     insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
       mongoClient.distinctWithQuery(collection, "num", Integer.class.getName(), new JsonObject(), onSuccess(distincted -> {
         assertEquals(1, distincted.size());
-        assertEquals(new Integer(123), distincted.getInteger(0));
+        assertEquals((Integer) 123, distincted.getInteger(0));
         testComplete();
       }));
     }));
@@ -165,7 +164,7 @@ public class DistinctTest extends MongoTestBase {
     insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
       mongoClient.distinctWithQuery(collection, "dblval", Double.class.getName(), new JsonObject(), onSuccess(distincted -> {
         assertEquals(1, distincted.size());
-        assertEquals(new Double(1.23), distincted.getDouble(0));
+        assertEquals((Double) 1.23, distincted.getDouble(0));
         testComplete();
       }));
     }));
@@ -178,7 +177,7 @@ public class DistinctTest extends MongoTestBase {
     insertDocs(mongoClient, collection, 10, onSuccess(inserted -> {
       mongoClient.distinctWithQuery(collection, "longval", Long.class.getName(), new JsonObject(), onSuccess(distincted -> {
         assertEquals(1, distincted.size());
-        assertEquals(new Long(123456789L), distincted.getLong(0));
+        assertEquals((Long) 123456789L, distincted.getLong(0));
         testComplete();
       }));
     }));
@@ -310,7 +309,7 @@ public class DistinctTest extends MongoTestBase {
   }
 
   @Test
-  public void testDistinctOptionsSetting() {
+  public void testDistinctOptionsWithCollationSetting() {
     String collection = randomCollection();
     mongoClient.distinctWithQuery(collection, "num", Integer.class.getName(), new JsonObject(), new DistinctOptions().setCollation(new CollationOptions()));
     int numDocs = 10;
@@ -323,5 +322,40 @@ public class DistinctTest extends MongoTestBase {
     }));
     await();
     assertEquals(2, results.size());
+  }
+
+  @Test
+  public void testDistinctOptionsSetting() {
+    String collection = randomCollection();
+    mongoClient.distinctWithQuery(collection, "num", Integer.class.getName(), new JsonObject(), new DistinctOptions());
+    int numDocs = 10;
+    List<JsonObject> results = Collections.synchronizedList(new ArrayList<>());
+    insertDocs(mongoClient, collection, numDocs, this::createDocWithAmbiguitiesDependingOnLocale, onSuccess(inserted -> {
+      mongoClient.distinctBatchWithQuery(collection, "foo", String.class.getName(), new JsonObject(), new DistinctOptions())
+        .exceptionHandler(this::fail)
+        .endHandler(v -> testComplete())
+        .handler(results::add);
+    }));
+    await();
+    assertEquals(2, results.size());
+  }
+
+  @Test
+  public void testDistinctOptionsFromJson() {
+    JsonObject json = new JsonObject()
+      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+
+    DistinctOptions options = new DistinctOptions(json);
+    assertEquals(new CollationOptions(), options.getCollation());
+  }
+
+  @Test
+  public void testDistinctOptionsToJson() {
+    JsonObject json = new JsonObject()
+      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+
+    DistinctOptions options = new DistinctOptions().setCollation(new CollationOptions());
+
+    assertEquals(json, options.toJson());
   }
 }

@@ -1,12 +1,15 @@
 package io.vertx.ext.mongo;
 
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static io.vertx.ext.mongo.CaseFirst.upper;
+import static io.vertx.ext.mongo.MaxVariable.punct;
+import static org.junit.Assert.*;
 
 public class CollationOptionsTest {
 
@@ -41,11 +44,11 @@ public class CollationOptionsTest {
     });
     assertNotEqual((a, b) -> {
       a.setCaseFirst(CaseFirst.off);
-      b.setCaseFirst(CaseFirst.upper);
+      b.setCaseFirst(upper);
     });
     assertNotEqual((a, b) -> {
       a.setCaseFirst(CaseFirst.lower);
-      b.setCaseFirst(CaseFirst.upper);
+      b.setCaseFirst(upper);
     });
     assertNotEqual((a, b) -> {
       a.setLocale("en_US");
@@ -56,7 +59,7 @@ public class CollationOptionsTest {
       b.setCaseLevel(false);
     });
     assertNotEqual((a, b) -> {
-      a.setMaxVariable(MaxVariable.punct);
+      a.setMaxVariable(punct);
       b.setMaxVariable(MaxVariable.space);
     });
     assertNotEqual((a, b) -> {
@@ -88,7 +91,7 @@ public class CollationOptionsTest {
     assertNotEqual(hash, o -> o.setMaxVariable(MaxVariable.space));
     assertNotEqual(hash, o -> o.setLocale("de_AT"));
     assertNotEqual(hash, o -> o.setCaseLevel(true));
-    assertNotEqual(hash, o -> o.setCaseFirst(CaseFirst.upper));
+    assertNotEqual(hash, o -> o.setCaseFirst(upper));
     assertNotEqual(hash, o -> o.setCaseFirst(CaseFirst.lower));
     assertNotEqual(hash, o -> o.alternate(Alternate.SHIFTED));
     assertNotEqual(hash, o -> o.setBackwards(true));
@@ -104,5 +107,69 @@ public class CollationOptionsTest {
   public void testInvalidStrengthLevelGreaterThan5() {
     CollationOptions collationOptions = new CollationOptions();
     collationOptions.setStrength(6);
+  }
+
+  @Test
+  public void testCollationOptionsFromEmptyJson() {
+    CollationOptions options = new CollationOptions(new JsonObject());
+    assertEquals(Locale.getDefault().toString(), options.getLocale());
+    assertNull(options.getAlternate());
+    assertNull(options.getBackwards());
+    assertNull(options.getCaseFirst());
+    assertNull(options.getCaseLevel());
+    assertNull(options.getMaxVariable());
+    assertNull(options.getNumericOrdering());
+    assertNull(options.getStrength());
+  }
+
+  @Test
+  public void testCollationOptionsFromJson() {
+    CollationOptions options = new CollationOptions(new JsonObject()
+      .put("locale", "de_AT")
+      .put("alternate", "non-ignorable")
+      .put("backwards", true)
+      .put("caseFirst", "upper")
+      .put("caseLevel", true)
+      .put("maxVariable", "punct")
+      .put("numericOrdering", true)
+      .put("normalization", true)
+      .put("strength", 2)
+    );
+
+    assertEquals("de_AT", options.getLocale());
+    assertEquals(Alternate.NON_IGNORABLE.toString(), options.getAlternate());
+    assertEquals(true, options.getBackwards());
+    assertEquals(upper, options.getCaseFirst());
+    assertEquals(true, options.getCaseLevel());
+    assertEquals(punct, options.getMaxVariable());
+    assertEquals(true, options.getNumericOrdering());
+    assertEquals(true, options.getNormalization());
+    assertEquals((Integer) 2, options.getStrength());
+  }
+
+  @Test
+  public void testCollationOptionsToJson() {
+    JsonObject json = new JsonObject()
+      .put("locale", "de_AT")
+      .put("alternate", "non-ignorable")
+      .put("backwards", true)
+      .put("caseFirst", "upper")
+      .put("caseLevel", true)
+      .put("maxVariable", "punct")
+      .put("numericOrdering", true)
+      .put("normalization", true)
+      .put("strength", 2);
+    CollationOptions options = new CollationOptions()
+      .setLocale("de_AT")
+      .setAlternate(Alternate.NON_IGNORABLE.toString())
+      .setStrength(2)
+      .setBackwards(true)
+      .setCaseLevel(true)
+      .setCaseFirst(upper)
+      .setMaxVariable(punct)
+      .setNormalization(true)
+      .setNumericOrdering(true);
+
+      assertEquals(json, options.toJson());
   }
 }

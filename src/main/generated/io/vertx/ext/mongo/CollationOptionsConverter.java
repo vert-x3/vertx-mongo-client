@@ -92,8 +92,8 @@ public class CollationOptionsConverter {
     if (obj.getMaxVariable() != null) {
       json.put("maxVariable", obj.getMaxVariable().name());
     }
-    if (obj.isNormalization() != null) {
-      json.put("normalization", obj.isNormalization());
+    if (obj.getNormalization() != null) {
+      json.put("normalization", obj.getNormalization());
     }
     if (obj.getNumericOrdering() != null) {
       json.put("numericOrdering", obj.getNumericOrdering());

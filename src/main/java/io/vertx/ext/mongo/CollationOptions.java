@@ -78,9 +78,9 @@ public class CollationOptions {
     if (strength != null) {
       collation.collationStrength(CollationStrength.fromInt(strength));
     }
-    if (locale != null) {
-      collation.locale(locale);
-    }
+
+    collation.locale(locale != null ? locale : Locale.getDefault().toString());
+
     if (numericOrdering != null) {
       collation.numericOrdering(numericOrdering);
     }
@@ -100,9 +100,12 @@ public class CollationOptions {
    */
   public CollationOptions(JsonObject json) {
     CollationOptionsConverter.fromJson(json, this);
+    if (locale == null) {
+      setLocale(Locale.getDefault().toString());
+    }
   }
 
-  public Boolean isNormalization() {
+  public Boolean getNormalization() {
     return normalization;
   }
 
@@ -368,12 +371,12 @@ public class CollationOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CollationOptions that = (CollationOptions) o;
-    return Objects.equals(getLocale(), that.getLocale()) && Objects.equals(getCaseLevel(), that.getCaseLevel()) && getCaseFirst() == that.getCaseFirst() && Objects.equals(getStrength(), that.getStrength()) && Objects.equals(getNumericOrdering(), that.getNumericOrdering()) && Objects.equals(getAlternate(), that.getAlternate()) && getMaxVariable() == that.getMaxVariable() && Objects.equals(getBackwards(), that.getBackwards()) && Objects.equals(isNormalization(), that.isNormalization());
+    return Objects.equals(getLocale(), that.getLocale()) && Objects.equals(getCaseLevel(), that.getCaseLevel()) && getCaseFirst() == that.getCaseFirst() && Objects.equals(getStrength(), that.getStrength()) && Objects.equals(getNumericOrdering(), that.getNumericOrdering()) && Objects.equals(getAlternate(), that.getAlternate()) && getMaxVariable() == that.getMaxVariable() && Objects.equals(getBackwards(), that.getBackwards()) && Objects.equals(getNormalization(), that.getNormalization());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getLocale(), getCaseLevel(), getCaseFirst(), getStrength(), getNumericOrdering(), getAlternate(), getMaxVariable(), getBackwards(), isNormalization());
+    return Objects.hash(getLocale(), getCaseLevel(), getCaseFirst(), getStrength(), getNumericOrdering(), getAlternate(), getMaxVariable(), getBackwards(), getNormalization());
   }
 
   @Override

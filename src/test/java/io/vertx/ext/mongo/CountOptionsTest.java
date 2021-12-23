@@ -3,6 +3,7 @@ package io.vertx.ext.mongo;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -69,5 +70,45 @@ public class CountOptionsTest {
     assertNotEqual(hash, o -> o.setLimit(10));
     assertNotEqual(hash, o -> o.setSkip(2));
     assertNotEqual(hash, o -> o.setMaxTime(10L));
+  }
+
+  @Test
+  public void testCountOptionsFromJson() {
+    JsonObject json = new JsonObject()
+      .put("hint", new JsonObject().put("some", "hint"))
+      .put("hintString", "someHintString")
+      .put("limit", 10)
+      .put("skip", 20)
+      .put("maxTime", 30L)
+      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+
+    CountOptions options = new CountOptions(json);
+    assertEquals(new JsonObject().put("some", "hint"), options.getHint());
+    assertEquals("someHintString", options.getHintString());
+    assertEquals((Integer) 10, options.getLimit());
+    assertEquals((Integer) 20, options.getSkip());
+    assertEquals((Long) 30L, options.getMaxTime());
+    assertEquals(new CollationOptions(), options.getCollation());
+  }
+
+  @Test
+  public void testCountOptionsToJson() {
+    JsonObject json = new JsonObject()
+      .put("hint", new JsonObject().put("some", "hint"))
+      .put("hintString", "someHintString")
+      .put("limit", 10)
+      .put("skip", 20)
+      .put("maxTime", 30L)
+      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+
+    CountOptions options = new CountOptions()
+      .setCollation(new CollationOptions())
+      .setHint(new JsonObject().put("some", "hint"))
+      .setHintString("someHintString")
+      .setLimit(10)
+      .setSkip(20)
+      .setMaxTime(30L);
+
+    assertEquals(json, options.toJson());
   }
 }

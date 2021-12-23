@@ -5,6 +5,7 @@ import com.mongodb.client.model.ValidationLevel;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -77,5 +78,50 @@ public class CreateCollectionOptionsTest {
     assertNotEqual(hash, o -> o.setIndexOptionDefaults(new JsonObject().put("some", "option")));
     assertNotEqual(hash, o -> o.setCollation(new CollationOptions().setLocale("de_AT").setStrength(5)));
     assertNotEqual(hash, o -> o.setStorageEngineOptions(new JsonObject().put("some", "option")));
+  }
+
+  @Test
+  public void testCreateCollectionOptionsFromJson() {
+    JsonObject json = new JsonObject()
+      .put("maxDocuments", 10L)
+      .put("sizeInBytes", 20L)
+      .put("capped", true)
+      .put("validationOptions", new JsonObject().put("validationLevel", "STRICT").put("validationAction", "ERROR"))
+      .put("indexOptionDefaults", new JsonObject().put("some", "value"))
+      .put("storageEngineOptions", new JsonObject().put("some", "otherValue"))
+      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+
+    CreateCollectionOptions options = new CreateCollectionOptions(json);
+    assertEquals(new ValidationOptions().setValidationLevel(ValidationLevel.STRICT).setValidationAction(ValidationAction.ERROR), options.getValidationOptions());
+    assertEquals(new JsonObject().put("some", "value"), options.getIndexOptionDefaults());
+    assertEquals(new JsonObject().put("some", "otherValue"), options.getStorageEngineOptions());
+    assertEquals(true, options.getCapped());
+    assertEquals((Long) 10L, options.getMaxDocuments());
+    assertEquals((Long) 20L, options.getSizeInBytes());
+    assertEquals(new CollationOptions(), options.getCollation());
+  }
+
+  @Test
+  public void testCreateCollectionOptionsToJson() {
+    JsonObject json = new JsonObject()
+      .put("maxDocuments", 10L)
+      .put("sizeInBytes", 20L)
+      .put("capped", true)
+      .put("validationOptions", new JsonObject().put("validationLevel", "STRICT").put("validationAction", "ERROR"))
+      .put("indexOptionDefaults", new JsonObject().put("some", "value"))
+      .put("storageEngineOptions", new JsonObject().put("some", "otherValue"))
+      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+
+
+    CreateCollectionOptions options = new CreateCollectionOptions()
+      .setCollation(new CollationOptions())
+      .setMaxDocuments(10L)
+      .setSizeInBytes(20L)
+      .setValidationOptions(new ValidationOptions().setValidationLevel(ValidationLevel.STRICT).setValidationAction(ValidationAction.ERROR))
+      .setStorageEngineOptions(new JsonObject().put("some", "otherValue"))
+      .setIndexOptionDefaults(new JsonObject().put("some", "value"))
+      .setCapped(true);
+
+    assertEquals(json, options.toJson());
   }
 }
