@@ -43,6 +43,8 @@ public class UpdateOptions {
     this.upsert = DEFAULT_UPSERT;
     this.multi = DEFAULT_MULTI;
     this.returnNewDocument = DEFAULT_RETURN_NEW_DOCUMENT;
+    this.arrayFilters = null;
+    this.collation = null;
   }
 
   /**
@@ -54,6 +56,8 @@ public class UpdateOptions {
     this.upsert = upsert;
     this.multi = DEFAULT_MULTI;
     this.returnNewDocument = DEFAULT_RETURN_NEW_DOCUMENT;
+    this.arrayFilters = null;
+    this.collation = null;
   }
 
   /**
@@ -65,6 +69,9 @@ public class UpdateOptions {
   public UpdateOptions(boolean upsert, boolean multi) {
     this.upsert = upsert;
     this.multi = multi;
+    this.returnNewDocument = DEFAULT_RETURN_NEW_DOCUMENT;
+    this.arrayFilters = null;
+    this.collation = null;
   }
 
   /**
@@ -231,7 +238,6 @@ public class UpdateOptions {
     if (arrayFilters != null && !arrayFilters.isEmpty()) {
       json.put("arrayFilters", arrayFilters);
     }
-
     if (collation != null) {
       json.put("collation", collation.toJson());
     }
@@ -244,11 +250,23 @@ public class UpdateOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     UpdateOptions that = (UpdateOptions) o;
-    return isUpsert() == that.isUpsert() && isMulti() == that.isMulti() && returnNewDocument == that.returnNewDocument && getWriteOption() == that.getWriteOption() && Objects.equals(getArrayFilters(), that.getArrayFilters()) && Objects.equals(getCollation(), that.getCollation());
+    return isUpsert() == that.isUpsert() && isMulti() == that.isMulti() && isReturningNewDocument() == that.isReturningNewDocument() && getWriteOption() == that.getWriteOption() && Objects.equals(getArrayFilters(), that.getArrayFilters()) && Objects.equals(getCollation(), that.getCollation());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getWriteOption(), isUpsert(), isMulti(), returnNewDocument, getArrayFilters(), getCollation());
+    return Objects.hash(getWriteOption(), isUpsert(), isMulti(), isReturningNewDocument(), getArrayFilters(), getCollation());
+  }
+
+  @Override
+  public String toString() {
+    return "UpdateOptions{" +
+      "writeOption=" + writeOption +
+      ", upsert=" + upsert +
+      ", multi=" + multi +
+      ", returnNewDocument=" + returnNewDocument +
+      ", arrayFilters=" + arrayFilters +
+      ", collation=" + collation +
+      '}';
   }
 }

@@ -3,8 +3,11 @@ package io.vertx.ext.mongo;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
 @DataObject
 public class GridFsUploadOptions {
+  private static final Integer DEFAULT_CHUNK_SIZE_IN_BYTES = 255 * 1000;
   private JsonObject metadata;
   private Integer chunkSizeBytes;
 
@@ -12,6 +15,8 @@ public class GridFsUploadOptions {
    * Default constructor
    */
   public GridFsUploadOptions() {
+    this.metadata = null;
+    this.chunkSizeBytes = DEFAULT_CHUNK_SIZE_IN_BYTES;
   }
 
   /**
@@ -69,4 +74,24 @@ public class GridFsUploadOptions {
     return this;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    GridFsUploadOptions that = (GridFsUploadOptions) o;
+    return Objects.equals(getMetadata(), that.getMetadata()) && Objects.equals(getChunkSizeBytes(), that.getChunkSizeBytes());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getMetadata(), getChunkSizeBytes());
+  }
+
+  @Override
+  public String toString() {
+    return "GridFsUploadOptions{" +
+      "metadata=" + metadata +
+      ", chunkSizeBytes=" + chunkSizeBytes +
+      '}';
+  }
 }

@@ -10,6 +10,7 @@ public class DistinctOptions {
   CollationOptions collation;
 
   public DistinctOptions() {
+    this.collation = null;
   }
 
   public DistinctOptions(DistinctOptions distinctOptions) {
@@ -58,5 +59,12 @@ public class DistinctOptions {
   @Override
   public int hashCode() {
     return Objects.hash(getCollation());
+  }
+
+  @Override
+  public String toString() {
+    return "DistinctOptions{" +
+      "collation=" + collation +
+      '}';
   }
 }

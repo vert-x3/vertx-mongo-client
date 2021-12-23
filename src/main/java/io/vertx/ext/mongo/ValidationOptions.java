@@ -10,12 +10,12 @@ import java.util.Objects;
 
 @DataObject(generateConverter = true)
 public final class ValidationOptions {
-  private JsonObject validator = new JsonObject();
+  private JsonObject validator;
   private ValidationLevel validationLevel;
   private ValidationAction validationAction;
 
   public ValidationOptions() {
-    validator = new JsonObject();
+    validator = null;
     validationLevel = ValidationLevel.STRICT;
     validationAction = ValidationAction.ERROR;
   }
@@ -41,10 +41,13 @@ public final class ValidationOptions {
    * @return com.mongodb.client.model.ValidationOptions
    */
   public com.mongodb.client.model.ValidationOptions toMongoDriverObject() {
-    return new com.mongodb.client.model.ValidationOptions()
-      .validator(org.bson.BsonDocument.parse(validator.encode()))
+    com.mongodb.client.model.ValidationOptions options = new com.mongodb.client.model.ValidationOptions()
       .validationAction(validationAction)
       .validationLevel(validationLevel);
+    if (validator != null) {
+      options.validator(org.bson.BsonDocument.parse(validator.encode()));
+    }
+    return options;
   }
 
   @Nullable
@@ -94,8 +97,13 @@ public final class ValidationOptions {
     return this;
   }
 
+  @Override
   public String toString() {
-    return "ValidationOptions{validator=" + this.validator + ", validationLevel=" + this.validationLevel + ", validationAction=" + this.validationAction + '}';
+    return "ValidationOptions{" +
+      "validator=" + validator +
+      ", validationLevel=" + validationLevel +
+      ", validationAction=" + validationAction +
+      '}';
   }
 
   @Override

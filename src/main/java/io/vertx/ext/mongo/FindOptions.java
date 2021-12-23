@@ -45,7 +45,7 @@ public class FindOptions {
     this.limit = DEFAULT_LIMIT;
     this.skip = DEFAULT_SKIP;
     this.batchSize = DEFAULT_BATCH_SIZE;
-    this.hint = "";
+    this.hint = null;
     this.collation = null;
   }
 
@@ -228,5 +228,18 @@ public class FindOptions {
   @Override
   public int hashCode() {
     return Objects.hash(getFields(), getSort(), getLimit(), getSkip(), getBatchSize(), getHint(), getCollation());
+  }
+
+  @Override
+  public String toString() {
+    return "FindOptions{" +
+      "fields=" + fields +
+      ", sort=" + sort +
+      ", limit=" + limit +
+      ", skip=" + skip +
+      ", batchSize=" + batchSize +
+      ", hint='" + hint + '\'' +
+      ", collation=" + collation +
+      '}';
   }
 }

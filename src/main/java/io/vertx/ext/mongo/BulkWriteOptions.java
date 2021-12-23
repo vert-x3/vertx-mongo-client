@@ -135,4 +135,12 @@ public class BulkWriteOptions {
   public int hashCode() {
     return Objects.hash(getWriteOption(), isOrdered());
   }
+
+  @Override
+  public String toString() {
+    return "BulkWriteOptions{" +
+      "writeOption=" + writeOption +
+      ", ordered=" + ordered +
+      '}';
+  }
 }

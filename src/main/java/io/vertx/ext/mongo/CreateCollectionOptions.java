@@ -16,12 +16,19 @@ public class CreateCollectionOptions {
   private long maxDocuments;
   private boolean capped;
   private long sizeInBytes;
-  private JsonObject storageEngineOptions = new JsonObject();
-  private JsonObject indexOptionDefaults = new JsonObject();
-  private ValidationOptions validationOptions = new ValidationOptions();
+  private JsonObject storageEngineOptions;
+  private JsonObject indexOptionDefaults;
+  private ValidationOptions validationOptions;
   private CollationOptions collation;
 
   public CreateCollectionOptions() {
+    this.maxDocuments = 0;
+    this.capped = false;
+    this.sizeInBytes = 0;
+    this.storageEngineOptions = new JsonObject();
+    this.indexOptionDefaults = new JsonObject();
+    this.validationOptions = null;
+    this.collation = null;
   }
 
   public CreateCollectionOptions(CreateCollectionOptions createCollectionOptions) {
@@ -68,16 +75,26 @@ public class CreateCollectionOptions {
    * @return com.mongodb.client.model.CreateCollectionOptions
    */
   public com.mongodb.client.model.CreateCollectionOptions toMongoDriverObject() {
-    return new com.mongodb.client.model.CreateCollectionOptions()
-      .collation(collation.toMongoDriverObject())
+    com.mongodb.client.model.CreateCollectionOptions createCollectionOptions = new com.mongodb.client.model.CreateCollectionOptions()
       .capped(capped)
-      .indexOptionDefaults(new IndexOptionDefaults()
-        .storageEngine(org.bson.BsonDocument.parse(indexOptionDefaults.encode()))
-      )
-      .validationOptions(validationOptions.toMongoDriverObject())
-      .storageEngineOptions(org.bson.BsonDocument.parse(storageEngineOptions.encode()))
       .maxDocuments(maxDocuments)
       .sizeInBytes(sizeInBytes);
+
+    if (collation != null) {
+      createCollectionOptions.collation(collation.toMongoDriverObject());
+    }
+    if (indexOptionDefaults != null) {
+      createCollectionOptions.indexOptionDefaults(new IndexOptionDefaults()
+        .storageEngine(org.bson.BsonDocument.parse(indexOptionDefaults.encode()))
+      );
+    }
+    if (validationOptions != null) {
+      createCollectionOptions.validationOptions(validationOptions.toMongoDriverObject());
+    }
+    if (storageEngineOptions != null) {
+      createCollectionOptions.storageEngineOptions(org.bson.BsonDocument.parse(storageEngineOptions.encode()));
+    }
+    return createCollectionOptions;
   }
 
   public boolean isCapped() {
@@ -167,8 +184,17 @@ public class CreateCollectionOptions {
     return this;
   }
 
+  @Override
   public String toString() {
-    return "CreateCollectionOptions{, maxDocuments=" + this.maxDocuments + ", capped=" + this.capped + ", sizeInBytes=" + this.sizeInBytes + ", storageEngineOptions=" + this.storageEngineOptions.encode() + ", indexOptionDefaults=" + this.indexOptionDefaults.encode() + ", validationOptions=" + this.validationOptions.toString() + ", collation=" + this.collation.toString() + '}';
+    return "CreateCollectionOptions{" +
+      "maxDocuments=" + maxDocuments +
+      ", capped=" + capped +
+      ", sizeInBytes=" + sizeInBytes +
+      ", storageEngineOptions=" + storageEngineOptions +
+      ", indexOptionDefaults=" + indexOptionDefaults +
+      ", validationOptions=" + validationOptions +
+      ", collation=" + collation +
+      '}';
   }
 
   @Override

@@ -3,7 +3,6 @@ package io.vertx.ext.mongo;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -50,12 +49,8 @@ public class CountOptionsTest {
       b.setSkip(2);
     });
     assertNotEqual((a, b) -> {
-      a.setMaxTime(10, TimeUnit.SECONDS);
-      a.setMaxTime(10, TimeUnit.MINUTES);
-    });
-    assertNotEqual((a, b) -> {
-      a.setMaxTime(10, TimeUnit.SECONDS);
-      a.setMaxTime(20, TimeUnit.SECONDS);
+      a.setMaxTime(100);
+      a.setMaxTime(200);
     });
 
     assertNotEquals(new CountOptions(), null);
@@ -73,6 +68,6 @@ public class CountOptionsTest {
     assertNotEqual(hash, o -> o.setHintString("x"));
     assertNotEqual(hash, o -> o.setLimit(10));
     assertNotEqual(hash, o -> o.setSkip(2));
-    assertNotEqual(hash, o -> o.setMaxTime(10, TimeUnit.SECONDS));
+    assertNotEqual(hash, o -> o.setMaxTime(10));
   }
 }

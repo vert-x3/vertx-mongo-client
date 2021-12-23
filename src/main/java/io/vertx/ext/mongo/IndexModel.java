@@ -14,6 +14,8 @@ public class IndexModel {
    * Default constructor
    */
   public IndexModel() {
+    key = null;
+    options = null;
   }
 
   /**
@@ -83,10 +85,10 @@ public class IndexModel {
 
   @Override
   public String toString() {
-    return "IndexModel{"
-      + "keys=" + key
-      + ", options=" + options.toString()
-      + '}';
+    return "IndexModel{" +
+      "key=" + key +
+      ", options=" + options +
+      '}';
   }
 
   @Override
@@ -94,12 +96,11 @@ public class IndexModel {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     IndexModel that = (IndexModel) o;
-    return Objects.equals(key, that.key) &&
-      Objects.equals(options, that.options);
+    return Objects.equals(getKey(), that.getKey()) && Objects.equals(getOptions(), that.getOptions());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, options);
+    return Objects.hash(getKey(), getOptions());
   }
 }

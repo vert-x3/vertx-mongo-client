@@ -1107,8 +1107,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     pipeline.getList().forEach(entry -> bpipeline.add(wrap(JsonObject.mapFrom(entry))));
     AggregatePublisher<JsonObject> aggregate = coll.aggregate(bpipeline, JsonObject.class);
 
-    if(aggregateOptions.getCollationOptions() != null) {
-      aggregate.collation(aggregateOptions.getCollationOptions().toMongoDriverObject());
+    if(aggregateOptions.getCollation() != null) {
+      aggregate.collation(aggregateOptions.getCollation().toMongoDriverObject());
     }
     if (aggregateOptions.getBatchSize() != -1) {
       aggregate.batchSize(aggregateOptions.getBatchSize());

@@ -44,24 +44,24 @@ public class AggregateOptionsTest {
     AggregateOptions options = new AggregateOptions(new JsonObject());
     AggregateOptions def = new AggregateOptions();
     assertEquals(def.getMaxTime(), options.getMaxTime());
-    assertNull(options.getCollationOptions());
+    assertNull(options.getCollation());
   }
 
   @Test
   public void testCopyOptions() {
     CollationOptions collationOptions = new CollationOptions();
-    AggregateOptions options = new AggregateOptions().setCollationOptions(collationOptions);
+    AggregateOptions options = new AggregateOptions().setCollation(collationOptions);
     options.setMaxTime(TestUtils.randomLong());
 
     AggregateOptions copy = new AggregateOptions(options);
     assertEquals(options.getMaxTime(), copy.getMaxTime());
-    assertEquals(options.getCollationOptions(), copy.getCollationOptions());
+    assertEquals(options.getCollation(), copy.getCollation());
   }
 
   @Test
   public void testToJson() {
     CollationOptions collationOptions = new CollationOptions();
-    AggregateOptions options = new AggregateOptions().setCollationOptions(collationOptions);
+    AggregateOptions options = new AggregateOptions().setCollation(collationOptions);
     long maxTime = TestUtils.randomPositiveLong();
     options.setMaxTime(maxTime);
 
