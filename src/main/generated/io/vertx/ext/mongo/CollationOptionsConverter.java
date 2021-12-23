@@ -77,19 +77,29 @@ public class CollationOptionsConverter {
     if (obj.getAlternate() != null) {
       json.put("alternate", obj.getAlternate());
     }
-    json.put("backwards", obj.isBackwards());
+    if (obj.getBackwards() != null) {
+      json.put("backwards", obj.getBackwards());
+    }
     if (obj.getCaseFirst() != null) {
       json.put("caseFirst", obj.getCaseFirst().name());
     }
-    json.put("caseLevel", obj.isCaseLevel());
+    if (obj.getCaseLevel() != null) {
+      json.put("caseLevel", obj.getCaseLevel());
+    }
     if (obj.getLocale() != null) {
       json.put("locale", obj.getLocale());
     }
     if (obj.getMaxVariable() != null) {
       json.put("maxVariable", obj.getMaxVariable().name());
     }
-    json.put("normalization", obj.isNormalization());
-    json.put("numericOrdering", obj.isNumericOrdering());
-    json.put("strength", obj.getStrength());
+    if (obj.isNormalization() != null) {
+      json.put("normalization", obj.isNormalization());
+    }
+    if (obj.getNumericOrdering() != null) {
+      json.put("numericOrdering", obj.getNumericOrdering());
+    }
+    if (obj.getStrength() != null) {
+      json.put("strength", obj.getStrength());
+    }
   }
 }

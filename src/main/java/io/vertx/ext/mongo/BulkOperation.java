@@ -51,16 +51,12 @@ public class BulkOperation {
    */
   public BulkOperation(JsonObject json) {
     String typeValue = json.getString("type");
-    if (typeValue != null) {
-      this.type = BulkOperationType.valueOf(typeValue.toUpperCase());
-    }
+    type = typeValue != null ? BulkOperationType.valueOf(typeValue.toUpperCase()): null;
     filter = json.getJsonObject("filter");
     document = json.getJsonObject("document");
     upsert = json.getBoolean("upsert");
     multi = json.getBoolean("multi");
-    if (json.getJsonObject("collation") != null) {
-      collation = new CollationOptions(json.getJsonObject("collation"));
-    }
+    collation = json.getJsonObject("collation") != null ? new CollationOptions(json.getJsonObject("collation")) : null;
   }
 
   /**
@@ -152,7 +148,7 @@ public class BulkOperation {
     json.put("document", document);
     json.put("upsert", upsert);
     json.put("multi", multi);
-    json.put("collation", collation);
+    json.put("collation", collation != null ? collation.toJson() : null);
     return json;
   }
 

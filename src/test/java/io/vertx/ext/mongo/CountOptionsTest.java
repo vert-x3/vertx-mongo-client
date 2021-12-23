@@ -49,8 +49,8 @@ public class CountOptionsTest {
       b.setSkip(2);
     });
     assertNotEqual((a, b) -> {
-      a.setMaxTime(100);
-      a.setMaxTime(200);
+      a.setMaxTime(100L);
+      a.setMaxTime(200L);
     });
 
     assertNotEquals(new CountOptions(), null);
@@ -68,6 +68,6 @@ public class CountOptionsTest {
     assertNotEqual(hash, o -> o.setHintString("x"));
     assertNotEqual(hash, o -> o.setLimit(10));
     assertNotEqual(hash, o -> o.setSkip(2));
-    assertNotEqual(hash, o -> o.setMaxTime(10));
+    assertNotEqual(hash, o -> o.setMaxTime(10L));
   }
 }

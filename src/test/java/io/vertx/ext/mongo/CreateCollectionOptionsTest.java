@@ -48,12 +48,12 @@ public class CreateCollectionOptionsTest {
       b.setValidationOptions(new ValidationOptions().setValidationAction(ValidationAction.ERROR));
     });
     assertNotEqual((a, b) -> {
-      a.setMaxDocuments(12345);
-      b.setMaxDocuments(10);
+      a.setMaxDocuments(12345L);
+      b.setMaxDocuments(10L);
     });
     assertNotEqual((a, b) -> {
-      a.setSizeInBytes(1024);
-      b.setSizeInBytes(2048);
+      a.setSizeInBytes(1024L);
+      b.setSizeInBytes(2048L);
     });
     assertNotEqual((a, b) -> {
       a.setStorageEngineOptions(new JsonObject().put("some", "option"));
@@ -70,8 +70,8 @@ public class CreateCollectionOptionsTest {
 
     assertEquals(hash, new CreateCollectionOptions().hashCode());
 
-    assertNotEqual(hash, o -> o.setMaxDocuments(12345));
-    assertNotEqual(hash, o -> o.setSizeInBytes(4096));
+    assertNotEqual(hash, o -> o.setMaxDocuments(12345L));
+    assertNotEqual(hash, o -> o.setSizeInBytes(4096L));
     assertNotEqual(hash, o -> o.setCapped(true));
     assertNotEqual(hash, o -> o.setValidationOptions(new ValidationOptions().setValidationLevel(ValidationLevel.MODERATE)));
     assertNotEqual(hash, o -> o.setIndexOptionDefaults(new JsonObject().put("some", "option")));

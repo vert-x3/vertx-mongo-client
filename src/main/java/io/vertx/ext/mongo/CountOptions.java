@@ -12,17 +12,17 @@ import java.util.concurrent.TimeUnit;
 public class CountOptions {
   private JsonObject hint;
   private String hintString;
-  private int limit;
-  private int skip;
-  private long maxTime;
+  private Integer limit;
+  private Integer skip;
+  private Long maxTime;
   private CollationOptions collation;
 
   public CountOptions() {
     this.hint = null;
     this.hintString = null;
-    this.limit = 0;
-    this.skip = 0;
-    this.maxTime = 0;
+    this.limit = null;
+    this.skip = null;
+    this.maxTime = null;
     this.collation = null;
   }
 
@@ -51,11 +51,16 @@ public class CountOptions {
    * @return com.mongodb.client.model.CountOptions
    */
   public com.mongodb.client.model.CountOptions toMongoDriverObject() {
-    com.mongodb.client.model.CountOptions options = new com.mongodb.client.model.CountOptions()
-      .limit(limit)
-      .skip(skip)
-      .maxTime(maxTime, TimeUnit.MILLISECONDS);
-
+    com.mongodb.client.model.CountOptions options = new com.mongodb.client.model.CountOptions();
+    if (limit != null) {
+      options.limit(limit);
+    }
+    if (skip != null) {
+      options.skip(skip);
+    }
+    if (maxTime != null) {
+      options.maxTime(maxTime, TimeUnit.MILLISECONDS);
+    }
     if (collation != null) {
       options.collation(collation.toMongoDriverObject());
     }
@@ -65,7 +70,6 @@ public class CountOptions {
     if (hintString != null) {
       options.hintString(hintString);
     }
-    
     return options;
   }
 
@@ -115,7 +119,7 @@ public class CountOptions {
    *
    * @return the limit
    */
-  public int getLimit() {
+  public Integer getLimit() {
     return this.limit;
   }
 
@@ -125,7 +129,7 @@ public class CountOptions {
    * @param limit the limit
    * @return CountOptions
    */
-  public CountOptions setLimit(int limit) {
+  public CountOptions setLimit(Integer limit) {
     this.limit = limit;
     return this;
   }
@@ -135,7 +139,7 @@ public class CountOptions {
    *
    * @return the number of documents to skip
    */
-  public int getSkip() {
+  public Integer getSkip() {
     return this.skip;
   }
 
@@ -145,7 +149,7 @@ public class CountOptions {
    * @param skip
    * @return
    */
-  public CountOptions setSkip(int skip) {
+  public CountOptions setSkip(Integer skip) {
     this.skip = skip;
     return this;
   }
@@ -156,7 +160,7 @@ public class CountOptions {
    *
    * @return the maximum execution time in milliseconds
    */
-  public long getMaxTime() {
+  public Long getMaxTime() {
     return maxTime;
   }
 
@@ -166,7 +170,7 @@ public class CountOptions {
    * @param maxTime the max time (in ms)
    * @return CountOptions
    */
-  public CountOptions setMaxTime(long maxTime) {
+  public CountOptions setMaxTime(Long maxTime) {
     this.maxTime = maxTime;
     return this;
   }
@@ -190,7 +194,7 @@ public class CountOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CountOptions that = (CountOptions) o;
-    return getLimit() == that.getLimit() && getSkip() == that.getSkip() && getMaxTime() == that.getMaxTime() && Objects.equals(getHint(), that.getHint()) && Objects.equals(getHintString(), that.getHintString()) && Objects.equals(getCollation(), that.getCollation());
+    return Objects.equals(getHint(), that.getHint()) && Objects.equals(getHintString(), that.getHintString()) && Objects.equals(getLimit(), that.getLimit()) && Objects.equals(getSkip(), that.getSkip()) && Objects.equals(getMaxTime(), that.getMaxTime()) && Objects.equals(getCollation(), that.getCollation());
   }
 
   @Override
