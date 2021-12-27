@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
@@ -260,15 +261,18 @@ public class MongoClientTest extends MongoClientTestBase {
     JsonArray pipeline = new JsonArray();
     pipeline.add(new JsonObject().put("$addFields", new JsonObject().put("field", "test")));
     int numDocs = 25;
-    final CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch fetchLatch = new CountDownLatch(numDocs);
+    final CountDownLatch endLatch = new CountDownLatch(1);
     final String collection = randomCollection();
-
     insertDocs(mongoClient, collection, numDocs, onSuccess(res -> {
-      mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions).exceptionHandler(this::fail)
-        .fetch(25).endHandler(v -> latch.countDown());
+      mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions)
+        .exceptionHandler(this::fail)
+        .handler(j -> fetchLatch.countDown())
+        .fetch(25).endHandler(v -> endLatch.countDown());
     }));
 
-    awaitLatch(latch);
+    awaitLatch(fetchLatch);
+    awaitLatch(endLatch);
   }
 
   @Test
