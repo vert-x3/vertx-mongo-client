@@ -265,9 +265,7 @@ public class MongoClientTest extends MongoClientTestBase {
 
     insertDocs(mongoClient, collection, numDocs, onSuccess(res -> {
       mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions).exceptionHandler(this::fail)
-        .handler(item -> {
-          System.out.println(item.encodePrettily());
-        }).fetch(25).endHandler(v -> latch.countDown());
+        .fetch(25).endHandler(v -> latch.countDown());
     }));
 
     awaitLatch(latch);
