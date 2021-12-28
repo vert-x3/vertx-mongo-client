@@ -112,7 +112,7 @@ public class CollationOptionsTest {
   @Test
   public void testCollationOptionsFromEmptyJson() {
     CollationOptions options = new CollationOptions(new JsonObject());
-    assertEquals(Locale.getDefault().toString(), options.getLocale());
+    assertNull(options.getLocale());
     assertNull(options.getAlternate());
     assertNull(options.getBackwards());
     assertNull(options.getCaseFirst());

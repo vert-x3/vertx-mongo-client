@@ -89,7 +89,7 @@ public class CreateCollectionOptionsTest {
       .put("validationOptions", new JsonObject().put("validationLevel", "STRICT").put("validationAction", "ERROR"))
       .put("indexOptionDefaults", new JsonObject().put("some", "value"))
       .put("storageEngineOptions", new JsonObject().put("some", "otherValue"))
-      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+      .put("collation", new JsonObject());
 
     CreateCollectionOptions options = new CreateCollectionOptions(json);
     assertEquals(new ValidationOptions().setValidationLevel(ValidationLevel.STRICT).setValidationAction(ValidationAction.ERROR), options.getValidationOptions());
@@ -110,7 +110,7 @@ public class CreateCollectionOptionsTest {
       .put("validationOptions", new JsonObject().put("validationLevel", "STRICT").put("validationAction", "ERROR"))
       .put("indexOptionDefaults", new JsonObject().put("some", "value"))
       .put("storageEngineOptions", new JsonObject().put("some", "otherValue"))
-      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+      .put("collation", new JsonObject());
 
 
     CreateCollectionOptions options = new CreateCollectionOptions()

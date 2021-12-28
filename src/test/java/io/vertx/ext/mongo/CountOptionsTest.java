@@ -80,7 +80,7 @@ public class CountOptionsTest {
       .put("limit", 10)
       .put("skip", 20)
       .put("maxTime", 30L)
-      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+      .put("collation", new JsonObject());
 
     CountOptions options = new CountOptions(json);
     assertEquals(new JsonObject().put("some", "hint"), options.getHint());
@@ -99,7 +99,7 @@ public class CountOptionsTest {
       .put("limit", 10)
       .put("skip", 20)
       .put("maxTime", 30L)
-      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+      .put("collation", new JsonObject());
 
     CountOptions options = new CountOptions()
       .setCollation(new CollationOptions())

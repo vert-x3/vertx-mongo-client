@@ -30,7 +30,7 @@ public class CollationOptions {
    * Default constructor for setting
    */
   public CollationOptions() {
-    locale = Locale.getDefault().toString();
+    locale = null;
     caseLevel = null;
     caseFirst = null;
     strength = null;
@@ -100,9 +100,6 @@ public class CollationOptions {
    */
   public CollationOptions(JsonObject json) {
     CollationOptionsConverter.fromJson(json, this);
-    if (locale == null) {
-      setLocale(Locale.getDefault().toString());
-    }
   }
 
   public Boolean getNormalization() {

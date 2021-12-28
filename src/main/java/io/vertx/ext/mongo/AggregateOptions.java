@@ -15,7 +15,7 @@ public class AggregateOptions {
   /**
    * The default value of batchSize = 10.
    */
-  public static final int DEFAULT_BATCH_SIZE = 20;
+  public static final int DEFAULT_BATCH_SIZE = 10;
   /**
    * The default value of maxTime = 0.
    */

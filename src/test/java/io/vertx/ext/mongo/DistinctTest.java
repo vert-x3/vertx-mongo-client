@@ -343,7 +343,7 @@ public class DistinctTest extends MongoTestBase {
   @Test
   public void testDistinctOptionsFromJson() {
     JsonObject json = new JsonObject()
-      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+      .put("collation", new JsonObject());
 
     DistinctOptions options = new DistinctOptions(json);
     assertEquals(new CollationOptions(), options.getCollation());
@@ -352,7 +352,7 @@ public class DistinctTest extends MongoTestBase {
   @Test
   public void testDistinctOptionsToJson() {
     JsonObject json = new JsonObject()
-      .put("collation", new JsonObject().put("locale", Locale.getDefault().toString()));
+      .put("collation", new JsonObject());
 
     DistinctOptions options = new DistinctOptions().setCollation(new CollationOptions());
 
