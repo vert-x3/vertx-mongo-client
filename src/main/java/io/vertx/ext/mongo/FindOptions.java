@@ -24,7 +24,7 @@ public class FindOptions {
   public static final int DEFAULT_SKIP = 0;
 
   /**
-   * The default value of batchSize = 10.
+   * The default value of batchSize = 20.
    */
   public static final int DEFAULT_BATCH_SIZE = 20;
 
