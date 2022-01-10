@@ -5,7 +5,6 @@ import com.mongodb.client.model.ValidationLevel;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
-import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -107,7 +106,7 @@ public class CreateCollectionOptionsTest {
       .put("maxDocuments", 10L)
       .put("sizeInBytes", 20L)
       .put("capped", true)
-      .put("validationOptions", new JsonObject().put("validationLevel", "STRICT").put("validationAction", "ERROR"))
+      .put("validationOptions", new JsonObject().put("validationLevel", "STRICT").put("validationAction", "ERROR").put("validator", new JsonObject()))
       .put("indexOptionDefaults", new JsonObject().put("some", "value"))
       .put("storageEngineOptions", new JsonObject().put("some", "otherValue"))
       .put("collation", new JsonObject());

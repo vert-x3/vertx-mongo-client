@@ -257,12 +257,12 @@ public class BulkOperation {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     BulkOperation operation = (BulkOperation) o;
-    return isUpsert() == operation.isUpsert() && isMulti() == operation.isMulti() && getType() == operation.getType() && Objects.equals(getFilter(), operation.getFilter()) && Objects.equals(getDocument(), operation.getDocument()) && Objects.equals(getCollation(), operation.getCollation());
+    return upsert == operation.upsert && multi == operation.multi && type == operation.type && Objects.equals(filter, operation.filter) && Objects.equals(document, operation.document) && Objects.equals(collation, operation.collation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getType(), getFilter(), getDocument(), isUpsert(), isMulti(), getCollation());
+    return Objects.hash(type, filter, document, upsert, multi, collation);
   }
 
   @Override

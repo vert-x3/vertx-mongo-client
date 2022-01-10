@@ -13,9 +13,9 @@ import java.util.Objects;
 @DataObject(generateConverter = true)
 public class AggregateOptions {
   /**
-   * The default value of batchSize = 10.
+   * The default value of batchSize = 20.
    */
-  public static final int DEFAULT_BATCH_SIZE = 10;
+  public static final int DEFAULT_BATCH_SIZE = 20;
   /**
    * The default value of maxTime = 0.
    */
@@ -27,7 +27,7 @@ public class AggregateOptions {
 
   private int batchSize;
   private long maxTime;
-  private final long maxAwaitTime;
+  private long maxAwaitTime;
   private Boolean allowDiskUse;
   private CollationOptions collation;
   /**
@@ -162,12 +162,12 @@ public class AggregateOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     AggregateOptions that = (AggregateOptions) o;
-    return getBatchSize() == that.getBatchSize() && getMaxTime() == that.getMaxTime() && Objects.equals(getAllowDiskUse(), that.getAllowDiskUse()) && Objects.equals(getCollation(), that.getCollation());
+    return batchSize == that.batchSize && maxTime == that.maxTime && Objects.equals(allowDiskUse, that.allowDiskUse) && Objects.equals(collation, that.collation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getBatchSize(), getMaxTime(), getAllowDiskUse(), getCollation());
+    return Objects.hash(batchSize, maxTime, allowDiskUse, collation);
   }
 
   @Override

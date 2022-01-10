@@ -10,12 +10,12 @@ import java.util.Objects;
 
 @DataObject(generateConverter = true)
 public final class ValidationOptions {
-  private JsonObject validator;
+  private JsonObject validator = new JsonObject();
   private ValidationLevel validationLevel;
   private ValidationAction validationAction;
 
   public ValidationOptions() {
-    validator = null;
+    validator = new JsonObject();
     validationLevel = ValidationLevel.STRICT;
     validationAction = ValidationAction.ERROR;
   }
@@ -44,7 +44,7 @@ public final class ValidationOptions {
     com.mongodb.client.model.ValidationOptions options = new com.mongodb.client.model.ValidationOptions()
       .validationAction(validationAction)
       .validationLevel(validationLevel);
-    if (validator != null) {
+    if (validator != null && !validator.isEmpty()) {
       options.validator(org.bson.BsonDocument.parse(validator.encode()));
     }
     return options;

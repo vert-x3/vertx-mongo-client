@@ -17,7 +17,6 @@ public class IndexOptions {
   public static final boolean DEFAULT_BACKGROUND = false;
   public static final boolean DEFAULT_UNIQUE = false;
   public static final boolean DEFAULT_SPARSE = false;
-  public static final String COLLATION = "collation";
 
   private boolean background;
   private boolean unique;
@@ -96,7 +95,7 @@ public class IndexOptions {
     bucketSize = options.getDouble("bucketSize");
     storageEngine = options.getJsonObject("storageEngine");
     partialFilterExpression = options.getJsonObject("partialFilterExpression");
-    collation = options.getJsonObject(COLLATION) != null ? new CollationOptions(options.getJsonObject(COLLATION)) : null;
+    collation = options.getJsonObject("collation") != null ? new CollationOptions(options.getJsonObject("collation")) : null;
   }
 
   public CollationOptions getCollation() {
@@ -176,7 +175,7 @@ public class IndexOptions {
       json.put("partialFilterExpression", partialFilterExpression);
     }
     if (collation != null) {
-      json.put(COLLATION, collation.toJson());
+      json.put("collation", collation.toJson());
     }
     return json;
   }
