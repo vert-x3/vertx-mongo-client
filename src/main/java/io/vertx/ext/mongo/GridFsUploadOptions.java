@@ -7,7 +7,6 @@ import java.util.Objects;
 
 @DataObject
 public class GridFsUploadOptions {
-  private static final Integer DEFAULT_CHUNK_SIZE_IN_BYTES = 255 * 1000;
   private JsonObject metadata;
   private Integer chunkSizeBytes;
 
@@ -15,8 +14,6 @@ public class GridFsUploadOptions {
    * Default constructor
    */
   public GridFsUploadOptions() {
-    this.metadata = null;
-    this.chunkSizeBytes = DEFAULT_CHUNK_SIZE_IN_BYTES;
   }
 
   /**
