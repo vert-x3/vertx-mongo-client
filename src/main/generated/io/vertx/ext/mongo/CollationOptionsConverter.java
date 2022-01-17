@@ -20,19 +20,9 @@ public class CollationOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, CollationOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "alternate":
-          if (member.getValue() instanceof String) {
-            obj.setAlternate((String)member.getValue());
-          }
-          break;
         case "backwards":
           if (member.getValue() instanceof Boolean) {
             obj.setBackwards((Boolean)member.getValue());
-          }
-          break;
-        case "caseFirst":
-          if (member.getValue() instanceof String) {
-            obj.setCaseFirst(io.vertx.ext.mongo.CaseFirst.valueOf((String)member.getValue()));
           }
           break;
         case "caseLevel":
@@ -43,11 +33,6 @@ public class CollationOptionsConverter {
         case "locale":
           if (member.getValue() instanceof String) {
             obj.setLocale((String)member.getValue());
-          }
-          break;
-        case "maxVariable":
-          if (member.getValue() instanceof String) {
-            obj.setMaxVariable(io.vertx.ext.mongo.MaxVariable.valueOf((String)member.getValue()));
           }
           break;
         case "normalization":
@@ -74,19 +59,10 @@ public class CollationOptionsConverter {
   }
 
   public static void toJson(CollationOptions obj, java.util.Map<String, Object> json) {
-    if (obj.getAlternate() != null) {
-      json.put("alternate", obj.getAlternate());
-    }
     json.put("backwards", obj.isBackwards());
-    if (obj.getCaseFirst() != null) {
-      json.put("caseFirst", obj.getCaseFirst().name());
-    }
     json.put("caseLevel", obj.isCaseLevel());
     if (obj.getLocale() != null) {
       json.put("locale", obj.getLocale());
-    }
-    if (obj.getMaxVariable() != null) {
-      json.put("maxVariable", obj.getMaxVariable().name());
     }
     json.put("normalization", obj.isNormalization());
     json.put("numericOrdering", obj.isNumericOrdering());

@@ -1,8 +1,10 @@
 package io.vertx.ext.mongo;
 
+import com.mongodb.client.model.CollationAlternate;
+import com.mongodb.client.model.CollationCaseFirst;
+import com.mongodb.client.model.CollationMaxVariable;
 import org.junit.Test;
 
-import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -10,8 +12,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class CollationOptionsTest {
-
-  private static final String DEFAULT_LOCALE = Locale.getDefault().toString();
 
   private static void assertNotEqual(BiConsumer<CollationOptions, CollationOptions> f) {
     CollationOptions a = new CollationOptions();
@@ -31,24 +31,24 @@ public class CollationOptionsTest {
     assertEquals(new CollationOptions(), new CollationOptions());
 
     assertNotEqual((a, b) -> {
-      a.alternate(Alternate.NON_IGNORABLE);
-      b.alternate(Alternate.SHIFTED);
+      a.setAlternate(CollationAlternate.NON_IGNORABLE);
+      b.setAlternate(CollationAlternate.SHIFTED);
     });
     assertNotEqual((a, b) -> {
       a.setBackwards(true);
       b.setBackwards(false);
     });
     assertNotEqual((a, b) -> {
-      a.setCaseFirst(CaseFirst.off);
-      b.setCaseFirst(CaseFirst.lower);
+      a.setCaseFirst(CollationCaseFirst.OFF);
+      b.setCaseFirst(CollationCaseFirst.LOWER);
     });
     assertNotEqual((a, b) -> {
-      a.setCaseFirst(CaseFirst.off);
-      b.setCaseFirst(CaseFirst.upper);
+      a.setCaseFirst(CollationCaseFirst.OFF);
+      b.setCaseFirst(CollationCaseFirst.UPPER);
     });
     assertNotEqual((a, b) -> {
-      a.setCaseFirst(CaseFirst.lower);
-      b.setCaseFirst(CaseFirst.upper);
+      a.setCaseFirst(CollationCaseFirst.LOWER);
+      b.setCaseFirst(CollationCaseFirst.UPPER);
     });
     assertNotEqual((a, b) -> {
       a.setLocale("en_US");
@@ -59,8 +59,8 @@ public class CollationOptionsTest {
       b.setCaseLevel(false);
     });
     assertNotEqual((a, b) -> {
-      a.setMaxVariable(MaxVariable.punct);
-      b.setMaxVariable(MaxVariable.space);
+      a.setMaxVariable(CollationMaxVariable.PUNCT);
+      b.setMaxVariable(CollationMaxVariable.SPACE);
     });
     assertNotEqual((a, b) -> {
       a.setNormalization(true);
@@ -88,12 +88,12 @@ public class CollationOptionsTest {
     assertNotEqual(hash, o -> o.setStrength(1));
     assertNotEqual(hash, o -> o.setNormalization(true));
     assertNotEqual(hash, o -> o.setNumericOrdering(true));
-    assertNotEqual(hash, o -> o.setMaxVariable(MaxVariable.space));
+    assertNotEqual(hash, o -> o.setMaxVariable(CollationMaxVariable.SPACE));
     assertNotEqual(hash, o -> o.setLocale("de_AT"));
     assertNotEqual(hash, o -> o.setCaseLevel(true));
-    assertNotEqual(hash, o -> o.setCaseFirst(CaseFirst.upper));
-    assertNotEqual(hash, o -> o.setCaseFirst(CaseFirst.lower));
-    assertNotEqual(hash, o -> o.alternate(Alternate.SHIFTED));
+    assertNotEqual(hash, o -> o.setCaseFirst(CollationCaseFirst.UPPER));
+    assertNotEqual(hash, o -> o.setCaseFirst(CollationCaseFirst.LOWER));
+    assertNotEqual(hash, o -> o.setAlternate(CollationAlternate.SHIFTED));
     assertNotEqual(hash, o -> o.setBackwards(true));
   }
 

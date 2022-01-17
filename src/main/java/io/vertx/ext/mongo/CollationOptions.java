@@ -5,7 +5,6 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -15,14 +14,23 @@ import java.util.Objects;
  */
 @DataObject(generateConverter = true)
 public class CollationOptions {
+
+  public static CollationAlternate alternateFromString(String s) {
+    return CollationAlternate.fromString(s);
+  }
+
+  public static String alternateToString(CollationAlternate value) {
+    return value.getValue();
+  }
+
   public static final Boolean DEFAULT_CASE_LEVEL = false;
-  public static final CaseFirst DEFAULT_CASE_FIRST = CaseFirst.off;
-  public static final Alternate DEFAULT_ALTERNATE = Alternate.NON_IGNORABLE;
+  public static final CollationCaseFirst DEFAULT_CASE_FIRST = CollationCaseFirst.OFF;
+  public static final CollationAlternate DEFAULT_ALTERNATE = CollationAlternate.NON_IGNORABLE;
   public static final Integer DEFAULT_STRENGTH = 3;
   public static final Boolean DEFAULT_NUMERIC_ORDERING = false;
   public static final Boolean DEFAULT_BACKWARDS = false;
   public static final Boolean DEFAULT_NORMALIZATION = false;
-  public static final MaxVariable DEFAULT_MAX_VARIABLE = MaxVariable.punct;
+  public static final CollationMaxVariable DEFAULT_MAX_VARIABLE = CollationMaxVariable.PUNCT;
 
   /**
    * Default locale : {@code simple}
@@ -31,11 +39,11 @@ public class CollationOptions {
 
   private String locale;
   private boolean caseLevel;
-  private CaseFirst caseFirst;
+  private CollationCaseFirst caseFirst;
   private int strength;
   private boolean numericOrdering;
-  private String alternate;
-  private MaxVariable maxVariable;
+  private CollationAlternate alternate;
+  private CollationMaxVariable maxVariable;
   private boolean backwards;
   private boolean normalization;
 
@@ -51,7 +59,7 @@ public class CollationOptions {
     backwards = DEFAULT_BACKWARDS;
     maxVariable = DEFAULT_MAX_VARIABLE;
     normalization = DEFAULT_NORMALIZATION;
-    alternate = DEFAULT_ALTERNATE.toString();
+    alternate = DEFAULT_ALTERNATE;
   }
 
   /**
@@ -76,15 +84,14 @@ public class CollationOptions {
       return Collation.builder().locale("simple").build();
     } else {
       return Collation.builder()
-        .collationAlternate(CollationAlternate.fromString(getAlternate()))
         .backwards(isBackwards())
         .caseLevel(isCaseLevel())
-        .collationCaseFirst(CollationCaseFirst.fromString(getCaseFirst().name()))
-        .collationMaxVariable(CollationMaxVariable.fromString(getMaxVariable().name()))
+        .collationCaseFirst(getCaseFirst())
+        .collationMaxVariable(getMaxVariable())
         .collationStrength(CollationStrength.fromInt(getStrength()))
         .locale(getLocale())
         .numericOrdering(isNumericOrdering())
-        .collationAlternate(CollationAlternate.fromString(getAlternate()))
+        .collationAlternate(getAlternate())
         .normalization(isNormalization())
         .build();
     }
@@ -97,6 +104,15 @@ public class CollationOptions {
    */
   public CollationOptions(JsonObject json) {
     CollationOptionsConverter.fromJson(json, this);
+    if (json.getValue("alternate") instanceof String) {
+      alternate = CollationAlternate.fromString(json.getString("alternate"));
+    }
+    if (json.getValue("caseFirst") instanceof String) {
+      caseFirst = CollationCaseFirst.fromString(json.getString("caseFirst"));
+    }
+    if (json.getValue("maxVariable") instanceof String) {
+      maxVariable = CollationMaxVariable.fromString(json.getString("maxVariable"));
+    }
   }
 
   @Override
@@ -141,6 +157,15 @@ public class CollationOptions {
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     CollationOptionsConverter.toJson(this, json);
+    if (alternate != null) {
+      json.put("alternate", alternate.getValue());
+    }
+    if (caseFirst != null) {
+      json.put("caseFirst", caseFirst.getValue());
+    }
+    if (maxVariable != null) {
+      json.put("maxVariable", maxVariable.getValue());
+    }
     return json;
   }
 
@@ -200,7 +225,8 @@ public class CollationOptions {
    *
    * @return case first
    */
-  public CaseFirst getCaseFirst() {
+  @GenIgnore
+  public CollationCaseFirst getCaseFirst() {
     return caseFirst;
   }
 
@@ -217,7 +243,8 @@ public class CollationOptions {
    * @return CollationOption
    * @see <a href="http://userguide.icu-project.org/collation/customization">Collation customization</a>
    */
-  public CollationOptions setCaseFirst(CaseFirst caseFirst) {
+  @GenIgnore
+  public CollationOptions setCaseFirst(CollationCaseFirst caseFirst) {
     this.caseFirst = caseFirst;
     return this;
   }
@@ -286,17 +313,9 @@ public class CollationOptions {
    *
    * @return alternate
    */
-  public String getAlternate() {
+  @GenIgnore
+  public CollationAlternate getAlternate() {
     return alternate;
-  }
-
-  /**
-   * Get alternate
-   *
-   * @return alternate
-   */
-  Alternate alternate() {
-    return Alternate.fromString(alternate);
   }
 
   /**
@@ -313,14 +332,9 @@ public class CollationOptions {
    * @return CollationOption
    * @see <a href="http://userguide.icu-project.org/collation/concepts#TOC-Comparison-Levels">ICU Collation: Comparison Levels</a>
    */
-  public CollationOptions setAlternate(String alternate) {
-    this.alternate = alternate;
-    return this;
-  }
-
   @GenIgnore
-  CollationOptions alternate(Alternate alternate) {
-    this.alternate = alternate.toString();
+  public CollationOptions setAlternate(CollationAlternate alternate) {
+    this.alternate = alternate;
     return this;
   }
 
@@ -329,7 +343,8 @@ public class CollationOptions {
    *
    * @return max variable
    */
-  public MaxVariable getMaxVariable() {
+  @GenIgnore
+  public CollationMaxVariable getMaxVariable() {
     return maxVariable;
   }
 
@@ -343,7 +358,8 @@ public class CollationOptions {
    * @param maxVariable either of PUNCT, SPACE
    * @return CollationOption
    */
-  public CollationOptions setMaxVariable(MaxVariable maxVariable) {
+  @GenIgnore
+  public CollationOptions setMaxVariable(CollationMaxVariable maxVariable) {
     this.maxVariable = maxVariable;
     return this;
   }
@@ -372,5 +388,4 @@ public class CollationOptions {
     this.backwards = backwards;
     return this;
   }
-
 }
