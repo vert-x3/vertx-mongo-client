@@ -23,7 +23,11 @@ public class CollationOptions {
   public static final Boolean DEFAULT_BACKWARDS = false;
   public static final Boolean DEFAULT_NORMALIZATION = false;
   public static final MaxVariable DEFAULT_MAX_VARIABLE = MaxVariable.punct;
-  private static final String DEFAULT_LOCALE = Locale.getDefault().toString();
+
+  /**
+   * Default locale : {@code simple}
+   */
+  public static final String DEFAULT_LOCALE = "simple";
 
   private String locale;
   private boolean caseLevel;
@@ -68,18 +72,22 @@ public class CollationOptions {
   }
 
   public Collation toMongoDriverObject() {
-    return Collation.builder()
-      .collationAlternate(CollationAlternate.fromString(getAlternate()))
-      .backwards(isBackwards())
-      .caseLevel(isCaseLevel())
-      .collationCaseFirst(CollationCaseFirst.fromString(getCaseFirst().name()))
-      .collationMaxVariable(CollationMaxVariable.fromString(getMaxVariable().name()))
-      .collationStrength(CollationStrength.fromInt(getStrength()))
-      .locale(getLocale())
-      .numericOrdering(isNumericOrdering())
-      .collationAlternate(CollationAlternate.fromString(getAlternate()))
-      .normalization(isNormalization())
-      .build();
+    if ("simple".equals(locale)) {
+      return Collation.builder().locale("simple").build();
+    } else {
+      return Collation.builder()
+        .collationAlternate(CollationAlternate.fromString(getAlternate()))
+        .backwards(isBackwards())
+        .caseLevel(isCaseLevel())
+        .collationCaseFirst(CollationCaseFirst.fromString(getCaseFirst().name()))
+        .collationMaxVariable(CollationMaxVariable.fromString(getMaxVariable().name()))
+        .collationStrength(CollationStrength.fromInt(getStrength()))
+        .locale(getLocale())
+        .numericOrdering(isNumericOrdering())
+        .collationAlternate(CollationAlternate.fromString(getAlternate()))
+        .normalization(isNormalization())
+        .build();
+    }
   }
 
   /**
@@ -149,7 +157,7 @@ public class CollationOptions {
    * The ICU locale. See <a href="https://docs.mongodb.com/manual/reference/collation-locales-defaults/#std-label-collation-languages-locales">Supported Languages and Locales</a>
    * for a list of supported locales.
    * <p>
-   * To specify simple binary comparison, specify locale value of "simple".
+   * The default value is {@code simple} which specifies simple binary comparison.
    *
    * @param locale string
    * @return collationOption

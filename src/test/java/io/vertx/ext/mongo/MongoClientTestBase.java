@@ -125,21 +125,28 @@ public abstract class MongoClientTestBase extends MongoTestBase {
 
   @Test
   public void testCreateIndexWithCollation() {
+    testCreateIndexWithCollation(new CollationOptions().setLocale(Locale.ENGLISH.toString()), 1);
+  }
+
+  @Test
+  public void testCreateIndexWithSimpleLocaleCollation() {
+    testCreateIndexWithCollation(new CollationOptions().setLocale("simple"), 0);
+  }
+
+  private void testCreateIndexWithCollation(CollationOptions collation, int expectedCollation) {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
       JsonObject key = new JsonObject().put("field", 1);
       IndexOptions options = new IndexOptions()
-        .setCollation(new CollationOptions());
-      System.out.println(options.toJson().toString());
+        .setCollation(collation);
       mongoClient.createIndexWithOptions(collection, key, options, onSuccess(res2 -> {
         mongoClient.listIndexes(collection, onSuccess(res3 -> {
-          System.out.println(res3.encodePrettily());
           long keyCount = res3.stream()
             .filter(o -> ((JsonObject) o).getJsonObject("key").containsKey("field"))
             .count();
           assertEquals(1, keyCount);
           long collationCount = res3.stream().filter(o -> ((JsonObject) o).containsKey("collation")).count();
-          assertEquals(1, collationCount);
+          assertEquals(expectedCollation, collationCount);
           testComplete();
         }));
       }));
