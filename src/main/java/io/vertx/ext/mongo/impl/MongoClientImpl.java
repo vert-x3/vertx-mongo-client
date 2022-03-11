@@ -54,6 +54,7 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.reactivestreams.Publisher;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -1243,7 +1244,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     close(ctx.promise(handler));
   }
 
-  private static class MongoHolder implements Shareable {
+  private class MongoHolder implements Shareable {
     com.mongodb.reactivestreams.client.MongoClient mongo;
     MongoDatabase db;
     JsonObject config;
@@ -1277,16 +1278,30 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       refCount++;
     }
 
-    synchronized void close() {
-      if (--refCount == 0) {
-        if (mongo != null) {
-          mongo.close();
+    void close() {
+      java.io.Closeable client;
+      Runnable callback;
+      synchronized (this) {
+        if (--refCount > 0) {
+          return;
         }
-        if (closeRunner != null) {
-          closeRunner.run();
-        }
+        client = mongo;
+        mongo = null;
+        callback = closeRunner;
+        closeRunner = null;
+      }
+      if (callback != null) {
+        callback.run();
+      }
+      if (client != null) {
+        MongoClientImpl.this.vertx.executeBlocking(p -> {
+          try {
+            client.close();
+          } catch (IOException e) {
+            p.fail(e);
+          }
+        });
       }
     }
   }
-
 }
