@@ -7,10 +7,6 @@ An asynchronous client for interacting with a MongoDB database
 Please see the main documentation on the web-site for a full description:
 
 * https://vertx.io/docs/vertx-mongo-client/java/[Java documentation]
-* https://vertx.io/docs/vertx-mongo-client/js/[JavaScript documentation]
-* https://vertx.io/docs/vertx-mongo-client/kotlin/[Kotlin documentation]
-* https://vertx.io/docs/vertx-mongo-client/groovy/[Groovy documentation]
-* https://vertx.io/docs/vertx-mongo-client/ruby/[Ruby documentation]
 
 The following docker CLI can be used for running mongo tests:
 
