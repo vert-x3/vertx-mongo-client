@@ -560,7 +560,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     if (updateOptions.getHint() != null) {
       foarOptions.hint(wrap(updateOptions.getHint()));
     }
-    if (updateOptions.getHintString() != null) {
+    if (updateOptions.getHintString() != null && !updateOptions.getHintString().isEmpty()) {
       foarOptions.hintString(updateOptions.getHintString());
     }
 
