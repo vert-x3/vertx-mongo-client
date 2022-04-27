@@ -28,6 +28,8 @@ public class BulkOperation {
   private JsonObject document;
   private boolean upsert;
   private boolean multi;
+  private JsonObject hint;
+  private String hintString;
   private CollationOptions collation;
 
   /**
@@ -41,6 +43,8 @@ public class BulkOperation {
     this.document = null;
     this.upsert = DEFAULT_UPSERT;
     this.multi = DEFAULT_MULTI;
+    this.hint = null;
+    this.hintString = null;
     this.collation = null;
   }
 
@@ -56,6 +60,8 @@ public class BulkOperation {
     document = json.getJsonObject("document");
     upsert = json.getBoolean("upsert");
     multi = json.getBoolean("multi");
+    hint = json.getJsonObject("hint");
+    hintString = json.getString("hintString");
     collation = json.getJsonObject("collation") != null ? new CollationOptions(json.getJsonObject("collation")) : null;
   }
 
@@ -148,6 +154,8 @@ public class BulkOperation {
     json.put("document", document);
     json.put("upsert", upsert);
     json.put("multi", multi);
+    json.put("hint", hint);
+    json.put("hintString", hintString);
     json.put("collation", collation != null ? collation.toJson() : null);
     return json;
   }
@@ -252,17 +260,57 @@ public class BulkOperation {
     return this;
   }
 
+  /**
+   * Returns the operation hint
+   *
+   * @return the operation hint
+   */
+  public JsonObject getHint() {
+    return hint;
+  }
+
+  /**
+   * Sets the operation hint
+   *
+   * @param hint the operation hint
+   * @return this for fluency
+   */
+  public BulkOperation setHint(JsonObject hint) {
+    this.hint = hint;
+    return this;
+  }
+
+  /**
+   * Returns the operation hint string
+   *
+   * @return the operation hint string
+   */
+  public String getHintString() {
+    return hintString;
+  }
+
+  /**
+   * Sets the operation hint string
+   *
+   * @param hintString the operation hint string
+   * @return this for fluency
+   */
+  public BulkOperation setHintString(String hintString) {
+    this.hintString = hintString;
+    return this;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     BulkOperation operation = (BulkOperation) o;
-    return upsert == operation.upsert && multi == operation.multi && type == operation.type && Objects.equals(filter, operation.filter) && Objects.equals(document, operation.document) && Objects.equals(collation, operation.collation);
+    return upsert == operation.upsert && multi == operation.multi && type == operation.type && Objects.equals(filter, operation.filter) && Objects.equals(document, operation.document) && Objects.equals(hint, operation.hint) && Objects.equals(hintString, operation.hintString) && Objects.equals(collation, operation.collation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, filter, document, upsert, multi, collation);
+    return Objects.hash(type, filter, document, upsert, multi, hint, hintString, collation);
   }
 
   @Override
@@ -273,6 +321,8 @@ public class BulkOperation {
       ", document=" + document +
       ", upsert=" + upsert +
       ", multi=" + multi +
+      ", hint='" + hint + '\''+
+      ", hintString=" + hintString +
       ", collation=" + collation +
       '}';
   }
