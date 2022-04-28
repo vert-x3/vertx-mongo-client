@@ -312,8 +312,8 @@ public class UpdateOptions {
       ", multi=" + multi +
       ", returnNewDocument=" + returnNewDocument +
       ", arrayFilters=" + arrayFilters +
-      ", hint='" + hint + '\''+
-      ", hintString=" + hintString +
+      ", hint=" + hint +
+      ", hintString='" + hintString + '\''+
       ", collation=" + collation +
       '}';
   }

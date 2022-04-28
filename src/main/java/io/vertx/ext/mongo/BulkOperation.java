@@ -321,8 +321,8 @@ public class BulkOperation {
       ", document=" + document +
       ", upsert=" + upsert +
       ", multi=" + multi +
-      ", hint='" + hint + '\''+
-      ", hintString=" + hintString +
+      ", hint=" + hint +
+      ", hintString='" + hintString + '\''+
       ", collation=" + collation +
       '}';
   }
