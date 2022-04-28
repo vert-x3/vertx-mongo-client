@@ -34,6 +34,8 @@ public class UpdateOptions {
   private boolean multi;
   private boolean returnNewDocument; // uniquely valid on findOneAnd* methods
   private JsonArray arrayFilters;
+  private JsonObject hint;
+  private String hintString;
   private CollationOptions collation;
 
   /**
@@ -79,6 +81,8 @@ public class UpdateOptions {
     this.multi = other.multi;
     this.returnNewDocument = other.returnNewDocument;
     this.arrayFilters = other.arrayFilters;
+    this.hint = other.hint;
+    this.hintString = other.hintString;
     this.collation = other.collation;
   }
 
@@ -96,6 +100,8 @@ public class UpdateOptions {
     multi = json.getBoolean("multi", DEFAULT_MULTI);
     returnNewDocument = json.getBoolean("return_new_document", DEFAULT_RETURN_NEW_DOCUMENT);
     arrayFilters = json.getJsonArray("arrayFilters", null);
+    hint = json.getJsonObject("hint", null);
+    hintString = json.getString("hintString", null);
     if (json.getJsonObject("collation") != null) {
       collation = new CollationOptions(json.getJsonObject("collation"));
     }
@@ -215,6 +221,46 @@ public class UpdateOptions {
     return this;
   }
 
+  /**
+   * Get the hint.
+   *
+   * @return the hint
+   */
+  public JsonObject getHint() {
+    return hint;
+  }
+
+  /**
+   * Set the hint.
+   *
+   * @param hint the hint
+   * @return reference to this, for fluency
+   */
+  public UpdateOptions setHint(JsonObject hint) {
+    this.hint = hint;
+    return this;
+  }
+
+  /**
+   * Get the hint string.
+   *
+   * @return the hint string
+   */
+  public String getHintString() {
+    return hintString;
+  }
+
+  /**
+   * Set the hint string.
+   *
+   * @param hintString the hint string
+   * @return reference to this, for fluency
+   */
+  public UpdateOptions setHintString(String hintString) {
+    this.hintString = hintString;
+    return this;
+  }
+
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     if (writeOption != null) {
@@ -232,6 +278,12 @@ public class UpdateOptions {
     if (arrayFilters != null && !arrayFilters.isEmpty()) {
       json.put("arrayFilters", arrayFilters);
     }
+    if (hint != null) {
+      json.put("hint", hint);
+    }
+    if (hintString != null) {
+      json.put("hintString", hintString);
+    }
     if (collation != null) {
       json.put("collation", collation.toJson());
     }
@@ -244,12 +296,12 @@ public class UpdateOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     UpdateOptions that = (UpdateOptions) o;
-    return upsert == that.upsert && multi == that.multi && returnNewDocument == that.returnNewDocument && writeOption == that.writeOption && Objects.equals(arrayFilters, that.arrayFilters) && Objects.equals(collation, that.collation);
+    return upsert == that.upsert && multi == that.multi && returnNewDocument == that.returnNewDocument && writeOption == that.writeOption && Objects.equals(arrayFilters, that.arrayFilters) && Objects.equals(hint, that.hint) && Objects.equals(hintString, that.hintString) && Objects.equals(collation, that.collation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(writeOption, upsert, multi, returnNewDocument, arrayFilters, collation);
+    return Objects.hash(writeOption, upsert, multi, returnNewDocument, arrayFilters, hint, hintString, collation);
   }
 
   @Override
@@ -260,6 +312,8 @@ public class UpdateOptions {
       ", multi=" + multi +
       ", returnNewDocument=" + returnNewDocument +
       ", arrayFilters=" + arrayFilters +
+      ", hint=" + hint +
+      ", hintString='" + hintString + '\''+
       ", collation=" + collation +
       '}';
   }

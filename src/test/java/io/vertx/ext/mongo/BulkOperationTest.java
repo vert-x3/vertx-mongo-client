@@ -49,6 +49,18 @@ public class BulkOperationTest {
     b.setCollation(new CollationOptions());
     assertEquals(a,b);
 
+    a.setHint(new JsonObject().put("foo", "bar"));
+    b.setHint(new JsonObject().put("bar", "foo"));
+    assertNotEquals(a, b);
+    b.setHint(new JsonObject().put("foo", "bar"));
+    assertEquals(a, b);
+
+    a.setHintString("foo");
+    b.setHintString("bar");
+    assertNotEquals(a, b);
+    b.setHintString("foo");
+    assertEquals(a, b);
+
     assertNotEquals(a, null);
   }
 
@@ -85,6 +97,16 @@ public class BulkOperationTest {
     a.setCollation(new CollationOptions());
     assertNotEquals(hash, a.hashCode());
     a.setCollation(null);
+    assertEquals(hash, a.hashCode());
+
+    a.setHint(new JsonObject().put("foo", "bar"));
+    assertNotEquals(hash, a.hashCode());
+    a.setHint(null);
+    assertEquals(hash, a.hashCode());
+
+    a.setHintString("foo");
+    assertNotEquals(hash, a.hashCode());
+    a.setHintString(null);
     assertEquals(hash, a.hashCode());
 
     assertNotEquals(a, null);

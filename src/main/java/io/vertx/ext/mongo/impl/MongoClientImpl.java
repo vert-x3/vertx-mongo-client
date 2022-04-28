@@ -267,6 +267,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       options.getArrayFilters().getList().forEach(entry -> bArrayFilters.add(wrap(JsonObject.mapFrom(entry))));
       updateOptions.arrayFilters(bArrayFilters);
     }
+    if (options.getHint() != null) {
+      updateOptions.hint(wrap(options.getHint()));
+    }
+    if (options.getHintString() != null && !options.getHintString().isEmpty()) {
+      updateOptions.hintString(options.getHintString());
+    }
     if (options.getCollation() != null) {
       updateOptions.collation(options.getCollation().toMongoDriverObject());
     }
@@ -309,6 +315,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       final List<Bson> bArrayFilters = new ArrayList<>(options.getArrayFilters().size());
       options.getArrayFilters().getList().forEach(entry -> bArrayFilters.add(wrap(JsonObject.mapFrom(entry))));
       updateOptions.arrayFilters(bArrayFilters);
+    }
+    if (options.getHint() != null) {
+      updateOptions.hint(wrap(options.getHint()));
+    }
+    if (options.getHintString() != null && !options.getHintString().isEmpty()) {
+      updateOptions.hintString(options.getHintString());
     }
     if (options.getCollation() != null) {
       updateOptions.collation(options.getCollation().toMongoDriverObject());
@@ -367,6 +379,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
     Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
     com.mongodb.client.model.ReplaceOptions replaceOptions = new com.mongodb.client.model.ReplaceOptions().upsert(options.isUpsert());
+    if (options.getHint() != null) {
+      replaceOptions.hint(wrap(options.getHint()));
+    }
+    if (options.getHintString() != null && !options.getHintString().isEmpty()) {
+      replaceOptions.hintString(options.getHintString());
+    }
     if (options.getCollation() != null) {
       replaceOptions.collation(options.getCollation().toMongoDriverObject());
     }
@@ -480,6 +498,18 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       updateOptions.getArrayFilters().getList().forEach(entry -> bArrayFilters.add(wrap(JsonObject.mapFrom(entry))));
       foauOptions.arrayFilters(bArrayFilters);
     }
+    if (findOptions.getHint() != null) {
+      foauOptions.hint(wrap(findOptions.getHint()));
+    }
+    if (findOptions.getHintString() != null && !findOptions.getHintString().isEmpty()) {
+      foauOptions.hintString(findOptions.getHintString());
+    }
+    if (updateOptions.getHint() != null) {
+      foauOptions.hint(wrap(updateOptions.getHint()));
+    }
+    if (updateOptions.getHintString() != null && !updateOptions.getHintString().isEmpty()) {
+      foauOptions.hintString(updateOptions.getHintString());
+    }
     if(findOptions.getCollation() != null) {
       foauOptions.collation(findOptions.getCollation().toMongoDriverObject());
     }
@@ -527,6 +557,19 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     foarOptions.projection(wrap(findOptions.getFields()));
     foarOptions.upsert(updateOptions.isUpsert());
     foarOptions.returnDocument(updateOptions.isReturningNewDocument() ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
+    if (findOptions.getHint() != null) {
+      foarOptions.hint(wrap(findOptions.getHint()));
+    }
+    if (findOptions.getHintString() != null && !findOptions.getHintString().isEmpty()) {
+      foarOptions.hintString(findOptions.getHintString());
+    }
+    if (updateOptions.getHint() != null) {
+      foarOptions.hint(wrap(updateOptions.getHint()));
+    }
+    if (updateOptions.getHintString() != null && !updateOptions.getHintString().isEmpty()) {
+      foarOptions.hintString(updateOptions.getHintString());
+    }
+
     if(findOptions.getCollation() != null) {
       foarOptions.collation(findOptions.getCollation().toMongoDriverObject());
     }
@@ -568,6 +611,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     FindOneAndDeleteOptions foadOptions = new FindOneAndDeleteOptions();
     foadOptions.sort(wrap(findOptions.getSort()));
     foadOptions.projection(wrap(findOptions.getFields()));
+
+    if (findOptions.getHint() != null) {
+      foadOptions.hint(wrap(findOptions.getHint()));
+    }
+    if (findOptions.getHintString() != null && !findOptions.getHintString().isEmpty()) {
+      foadOptions.hintString(findOptions.getHintString());
+    }
 
     if(findOptions.getCollation() != null) {
       foadOptions.collation(findOptions.getCollation().toMongoDriverObject());
@@ -714,6 +764,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
         case DELETE:
           Bson bsonFilter = toBson(encodeKeyWhenUseObjectId(bulkOperation.getFilter()));
           DeleteOptions deleteOptions = new DeleteOptions();
+          if (bulkOperation.getHint() != null) {
+            deleteOptions.hint(toBson(bulkOperation.getHint()));
+          }
+          if (bulkOperation.getHintString() != null && !bulkOperation.getHintString().isEmpty()) {
+            deleteOptions.hintString(bulkOperation.getHintString());
+          }
           if (bulkOperation.getCollation() != null) {
             deleteOptions.collation(bulkOperation.getCollation().toMongoDriverObject());
           }
@@ -731,6 +787,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
           if (bulkOperation.getCollation() != null) {
             replaceOptions.collation(bulkOperation.getCollation().toMongoDriverObject());
           }
+          if (bulkOperation.getHint() != null) {
+            replaceOptions.hint(toBson(bulkOperation.getHint()));
+          }
+          if (bulkOperation.getHintString() != null && !bulkOperation.getHintString().isEmpty()) {
+            replaceOptions.hintString(bulkOperation.getHintString());
+          }
           result.add(new ReplaceOneModel<>(toBson(encodeKeyWhenUseObjectId(bulkOperation.getFilter())), bulkOperation.getDocument(),
             replaceOptions.upsert(bulkOperation.isUpsert())));
           break;
@@ -741,6 +803,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
             .upsert(bulkOperation.isUpsert());
           if (bulkOperation.getCollation() != null) {
             updateOptions.collation(bulkOperation.getCollation().toMongoDriverObject());
+          }
+          if (bulkOperation.getHint() != null) {
+            updateOptions.hint(toBson(bulkOperation.getHint()));
+          }
+          if (bulkOperation.getHintString() != null && !bulkOperation.getHintString().isEmpty()) {
+            updateOptions.hintString(bulkOperation.getHintString());
           }
           if (bulkOperation.isMulti()) {
             result.add(new UpdateManyModel<>(filter, document, updateOptions));
@@ -1164,8 +1232,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     if (options.getFields() != null) {
       find.projection(wrap(options.getFields()));
     }
-    if (options.getHint() != null && !options.getHint().isEmpty()) {
-      find.hintString(options.getHint());
+    if (options.getHint() != null) {
+      find.hint(wrap(options.getHint()));
+    }
+    if (options.getHintString() != null && !options.getHintString().isEmpty()) {
+      find.hintString(options.getHintString());
     }
     if(options.getCollation() != null) {
       find.collation(options.getCollation().toMongoDriverObject());
