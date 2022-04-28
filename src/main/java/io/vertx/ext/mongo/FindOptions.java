@@ -33,7 +33,8 @@ public class FindOptions {
   private int limit;
   private int skip;
   private int batchSize;
-  private String hint;
+  private JsonObject hint;
+  private String hintString;
   private CollationOptions collation;
 
   /**
@@ -59,6 +60,7 @@ public class FindOptions {
     this.skip = options.skip;
     this.batchSize = options.batchSize;
     this.hint = options.hint;
+    this.hintString = options.hintString;
     this.collation = options.getCollation();
   }
 
@@ -200,7 +202,7 @@ public class FindOptions {
    *
    * @return the hint
    */
-  public String getHint() {
+  public JsonObject getHint() {
     return hint;
   }
 
@@ -210,8 +212,28 @@ public class FindOptions {
    * @param hint the hint
    * @return reference to this, for fluency
    */
-  public FindOptions setHint(String hint) {
+  public FindOptions setHint(JsonObject hint) {
     this.hint = hint;
+    return this;
+  }
+
+  /**
+   * Get the hint string. This determines the index to use.
+   *
+   * @return the hint string
+   */
+  public String getHintString() {
+    return hintString;
+  }
+
+  /**
+   * Set the hint string
+   *
+   * @param hintString the hint string
+   * @return reference to this, for fluency
+   */
+  public FindOptions setHintString(String hintString) {
+    this.hintString = hintString;
     return this;
   }
 
@@ -220,12 +242,12 @@ public class FindOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     FindOptions that = (FindOptions) o;
-    return limit == that.limit && skip == that.skip && batchSize == that.batchSize && Objects.equals(fields, that.fields) && Objects.equals(sort, that.sort) && Objects.equals(hint, that.hint) && Objects.equals(collation, that.collation);
+    return limit == that.limit && skip == that.skip && batchSize == that.batchSize && Objects.equals(fields, that.fields) && Objects.equals(sort, that.sort) && Objects.equals(hint, that.hint) && Objects.equals(hintString, that.hintString) && Objects.equals(collation, that.collation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(fields, sort, limit, skip, batchSize, hint, collation);
+    return Objects.hash(fields, sort, limit, skip, batchSize, hint, hintString, collation);
   }
 
   @Override
@@ -236,7 +258,8 @@ public class FindOptions {
       ", limit=" + limit +
       ", skip=" + skip +
       ", batchSize=" + batchSize +
-      ", hint='" + hint + '\'' +
+      ", hint=" + hint +
+      ", hintString='" + hintString + '\'' +
       ", collation=" + collation +
       '}';
   }

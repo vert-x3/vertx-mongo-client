@@ -31,6 +31,14 @@ public class UpdateOptionsTest {
     JsonArray arrayFilters = new JsonArray().add(new JsonObject().put(TestUtils.randomAlphaString(5), TestUtils.randomAlphaString(5)));
     assertEquals(options, options.setArrayFilters(arrayFilters));
     assertEquals(arrayFilters, options.getArrayFilters());
+
+    JsonObject hint = new JsonObject().put(TestUtils.randomAlphaString(5), TestUtils.randomInt());
+    assertEquals(options, options.setHint(hint));
+    assertEquals(hint, options.getHint());
+
+    String hintString = TestUtils.randomAlphaString(12);
+    assertEquals(options, options.setHintString(hintString));
+    assertEquals(hintString, options.getHintString());
   }
 
   @Test
@@ -40,6 +48,8 @@ public class UpdateOptionsTest {
     assertFalse(options.isMulti());
     assertFalse(options.isUpsert());
     assertNull(options.getArrayFilters());
+    assertNull(options.getHint());
+    assertNull(options.getHintString());
   }
 
   @Test
@@ -58,11 +68,19 @@ public class UpdateOptionsTest {
     JsonArray arrayFilters = new JsonArray().add(new JsonObject().put(TestUtils.randomAlphaString(5), TestUtils.randomAlphaString(5)));
     json.put("arrayFilters", arrayFilters);
 
+    JsonObject hint = new JsonObject().put(TestUtils.randomAlphaString(5), TestUtils.randomInt());
+    json.put("hint", hint);
+
+    String hintString = TestUtils.randomAlphaString(12);
+    json.put("hintString", hintString);
+
     UpdateOptions options = new UpdateOptions(json);
     assertEquals(writeOption, options.getWriteOption());
     assertEquals(multi, options.isMulti());
     assertEquals(upsert, options.isUpsert());
     assertEquals(arrayFilters, options.getArrayFilters());
+    assertEquals(hint, options.getHint());
+    assertEquals(hintString, options.getHintString());
   }
 
   @Test
@@ -73,6 +91,8 @@ public class UpdateOptionsTest {
     assertEquals(def.isMulti(), options.isMulti());
     assertEquals(def.isUpsert(), options.isUpsert());
     assertEquals(def.getArrayFilters(), options.getArrayFilters());
+    assertEquals(def.getHint(), options.getHint());
+    assertEquals(def.getHintString(), options.getHintString());
   }
 
   @Test
@@ -82,17 +102,23 @@ public class UpdateOptionsTest {
     boolean multi = TestUtils.randomBoolean();
     boolean upsert = TestUtils.randomBoolean();
     JsonArray arrayFilters = new JsonArray().add(new JsonObject().put(TestUtils.randomAlphaString(5), TestUtils.randomAlphaString(5)));
+    JsonObject hint = new JsonObject().put(TestUtils.randomAlphaString(5), TestUtils.randomInt());
+    String hintString = TestUtils.randomAlphaString(12);
 
     options.setWriteOption(writeOption);
     options.setMulti(multi);
     options.setUpsert(upsert);
     options.setArrayFilters(arrayFilters);
+    options.setHint(hint);
+    options.setHintString(hintString);
 
     UpdateOptions copy = new UpdateOptions(options);
     assertEquals(options.getWriteOption(), copy.getWriteOption());
     assertEquals(options.isMulti(), copy.isMulti());
     assertEquals(options.isUpsert(), copy.isUpsert());
     assertEquals(options.getArrayFilters(), copy.getArrayFilters());
+    assertEquals(options.getHint(), copy.getHint());
+    assertEquals(options.getHintString(), copy.getHintString());
   }
 
   @Test
@@ -102,11 +128,15 @@ public class UpdateOptionsTest {
     boolean multi = TestUtils.randomBoolean();
     boolean upsert = TestUtils.randomBoolean();
     JsonArray arrayFilters = new JsonArray().add(new JsonObject().put(TestUtils.randomAlphaString(5), TestUtils.randomAlphaString(5)));
+    JsonObject hint = new JsonObject().put(TestUtils.randomAlphaString(5), TestUtils.randomInt());
+    String hintString = TestUtils.randomAlphaString(12);
 
     options.setWriteOption(writeOption);
     options.setMulti(multi);
     options.setUpsert(upsert);
     options.setArrayFilters(arrayFilters);
+    options.setHint(hint);
+    options.setHintString(hintString);
 
     assertEquals(options, new UpdateOptions(options.toJson()));
   }
