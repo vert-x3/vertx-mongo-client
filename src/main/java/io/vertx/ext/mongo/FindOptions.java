@@ -227,7 +227,7 @@ public class FindOptions {
   }
 
   /**
-   * Set the hint
+   * Set the hint string
    *
    * @param hintString the hint string
    * @return reference to this, for fluency
