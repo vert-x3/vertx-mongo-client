@@ -498,8 +498,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       updateOptions.getArrayFilters().getList().forEach(entry -> bArrayFilters.add(wrap(JsonObject.mapFrom(entry))));
       foauOptions.arrayFilters(bArrayFilters);
     }
-    if (findOptions.getHint() != null && !findOptions.getHint().isEmpty()) {
-      foauOptions.hintString(findOptions.getHint());
+    if (findOptions.getHint() != null) {
+      foauOptions.hint(wrap(findOptions.getHint()));
+    }
+    if (findOptions.getHintString() != null && !findOptions.getHintString().isEmpty()) {
+      foauOptions.hintString(findOptions.getHintString());
     }
     if (updateOptions.getHint() != null) {
       foauOptions.hint(wrap(updateOptions.getHint()));
@@ -554,8 +557,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     foarOptions.projection(wrap(findOptions.getFields()));
     foarOptions.upsert(updateOptions.isUpsert());
     foarOptions.returnDocument(updateOptions.isReturningNewDocument() ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
-    if (findOptions.getHint() != null && !findOptions.getHint().isEmpty()) {
-      foarOptions.hintString(findOptions.getHint());
+    if (findOptions.getHint() != null) {
+      foarOptions.hint(wrap(findOptions.getHint()));
+    }
+    if (findOptions.getHintString() != null && !findOptions.getHintString().isEmpty()) {
+      foarOptions.hintString(findOptions.getHintString());
     }
     if (updateOptions.getHint() != null) {
       foarOptions.hint(wrap(updateOptions.getHint()));
@@ -606,8 +612,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     foadOptions.sort(wrap(findOptions.getSort()));
     foadOptions.projection(wrap(findOptions.getFields()));
 
-    if(findOptions.getHint() != null && !findOptions.getHint().isEmpty()) {
-      foadOptions.hintString(findOptions.getHint());
+    if (findOptions.getHint() != null) {
+      foadOptions.hint(wrap(findOptions.getHint()));
+    }
+    if (findOptions.getHintString() != null && !findOptions.getHintString().isEmpty()) {
+      foadOptions.hintString(findOptions.getHintString());
     }
 
     if(findOptions.getCollation() != null) {
@@ -1223,8 +1232,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     if (options.getFields() != null) {
       find.projection(wrap(options.getFields()));
     }
-    if (options.getHint() != null && !options.getHint().isEmpty()) {
-      find.hintString(options.getHint());
+    if (options.getHint() != null) {
+      find.hint(wrap(options.getHint()));
+    }
+    if (options.getHintString() != null && !options.getHintString().isEmpty()) {
+      find.hintString(options.getHintString());
     }
     if(options.getCollation() != null) {
       find.collation(options.getCollation().toMongoDriverObject());
