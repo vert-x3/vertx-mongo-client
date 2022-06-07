@@ -58,8 +58,8 @@ public class BulkOperation {
     type = typeValue != null ? BulkOperationType.valueOf(typeValue.toUpperCase()): null;
     filter = json.getJsonObject("filter");
     document = json.getJsonObject("document");
-    upsert = json.getBoolean("upsert");
-    multi = json.getBoolean("multi");
+    upsert = json.getBoolean("upsert", DEFAULT_UPSERT);
+    multi = json.getBoolean("multi", DEFAULT_MULTI);
     hint = json.getJsonObject("hint");
     hintString = json.getString("hintString");
     collation = json.getJsonObject("collation") != null ? new CollationOptions(json.getJsonObject("collation")) : null;
