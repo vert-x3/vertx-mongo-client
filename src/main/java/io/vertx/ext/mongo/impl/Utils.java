@@ -57,12 +57,19 @@ class Utils {
       return upsertValue;
     }).collect(Collectors.toList());
 
+    List<JsonObject> insertResult = bulkWriteResult.getInserts().stream().map(insert -> {
+      JsonObject insertValue = convertInsertId(insert.getId());
+      insertValue.put(MongoClientBulkWriteResult.INDEX, insert.getIndex());
+      return insertValue;
+    }).collect(Collectors.toList());
+
     return new MongoClientBulkWriteResult(
       bulkWriteResult.getInsertedCount(),
       bulkWriteResult.getMatchedCount(),
       bulkWriteResult.getDeletedCount(),
       bulkWriteResult.getModifiedCount(),
-      upsertResult
+      upsertResult,
+      insertResult
     );
   }
 
@@ -80,6 +87,22 @@ class Utils {
       jsonUpsertId = null;
     }
     return jsonUpsertId;
+  }
+
+  private static JsonObject convertInsertId(BsonValue inserId) {
+    JsonObject jsonInsertId;
+    if (inserId != null) {
+      JsonObjectCodec jsonObjectCodec = new JsonObjectCodec(new JsonObject());
+
+      BsonDocument upsertIdDocument = new BsonDocument();
+      upsertIdDocument.append(ID_FIELD, inserId);
+
+      BsonDocumentReader bsonDocumentReader = new BsonDocumentReader(upsertIdDocument);
+      jsonInsertId = jsonObjectCodec.decode(bsonDocumentReader, DecoderContext.builder().build());
+    } else {
+      jsonInsertId = null;
+    }
+    return jsonInsertId;
   }
 
   /**

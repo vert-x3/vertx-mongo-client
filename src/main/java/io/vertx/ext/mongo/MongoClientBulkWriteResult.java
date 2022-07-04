@@ -42,6 +42,11 @@ public class MongoClientBulkWriteResult {
   public static final String UPSERTS = "upserts";
 
   /**
+   * Constant to be used when storing and retrieving Json for insert information.
+   */
+  public static final String INSERTS = "inserts";
+
+  /**
    * Constant to be used when storing and retrieving Json for ID of upsert information.
    */
   public static final String ID = "_id";
@@ -76,6 +81,7 @@ public class MongoClientBulkWriteResult {
   private long deletedCount;
   private long modifiedCount;
   private List<JsonObject> upserts;
+  private List<JsonObject> inserts;
 
   /**
    * Default constructor
@@ -89,7 +95,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Constructor to specify the result of the bulk write operation.
-   * 
+   *
    * @param insertedCount
    *          the number of inserted documents
    * @param matchedCount
@@ -100,19 +106,22 @@ public class MongoClientBulkWriteResult {
    *          the number of modified documents
    * @param upserts
    *          the list of upserted items
+   * @param inserts
+   *          the list of inserted items
    */
   public MongoClientBulkWriteResult(long insertedCount, long matchedCount, long deletedCount, long modifiedCount,
-      List<JsonObject> upserts) {
+      List<JsonObject> upserts, List<JsonObject> inserts) {
     this.insertedCount = insertedCount;
     this.matchedCount = matchedCount;
     this.deletedCount = deletedCount;
     this.modifiedCount = modifiedCount;
     this.upserts = upserts;
+    this.inserts = inserts;
   }
 
   /**
    * Copy constructor
-   * 
+   *
    * @param other
    */
   public MongoClientBulkWriteResult(MongoClientBulkWriteResult other) {
@@ -124,11 +133,15 @@ public class MongoClientBulkWriteResult {
       this.upserts = other.upserts.stream().map(JsonObject::copy).collect(Collectors.toList());
     } else
       this.upserts = null;
+    if (other.inserts != null) {
+      this.inserts = other.inserts.stream().map(JsonObject::copy).collect(Collectors.toList());
+    } else
+      this.inserts = null;
   }
 
   /**
    * Constructor from JSON
-   * 
+   *
    * @param mongoClientBulkWriteResultJson
    */
   public MongoClientBulkWriteResult(JsonObject mongoClientBulkWriteResultJson) {
@@ -140,11 +153,15 @@ public class MongoClientBulkWriteResult {
     if (upsertArray != null)
       this.upserts = upsertArray.stream().filter(object -> object instanceof JsonObject)
           .map(object -> (JsonObject) object).collect(Collectors.toList());
+    JsonArray insertArray = mongoClientBulkWriteResultJson.getJsonArray(INSERTS);
+    if (insertArray != null)
+      this.inserts = insertArray.stream().filter(object -> object instanceof JsonObject)
+        .map(object -> (JsonObject) object).collect(Collectors.toList());
   }
 
   /**
    * Convert to JSON
-   * 
+   *
    * @return the JSON
    */
   public JsonObject toJson() {
@@ -165,12 +182,15 @@ public class MongoClientBulkWriteResult {
     if (upserts != null) {
       mongoClientBulkWriteResultJson.put(UPSERTS, new JsonArray(upserts));
     }
+    if (inserts != null) {
+      mongoClientBulkWriteResultJson.put(INSERTS, new JsonArray(inserts));
+    }
     return mongoClientBulkWriteResultJson;
   }
 
   /**
    * Returns the number of inserted documents
-   * 
+   *
    * @return the inserted documents
    */
   public long getInsertedCount() {
@@ -179,7 +199,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Returns the number of matched documents
-   * 
+   *
    * @return the matched documents
    */
   public long getMatchedCount() {
@@ -188,7 +208,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Returns the number of deleted documents
-   * 
+   *
    * @return the deleted documents
    */
   public long getDeletedCount() {
@@ -197,7 +217,7 @@ public class MongoClientBulkWriteResult {
 
   /**
    * Returns the number of modified documents
-   * 
+   *
    * @return the modified documents
    */
   public long getModifiedCount() {
@@ -207,12 +227,25 @@ public class MongoClientBulkWriteResult {
   /**
    * An unmodifiable list of upsert data. Each entry has the index of the request that lead to the upsert, and the
    * generated ID of the upsert.
-   * 
+   *
    * @return an unmodifiable list of upsert info
    */
   public List<JsonObject> getUpserts() {
     if (upserts != null)
       return Collections.unmodifiableList(upserts);
+    else
+      return null;
+  }
+
+  /**
+   * An unmodifiable list of inserts data. Each entry has the index of the request that lead to the insert, and the
+   * generated ID of the insert.
+   *
+   * @return an unmodifiable list of insert info
+   */
+  public List<JsonObject> getInserts() {
+    if (inserts != null)
+      return Collections.unmodifiableList(inserts);
     else
       return null;
   }
@@ -226,6 +259,7 @@ public class MongoClientBulkWriteResult {
     result = prime * result + (int) (matchedCount ^ (matchedCount >>> 32));
     result = prime * result + (int) (modifiedCount ^ (modifiedCount >>> 32));
     result = prime * result + ((upserts == null) ? 0 : upserts.hashCode());
+    result = prime * result + ((inserts == null) ? 0 : inserts.hashCode());
     return result;
   }
 
@@ -250,6 +284,11 @@ public class MongoClientBulkWriteResult {
       if (other.upserts != null)
         return false;
     } else if (!upserts.equals(other.upserts))
+      return false;
+    if (inserts == null) {
+      if (other.inserts != null)
+        return false;
+    } else if (!inserts.equals(other.inserts))
       return false;
     return true;
   }
