@@ -25,8 +25,8 @@ public class MongoClientBulkWriteResultTest {
     long randomModified = TestUtils.randomLong();
     long randomInserted = TestUtils.randomLong();
     long randomDeleted = TestUtils.randomLong();
-    List<JsonObject> upserts = randomUpsertIds();
-    List<JsonObject> inserts = randomInsertIds();
+    List<JsonObject> upserts = randomBulkWriteResultIds();
+    List<JsonObject> inserts = randomBulkWriteResultIds();
 
     MongoClientBulkWriteResult mongoClientBulkWriteResult = new MongoClientBulkWriteResult(randomInserted,
         randomMatched, randomDeleted, randomModified, upserts, inserts);
@@ -53,7 +53,7 @@ public class MongoClientBulkWriteResultTest {
   @Test
   public void testCopyMongoClientBulkWriteResult() {
     MongoClientBulkWriteResult mongoClientBulkWriteResultOrigin = new MongoClientBulkWriteResult(TestUtils.randomLong(),
-        TestUtils.randomLong(), TestUtils.randomLong(), TestUtils.randomLong(), randomUpsertIds(), randomInsertIds());
+        TestUtils.randomLong(), TestUtils.randomLong(), TestUtils.randomLong(), randomBulkWriteResultIds(), randomBulkWriteResultIds());
 
     MongoClientBulkWriteResult mongoClientBulkWriteResultCopy = new MongoClientBulkWriteResult(
         mongoClientBulkWriteResultOrigin);
@@ -131,8 +131,8 @@ public class MongoClientBulkWriteResultTest {
     long randomModified = TestUtils.randomLong();
     long randomInserted = TestUtils.randomLong();
     long randomDeleted = TestUtils.randomLong();
-    List<JsonObject> upserts = randomUpsertIds();
-    List<JsonObject> inserts = randomInsertIds();
+    List<JsonObject> upserts = randomBulkWriteResultIds();
+    List<JsonObject> inserts = randomBulkWriteResultIds();
 
     MongoClientBulkWriteResult mongoClientBulkWriteResult1 = new MongoClientBulkWriteResult(randomInserted,
         randomMatched, randomDeleted, randomModified, upserts, inserts);
@@ -145,9 +145,9 @@ public class MongoClientBulkWriteResultTest {
 
   private void logicallyUnequal() {
     MongoClientBulkWriteResult mongoClientBulkWriteResult1 = new MongoClientBulkWriteResult(123, 456, 789, 135,
-        randomUpsertIds(), randomInsertIds());
+      randomBulkWriteResultIds(), randomBulkWriteResultIds());
     MongoClientBulkWriteResult mongoClientBulkWriteResult2 = new MongoClientBulkWriteResult(456, 789, 135, 123,
-        randomUpsertIds(), randomInsertIds());
+      randomBulkWriteResultIds(), randomBulkWriteResultIds());
 
     assertFalse(mongoClientBulkWriteResult1.equals(mongoClientBulkWriteResult2));
     assertFalse(mongoClientBulkWriteResult2.equals(mongoClientBulkWriteResult1));
@@ -160,26 +160,17 @@ public class MongoClientBulkWriteResultTest {
     mongoClientBulkWriteResultJson.put(MongoClientBulkWriteResult.INSERTED_COUNT, TestUtils.randomLong());
     mongoClientBulkWriteResultJson.put(MongoClientBulkWriteResult.MATCHED_COUNT, TestUtils.randomLong());
     mongoClientBulkWriteResultJson.put(MongoClientBulkWriteResult.MODIFIED_COUNT, TestUtils.randomLong());
-    mongoClientBulkWriteResultJson.put(MongoClientBulkWriteResult.UPSERTS, randomUpsertIds());
-    mongoClientBulkWriteResultJson.put(MongoClientBulkWriteResult.INSERTS, randomInsertIds());
+    mongoClientBulkWriteResultJson.put(MongoClientBulkWriteResult.UPSERTS, randomBulkWriteResultIds());
+    mongoClientBulkWriteResultJson.put(MongoClientBulkWriteResult.INSERTS, randomBulkWriteResultIds());
 
     return mongoClientBulkWriteResultJson;
   }
 
-  private List<JsonObject> randomUpsertIds() {
-    return Arrays.asList(randomUpsertId(), randomUpsertId());
+  private List<JsonObject> randomBulkWriteResultIds() {
+    return Arrays.asList(randomBulkWriteResultId(), randomBulkWriteResultId());
   }
 
-  private List<JsonObject> randomInsertIds() {
-    return Arrays.asList(randomInsertId(), randomInsertId());
-  }
-
-  private JsonObject randomUpsertId() {
-    return new JsonObject().put(MongoClientBulkWriteResult.ID, TestUtils.randomAlphaString(23))
-        .put(MongoClientBulkWriteResult.INDEX, TestUtils.randomInt());
-  }
-
-  private JsonObject randomInsertId() {
+  private JsonObject randomBulkWriteResultId() {
     return new JsonObject().put(MongoClientBulkWriteResult.ID, TestUtils.randomAlphaString(23))
       .put(MongoClientBulkWriteResult.INDEX, TestUtils.randomInt());
   }

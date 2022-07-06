@@ -16,17 +16,16 @@ import static org.junit.Assert.assertNull;
 /**
  * @author <a href="mailto:nikolakofistariji@gmail.com">Nikola Kosanovic</a>
  */
-public class UtilsTest
-{
+public class UtilsTest {
   @Test
-  public void noAcknowledgedTest() {
+  public void testUnacknowledgedBulkWriteResultTest() {
     BulkWriteResult writeResult = stubBulkWriteResult(false);
     MongoClientBulkWriteResult result = Utils.toMongoClientBulkWriteResult(writeResult);
     assertNull(result);
   }
 
   @Test
-  public void mapperTest() {
+  public void BulkWriteResultMapperTest() {
     BulkWriteResult writeResult = stubBulkWriteResult(true);
     MongoClientBulkWriteResult result = Utils.toMongoClientBulkWriteResult(writeResult);
     assertEquals(result.getDeletedCount(), writeResult.getDeletedCount());
@@ -46,8 +45,7 @@ public class UtilsTest
     String randomInsertId = TestUtils.randomAlphaString(32);
     String randomUpsertId = TestUtils.randomAlphaString(32);
 
-    return new BulkWriteResult()
-    {
+    return new BulkWriteResult() {
       @Override
       public boolean wasAcknowledged() {
         return wasAcknowledged;
