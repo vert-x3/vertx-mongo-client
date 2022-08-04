@@ -37,7 +37,7 @@ public class PublisherAdapter<T> implements ReadStream<T> {
   private final int batchSize;
 
   private State state;
-  private int inFlight;
+  private int requestedNotReceived, receivedNotDelivered;
   private Handler<T> handler;
   private Handler<Throwable> exceptionHandler;
   private Handler<Void> endHandler;
@@ -136,7 +136,8 @@ public class PublisherAdapter<T> implements ReadStream<T> {
       if (state == State.STOPPED) {
         return;
       }
-      inFlight++;
+      receivedNotDelivered++;
+      requestedNotReceived--;
     }
     internalQueue.write(item);
   }
@@ -146,20 +147,22 @@ public class PublisherAdapter<T> implements ReadStream<T> {
       if (state == State.STOPPED) {
         return;
       }
-      inFlight--;
+      receivedNotDelivered--;
     }
     handler.handle(item);
     State s;
+    boolean requestMore;
     synchronized (this) {
-      if (inFlight != 0) {
+      if (receivedNotDelivered != 0) {
         return;
       }
       s = state;
+      requestMore = requestedNotReceived == 0;
     }
     if (s == State.EXHAUSTED) {
       stop();
       handleEnd();
-    } else {
+    } else if (requestMore) {
       requestMore();
     }
   }
@@ -171,7 +174,7 @@ public class PublisherAdapter<T> implements ReadStream<T> {
         return;
       }
       state = State.EXHAUSTED;
-      stop = inFlight == 0;
+      stop = receivedNotDelivered == 0;
     }
     if (stop) {
       stop();
@@ -197,6 +200,7 @@ public class PublisherAdapter<T> implements ReadStream<T> {
         return;
       }
       s = this.subscription;
+      requestedNotReceived += batchSize;
     }
     s.request(batchSize);
   }
