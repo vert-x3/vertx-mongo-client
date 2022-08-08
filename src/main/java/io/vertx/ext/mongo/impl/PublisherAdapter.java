@@ -190,6 +190,8 @@ public class PublisherAdapter<T> implements ReadStream<T> {
     if (h != null) {
       stop();
       h.handle(cause);
+    } else {
+      context.reportException(cause);
     }
   }
 
@@ -202,7 +204,11 @@ public class PublisherAdapter<T> implements ReadStream<T> {
       s = this.subscription;
       requestedNotReceived += batchSize;
     }
-    s.request(batchSize);
+    try {
+      s.request(batchSize);
+    } catch (Exception e) {
+      handleException(e);
+    }
   }
 
   private void handleEnd() {
