@@ -15,6 +15,7 @@ import java.util.Objects;
 public class CreateCollectionOptions {
   private Long maxDocuments;
   private Boolean capped;
+  private TimeSeriesOptions timeseries;
   private Long sizeInBytes;
   private JsonObject storageEngineOptions;
   private JsonObject indexOptionDefaults;
@@ -24,6 +25,7 @@ public class CreateCollectionOptions {
   public CreateCollectionOptions() {
     this.maxDocuments = null;
     this.capped = null;
+    this.timeseries = null;
     this.sizeInBytes = null;
     this.storageEngineOptions = null;
     this.indexOptionDefaults = null;
@@ -34,6 +36,7 @@ public class CreateCollectionOptions {
   public CreateCollectionOptions(CreateCollectionOptions createCollectionOptions) {
     this.maxDocuments = createCollectionOptions.getMaxDocuments();
     this.capped = createCollectionOptions.getCapped();
+    this.timeseries = createCollectionOptions.getTimeseries();
     this.sizeInBytes = createCollectionOptions.getSizeInBytes();
     this.storageEngineOptions = createCollectionOptions.getStorageEngineOptions();
     this.indexOptionDefaults = createCollectionOptions.getIndexOptionDefaults();
@@ -79,6 +82,9 @@ public class CreateCollectionOptions {
     if (capped != null) {
       createCollectionOptions.capped(capped);
     }
+    if(timeseries != null) {
+      createCollectionOptions.timeSeriesOptions(timeseries.toMongoDriverObject());
+    }
     if (maxDocuments != null) {
       createCollectionOptions.maxDocuments(maxDocuments);
     }
@@ -114,6 +120,15 @@ public class CreateCollectionOptions {
 
   public Boolean getCapped() {
     return capped;
+  }
+
+  public TimeSeriesOptions getTimeseries() {
+    return timeseries;
+  }
+
+  public CreateCollectionOptions setTimeseries(TimeSeriesOptions timeseries) {
+    this.timeseries = Assertions.notNull("timeseries", timeseries);
+    return this;
   }
 
   public Long getSizeInBytes() {
