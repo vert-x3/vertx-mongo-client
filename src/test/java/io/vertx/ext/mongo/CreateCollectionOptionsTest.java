@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo;
 
 import com.mongodb.client.model.CollationStrength;
+import com.mongodb.client.model.TimeSeriesGranularity;
 import com.mongodb.client.model.ValidationAction;
 import com.mongodb.client.model.ValidationLevel;
 import io.vertx.core.json.JsonObject;
@@ -123,5 +124,25 @@ public class CreateCollectionOptionsTest {
       .setCapped(true);
 
     assertEquals(json, options.toJson());
+  }
+
+  @Test
+  public void testSetTimeSeries() {
+    TimeSeriesOptions timeseries = new TimeSeriesOptions("time");
+    CreateCollectionOptions options = new CreateCollectionOptions();
+    options.setTimeseries(timeseries);
+    assertEquals("time", options.toMongoDriverObject().getTimeSeriesOptions().getTimeField());
+
+    timeseries.setMetaField("meta");
+    options.setTimeseries(timeseries);
+    assertEquals("meta", options.toMongoDriverObject().getTimeSeriesOptions().getMetaField());
+
+    timeseries.setGranularity(TimeSeriesGranularity.MINUTES);
+    options.setTimeseries(timeseries);
+    assertEquals(TimeSeriesGranularity.MINUTES, options.toMongoDriverObject().getTimeSeriesOptions().getGranularity());
+
+    timeseries.setGranularity("seconds");
+    options.setTimeseries(timeseries);
+    assertEquals(TimeSeriesGranularity.SECONDS, options.toMongoDriverObject().getTimeSeriesOptions().getGranularity());
   }
 }
