@@ -20,7 +20,7 @@ import java.util.Optional;
 public class MongoClientOptionsParser {
 
   private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
-    new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec());
+    new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec(), new DocumentCodec());
   private final MongoClientSettings settings;
   private final String database;
 
