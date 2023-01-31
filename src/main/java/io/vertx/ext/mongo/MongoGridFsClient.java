@@ -28,29 +28,20 @@ public interface MongoGridFsClient {
    */
   Future<Void> delete(String id);
 
-  @Fluent
-  MongoGridFsClient readByFileName(String fileName, Handler<AsyncResult<ReadStream<Buffer>>> resultHandler);
+  /**
+   * Read file by name to ReadStream
+   */
+  ReadStream<Buffer> readByFileName(String fileName);
 
   /**
-   * Like {@link #readByFileName(String, Handler)} but returns a {@code Future} of the asynchronous result
+   * Read file by name to ReadStream with options
    */
-  Future<ReadStream<Buffer>> readByFileName(String fileName);
-
-  @Fluent
-  MongoGridFsClient readByFileNameWithOptions(String fileName, GridFsDownloadOptions options, Handler<AsyncResult<ReadStream<Buffer>>> resultHandler);
+  ReadStream<Buffer> readByFileNameWithOptions(String fileName, GridFsDownloadOptions options);
 
   /**
-   * Like {@link #readByFileNameWithOptions(String, GridFsDownloadOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * Read file by id to ReadStream
    */
-  Future<ReadStream<Buffer>> readByFileNameWithOptions(String fileName, GridFsDownloadOptions options);
-
-  @Fluent
-  MongoGridFsClient readById(String id, Handler<AsyncResult<ReadStream<Buffer>>> resultHandler);
-
-  /**
-   * Like {@link #readById(String, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<ReadStream<Buffer>> readById(String id);
+  ReadStream<Buffer> readById(String id);
 
   @Fluent
   MongoGridFsClient downloadByFileName(WriteStream<Buffer> stream, String fileName, Handler<AsyncResult<Long>> resultHandler);
