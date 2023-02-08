@@ -145,6 +145,26 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
+  public ReadStream<Buffer> readByFileName(String fileName) {
+    GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName);
+    return handleRead(publisher);
+  }
+
+  @Override
+  public ReadStream<Buffer> readByFileNameWithOptions(String fileName, GridFsDownloadOptions options) {
+    GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions();
+    GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName, downloadOptions);
+    return handleRead(publisher);
+  }
+
+  @Override
+  public ReadStream<Buffer> readById(String id) {
+    ObjectId objectId = new ObjectId(id);
+    GridFSDownloadPublisher publisher = bucket.downloadToPublisher(objectId);
+    return handleRead(publisher);
+  }
+
+  @Override
   public MongoGridFsClient downloadByFileName(WriteStream<Buffer> stream, String fileName, Handler<AsyncResult<Long>> resultHandler) {
     Future<Long> future = downloadByFileName(stream, fileName);
     setHandler(future, resultHandler);
@@ -295,6 +315,12 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     return rs.pipeTo(stream).map(v -> mapper.count);
   }
 
+  private ReadStream<Buffer> handleRead(GridFSDownloadPublisher publisher) {
+    ReadStream<ByteBuffer> adapter = new PublisherAdapter<>(vertx.getOrCreateContext(), publisher, 16);
+    MapBuffer mapper = new MapBuffer();
+    return new MappingStream<>(adapter, mapper);
+  }
+
   private static class MapAndCountBuffer implements Function<ByteBuffer, Buffer> {
     private long count = 0;
 
@@ -302,6 +328,14 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     public Buffer apply(ByteBuffer bb) {
       Buffer buffer = Buffer.buffer(copiedBuffer(bb));
       count += buffer.length();
+      return buffer;
+    }
+  }
+
+  private static class MapBuffer implements Function<ByteBuffer, Buffer> {
+    @Override
+    public Buffer apply(ByteBuffer bb) {
+      Buffer buffer = Buffer.buffer(copiedBuffer(bb));
       return buffer;
     }
   }

@@ -28,6 +28,21 @@ public interface MongoGridFsClient {
    */
   Future<Void> delete(String id);
 
+  /**
+   * Read file by name to ReadStream
+   */
+  ReadStream<Buffer> readByFileName(String fileName);
+
+  /**
+   * Read file by name to ReadStream with options
+   */
+  ReadStream<Buffer> readByFileNameWithOptions(String fileName, GridFsDownloadOptions options);
+
+  /**
+   * Read file by id to ReadStream
+   */
+  ReadStream<Buffer> readById(String id);
+
   @Fluent
   MongoGridFsClient downloadByFileName(WriteStream<Buffer> stream, String fileName, Handler<AsyncResult<Long>> resultHandler);
 

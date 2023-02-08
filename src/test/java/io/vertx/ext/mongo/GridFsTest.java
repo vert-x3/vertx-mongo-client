@@ -2,9 +2,12 @@ package io.vertx.ext.mongo;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.ReadStream;
+
 import org.junit.Test;
 
 import java.io.File;
@@ -15,6 +18,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -304,7 +308,154 @@ public class GridFsTest extends MongoTestBase {
       }
     });
     await();
+  }
 
+  @Test
+  public void testReadByFileName() {
+    long fileLength = (1024 * 3) + 70;
+    String fileName = createTempFileWithContent(fileLength);
+    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
+
+    Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
+
+    mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
+
+    gridFsClientPromise.future().compose(mongoGridFsClient -> {
+      assertNotNull(mongoGridFsClient);
+      gridFsClient.set(mongoGridFsClient);
+      Promise<Void> dropPromise = Promise.promise();
+      mongoGridFsClient.drop(dropPromise);
+      return dropPromise.future();
+    }).compose(dropped -> {
+      Promise<String> uploadPromise = Promise.promise();
+      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      return uploadPromise.future();
+    }).compose(id -> {
+      assertNotNull(id);
+
+      Promise<Long> readPromise = Promise.promise();
+      AtomicLong count = new AtomicLong(0);
+
+      ReadStream<Buffer> rs = gridFsClient.get().readByFileName(fileName);
+      rs.handler(buffer -> {
+        count.addAndGet(buffer.length());
+      });
+      rs.endHandler(x->{
+        readPromise.complete(count.get());
+      });
+
+      return readPromise.future();
+    }).compose(length -> {
+      assertTrue(fileLength == length);
+      testComplete();
+      return Future.succeededFuture();
+    }).onComplete(event -> {
+      if (event.failed()) {
+        fail(event.cause());
+      }
+    });
+    await();
+
+  }
+
+  @Test
+  public void testReadByFileNameWithOptions() {
+    long fileLength = (1024 * 3) + 70;
+    String fileName = createTempFileWithContent(fileLength);
+    GridFsDownloadOptions options = new GridFsDownloadOptions();
+    options.setRevision(GridFsDownloadOptions.DEFAULT_REVISION);
+
+    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
+
+    Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
+
+    mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
+
+    gridFsClientPromise.future().compose(mongoGridFsClient -> {
+      assertNotNull(mongoGridFsClient);
+      gridFsClient.set(mongoGridFsClient);
+      Promise<Void> dropPromise = Promise.promise();
+      mongoGridFsClient.drop(dropPromise);
+      return dropPromise.future();
+    }).compose(dropped -> {
+      Promise<String> uploadPromise = Promise.promise();
+      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      return uploadPromise.future();
+    }).compose(id -> {
+      assertNotNull(id);
+
+      Promise<Long> readPromise = Promise.promise();
+      AtomicLong count = new AtomicLong(0);
+
+      ReadStream<Buffer> rs = gridFsClient.get().readByFileNameWithOptions(fileName, options);
+      rs.handler(buffer -> {
+        count.addAndGet(buffer.length());
+      });
+      rs.endHandler(x -> {
+        readPromise.complete(count.get());
+      });
+
+      return readPromise.future();
+    }).compose(length -> {
+      assertTrue(fileLength == length);
+      testComplete();
+      return Future.succeededFuture();
+    }).onComplete(event -> {
+      if (event.failed()) {
+        fail(event.cause());
+      }
+    });
+    await();
+  }
+
+  @Test
+  public void testReadById() {
+    long fileLength = (1027) + 7000;
+    String fileName = createTempFileWithContent(fileLength);
+
+    AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
+    AtomicReference<String> idCreated = new AtomicReference<>();
+
+    Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
+
+    mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
+
+    gridFsClientPromise.future().compose(mongoGridFsClient -> {
+      assertNotNull(mongoGridFsClient);
+      gridFsClient.set(mongoGridFsClient);
+      Promise<Void> dropPromise = Promise.promise();
+      mongoGridFsClient.drop(dropPromise);
+      return dropPromise.future();
+    }).compose(dropped -> {
+      Promise<String> uploadPromise = Promise.promise();
+      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      return uploadPromise.future();
+    }).compose(id -> {
+      assertNotNull(id);
+      idCreated.set(id);
+
+      Promise<Long> readPromise = Promise.promise();
+      AtomicLong count = new AtomicLong(0);
+
+      ReadStream<Buffer> rs = gridFsClient.get().readById(idCreated.get());
+      rs.handler(buffer -> {
+        count.addAndGet(buffer.length());
+      });
+      rs.endHandler(x -> {
+        readPromise.complete(count.get());
+      });
+
+      return readPromise.future();
+    }).compose(length -> {
+      assertTrue(fileLength == length);
+      testComplete();
+      return Future.succeededFuture();
+    }).onComplete(event -> {
+      if (event.failed()) {
+        fail(event.cause());
+      }
+    });
+    await();
   }
 
   @Test
