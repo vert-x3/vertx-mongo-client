@@ -315,10 +315,9 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     return rs.pipeTo(stream).map(v -> mapper.count);
   }
 
-
   private ReadStream<Buffer> handleRead(GridFSDownloadPublisher publisher) {
     ReadStream<ByteBuffer> adapter = new PublisherAdapter<>(vertx.getOrCreateContext(), publisher, 16);
-    MapAndCountBuffer mapper = new MapAndCountBuffer();
+    MapBuffer mapper = new MapBuffer();
     return new MappingStream<>(adapter, mapper);
   }
 
@@ -329,6 +328,14 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     public Buffer apply(ByteBuffer bb) {
       Buffer buffer = Buffer.buffer(copiedBuffer(bb));
       count += buffer.length();
+      return buffer;
+    }
+  }
+
+  private static class MapBuffer implements Function<ByteBuffer, Buffer> {
+    @Override
+    public Buffer apply(ByteBuffer bb) {
+      Buffer buffer = Buffer.buffer(copiedBuffer(bb));
       return buffer;
     }
   }
