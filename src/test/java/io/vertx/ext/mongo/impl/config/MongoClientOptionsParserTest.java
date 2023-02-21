@@ -38,4 +38,15 @@ public class MongoClientOptionsParserTest {
     MongoClientOptionsParser parser = new MongoClientOptionsParser(vertx, config);
     assertEquals("my_db", parser.database());
   }
+
+  @Test
+  public void testCompressorsSettings() {
+    String connectionString = "mongodb://localhost:27017/";
+    JsonObject config = new JsonObject()
+      .put("connection_string", connectionString)
+      .put("compressors", "snappy,zstd");
+
+    MongoClientOptionsParser parser = new MongoClientOptionsParser(vertx, config);
+    assertEquals(2, parser.settings().getCompressorList().size());
+  }
 }
