@@ -27,7 +27,7 @@ jobs:
           java-version: ${{ matrix.jdk }}
           distribution: temurin
       - name: Run tests
-        run: mvn -s .github/maven-ci-settings.xml -q clean verify -B
+        run: mvn -s .github/maven-ci-settings.xml -q clean verify -B -X -Dsurefire.useFile=false
   Deploy:
     name: Deploy to OSSRH
     if: ${{ github.repository_owner == 'vert-x3' && (github.event_name == 'push' || github.event_name == 'schedule') }}
