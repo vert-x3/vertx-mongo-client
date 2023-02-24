@@ -16,6 +16,10 @@ import java.util.Objects;
  */
 @DataObject(generateConverter = true)
 public class TimeSeriesOptions {
+  public static final String TIME_FIELD_KEY = "timeField";
+  public static final String META_FIELD_KEY = "metaField";
+  public static final String GRANULARITY_KEY = "granularity";
+
   // required for time series collections
   private String timeField;
   private String metaField;
