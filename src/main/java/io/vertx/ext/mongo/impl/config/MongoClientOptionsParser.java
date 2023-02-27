@@ -85,6 +85,12 @@ public class MongoClientOptionsParser {
     ServerSettings serverSettings = new ServerSettingsParser(config).settings();
     options.applyToServerSettings(builder -> builder.applySettings(serverSettings));
 
+    // CompressorsSettings
+    List<MongoCompressor> compressorList = new CompressorListParser(connectionString, config).compressorList();
+    if (compressorList != null) {
+      options.compressorList(compressorList);
+    }
+
     //retryable settings
     applyRetryableSetting(options, connectionString, config);
 
