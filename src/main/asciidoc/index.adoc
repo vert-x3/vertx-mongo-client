@@ -784,12 +784,15 @@ For more information on the format of the connection string please consult the d
 `keyPath`:: Set a path to a file that contains the client key that will be used to authenticate against the server when making SSL connections to mongo.
 `certPath`:: Set a path to a file that contains the certificate that will be used to authenticate against the server when making SSL connections to mongo.
 `caPath`:: Set a path to a file that contains a certificate that will be used as a source of trust when making SSL connections to mongo.
-`compressors`:: Sets the compression algorithm for network transmission. Valid values range from [`snappy`, `zlib`, `zstd`], the default value is `null` (meaning no compression). *NOTE* - When using the `snappy` or `zstd` compression algorithm, you must add explicit dependencies in your `pom.xml`.
+`compressors`:: Sets the compression algorithm for network transmission. Valid values range from [`snappy`, `zlib`, `zstd`], the default value is `null` (meaning no compression).
+[NOTE]
+====
+For `snappy` and `zstd` compression algorithms support, additional dependencies must be added to your project build descriptor (https://github.com/xerial/snappy-java[`snappy-java`] and https://github.com/luben/zstd-jni[`zstd-java`], respectively).
+====
 `zlibCompressionLevel`:: Sets the compression level for zlib. Valid values are between -1 and 9, the default value is -1 if zlib is enabled.
 
-
 NOTE: Most of the default values listed above use the default values of the MongoDB Java Driver.
-Please consult the driver documentation for up to date information.
+Please consult the driver documentation for up-to-date information.
 
 ifeval::["$lang" == "java"]
 include::override/rxjava3.adoc[]
