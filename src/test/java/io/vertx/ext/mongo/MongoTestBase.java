@@ -30,7 +30,6 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +67,7 @@ public abstract class MongoTestBase extends VertxTestBase {
   @BeforeClass
   public static void startMongo() {
     int port = 27018;
-    mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.2.1"));
+    mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:5.0.15"));
     mongoDBContainer.setPortBindings(Collections.singletonList(port + ":27017"));
     mongoDBContainer.start();
   }
