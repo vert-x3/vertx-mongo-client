@@ -16,11 +16,15 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+
+import static io.vertx.ext.mongo.TimeSeriesGranularity.*;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -383,5 +387,32 @@ public class MongoClientTest extends MongoClientTestBase {
             doneFunction.accept(new JsonObject(savedDoc.toJson()));
           });
       }));
+  }
+
+  @Test
+  public void testCreateTimeSeriesCollection() {
+    String collectionName = "_testCreateTimeSeriesCollection" + UUID.randomUUID();
+
+    TimeSeriesOptions timeseries = new TimeSeriesOptions()
+      .setMetaField("metadata")
+      .setGranularity(HOURS);
+
+    CreateCollectionOptions options = new CreateCollectionOptions().setTimeSeriesOptions(timeseries);
+
+    mongoClient.createCollectionWithOptions(collectionName, options, onSuccess(v -> {
+      mongoClient.runCommand("listCollections", JsonObject.of("listCollections", "1.0"), onSuccess(json -> {
+        boolean isTimeSeriesCollection = false;
+        for (Object obj : json.getJsonObject("cursor").getJsonArray("firstBatch")) {
+          JsonObject coll = (JsonObject) obj;
+          if (Objects.equals(collectionName, coll.getString("name"))) {
+            isTimeSeriesCollection = Objects.equals("timeseries", coll.getString("type"));
+            break;
+          }
+        }
+        assertTrue(isTimeSeriesCollection);
+        testComplete();
+      }));
+    }));
+    await();
   }
 }
