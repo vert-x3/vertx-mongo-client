@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static io.vertx.ext.mongo.TimeSeriesGranularity.*;
 import static org.junit.Assert.*;
 
 public class CreateCollectionOptionsTest {
@@ -127,7 +128,7 @@ public class CreateCollectionOptionsTest {
 
   @Test
   public void testSetTimeSeries() {
-    TimeSeriesOptions timeseries = new TimeSeriesOptions("time");
+    TimeSeriesOptions timeseries = new TimeSeriesOptions().setTimeField("time");
     CreateCollectionOptions options = new CreateCollectionOptions();
     options.setTimeSeriesOptions(timeseries);
     assertEquals("time", options.toMongoDriverObject().getTimeSeriesOptions().getTimeField());
@@ -136,11 +137,11 @@ public class CreateCollectionOptionsTest {
     options.setTimeSeriesOptions(timeseries);
     assertEquals("meta", options.toMongoDriverObject().getTimeSeriesOptions().getMetaField());
 
-    timeseries.setGranularity(TimeSeriesGranularity.MINUTES);
+    timeseries.setGranularity(MINUTES);
     options.setTimeSeriesOptions(timeseries);
     assertEquals(TimeSeriesGranularity.MINUTES, options.toMongoDriverObject().getTimeSeriesOptions().getGranularity());
 
-    timeseries.setGranularity("seconds");
+    timeseries.setGranularity(SECONDS);
     options.setTimeSeriesOptions(timeseries);
     assertEquals(TimeSeriesGranularity.SECONDS, options.toMongoDriverObject().getTimeSeriesOptions().getGranularity());
   }

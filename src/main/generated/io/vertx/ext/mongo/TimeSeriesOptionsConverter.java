@@ -22,7 +22,7 @@ public class TimeSeriesOptionsConverter {
       switch (member.getKey()) {
         case "granularity":
           if (member.getValue() instanceof String) {
-            obj.setGranularity(com.mongodb.client.model.TimeSeriesGranularity.valueOf((String)member.getValue()));
+            obj.setGranularity(io.vertx.ext.mongo.TimeSeriesGranularity.valueOf((String)member.getValue()));
           }
           break;
         case "metaField":

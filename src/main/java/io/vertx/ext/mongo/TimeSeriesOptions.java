@@ -1,10 +1,8 @@
 package io.vertx.ext.mongo;
 
-import com.mongodb.client.model.TimeSeriesGranularity;
-import com.mongodb.lang.Nullable;
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
+
 import java.util.Objects;
 
 /**
@@ -16,23 +14,27 @@ import java.util.Objects;
  */
 @DataObject(generateConverter = true)
 public class TimeSeriesOptions {
-  public static final String TIME_FIELD_KEY = "timeField";
-  public static final String META_FIELD_KEY = "metaField";
-  public static final String GRANULARITY_KEY = "granularity";
+
+  /**
+   * The default time field value for timeseries collections.
+   */
+  public static final String DEFAULT_TIME_FIELD = "timestamp";
 
   // required for time series collections
   private String timeField;
   private String metaField;
   private TimeSeriesGranularity granularity;
 
-  public TimeSeriesOptions(final String timeField) {
-    this.timeField = com.mongodb.assertions.Assertions.notNull("timeField", timeField);
+  public TimeSeriesOptions() {
+    init();
+  }
+
+  private void init() {
+    timeField = DEFAULT_TIME_FIELD;
   }
 
   /**
-   * Copy constructor
-   *
-   * @param options
+   * Copy constructor.
    */
   public TimeSeriesOptions(TimeSeriesOptions options) {
     timeField = options.timeField;
@@ -41,7 +43,7 @@ public class TimeSeriesOptions {
   }
 
   public TimeSeriesOptions(JsonObject json) {
-    com.mongodb.assertions.Assertions.notNull("timeField", json.getString("timeField"));
+    init();
     TimeSeriesOptionsConverter.fromJson(json, this);
   }
 
@@ -58,7 +60,19 @@ public class TimeSeriesOptions {
       timeSeriesOptions.metaField(metaField);
     }
     if (granularity != null) {
-      timeSeriesOptions.granularity(granularity);
+      switch (granularity) {
+        case SECONDS:
+          timeSeriesOptions.granularity(com.mongodb.client.model.TimeSeriesGranularity.SECONDS);
+          break;
+        case MINUTES:
+          timeSeriesOptions.granularity(com.mongodb.client.model.TimeSeriesGranularity.MINUTES);
+          break;
+        case HOURS:
+          timeSeriesOptions.granularity(com.mongodb.client.model.TimeSeriesGranularity.HOURS);
+          break;
+        default:
+          throw new UnsupportedOperationException(granularity.toString());
+      }
     }
     return timeSeriesOptions;
   }
@@ -74,14 +88,13 @@ public class TimeSeriesOptions {
    * @param timeField the timeField to set
    */
   public TimeSeriesOptions setTimeField(String timeField) {
-    this.timeField = com.mongodb.assertions.Assertions.notNull("timeField", timeField);
+    this.timeField = timeField;
     return this;
   }
 
   /**
    * @return the metaField
    */
-  @Nullable
   public String getMetaField() {
     return metaField;
   }
@@ -97,7 +110,6 @@ public class TimeSeriesOptions {
   /**
    * @return the granularity
    */
-  @Nullable
   public TimeSeriesGranularity getGranularity() {
     return granularity;
   }
@@ -107,25 +119,6 @@ public class TimeSeriesOptions {
    */
   public TimeSeriesOptions setGranularity(TimeSeriesGranularity granularity) {
     this.granularity = granularity;
-    return this;
-  }
-
-  /**
-   * @param granularity the granularity to set, from string
-   */
-  @GenIgnore
-  public TimeSeriesOptions setGranularity(String granularity) {
-    granularity =
-        com.mongodb.assertions.Assertions.notNull("granularity", granularity).toUpperCase();
-    if (Objects.equals(granularity, "SECONDS")) {
-      this.granularity = TimeSeriesGranularity.SECONDS;
-    } else if (Objects.equals(granularity, "MINUTES")) {
-      this.granularity = TimeSeriesGranularity.MINUTES;
-    } else if (Objects.equals(granularity, "HOURS")) {
-      this.granularity = TimeSeriesGranularity.HOURS;
-    } else {
-      throw new IllegalArgumentException("invalid granularity string");
-    }
     return this;
   }
 
