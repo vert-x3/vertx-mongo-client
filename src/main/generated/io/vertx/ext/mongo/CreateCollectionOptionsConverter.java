@@ -50,9 +50,9 @@ public class CreateCollectionOptionsConverter {
             obj.setStorageEngineOptions(((JsonObject)member.getValue()).copy());
           }
           break;
-        case "timeseries":
+        case "timeSeriesOptions":
           if (member.getValue() instanceof JsonObject) {
-            obj.setTimeseries(new io.vertx.ext.mongo.TimeSeriesOptions((io.vertx.core.json.JsonObject)member.getValue()));
+            obj.setTimeSeriesOptions(new io.vertx.ext.mongo.TimeSeriesOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "validationOptions":
@@ -87,8 +87,8 @@ public class CreateCollectionOptionsConverter {
     if (obj.getStorageEngineOptions() != null) {
       json.put("storageEngineOptions", obj.getStorageEngineOptions());
     }
-    if (obj.getTimeseries() != null) {
-      json.put("timeseries", obj.getTimeseries().toJson());
+    if (obj.getTimeSeriesOptions() != null) {
+      json.put("timeSeriesOptions", obj.getTimeSeriesOptions().toJson());
     }
     if (obj.getValidationOptions() != null) {
       json.put("validationOptions", obj.getValidationOptions().toJson());

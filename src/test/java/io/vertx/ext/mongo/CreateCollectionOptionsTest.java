@@ -10,8 +10,7 @@ import org.junit.Test;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 public class CreateCollectionOptionsTest {
 
@@ -130,19 +129,19 @@ public class CreateCollectionOptionsTest {
   public void testSetTimeSeries() {
     TimeSeriesOptions timeseries = new TimeSeriesOptions("time");
     CreateCollectionOptions options = new CreateCollectionOptions();
-    options.setTimeseries(timeseries);
+    options.setTimeSeriesOptions(timeseries);
     assertEquals("time", options.toMongoDriverObject().getTimeSeriesOptions().getTimeField());
 
     timeseries.setMetaField("meta");
-    options.setTimeseries(timeseries);
+    options.setTimeSeriesOptions(timeseries);
     assertEquals("meta", options.toMongoDriverObject().getTimeSeriesOptions().getMetaField());
 
     timeseries.setGranularity(TimeSeriesGranularity.MINUTES);
-    options.setTimeseries(timeseries);
+    options.setTimeSeriesOptions(timeseries);
     assertEquals(TimeSeriesGranularity.MINUTES, options.toMongoDriverObject().getTimeSeriesOptions().getGranularity());
 
     timeseries.setGranularity("seconds");
-    options.setTimeseries(timeseries);
+    options.setTimeSeriesOptions(timeseries);
     assertEquals(TimeSeriesGranularity.SECONDS, options.toMongoDriverObject().getTimeSeriesOptions().getGranularity());
   }
 }

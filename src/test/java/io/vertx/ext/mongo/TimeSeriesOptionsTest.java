@@ -1,15 +1,16 @@
 package io.vertx.ext.mongo;
 
-import static org.junit.Assert.*;
-
 import com.mongodb.client.model.TimeSeriesGranularity;
 import io.vertx.core.json.JsonObject;
+import org.junit.Test;
+
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class TimeSeriesOptionsTest extends MongoTestBase {
 
@@ -131,17 +132,17 @@ public class TimeSeriesOptionsTest extends MongoTestBase {
                 TimeSeriesOptions.GRANULARITY_KEY,
                 "hours"));
     CreateCollectionOptions options = new CreateCollectionOptions();
-    options.setTimeseries(timeseries);
+    options.setTimeSeriesOptions(timeseries);
     mongoClient
-        .createCollectionWithOptions(collectionName, options)
-        .onSuccess(
-            _void -> {
-              mongoClient
-                  .runCommand("listCollections", JsonObject.of("listCollections", "1.0"))
-                  .onSuccess(
-                      json -> {
-                        boolean isTimeSeriesCollection = false;
-                        for (Object obj : json.getJsonObject("cursor").getJsonArray("firstBatch")) {
+      .createCollectionWithOptions(collectionName, options)
+      .onSuccess(
+        _void -> {
+          mongoClient
+            .runCommand("listCollections", JsonObject.of("listCollections", "1.0"))
+            .onSuccess(
+              json -> {
+                boolean isTimeSeriesCollection = false;
+                for (Object obj : json.getJsonObject("cursor").getJsonArray("firstBatch")) {
                           JsonObject coll = (JsonObject) obj;
                           if (Objects.equals(collectionName, coll.getString("name"))) {
                             if (Objects.equals("timeseries", coll.getString("type"))) {

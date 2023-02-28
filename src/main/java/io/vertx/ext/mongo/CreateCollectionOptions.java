@@ -15,7 +15,7 @@ import java.util.Objects;
 public class CreateCollectionOptions {
   private Long maxDocuments;
   private Boolean capped;
-  private TimeSeriesOptions timeseries;
+  private TimeSeriesOptions timeSeriesOptions;
   private Long sizeInBytes;
   private JsonObject storageEngineOptions;
   private JsonObject indexOptionDefaults;
@@ -25,7 +25,7 @@ public class CreateCollectionOptions {
   public CreateCollectionOptions() {
     this.maxDocuments = null;
     this.capped = null;
-    this.timeseries = null;
+    this.timeSeriesOptions = null;
     this.sizeInBytes = null;
     this.storageEngineOptions = null;
     this.indexOptionDefaults = null;
@@ -36,7 +36,7 @@ public class CreateCollectionOptions {
   public CreateCollectionOptions(CreateCollectionOptions createCollectionOptions) {
     this.maxDocuments = createCollectionOptions.getMaxDocuments();
     this.capped = createCollectionOptions.getCapped();
-    this.timeseries = createCollectionOptions.getTimeseries();
+    this.timeSeriesOptions = createCollectionOptions.getTimeSeriesOptions();
     this.sizeInBytes = createCollectionOptions.getSizeInBytes();
     this.storageEngineOptions = createCollectionOptions.getStorageEngineOptions();
     this.indexOptionDefaults = createCollectionOptions.getIndexOptionDefaults();
@@ -82,8 +82,8 @@ public class CreateCollectionOptions {
     if (capped != null) {
       createCollectionOptions.capped(capped);
     }
-    if(timeseries != null) {
-      createCollectionOptions.timeSeriesOptions(timeseries.toMongoDriverObject());
+    if (timeSeriesOptions != null) {
+      createCollectionOptions.timeSeriesOptions(timeSeriesOptions.toMongoDriverObject());
     }
     if (maxDocuments != null) {
       createCollectionOptions.maxDocuments(maxDocuments);
@@ -122,12 +122,12 @@ public class CreateCollectionOptions {
     return capped;
   }
 
-  public TimeSeriesOptions getTimeseries() {
-    return timeseries;
+  public TimeSeriesOptions getTimeSeriesOptions() {
+    return timeSeriesOptions;
   }
 
-  public CreateCollectionOptions setTimeseries(TimeSeriesOptions timeseries) {
-    this.timeseries = Assertions.notNull("timeseries", timeseries);
+  public CreateCollectionOptions setTimeSeriesOptions(TimeSeriesOptions timeSeriesOptions) {
+    this.timeSeriesOptions = Assertions.notNull("timeseries", timeSeriesOptions);
     return this;
   }
 
