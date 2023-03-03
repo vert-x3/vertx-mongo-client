@@ -45,6 +45,7 @@ public interface MongoGridFsClient {
   ReadStream<Buffer> readById(String id);
 
   @Fluent
+  @Deprecated
   MongoGridFsClient downloadByFileName(WriteStream<Buffer> stream, String fileName, Handler<AsyncResult<Long>> resultHandler);
 
   /**
