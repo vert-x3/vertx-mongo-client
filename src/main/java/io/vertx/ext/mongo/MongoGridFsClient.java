@@ -21,6 +21,7 @@ public interface MongoGridFsClient {
    * @param resultHandler will be called when the file is deleted
    */
   @Fluent
+  @Deprecated
   MongoGridFsClient delete(String id, Handler<AsyncResult<Void>> resultHandler);
 
   /**
@@ -44,6 +45,7 @@ public interface MongoGridFsClient {
   ReadStream<Buffer> readById(String id);
 
   @Fluent
+  @Deprecated
   MongoGridFsClient downloadByFileName(WriteStream<Buffer> stream, String fileName, Handler<AsyncResult<Long>> resultHandler);
 
   /**
@@ -52,6 +54,7 @@ public interface MongoGridFsClient {
   Future<Long> downloadByFileName(WriteStream<Buffer> stream, String fileName);
 
   @Fluent
+  @Deprecated
   MongoGridFsClient downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options, Handler<AsyncResult<Long>> resultHandler);
 
   /**
@@ -60,6 +63,7 @@ public interface MongoGridFsClient {
   Future<Long> downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options);
 
   @Fluent
+  @Deprecated
   MongoGridFsClient downloadById(WriteStream<Buffer> stream, String id, Handler<AsyncResult<Long>> resultHandler);
 
   /**
@@ -74,6 +78,7 @@ public interface MongoGridFsClient {
    * @param resultHandler called when the file is downloaded and returns the length in bytes
    */
   @Fluent
+  @Deprecated
   MongoGridFsClient downloadFile(String fileName, Handler<AsyncResult<Long>> resultHandler);
 
   /**
@@ -89,6 +94,7 @@ public interface MongoGridFsClient {
    * @param resultHandler called when the file is downloaded and returns the length in bytes
    */
   @Fluent
+  @Deprecated
   MongoGridFsClient downloadFileAs(String fileName, String newFileName, Handler<AsyncResult<Long>> resultHandler);
 
   /**
@@ -103,6 +109,7 @@ public interface MongoGridFsClient {
    * @param resultHandler called when the file is downloaded and returns the length in bytes
    */
   @Fluent
+  @Deprecated
   MongoGridFsClient downloadFileByID(String id, String fileName, Handler<AsyncResult<Long>> resultHandler);
 
   /**
@@ -116,6 +123,7 @@ public interface MongoGridFsClient {
    * @param resultHandler called when the bucket is dropped
    */
   @Fluent
+  @Deprecated
   MongoGridFsClient drop(Handler<AsyncResult<Void>> resultHandler);
 
   /**
@@ -129,6 +137,7 @@ public interface MongoGridFsClient {
    * @param resultHandler called when the list of file ids is available
    */
   @Fluent
+  @Deprecated
   MongoGridFsClient findAllIds(Handler<AsyncResult<List<String>>> resultHandler);
 
   /**
@@ -143,6 +152,7 @@ public interface MongoGridFsClient {
    * @param resultHandler called when the list of file ids is available
    */
   @Fluent
+  @Deprecated
   MongoGridFsClient findIds(JsonObject query, Handler<AsyncResult<List<String>>> resultHandler);
 
   /**
@@ -151,6 +161,7 @@ public interface MongoGridFsClient {
   Future<List<String>> findIds(JsonObject query);
 
   @Fluent
+  @Deprecated
   MongoGridFsClient uploadByFileName(ReadStream<Buffer> stream, String fileName, Handler<AsyncResult<String>> resultHandler);
 
   /**
@@ -159,6 +170,7 @@ public interface MongoGridFsClient {
   Future<String> uploadByFileName(ReadStream<Buffer> stream, String fileName);
 
   @Fluent
+  @Deprecated
   MongoGridFsClient uploadByFileNameWithOptions(ReadStream<Buffer> stream, String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler);
 
   /**
@@ -173,6 +185,7 @@ public interface MongoGridFsClient {
    * @param resultHandler the id of the file that was uploaded
    */
   @Fluent
+  @Deprecated
   MongoGridFsClient uploadFile(String fileName, Handler<AsyncResult<String>> resultHandler);
 
   /**
@@ -188,6 +201,7 @@ public interface MongoGridFsClient {
    * @param resultHandler the id of the file that was uploaded
    */
   @Fluent
+  @Deprecated
   MongoGridFsClient uploadFileWithOptions(String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler);
 
   /**

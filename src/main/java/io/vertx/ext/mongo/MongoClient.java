@@ -98,6 +98,7 @@ public interface MongoClient {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    */
   @Fluent
+  @Deprecated
   MongoClient save(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
 
   /**
@@ -116,6 +117,7 @@ public interface MongoClient {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    */
   @Fluent
+  @Deprecated
   MongoClient saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
 
   /**
@@ -133,6 +135,7 @@ public interface MongoClient {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    */
   @Fluent
+  @Deprecated
   MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
 
   /**
@@ -151,6 +154,7 @@ public interface MongoClient {
    * @param resultHandler result handler will be provided with the id if document didn't already have one
    */
   @Fluent
+  @Deprecated
   MongoClient insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
 
   /**
@@ -167,6 +171,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient updateCollection(String collection, JsonObject query, JsonObject update,
                                Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
@@ -184,6 +189,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient updateCollection(String collection, JsonObject query, JsonArray update,
                                Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
@@ -202,6 +208,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options,
                                           Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
@@ -220,6 +227,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonArray update, UpdateOptions options,
                                           Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
@@ -237,6 +245,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
   /**
@@ -254,6 +263,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
 
   /**
@@ -269,6 +279,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientBulkWriteResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient bulkWrite(String collection, List<BulkOperation> operations,
                         Handler<AsyncResult<@Nullable MongoClientBulkWriteResult>> resultHandler);
 
@@ -287,6 +298,7 @@ public interface MongoClient {
    * @param resultHandler    will be called with a {@link MongoClientBulkWriteResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions,
                                    Handler<AsyncResult<@Nullable MongoClientBulkWriteResult>> resultHandler);
 
@@ -303,6 +315,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with list of documents
    */
   @Fluent
+  @Deprecated
   MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   /**
@@ -329,6 +342,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with list of documents
    */
   @Fluent
+  @Deprecated
   MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   /**
@@ -358,6 +372,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
+  @Deprecated
   MongoClient findOne(String collection, JsonObject query, @Nullable JsonObject fields, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
@@ -376,6 +391,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
+  @Deprecated
   MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
@@ -396,6 +412,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
+  @Deprecated
   MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
@@ -414,6 +431,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
+  @Deprecated
   MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
@@ -434,6 +452,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the document, if any
    */
   @Fluent
+  @Deprecated
   MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
@@ -451,6 +470,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the deleted document, if any
    */
   @Fluent
+  @Deprecated
   MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
@@ -469,6 +489,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the deleted document, if any
    */
   @Fluent
+  @Deprecated
   MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
@@ -484,6 +505,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the number of matching documents
    */
   @Fluent
+  @Deprecated
   MongoClient count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler);
 
   /**
@@ -500,6 +522,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with the number of matching documents
    */
   @Fluent
+  @Deprecated
   MongoClient countWithOptions(String collection, JsonObject query, CountOptions countOptions, Handler<AsyncResult<Long>> resultHandler);
 
   /**
@@ -515,6 +538,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
@@ -531,6 +555,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
@@ -546,6 +571,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
@@ -562,6 +588,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
    */
   @Fluent
+  @Deprecated
   MongoClient removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
 
   /**
@@ -576,6 +603,7 @@ public interface MongoClient {
    * @param resultHandler  will be called when complete
    */
   @Fluent
+  @Deprecated
   MongoClient createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler);
 
   /**
@@ -586,6 +614,7 @@ public interface MongoClient {
    * @param resultHandler     will be called when complete
    */
   @Fluent
+  @Deprecated
   MongoClient createCollectionWithOptions(String collectionName, CreateCollectionOptions collectionOptions, Handler<AsyncResult<Void>> resultHandler);
 
   /**
@@ -604,6 +633,7 @@ public interface MongoClient {
    * @param resultHandler will be called with a list of collections.
    */
   @Fluent
+  @Deprecated
   MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler);
 
   /**
@@ -618,6 +648,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
+  @Deprecated
   MongoClient dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
 
   /**
@@ -635,6 +666,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
+  @Deprecated
   MongoClient createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler);
 
   /**
@@ -653,6 +685,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
+  @Deprecated
   MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler);
 
   /**
@@ -670,6 +703,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
+  @Deprecated
   MongoClient createIndexes(String collection, List<IndexModel> indexes, Handler<AsyncResult<Void>> resultHandler);
 
   /**
@@ -684,6 +718,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
+  @Deprecated
   MongoClient listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
@@ -699,6 +734,7 @@ public interface MongoClient {
    * @param resultHandler will be called when complete
    */
   @Fluent
+  @Deprecated
   MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler);
 
   /**
@@ -714,6 +750,7 @@ public interface MongoClient {
    * @param resultHandler will be called with the result.
    */
   @Fluent
+  @Deprecated
   MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
 
   /**
@@ -730,6 +767,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with array of values.
    */
   @Fluent
+  @Deprecated
   MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
@@ -741,6 +779,7 @@ public interface MongoClient {
    * @param resultHandler   will be provided with array of values.
    */
   @Fluent
+  @Deprecated
   MongoClient distinct(String collection, String fieldName, String resultClassname, DistinctOptions distinctOptions, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
@@ -763,6 +802,7 @@ public interface MongoClient {
    * @param resultHandler will be provided with array of values.
    */
   @Fluent
+  @Deprecated
   MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
@@ -775,6 +815,7 @@ public interface MongoClient {
    * @param resultHandler   will be provided with array of values.
    */
   @Fluent
+  @Deprecated
   MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions, Handler<AsyncResult<JsonArray>> resultHandler);
 
   /**
@@ -896,6 +937,7 @@ public interface MongoClient {
    * @param resultHandler the {@link MongoGridFsClient} to interact with the bucket named bucketName
    */
   @Fluent
+  @Deprecated
   MongoClient createDefaultGridFsBucketService(Handler<AsyncResult<MongoGridFsClient>> resultHandler);
 
   /**
@@ -910,6 +952,7 @@ public interface MongoClient {
    * @param resultHandler the {@link MongoGridFsClient} to interact with the bucket named bucketName
    */
   @Fluent
+  @Deprecated
   MongoClient createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler);
 
   /**
@@ -925,6 +968,7 @@ public interface MongoClient {
   /**
    * Close the client and release its resources
    */
+  @Deprecated
   void close(Handler<AsyncResult<Void>> handler);
 
 }
