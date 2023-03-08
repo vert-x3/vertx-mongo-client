@@ -1,6 +1,7 @@
 = Mongo Client
 
-image:https://github.com/vert-x3/vertx-mongo-client/workflows/CI/badge.svg?branch=master["Build Status", link="https://github.com/vert-x3/vertx-mongo-client/actions?query=workflow%3ACI"]
+image:https://github.com/vert-x3/vertx-mongo-client/actions/workflows/ci-5.x.yml/badge.svg["Build Status (5.x)",link="https://github.com/vert-x3/vertx-mongo-client/actions/workflows/ci-5.x.yml"]
+image:https://github.com/vert-x3/vertx-mongo-client/actions/workflows/ci-4.x.yml/badge.svg["Build Status (4.x)",link="https://github.com/vert-x3/vertx-mongo-client/actions/workflows/ci-4.x.yml"]
 
 An asynchronous client for interacting with a MongoDB database
 
