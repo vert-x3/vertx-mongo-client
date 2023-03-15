@@ -60,12 +60,12 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   @Test
   public void testFindOneReturnsStringId() throws Exception {
     String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       JsonObject orig = createDoc();
       JsonObject doc = orig.copy();
-      mongoClient.insert(collection, doc, onSuccess(id -> {
+      mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
         assertNotNull(id);
-        mongoClient.findOne(collection, new JsonObject().put("foo", "bar"), null, onSuccess(obj -> {
+        mongoClient.findOne(collection, new JsonObject().put("foo", "bar"), null).onComplete(onSuccess(obj -> {
           assertTrue(obj.containsKey("_id"));
           assertTrue(obj.getValue("_id") instanceof String);
           obj.remove("_id");
@@ -80,12 +80,12 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   @Test
   public void testFindOneReturnsNothing() throws Exception {
     String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       JsonObject orig = createDoc();
       JsonObject doc = orig.copy();
-      mongoClient.insert(collection, doc, onSuccess(id -> {
+      mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
         assertNotNull(id);
-        mongoClient.findOne(collection, new JsonObject().put("nothing", "xxrandomxx"), null, onSuccess(obj -> {
+        mongoClient.findOne(collection, new JsonObject().put("nothing", "xxrandomxx"), null).onComplete(onSuccess(obj -> {
           assertNull(obj);
           testComplete();
         }));
@@ -97,12 +97,12 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   @Test
   public void testFindReturnsStringId() throws Exception {
     String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       JsonObject orig = createDoc();
       JsonObject doc = orig.copy();
-      mongoClient.insert(collection, doc, onSuccess(id -> {
+      mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
         assertNotNull(id);
-        mongoClient.find(collection, new JsonObject().put("foo", "bar"), onSuccess(list -> {
+        mongoClient.find(collection, new JsonObject().put("foo", "bar")).onComplete(onSuccess(list -> {
           assertTrue(list.size() == 1);
           JsonObject obj = list.get(0);
           assertTrue(obj.containsKey("_id"));
@@ -120,11 +120,11 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   @Override
   public void testInsertPreexistingObjectID() throws Exception {
     String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       JsonObject doc = createDoc();
       //Changed to hex string as a random string will not be valid for useObjectId = true
       doc.put("_id", new ObjectId().toHexString());
-      mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
+      mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED).onComplete(onSuccess(id -> {
         assertNull(id);
         testComplete();
       }));
@@ -136,11 +136,11 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   @Override
   public void testInsertPreexistingID() throws Exception {
     String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       JsonObject doc = createDoc();
       //Changed to hex string as a random string will not be valid for useObjectId = true
       doc.put("_id", new ObjectId().toHexString());
-      mongoClient.insert(collection, doc, onSuccess(id -> {
+      mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
         assertNull(id);
         testComplete();
       }));
@@ -152,12 +152,12 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   @Override
   public void testInsertRetrieve() throws Exception {
     String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       JsonObject doc = createDoc();
       doc.put("_id", new ObjectId().toHexString());
-      mongoClient.insert(collection, doc, onSuccess(id -> {
+      mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
         assertNull(id);
-        mongoClient.findOne(collection, new JsonObject(), null, onSuccess(retrieved -> {
+        mongoClient.findOne(collection, new JsonObject(), null).onComplete(onSuccess(retrieved -> {
           assertEquals(doc, retrieved);
           testComplete();
         }));
@@ -170,11 +170,11 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   @Override
   public void testSavePreexistingObjectID() throws Exception {
     String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       JsonObject doc = createDoc();
       //Changed to hex string as a random string will not be valid for useObjectId = true
       doc.put("_id", new ObjectId().toHexString());
-      mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
+      mongoClient.saveWithOptions(collection, doc, ACKNOWLEDGED).onComplete(onSuccess(id -> {
         assertNull(id);
         testComplete();
       }));
@@ -185,12 +185,12 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   @Test
   public void testInsertAlreadyExists() throws Exception {
     String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       JsonObject doc = createDoc();
-      mongoClient.insert(collection, doc, onSuccess(id -> {
+      mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
         assertNotNull(id);
         doc.put("_id", id);
-        mongoClient.insert(collection, doc, response -> {
+        mongoClient.insert(collection, doc).onComplete(response -> {
           assertFalse(response.succeeded());
           testComplete();
         });
@@ -203,12 +203,12 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   public void testReplaceUpsert() {
     String collection = randomCollection();
     JsonObject doc = createDoc();
-    mongoClient.insert(collection, doc, onSuccess(id -> {
+    mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
       assertNotNull(id);
       JsonObject replacement = createDoc();
       replacement.put("replacement", true);
-      mongoClient.replaceDocumentsWithOptions(collection, new JsonObject().put("_id", new ObjectId().toHexString()), replacement, new UpdateOptions(true), onSuccess(v -> {
-        mongoClient.find(collection, new JsonObject(), onSuccess(list -> {
+      mongoClient.replaceDocumentsWithOptions(collection, new JsonObject().put("_id", new ObjectId().toHexString()), replacement, new UpdateOptions(true)).onComplete(onSuccess(v -> {
+        mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(list -> {
           assertNotNull(list);
           assertEquals(2, list.size());
           JsonObject result = null;

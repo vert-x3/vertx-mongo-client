@@ -46,7 +46,7 @@ public class MongoClientExamples {
     // Document has no id
     JsonObject document = new JsonObject()
       .put("title", "The Hobbit");
-    mongoClient.save("books", document, res -> {
+    mongoClient.save("books", document).onComplete(res -> {
       if (res.succeeded()) {
         String id = res.result();
         System.out.println("Saved book with id " + id);
@@ -61,7 +61,7 @@ public class MongoClientExamples {
     JsonObject document = new JsonObject()
       .put("title", "The Hobbit")
       .put("_id", "123244");
-    mongoClient.save("books", document, res -> {
+    mongoClient.save("books", document).onComplete(res -> {
       if (res.succeeded()) {
         // ...
       } else {
@@ -74,7 +74,7 @@ public class MongoClientExamples {
     // Document has an id already
     JsonObject document = new JsonObject()
       .put("title", "The Hobbit");
-    mongoClient.insert("books", document, res -> {
+    mongoClient.insert("books", document).onComplete(res -> {
       if (res.succeeded()) {
         String id = res.result();
         System.out.println("Inserted book with id " + id);
@@ -89,7 +89,7 @@ public class MongoClientExamples {
     JsonObject document = new JsonObject()
       .put("title", "The Hobbit")
       .put("_id", "123244");
-    mongoClient.insert("books", document, res -> {
+    mongoClient.insert("books", document).onComplete(res -> {
       if (res.succeeded()) {
         //...
       } else {
@@ -105,7 +105,7 @@ public class MongoClientExamples {
     // Set the author field
     JsonObject update = new JsonObject().put("$set", new JsonObject()
       .put("author", "J. R. R. Tolkien"));
-    mongoClient.updateCollection("books", query, update, res -> {
+    mongoClient.updateCollection("books", query, update).onComplete(res -> {
       if (res.succeeded()) {
         System.out.println("Book updated !");
       } else {
@@ -122,7 +122,7 @@ public class MongoClientExamples {
     JsonObject update = new JsonObject().put("$set", new JsonObject()
       .put("author", "J. R. R. Tolkien"));
     UpdateOptions options = new UpdateOptions().setMulti(true);
-    mongoClient.updateCollectionWithOptions("books", query, update, options, res -> {
+    mongoClient.updateCollectionWithOptions("books", query, update, options).onComplete(res -> {
       if (res.succeeded()) {
         System.out.println("Book updated !");
       } else {
@@ -137,7 +137,7 @@ public class MongoClientExamples {
     JsonObject replace = new JsonObject()
       .put("title", "The Lord of the Rings")
       .put("author", "J. R. R. Tolkien");
-    mongoClient.replaceDocuments("books", query, replace, res -> {
+    mongoClient.replaceDocuments("books", query, replace).onComplete(res -> {
       if (res.succeeded()) {
         System.out.println("Book replaced !");
       } else {
@@ -149,7 +149,7 @@ public class MongoClientExamples {
   public void example8(MongoClient mongoClient) {
     // empty query = match any
     JsonObject query = new JsonObject();
-    mongoClient.find("books", query, res -> {
+    mongoClient.find("books", query).onComplete(res -> {
       if (res.succeeded()) {
         for (JsonObject json : res.result()) {
           System.out.println(json.encodePrettily());
@@ -164,7 +164,7 @@ public class MongoClientExamples {
     // will match all Tolkien books
     JsonObject query = new JsonObject()
       .put("author", "J. R. R. Tolkien");
-    mongoClient.find("books", query, res -> {
+    mongoClient.find("books", query).onComplete(res -> {
       if (res.succeeded()) {
         for (JsonObject json : res.result()) {
           System.out.println(json.encodePrettily());
@@ -199,7 +199,7 @@ public class MongoClientExamples {
   public void example10(MongoClient mongoClient) {
     JsonObject query = new JsonObject()
       .put("author", "J. R. R. Tolkien");
-    mongoClient.removeDocuments("books", query, res -> {
+    mongoClient.removeDocuments("books", query).onComplete(res -> {
       if (res.succeeded()) {
         System.out.println("Never much liked Tolkien stuff!");
       } else {
@@ -211,7 +211,7 @@ public class MongoClientExamples {
   public void example11(MongoClient mongoClient) {
     JsonObject query = new JsonObject()
       .put("author", "J. R. R. Tolkien");
-    mongoClient.count("books", query, res -> {
+    mongoClient.count("books", query).onComplete(res -> {
       if (res.succeeded()) {
         long num = res.result();
       } else {
@@ -221,7 +221,7 @@ public class MongoClientExamples {
   }
 
   public void example11_1(MongoClient mongoClient) {
-    mongoClient.getCollections(res -> {
+    mongoClient.getCollections().onComplete(res -> {
       if (res.succeeded()) {
         List<String> collections = res.result();
       } else {
@@ -231,7 +231,7 @@ public class MongoClientExamples {
   }
 
   public void example11_2(MongoClient mongoClient) {
-    mongoClient.createCollection("mynewcollectionr", res -> {
+    mongoClient.createCollection("mynewcollectionr").onComplete(res -> {
       if (res.succeeded()) {
         // Created ok!
       } else {
@@ -241,7 +241,7 @@ public class MongoClientExamples {
   }
 
   public void example11_3(MongoClient mongoClient) {
-    mongoClient.dropCollection("mynewcollectionr", res -> {
+    mongoClient.dropCollection("mynewcollectionr").onComplete(res -> {
       if (res.succeeded()) {
         // Dropped ok!
       } else {
@@ -254,7 +254,7 @@ public class MongoClientExamples {
     JsonObject command = new JsonObject()
       .put("aggregate", "collection_name")
       .put("pipeline", new JsonArray());
-    mongoClient.runCommand("aggregate", command, res -> {
+    mongoClient.runCommand("aggregate", command).onComplete(res -> {
       if (res.succeeded()) {
         JsonArray resArr = res.result().getJsonArray("result");
         // etc
@@ -351,7 +351,7 @@ public class MongoClientExamples {
   public void example16_d1(MongoClient mongoClient) {
     JsonObject document = new JsonObject()
       .put("title", "The Hobbit");
-    mongoClient.save("books", document, res -> {
+    mongoClient.save("books", document).onComplete(res -> {
       if (res.succeeded()) {
         mongoClient.distinctBatch("books", "title", String.class.getName())
           .handler(book -> System.out.println("Title is : " + book.getString("title")));
@@ -384,7 +384,7 @@ public class MongoClientExamples {
     JsonObject query = new JsonObject()
       .put("publicationDate", new JsonObject()
         .put("$gte", new JsonObject().put("$date", "1937-09-21T00:00:00+00:00")));
-    mongoClient.save("books", document, res -> {
+    mongoClient.save("books", document).onComplete(res -> {
       if (res.succeeded()) {
         mongoClient.distinctBatchWithQuery("books", "title", String.class.getName(), query)
           .handler(book -> System.out.println("Title is : " + book.getString("title")));
@@ -393,7 +393,7 @@ public class MongoClientExamples {
   }
 
   public void example18(MongoClient mongoClient) {
-    mongoClient.createGridFsBucketService("bakeke", res -> {
+    mongoClient.createGridFsBucketService("bakeke").onComplete(res -> {
       if (res.succeeded()) {
         //Interact with the GridFS client...
         MongoGridFsClient client = res.result();
@@ -404,7 +404,7 @@ public class MongoClientExamples {
   }
 
   public void example19(MongoClient mongoClient) {
-    mongoClient.createDefaultGridFsBucketService( res -> {
+    mongoClient.createDefaultGridFsBucketService().onComplete(res -> {
       if (res.succeeded()) {
         //Interact with the GridFS client...
         MongoGridFsClient client = res.result();
@@ -416,7 +416,7 @@ public class MongoClientExamples {
   }
 
   public void example20(MongoGridFsClient gridFsClient) {
-    gridFsClient.drop(res -> {
+    gridFsClient.drop().onComplete(res -> {
       if (res.succeeded()) {
         //The file bucket is dropped and all files in it, erased
       } else {
@@ -426,7 +426,7 @@ public class MongoClientExamples {
   }
 
   public void example21(MongoGridFsClient gridFsClient) {
-    gridFsClient.findAllIds(res -> {
+    gridFsClient.findAllIds().onComplete(res -> {
       if (res.succeeded()) {
         List<String> ids = res.result(); //List of file IDs
       } else {
@@ -437,7 +437,7 @@ public class MongoClientExamples {
 
   public void example22(MongoGridFsClient gridFsClient) {
     JsonObject query = new JsonObject().put("metadata.nick_name", "Puhi the eel");
-    gridFsClient.findIds(query, res -> {
+    gridFsClient.findIds(query).onComplete(res -> {
       if (res.succeeded()) {
         List<String> ids = res.result(); //List of file IDs
       } else {
@@ -448,7 +448,7 @@ public class MongoClientExamples {
 
   public void example23(MongoGridFsClient gridFsClient) throws Exception {
     String id = "56660b074cedfd000570839c"; //The GridFS ID of the file
-    gridFsClient.delete(id, (AsyncResult<Void> res) -> {
+    gridFsClient.delete(id).onComplete(res -> {
       if (res.succeeded()) {
         //File deleted
       } else {
@@ -459,13 +459,8 @@ public class MongoClientExamples {
   }
 
   public void example24(MongoGridFsClient gridFsClient) {
-    gridFsClient.uploadFile("file.name", res -> {
-      if (res.succeeded()) {
-        String id = res.result();
-        //The ID of the stored object in Grid FS
-      } else {
-        res.cause().printStackTrace();
-      }
+    gridFsClient.uploadFile("file.name").onSuccess(id -> {
+      //The ID of the stored object in Grid FS
     });
   }
 
@@ -477,54 +472,32 @@ public class MongoClientExamples {
     options.setChunkSizeBytes(1024);
     options.setMetadata(metadata);
 
-    gridFsClient.uploadFileWithOptions("file.name", options, res -> {
-      if (res.succeeded()) {
-        String id = res.result();
-        //The ID of the stored object in Grid FS
-      } else {
-        res.cause().printStackTrace();
-      }
+    gridFsClient.uploadFileWithOptions("file.name", options).onSuccess(id -> {
+      //The ID of the stored object in Grid FS
     });
   }
 
   public void example26(MongoGridFsClient gridFsClient) {
-    gridFsClient.downloadFile("file.name", res -> {
-      if (res.succeeded()) {
-        Long fileLength = res.result();
-        //The length of the file stored in fileName
-      } else {
-        res.cause().printStackTrace();
-      }
+    gridFsClient.downloadFile("file.name").onSuccess(fileLength -> {
     });
   }
 
   public void example27(MongoGridFsClient gridFsClient) {
     String id = "56660b074cedfd000570839c";
     String filename = "puhi.fil";
-    gridFsClient.downloadFileByID(id, filename, res -> {
-      if (res.succeeded()) {
-        Long fileLength = res.result();
-        //The length of the file stored in fileName
-      } else {
-        res.cause().printStackTrace();
-      }
+    gridFsClient.downloadFileByID(id, filename).onSuccess(fileLength -> {
+      //The length of the file stored in fileName
     });
   }
 
   public void example28(MongoGridFsClient gridFsClient) {
-    gridFsClient.downloadFileAs("file.name", "new_file.name", res -> {
-      if (res.succeeded()) {
-        Long fileLength = res.result();
-        //The length of the file stored in fileName
-      } else {
-        res.cause().printStackTrace();
-      }
+    gridFsClient.downloadFileAs("file.name", "new_file.name").onComplete(fileLength -> {
+      //The length of the file stored in fileName
     });
   }
 
   public void example29(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
-    gridFsStreamClient.uploadByFileName(asyncFile, "kanaloa", stringAsyncResult -> {
-      String id = stringAsyncResult.result();
+    gridFsStreamClient.uploadByFileName(asyncFile, "kanaloa").onSuccess(id -> {
     });
   }
 
@@ -532,30 +505,26 @@ public class MongoClientExamples {
     GridFsUploadOptions options = new GridFsUploadOptions();
     options.setChunkSizeBytes(2048);
     options.setMetadata(new JsonObject().put("catagory", "Polynesian gods"));
-    gridFsStreamClient.uploadByFileNameWithOptions(asyncFile, "kanaloa", options, stringAsyncResult -> {
-      String id = stringAsyncResult.result();
+    gridFsStreamClient.uploadByFileNameWithOptions(asyncFile, "kanaloa", options).onSuccess(id -> {
     });
 
   }
 
   public void example31(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
-    gridFsStreamClient.downloadByFileName(asyncFile, "kamapuaa.fil", longAsyncResult -> {
-      Long length = longAsyncResult.result();
+    gridFsStreamClient.downloadByFileName(asyncFile, "kamapuaa.fil").onSuccess(length -> {
     });
   }
 
   public void example32(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
     GridFsDownloadOptions options = new GridFsDownloadOptions();
     options.setRevision(0);
-    gridFsStreamClient.downloadByFileNameWithOptions(asyncFile, "kamapuaa.fil", options, longAsyncResult -> {
-      Long length = longAsyncResult.result();
+    gridFsStreamClient.downloadByFileNameWithOptions(asyncFile, "kamapuaa.fil", options).onSuccess(length -> {
     });
   }
 
   public void example33(MongoGridFsClient gridFsStreamClient, AsyncFile asyncFile) {
     String id = "58f61bf84cedfd000661af06";
-    gridFsStreamClient.downloadById(asyncFile, id, longAsyncResult -> {
-      Long length = longAsyncResult.result();
+    gridFsStreamClient.downloadById(asyncFile, id).onSuccess(length -> {
     });
   }
 }

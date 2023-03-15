@@ -94,13 +94,13 @@ public abstract class MongoTestBase extends VertxTestBase {
 
   protected void dropCollections(MongoClient mongoClient, CountDownLatch latch) {
     // Drop all the collections in the db
-    mongoClient.getCollections(onSuccess(list -> {
+    mongoClient.getCollections().onComplete(onSuccess(list -> {
       AtomicInteger collCount = new AtomicInteger();
       List<String> toDrop = getOurCollections((List) list);
       int count = toDrop.size();
       if (!toDrop.isEmpty()) {
         for (String collection : toDrop) {
-          mongoClient.dropCollection(collection, onSuccess(v -> {
+          mongoClient.dropCollection(collection).onComplete(onSuccess(v -> {
             if (collCount.incrementAndGet() == count) {
               latch.countDown();
             }
@@ -129,11 +129,20 @@ public abstract class MongoTestBase extends VertxTestBase {
   protected void insertDocs(MongoClient mongoClient, String collection, int num, Handler<AsyncResult<Void>> resultHandler) {
     insertDocs(mongoClient, collection, num, this::createDoc, resultHandler);
   }
+
+  protected Future<Void> insertDocs(MongoClient mongoClient, String collection, int num) {
+    return Future.future(h -> insertDocs(mongoClient, collection, num, h));
+  }
+
+  protected Future<Void> insertDocs(MongoClient mongoClient, String collection, int num, Function<Integer, JsonObject> docSupplier) {
+    return Future.future(h -> insertDocs(mongoClient, collection, num, docSupplier, h));
+  }
+
   protected void insertDocs(MongoClient mongoClient, String collection, int num, Function<Integer, JsonObject> docSupplier, Handler<AsyncResult<Void>> resultHandler) {
     if (num != 0) {
       AtomicInteger cnt = new AtomicInteger();
       for (int i = 0; i < num; i++) {
-        mongoClient.insert(collection, docSupplier.apply(i), ar -> {
+        mongoClient.insert(collection, docSupplier.apply(i)).onComplete(ar -> {
           if (ar.succeeded()) {
             if (cnt.incrementAndGet() == num) {
               resultHandler.handle(Future.succeededFuture());

@@ -36,10 +36,10 @@ public class CompressorsConnectivityTest extends MongoTestBase {
 
     MongoClient mongoClient = MongoClient.create(vertx, config);
     String collection = randomCollection();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       JsonObject doc = new JsonObject().put("compressor", "zlib");
-      mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED, onSuccess(id -> {
-        mongoClient.find(collection, new JsonObject(), onSuccess(r -> {
+      mongoClient.insertWithOptions(collection, doc, ACKNOWLEDGED).onComplete(onSuccess(id -> {
+        mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(r -> {
           assertEquals("zlib", r.get(0).getString("compressor"));
           testComplete();
         }));
