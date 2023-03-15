@@ -62,7 +62,7 @@ public class MongoClientTest extends MongoClientTestBase {
     CreateCollectionOptions options = new CreateCollectionOptions()
       .setCollation(new CollationOptions().setLocale(expectedLocale));
     Promise<Document> promise = ((VertxInternal) vertx).promise();
-    mongoClient.createCollectionWithOptions(collection, options, onSuccess(res ->
+    mongoClient.createCollectionWithOptions(collection, options).onComplete(onSuccess(res ->
       db.listCollections().first().subscribe(new SingleResultSubscriber<>(promise))
     ));
     promise.future()
@@ -176,7 +176,7 @@ public class MongoClientTest extends MongoClientTestBase {
     String collection = randomCollection();
     CountDownLatch latch = new CountDownLatch(1);
     AtomicReference<List<String>> foos = new AtomicReference<>();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
         FindOptions findOptions = new FindOptions().setSort(new JsonObject().put("counter", 1)).setBatchSize(1);
         ReadStream<JsonObject> stream = mongoClient.findBatchWithOptions(collection, new JsonObject(), findOptions);
@@ -223,7 +223,7 @@ public class MongoClientTest extends MongoClientTestBase {
     String collection = randomCollection();
     JsonObject docToInsert = createDoc();
     mongoClient
-      .insert(collection, docToInsert, onSuccess(id -> {
+      .insert(collection, docToInsert).onComplete(onSuccess(id -> {
         upsertDoc(collection, docToInsert, id, IGNORE -> {
           testComplete();
         });
@@ -238,7 +238,7 @@ public class MongoClientTest extends MongoClientTestBase {
     final String collection = randomCollection();
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicLong count = new AtomicLong();
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
         mongoClient.aggregate(collection,
             new JsonArray().add(new JsonObject().put("$match", new JsonObject().put("foo", new JsonObject().put("$regex", "bar1"))))
@@ -295,7 +295,7 @@ public class MongoClientTest extends MongoClientTestBase {
     AtomicReference<String> watchedDocumentId = new AtomicReference<>();
     long timerId = vertx.setPeriodic(100, l -> mongoClient.insert(collection, createDoc()));
 
-    mongoClient.createCollection(collection, onSuccess(res -> {
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
       ReadStream<ChangeStreamDocument<JsonObject>> stream =
         mongoClient.watch(collection, pipeline, true, 1)
           .handler(changeStreamDocument -> {
@@ -313,7 +313,7 @@ public class MongoClientTest extends MongoClientTestBase {
                   fullDocument.put("fieldToUpdate", "updatedValue");
                   JsonObject query = new JsonObject().put("_id", id);
                   JsonObject updateField = new JsonObject().put("fieldToUpdate", "updatedValue");
-                  mongoClient.updateCollection(collection, query, new JsonObject().put("$set", updateField), onSuccess(update -> {
+                  mongoClient.updateCollection(collection, query, new JsonObject().put("$set", updateField)).onComplete(onSuccess(update -> {
                     mongoClient.save(collection, fullDocument.put("fieldToReplace", "replacedValue"));
                   }));
                 } else {
@@ -356,7 +356,7 @@ public class MongoClientTest extends MongoClientTestBase {
         .put("foo", docToInsert.getString("foo")),
       insertStatement,
       new UpdateOptions()
-        .setUpsert(true),
+        .setUpsert(true)).onComplete(
       onSuccess(res -> {
         assertEquals(0, res.getDocModified());
 
@@ -399,8 +399,8 @@ public class MongoClientTest extends MongoClientTestBase {
 
     CreateCollectionOptions options = new CreateCollectionOptions().setTimeSeriesOptions(timeseries);
 
-    mongoClient.createCollectionWithOptions(collectionName, options, onSuccess(v -> {
-      mongoClient.runCommand("listCollections", JsonObject.of("listCollections", "1.0"), onSuccess(json -> {
+    mongoClient.createCollectionWithOptions(collectionName, options).onComplete(onSuccess(v -> {
+      mongoClient.runCommand("listCollections", JsonObject.of("listCollections", "1.0")).onComplete(onSuccess(json -> {
         boolean isTimeSeriesCollection = false;
         for (Object obj : json.getJsonObject("cursor").getJsonArray("firstBatch")) {
           JsonObject coll = (JsonObject) obj;

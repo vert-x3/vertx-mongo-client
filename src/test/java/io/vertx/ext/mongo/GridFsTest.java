@@ -53,22 +53,22 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> mongoGridFsPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", mongoGridFsPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(mongoGridFsPromise);
 
     mongoGridFsPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
       Promise<Void> deletePromise = Promise.promise();
-      gridFsClient.get().delete(id, deletePromise);
+      gridFsClient.get().delete(id).onComplete(deletePromise);
       return deletePromise.future();
     }).onComplete(event -> {
       if (event.succeeded()) {
@@ -91,22 +91,22 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
       Promise<Long> downloadPromise = Promise.promise();
-      gridFsClient.get().downloadFileAs(fileName, downloadFileName, downloadPromise);
+      gridFsClient.get().downloadFileAs(fileName, downloadFileName).onComplete(downloadPromise);
       return downloadPromise.future();
     }).compose(length -> {
       assertEquals((long)length, fileLength);
@@ -132,22 +132,22 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(originalFileName, uploadPromise);
+      gridFsClient.get().uploadFile(originalFileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
       Promise<Long> downloadPromise = Promise.promise();
-      gridFsClient.get().downloadFileAs(originalFileName, copiedFileName, downloadPromise);
+      gridFsClient.get().downloadFileAs(originalFileName, copiedFileName).onComplete(downloadPromise);
       return downloadPromise.future();
     }).compose(length -> {
       assertEquals(originalLength, length.longValue());
@@ -177,17 +177,17 @@ public class GridFsTest extends MongoTestBase {
     GridFsUploadOptions options = new GridFsUploadOptions();
     options.setMetadata(meta);
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFileWithOptions(fileName, options, uploadPromise);
+      gridFsClient.get().uploadFileWithOptions(fileName, options).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
@@ -215,23 +215,23 @@ public class GridFsTest extends MongoTestBase {
     GridFsUploadOptions options = new GridFsUploadOptions();
     options.setMetadata(meta);
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFileWithOptions(fileName, options, uploadPromise);
+      gridFsClient.get().uploadFileWithOptions(fileName, options).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
       Promise<List<String>> findPromise = Promise.promise();
       JsonObject query = new JsonObject().put("metadata.nick_name", "Puhi the eel");
-      gridFsClient.get().findIds(query, findPromise);
+      gridFsClient.get().findIds(query).onComplete(findPromise);
       return findPromise.future();
     }).compose(list -> {
       assertTrue(list.size() > 0);
@@ -254,22 +254,22 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
       Promise<List<String>> findPromise = Promise.promise();
-      gridFsClient.get().findAllIds(findPromise);
+      gridFsClient.get().findAllIds().onComplete(findPromise);
       return findPromise.future();
     }).compose(list -> {
       assertTrue(list.size() == 1);
@@ -291,13 +291,13 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       testComplete();
@@ -318,17 +318,17 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
+    mongoClient.createDefaultGridFsBucketService().onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
@@ -369,17 +369,17 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
+    mongoClient.createDefaultGridFsBucketService().onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
@@ -418,17 +418,17 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
+    mongoClient.createDefaultGridFsBucketService().onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
@@ -468,26 +468,26 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
+    mongoClient.createDefaultGridFsBucketService().onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
       Promise<AsyncFile> openPromise = Promise.promise();
-      vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true), openPromise);
+      vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true)).onComplete(openPromise);
       return openPromise.future();
     }).compose(asyncFile -> {
       Promise<Long> downloadedPromise = Promise.promise();
-      gridFsClient.get().downloadByFileName(asyncFile, fileName, downloadedPromise);
+      gridFsClient.get().downloadByFileName(asyncFile, fileName).onComplete(downloadedPromise);
       return downloadedPromise.future();
     }).compose(length -> {
       assertTrue(fileLength == length);
@@ -513,27 +513,27 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
+    mongoClient.createDefaultGridFsBucketService().onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
       idCreated.set(id);
       Promise<AsyncFile> openPromise = Promise.promise();
-      vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true), openPromise);
+      vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true)).onComplete(openPromise);
       return openPromise.future();
     }).compose(asyncFile -> {
       Promise<Long> downloadedPromise = Promise.promise();
-      gridFsClient.get().downloadById(asyncFile, idCreated.get(), downloadedPromise);
+      gridFsClient.get().downloadById(asyncFile, idCreated.get()).onComplete(downloadedPromise);
       return downloadedPromise.future();
     }).compose(length -> {
       assertTrue(fileLength == length);
@@ -559,26 +559,26 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createDefaultGridFsBucketService(gridFsClientPromise);
+    mongoClient.createDefaultGridFsBucketService().onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       assertNotNull(id);
       Promise<AsyncFile> openPromise = Promise.promise();
-      vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true), openPromise);
+      vertx.fileSystem().open(downloadFileName, new OpenOptions().setWrite(true)).onComplete(openPromise);
       return openPromise.future();
     }).compose(asyncFile -> {
       Promise<Long> downloadedPromise = Promise.promise();
-      gridFsClient.get().downloadByFileNameWithOptions(asyncFile, fileName, options, downloadedPromise);
+      gridFsClient.get().downloadByFileNameWithOptions(asyncFile, fileName, options).onComplete(downloadedPromise);
       return downloadedPromise.future();
     }).compose(length -> {
       assertTrue(fileLength == length);
@@ -600,21 +600,21 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(uploaded -> {
       Promise<Long> downloadPromise = Promise.promise();
-      gridFsClient.get().downloadFile(fileName, downloadPromise);
+      gridFsClient.get().downloadFile(fileName).onComplete(downloadPromise);
       return downloadPromise.future();
     }).compose(length -> {
       assertEquals(1024L, length.longValue());
@@ -637,21 +637,21 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<AsyncFile> openPromise = Promise.promise();
-      vertx.fileSystem().open(fileName, new OpenOptions(), openPromise);
+      vertx.fileSystem().open(fileName, new OpenOptions()).onComplete(openPromise);
       return openPromise.future();
     }).compose(asyncFile -> {
       Promise<String> uploadedPromise = Promise.promise();
-      gridFsClient.get().uploadByFileName(asyncFile, fileName, uploadedPromise);
+      gridFsClient.get().uploadByFileName(asyncFile, fileName).onComplete(uploadedPromise);
       return uploadedPromise.future();
     }).compose(id -> {
       assertNotNull(id);
@@ -677,21 +677,21 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<AsyncFile> openPromise = Promise.promise();
-      vertx.fileSystem().open(fileName, new OpenOptions(), openPromise);
+      vertx.fileSystem().open(fileName, new OpenOptions()).onComplete(openPromise);
       return openPromise.future();
     }).compose(asyncFile -> {
       Promise<String> uploadedPromise = Promise.promise();
-      gridFsClient.get().uploadByFileNameWithOptions(asyncFile, fileName, options, uploadedPromise);
+      gridFsClient.get().uploadByFileNameWithOptions(asyncFile, fileName, options).onComplete(uploadedPromise);
       return uploadedPromise.future();
     }).compose(id -> {
       assertNotNull(id);
@@ -714,21 +714,21 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(uploaded -> {
       Promise<Long> downloadPromise = Promise.promise();
-      gridFsClient.get().downloadFileAs(fileName, asFileName, downloadPromise);
+      gridFsClient.get().downloadFileAs(fileName, asFileName).onComplete(downloadPromise);
       return downloadPromise.future();
     }).compose(length -> {
       assertEquals(1024L, length.longValue());
@@ -751,21 +751,21 @@ public class GridFsTest extends MongoTestBase {
 
     Promise<MongoGridFsClient> gridFsClientPromise = Promise.promise();
 
-    mongoClient.createGridFsBucketService("fs", gridFsClientPromise);
+    mongoClient.createGridFsBucketService("fs").onComplete(gridFsClientPromise);
 
     gridFsClientPromise.future().compose(mongoGridFsClient -> {
       assertNotNull(mongoGridFsClient);
       gridFsClient.set(mongoGridFsClient);
       Promise<Void> dropPromise = Promise.promise();
-      mongoGridFsClient.drop(dropPromise);
+      mongoGridFsClient.drop().onComplete(dropPromise);
       return dropPromise.future();
     }).compose(dropped -> {
       Promise<String> uploadPromise = Promise.promise();
-      gridFsClient.get().uploadFile(fileName, uploadPromise);
+      gridFsClient.get().uploadFile(fileName).onComplete(uploadPromise);
       return uploadPromise.future();
     }).compose(id -> {
       Promise<Long> downloadPromise = Promise.promise();
-      gridFsClient.get().downloadFileByID(id, asFileName, downloadPromise);
+      gridFsClient.get().downloadFileByID(id, asFileName).onComplete(downloadPromise);
       return downloadPromise.future();
     }).compose(length -> {
       assertEquals(1024L, length.longValue());

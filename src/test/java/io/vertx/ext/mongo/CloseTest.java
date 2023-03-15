@@ -34,14 +34,14 @@ public class CloseTest extends MongoClientTestBase {
   @Test
   public void testCloseWhenVerticleUndeployed() throws InterruptedException, ExecutionException, TimeoutException {
     CompletableFuture<String> id = new CompletableFuture<>();
-    vertx.deployVerticle(SharedVerticle.class.getName(), new DeploymentOptions().setInstances(1), onSuccess(id::complete));
+    vertx.deployVerticle(SharedVerticle.class.getName(), new DeploymentOptions().setInstances(1)).onComplete(onSuccess(id::complete));
 
     close(id.get(10, TimeUnit.SECONDS));
   }
 
   private void close(String deploymentId) throws InterruptedException {
     CountDownLatch closeLatch = new CountDownLatch(1);
-    vertx.undeploy(deploymentId, onSuccess(v -> {
+    vertx.undeploy(deploymentId).onComplete(onSuccess(v -> {
       closeLatch.countDown();
     }));
     awaitLatch(closeLatch);

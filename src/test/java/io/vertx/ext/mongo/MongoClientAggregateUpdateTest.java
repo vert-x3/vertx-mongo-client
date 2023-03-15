@@ -32,13 +32,14 @@ public class MongoClientAggregateUpdateTest extends MongoTestBase {
   @Test
   public void testAggregateUpdateCollection() {
     String collection = randomCollection();
-    mongoClient.insert(collection, new JsonObject().put("price", 10).put("quantity", 1), onSuccess(id -> {
-      mongoClient.insert(collection, new JsonObject().put("price", 20).put("quantity", 2), onSuccess(id2 -> {
-        mongoClient.insert(collection, new JsonObject().put("price", 30).put("quantity", 10), onSuccess(id3 -> {
+    mongoClient.insert(collection, new JsonObject().put("price", 10).put("quantity", 1)).onComplete(onSuccess(id -> {
+      mongoClient.insert(collection, new JsonObject().put("price", 20).put("quantity", 2)).onComplete(onSuccess(id2 -> {
+        mongoClient.insert(collection, new JsonObject().put("price", 30).put("quantity", 10)).onComplete(onSuccess(id3 -> {
           mongoClient.updateCollection(collection,
             // reduce price of low quantity items
             new JsonObject().put("quantity", new JsonObject().put("$lte", 2)),
-            new JsonArray().add(new JsonObject().put("$set", new JsonObject().put("price", new JsonObject().put("$subtract", new JsonArray().add("$price").add(2))))),
+            new JsonArray().add(new JsonObject().put("$set", new JsonObject().put("price", new JsonObject().put("$subtract", new JsonArray().add("$price").add(2))))))
+            .onComplete(
             onSuccess(res -> {
               assertEquals(2, res.getDocModified());
               assertEquals(2, res.getDocMatched());
@@ -53,14 +54,14 @@ public class MongoClientAggregateUpdateTest extends MongoTestBase {
   @Test
   public void testAggregateUpdateCollectionWithOptions() {
     String collection = randomCollection();
-    mongoClient.insert(collection, new JsonObject().put("price", 10).put("quantity", 1), onSuccess(id -> {
-      mongoClient.insert(collection, new JsonObject().put("price", 20).put("quantity", 2), onSuccess(id2 -> {
-        mongoClient.insert(collection, new JsonObject().put("price", 30).put("quantity", 10), onSuccess(id3 -> {
+    mongoClient.insert(collection, new JsonObject().put("price", 10).put("quantity", 1)).onComplete(onSuccess(id -> {
+      mongoClient.insert(collection, new JsonObject().put("price", 20).put("quantity", 2)).onComplete(onSuccess(id2 -> {
+        mongoClient.insert(collection, new JsonObject().put("price", 30).put("quantity", 10)).onComplete(onSuccess(id3 -> {
           mongoClient.updateCollectionWithOptions(collection,
             // reduce price of low quantity items
             new JsonObject().put("quantity", new JsonObject().put("$lte", 2)),
             new JsonArray().add(new JsonObject().put("$set", new JsonObject().put("price", new JsonObject().put("$subtract", new JsonArray().add("$price").add(2))))),
-            new UpdateOptions(),onSuccess(res -> {
+            new UpdateOptions()).onComplete(onSuccess(res -> {
               assertEquals(2, res.getDocModified());
               assertEquals(2, res.getDocMatched());
               testComplete();
