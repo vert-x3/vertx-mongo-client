@@ -2,13 +2,10 @@ package io.vertx.ext.mongo;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -95,14 +92,7 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param document      the document
-   * @param resultHandler result handler will be provided with the id if document didn't already have one
-   */
-  @Fluent
-  @Deprecated
-  MongoClient save(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
-
-  /**
-   * Like {@link #save(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the id if document didn't already have one
    */
   Future<@Nullable String> save(String collection, JsonObject document);
 
@@ -114,14 +104,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param document      the document
    * @param writeOption   the write option to use
-   * @param resultHandler result handler will be provided with the id if document didn't already have one
-   */
-  @Fluent
-  @Deprecated
-  MongoClient saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
-
-  /**
-   * Like {@link #saveWithOptions(String, JsonObject, WriteOption, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the id if document didn't already have one
    */
   Future<@Nullable String> saveWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption);
 
@@ -132,14 +115,7 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param document      the document
-   * @param resultHandler result handler will be provided with the id if document didn't already have one
-   */
-  @Fluent
-  @Deprecated
-  MongoClient insert(String collection, JsonObject document, Handler<AsyncResult<@Nullable String>> resultHandler);
-
-  /**
-   * Like {@link #insert(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the id if document didn't already have one
    */
   Future<@Nullable String> insert(String collection, JsonObject document);
 
@@ -151,14 +127,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param document      the document
    * @param writeOption   the write option to use
-   * @param resultHandler result handler will be provided with the id if document didn't already have one
-   */
-  @Fluent
-  @Deprecated
-  MongoClient insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable String>> resultHandler);
-
-  /**
-   * Like {@link #insertWithOptions(String, JsonObject, WriteOption, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the id if document didn't already have one
    */
   Future<@Nullable String> insertWithOptions(String collection, JsonObject document, @Nullable WriteOption writeOption);
 
@@ -168,15 +137,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         query used to match the documents
    * @param update        used to describe how the documents will be updated
-   * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient updateCollection(String collection, JsonObject query, JsonObject update,
-                               Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
-
-  /**
-   * Like {@link #updateCollection(String, JsonObject, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientUpdateResult} when complete
    */
   Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonObject update);
 
@@ -186,15 +147,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         query used to match the documents
    * @param update        used to describe how the documents will be updated
-   * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient updateCollection(String collection, JsonObject query, JsonArray update,
-                               Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
-
-  /**
-   * Like {@link #updateCollection(String, JsonObject, JsonArray, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientUpdateResult} when complete
    */
   Future<@Nullable MongoClientUpdateResult> updateCollection(String collection, JsonObject query, JsonArray update);
 
@@ -205,15 +158,7 @@ public interface MongoClient {
    * @param query         query used to match the documents
    * @param update        used to describe how the documents will be updated
    * @param options       options to configure the update
-   * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options,
-                                          Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
-
-  /**
-   * Like {@link #updateCollectionWithOptions(String, JsonObject, JsonObject, UpdateOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientUpdateResult} when complete
    */
   Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonObject update, UpdateOptions options);
 
@@ -224,15 +169,7 @@ public interface MongoClient {
    * @param query         query used to match the documents
    * @param update        aggregation pipeline used to describe how documents will be updated
    * @param options       options to configure the update
-   * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient updateCollectionWithOptions(String collection, JsonObject query, JsonArray update, UpdateOptions options,
-                                          Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
-
-  /**
-   * Like {@link #updateCollectionWithOptions(String, JsonObject, JsonArray, UpdateOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientUpdateResult} when complete
    */
   Future<@Nullable MongoClientUpdateResult> updateCollectionWithOptions(String collection, JsonObject query, JsonArray update, UpdateOptions options);
 
@@ -242,14 +179,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         query used to match the documents
    * @param replace       all matching documents will be replaced with this
-   * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient replaceDocuments(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
-
-  /**
-   * Like {@link #replaceDocuments(String, JsonObject, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientUpdateResult} when complete
    */
   Future<@Nullable MongoClientUpdateResult> replaceDocuments(String collection, JsonObject query, JsonObject replace);
 
@@ -260,14 +190,7 @@ public interface MongoClient {
    * @param query         query used to match the documents
    * @param replace       all matching documents will be replaced with this
    * @param options       options to configure the replace
-   * @param resultHandler will be called with a {@link MongoClientUpdateResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options, Handler<AsyncResult<@Nullable MongoClientUpdateResult>> resultHandler);
-
-  /**
-   * Like {@link #replaceDocumentsWithOptions(String, JsonObject, JsonObject, UpdateOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientUpdateResult} when complete
    */
   Future<@Nullable MongoClientUpdateResult> replaceDocumentsWithOptions(String collection, JsonObject query, JsonObject replace, UpdateOptions options);
 
@@ -276,15 +199,7 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param operations    the operations to execute
-   * @param resultHandler will be called with a {@link MongoClientBulkWriteResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient bulkWrite(String collection, List<BulkOperation> operations,
-                        Handler<AsyncResult<@Nullable MongoClientBulkWriteResult>> resultHandler);
-
-  /**
-   * Like {@link #bulkWrite(String, List, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientBulkWriteResult} when complete
    */
   Future<@Nullable MongoClientBulkWriteResult> bulkWrite(String collection, List<BulkOperation> operations);
 
@@ -295,15 +210,7 @@ public interface MongoClient {
    * @param collection       the collection
    * @param operations       the operations to execute
    * @param bulkWriteOptions the write options
-   * @param resultHandler    will be called with a {@link MongoClientBulkWriteResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions,
-                                   Handler<AsyncResult<@Nullable MongoClientBulkWriteResult>> resultHandler);
-
-  /**
-   * Like {@link #bulkWriteWithOptions(String, List, BulkWriteOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientBulkWriteResult} when complete
    */
   Future<@Nullable MongoClientBulkWriteResult> bulkWriteWithOptions(String collection, List<BulkOperation> operations, BulkWriteOptions bulkWriteOptions);
 
@@ -312,14 +219,7 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param query         query used to match documents
-   * @param resultHandler will be provided with list of documents
-   */
-  @Fluent
-  @Deprecated
-  MongoClient find(String collection, JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler);
-
-  /**
-   * Like {@link #find(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with list of documents
    */
   Future<List<JsonObject>> find(String collection, JsonObject query);
 
@@ -339,14 +239,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         query used to match documents
    * @param options       options to configure the find
-   * @param resultHandler will be provided with list of documents
-   */
-  @Fluent
-  @Deprecated
-  MongoClient findWithOptions(String collection, JsonObject query, FindOptions options, Handler<AsyncResult<List<JsonObject>>> resultHandler);
-
-  /**
-   * Like {@link #findWithOptions(String, JsonObject, FindOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with list of documents
    */
   Future<List<JsonObject>> findWithOptions(String collection, JsonObject query, FindOptions options);
 
@@ -369,14 +262,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         the query used to match the document
    * @param fields        the fields
-   * @param resultHandler will be provided with the document, if any
-   */
-  @Fluent
-  @Deprecated
-  MongoClient findOne(String collection, JsonObject query, @Nullable JsonObject fields, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
-
-  /**
-   * Like {@link #findOne(String, JsonObject, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the document, if any
    */
   Future<@Nullable JsonObject> findOne(String collection, JsonObject query, @Nullable JsonObject fields);
 
@@ -388,14 +274,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         the query used to match the document
    * @param update        used to describe how the documents will be updated
-   * @param resultHandler will be provided with the document, if any
-   */
-  @Fluent
-  @Deprecated
-  MongoClient findOneAndUpdate(String collection, JsonObject query, JsonObject update, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
-
-  /**
-   * Like {@link #findOneAndUpdate(String, JsonObject, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the document, if any
    */
   Future<@Nullable JsonObject> findOneAndUpdate(String collection, JsonObject query, JsonObject update);
 
@@ -409,14 +288,7 @@ public interface MongoClient {
    * @param update        used to describe how the documents will be updated
    * @param findOptions   options to configure the find
    * @param updateOptions options to configure the update
-   * @param resultHandler will be provided with the document, if any
-   */
-  @Fluent
-  @Deprecated
-  MongoClient findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
-
-  /**
-   * Like {@link #findOneAndUpdateWithOptions(String, JsonObject, JsonObject, FindOptions, UpdateOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the document, if any
    */
   Future<@Nullable JsonObject> findOneAndUpdateWithOptions(String collection, JsonObject query, JsonObject update, FindOptions findOptions, UpdateOptions updateOptions);
 
@@ -428,14 +300,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         the query used to match the document
    * @param replace       the replacement document
-   * @param resultHandler will be provided with the document, if any
-   */
-  @Fluent
-  @Deprecated
-  MongoClient findOneAndReplace(String collection, JsonObject query, JsonObject replace, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
-
-  /**
-   * Like {@link #findOneAndReplace(String, JsonObject, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the document, if any
    */
   Future<@Nullable JsonObject> findOneAndReplace(String collection, JsonObject query, JsonObject replace);
 
@@ -449,14 +314,7 @@ public interface MongoClient {
    * @param replace       the replacement document
    * @param findOptions   options to configure the find
    * @param updateOptions options to configure the update
-   * @param resultHandler will be provided with the document, if any
-   */
-  @Fluent
-  @Deprecated
-  MongoClient findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
-
-  /**
-   * Like {@link #findOneAndReplaceWithOptions(String, JsonObject, JsonObject, FindOptions, UpdateOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the document, if any
    */
   Future<@Nullable JsonObject> findOneAndReplaceWithOptions(String collection, JsonObject query, JsonObject replace, FindOptions findOptions, UpdateOptions updateOptions);
 
@@ -467,14 +325,7 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param query         the query used to match the document
-   * @param resultHandler will be provided with the deleted document, if any
-   */
-  @Fluent
-  @Deprecated
-  MongoClient findOneAndDelete(String collection, JsonObject query, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
-
-  /**
-   * Like {@link #findOneAndDelete(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the deleted document, if any
    */
   Future<@Nullable JsonObject> findOneAndDelete(String collection, JsonObject query);
 
@@ -486,14 +337,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         the query used to match the document
    * @param findOptions   options to configure the find
-   * @param resultHandler will be provided with the deleted document, if any
-   */
-  @Fluent
-  @Deprecated
-  MongoClient findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
-
-  /**
-   * Like {@link #findOneAndDeleteWithOptions(String, JsonObject, FindOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the deleted document, if any
    */
   Future<@Nullable JsonObject> findOneAndDeleteWithOptions(String collection, JsonObject query, FindOptions findOptions);
 
@@ -502,14 +346,7 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param query         query used to match documents
-   * @param resultHandler will be provided with the number of matching documents
-   */
-  @Fluent
-  @Deprecated
-  MongoClient count(String collection, JsonObject query, Handler<AsyncResult<Long>> resultHandler);
-
-  /**
-   * Like {@link #count(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the number of matching documents
    */
   Future<Long> count(String collection, JsonObject query);
 
@@ -519,14 +356,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         query used to match documents
    * @param countOptions
-   * @param resultHandler will be provided with the number of matching documents
-   */
-  @Fluent
-  @Deprecated
-  MongoClient countWithOptions(String collection, JsonObject query, CountOptions countOptions, Handler<AsyncResult<Long>> resultHandler);
-
-  /**
-   * Like {@link #count(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with the number of matching documents
    */
   Future<Long> countWithOptions(String collection, JsonObject query, CountOptions countOptions);
 
@@ -535,14 +365,7 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param query         query used to match documents
-   * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient removeDocuments(String collection, JsonObject query, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
-
-  /**
-   * Like {@link #removeDocuments(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientDeleteResult} when complete
    */
   Future<@Nullable MongoClientDeleteResult> removeDocuments(String collection, JsonObject query);
 
@@ -552,14 +375,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         query used to match documents
    * @param writeOption   the write option to use
-   * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
-
-  /**
-   * Like {@link #removeDocumentsWithOptions(String, JsonObject, WriteOption, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientDeleteResult} when complete
    */
   Future<@Nullable MongoClientDeleteResult> removeDocumentsWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption);
 
@@ -568,14 +384,7 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param query         query used to match document
-   * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient removeDocument(String collection, JsonObject query, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
-
-  /**
-   * Like {@link #removeDocument(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientDeleteResult} when complete
    */
   Future<@Nullable MongoClientDeleteResult> removeDocument(String collection, JsonObject query);
 
@@ -585,14 +394,7 @@ public interface MongoClient {
    * @param collection    the collection
    * @param query         query used to match document
    * @param writeOption   the write option to use
-   * @param resultHandler will be called with a {@link MongoClientDeleteResult} when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption, Handler<AsyncResult<@Nullable MongoClientDeleteResult>> resultHandler);
-
-  /**
-   * Like {@link #removeDocumentWithOptions(String, JsonObject, WriteOption, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a {@link MongoClientDeleteResult} when complete
    */
   Future<@Nullable MongoClientDeleteResult> removeDocumentWithOptions(String collection, JsonObject query, @Nullable WriteOption writeOption);
 
@@ -600,44 +402,23 @@ public interface MongoClient {
    * Create a new collection
    *
    * @param collectionName the name of the collection
-   * @param resultHandler  will be called when complete
+   * @return a future notified once complete
    */
-  @Fluent
-  @Deprecated
-  MongoClient createCollection(String collectionName, Handler<AsyncResult<Void>> resultHandler);
+  Future<Void> createCollection(String collectionName);
 
   /**
    * Create a new collection with options
    *
    * @param collectionName    the name of the collection
    * @param collectionOptions options of the collection
-   * @param resultHandler     will be called when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient createCollectionWithOptions(String collectionName, CreateCollectionOptions collectionOptions, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
-   * Like {@link #createCollection(String, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<Void> createCollection(String collectionName);
-
-  /**
-   * Like {@link #createCollection(String, Handler)} but with options and returns a {@code Future} of the asynchronous result
+   * @return a future notified once complete
    */
   Future<Void> createCollectionWithOptions(String collectionName, CreateCollectionOptions collectionOptions);
 
   /**
    * Get a list of all collections in the database.
    *
-   * @param resultHandler will be called with a list of collections.
-   */
-  @Fluent
-  @Deprecated
-  MongoClient getCollections(Handler<AsyncResult<List<String>>> resultHandler);
-
-  /**
-   * Like {@link #getCollections(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with a list of collections.
    */
   Future<List<String>> getCollections();
 
@@ -645,14 +426,7 @@ public interface MongoClient {
    * Drop a collection
    *
    * @param collection    the collection
-   * @param resultHandler will be called when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient dropCollection(String collection, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
-   * Like {@link #dropCollection(String, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified when complete
    */
   Future<Void> dropCollection(String collection);
 
@@ -663,14 +437,7 @@ public interface MongoClient {
    * @param key           A document that contains the field and value pairs where the field is the index key and the value
    *                      describes the type of index for that field. For an ascending index on a field,
    *                      specify a value of 1; for descending index, specify a value of -1.
-   * @param resultHandler will be called when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient createIndex(String collection, JsonObject key, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
-   * Like {@link #createIndex(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified when complete
    */
   Future<Void> createIndex(String collection, JsonObject key);
 
@@ -682,14 +449,7 @@ public interface MongoClient {
    *                      describes the type of index for that field. For an ascending index on a field,
    *                      specify a value of 1; for descending index, specify a value of -1.
    * @param options       the options for the index
-   * @param resultHandler will be called when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient createIndexWithOptions(String collection, JsonObject key, IndexOptions options, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
-   * Like {@link #createIndexWithOptions(String, JsonObject, IndexOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified when complete
    */
   Future<Void> createIndexWithOptions(String collection, JsonObject key, IndexOptions options);
 
@@ -700,14 +460,7 @@ public interface MongoClient {
    * @param indexes       A model that contains pairs of document and indexOptions, document contains the field and value pairs
    *                      where the field is the index key and the value describes the type of index for that field.
    *                      For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1.
-   * @param resultHandler will be called when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient createIndexes(String collection, List<IndexModel> indexes, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
-   * Like {@link #createIndexes(String, List, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified when complete
    */
   Future<Void> createIndexes(String collection, List<IndexModel> indexes);
 
@@ -715,14 +468,7 @@ public interface MongoClient {
    * Get all the indexes in this collection.
    *
    * @param collection    the collection
-   * @param resultHandler will be called when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient listIndexes(String collection, Handler<AsyncResult<JsonArray>> resultHandler);
-
-  /**
-   * Like {@link #listIndexes(String, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified when complete
    */
   Future<JsonArray> listIndexes(String collection);
 
@@ -731,14 +477,7 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param indexName     the name of the index to remove
-   * @param resultHandler will be called when complete
-   */
-  @Fluent
-  @Deprecated
-  MongoClient dropIndex(String collection, String indexName, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
-   * Like {@link #dropIndex(String, String, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified when complete
    */
   Future<Void> dropIndex(String collection, String indexName);
 
@@ -747,14 +486,7 @@ public interface MongoClient {
    *
    * @param commandName   the name of the command
    * @param command       the command
-   * @param resultHandler will be called with the result.
-   */
-  @Fluent
-  @Deprecated
-  MongoClient runCommand(String commandName, JsonObject command, Handler<AsyncResult<@Nullable JsonObject>> resultHandler);
-
-  /**
-   * Like {@link #runCommand(String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the result.
    */
   Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command);
 
@@ -764,11 +496,9 @@ public interface MongoClient {
    *
    * @param collection    the collection
    * @param fieldName     the field name
-   * @param resultHandler will be provided with array of values.
+   * @return a future provided with array of values.
    */
-  @Fluent
-  @Deprecated
-  MongoClient distinct(String collection, String fieldName, String resultClassname, Handler<AsyncResult<JsonArray>> resultHandler);
+  Future<JsonArray> distinct(String collection, String fieldName, String resultClassname);
 
   /**
    * Gets the distinct values of the specified field name.
@@ -776,19 +506,7 @@ public interface MongoClient {
    *  @param collection      the collection
    * @param fieldName       the field name
    * @param distinctOptions options (e.g. collation)
-   * @param resultHandler   will be provided with array of values.
-   */
-  @Fluent
-  @Deprecated
-  MongoClient distinct(String collection, String fieldName, String resultClassname, DistinctOptions distinctOptions, Handler<AsyncResult<JsonArray>> resultHandler);
-
-  /**
-   * Like {@link #distinct(String, String, String, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<JsonArray> distinct(String collection, String fieldName, String resultClassname);
-
-  /**
-   * Like {@link #distinct(String, String, String, DistinctOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with array of values.
    */
   Future<JsonArray> distinct(String collection, String fieldName, String resultClassname, DistinctOptions distinctOptions);
 
@@ -799,11 +517,9 @@ public interface MongoClient {
    * @param collection    the collection
    * @param fieldName     the field name
    * @param query         the query
-   * @param resultHandler will be provided with array of values.
+   * @return a future provided with array of values.
    */
-  @Fluent
-  @Deprecated
-  MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+  Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query);
 
   /**
    * Gets the distinct values of the specified field name filtered by specified query.
@@ -812,19 +528,7 @@ public interface MongoClient {
    * @param fieldName       the field name
    * @param query           the query
    * @param distinctOptions options (e.g. collation)
-   * @param resultHandler   will be provided with array of values.
-   */
-  @Fluent
-  @Deprecated
-  MongoClient distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions, Handler<AsyncResult<JsonArray>> resultHandler);
-
-  /**
-   * Like {@link #distinctWithQuery(String, String, String, JsonObject, Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query);
-
-  /**
-   * Like {@link #distinctWithQuery(String, String, String, JsonObject, DistinctOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future provided with array of values.
    */
   Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions);
 
@@ -934,14 +638,7 @@ public interface MongoClient {
   /**
    * Creates a {@link MongoGridFsClient} used to interact with Mongo GridFS.
    *
-   * @param resultHandler the {@link MongoGridFsClient} to interact with the bucket named bucketName
-   */
-  @Fluent
-  @Deprecated
-  MongoClient createDefaultGridFsBucketService(Handler<AsyncResult<MongoGridFsClient>> resultHandler);
-
-  /**
-   * Like {@link #createDefaultGridFsBucketService(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the {@link MongoGridFsClient} to interact with the bucket named bucketName
    */
   Future<MongoGridFsClient> createDefaultGridFsBucketService();
 
@@ -949,26 +646,13 @@ public interface MongoClient {
    * Creates a {@link MongoGridFsClient} used to interact with Mongo GridFS.
    *
    * @param bucketName    the name of the GridFS bucket
-   * @param resultHandler the {@link MongoGridFsClient} to interact with the bucket named bucketName
-   */
-  @Fluent
-  @Deprecated
-  MongoClient createGridFsBucketService(String bucketName, Handler<AsyncResult<MongoGridFsClient>> resultHandler);
-
-  /**
-   * Like {@link #createGridFsBucketService(String, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the {@link MongoGridFsClient} to interact with the bucket named bucketName
    */
   Future<MongoGridFsClient> createGridFsBucketService(String bucketName);
 
   /**
-   * Like {@link #close(Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<Void> close();
-
-  /**
    * Close the client and release its resources
    */
-  @Deprecated
-  void close(Handler<AsyncResult<Void>> handler);
+  Future<Void> close();
 
 }

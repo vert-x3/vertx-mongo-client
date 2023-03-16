@@ -82,16 +82,6 @@ class Utils {
     return jsonUpsertId;
   }
 
-  /**
-   * Set the {@code handler} on the given {@code future}, if the {@code handler} is not null.
-   */
-  static <T> void setHandler(Future<T> future, Handler<AsyncResult<T>> handler) {
-    Objects.requireNonNull(future, "future must not be null");
-    if (handler != null) {
-      future.onComplete(handler);
-    }
-  }
-
   private Utils() {
     // Utility class
   }

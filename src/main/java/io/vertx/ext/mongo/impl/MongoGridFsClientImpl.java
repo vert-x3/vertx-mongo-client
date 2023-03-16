@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
-import static io.vertx.ext.mongo.impl.Utils.setHandler;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -46,25 +45,11 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient uploadByFileName(ReadStream<Buffer> stream, String fileName, Handler<AsyncResult<String>> resultHandler) {
-    Future<String> future = uploadByFileName(stream, fileName);
-    setHandler(future, resultHandler);
-    return this;
-  }
-
-  @Override
   public Future<String> uploadByFileName(ReadStream<Buffer> stream, String fileName) {
     GridFSReadStreamPublisher publisher = new GridFSReadStreamPublisher(stream);
     Promise<ObjectId> promise = vertx.promise();
     bucket.uploadFromPublisher(fileName, publisher).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(ObjectId::toHexString);
-  }
-
-  @Override
-  public MongoGridFsClient uploadByFileNameWithOptions(ReadStream<Buffer> stream, String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler) {
-    Future<String> future = uploadByFileNameWithOptions(stream, fileName, options);
-    setHandler(future, resultHandler);
-    return this;
   }
 
   @Override
@@ -80,23 +65,9 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient uploadFile(String fileName, Handler<AsyncResult<String>> resultHandler) {
-    Future<String> future = uploadFile(fileName);
-    setHandler(future, resultHandler);
-    return this;
-  }
-
-  @Override
   public Future<String> uploadFile(String fileName) {
     requireNonNull(fileName, "fileName cannot be null");
     return uploadFileWithOptions(fileName, null);
-  }
-
-  @Override
-  public MongoGridFsClient uploadFileWithOptions(String fileName, GridFsUploadOptions options, Handler<AsyncResult<String>> resultHandler) {
-    Future<String> future = uploadFileWithOptions(fileName, options);
-    setHandler(future, resultHandler);
-    return this;
   }
 
   @Override
@@ -125,13 +96,6 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
   @Override
   public void close() {
-  }
-
-  @Override
-  public MongoGridFsClient delete(String id, Handler<AsyncResult<Void>> resultHandler) {
-    Future<Void> future = delete(id);
-    setHandler(future, resultHandler);
-    return this;
   }
 
   @Override
@@ -165,23 +129,9 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient downloadByFileName(WriteStream<Buffer> stream, String fileName, Handler<AsyncResult<Long>> resultHandler) {
-    Future<Long> future = downloadByFileName(stream, fileName);
-    setHandler(future, resultHandler);
-    return this;
-  }
-
-  @Override
   public Future<Long> downloadByFileName(WriteStream<Buffer> stream, String fileName) {
     GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName);
     return handleDownload(publisher, stream);
-  }
-
-  @Override
-  public MongoGridFsClient downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options, Handler<AsyncResult<Long>> resultHandler) {
-    Future<Long> future = downloadByFileNameWithOptions(stream, fileName, options);
-    setHandler(future, resultHandler);
-    return this;
   }
 
   @Override
@@ -192,13 +142,6 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient downloadById(WriteStream<Buffer> stream, String id, Handler<AsyncResult<Long>> resultHandler) {
-    Future<Long> future = downloadById(stream, id);
-    setHandler(future, resultHandler);
-    return this;
-  }
-
-  @Override
   public Future<Long> downloadById(WriteStream<Buffer> stream, String id) {
     ObjectId objectId = new ObjectId(id);
     GridFSDownloadPublisher publisher = bucket.downloadToPublisher(objectId);
@@ -206,24 +149,10 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient downloadFile(String fileName, Handler<AsyncResult<Long>> resultHandler) {
-    Future<Long> future = downloadFile(fileName);
-    setHandler(future, resultHandler);
-    return this;
-  }
-
-  @Override
   public Future<Long> downloadFile(String fileName) {
     requireNonNull(fileName, "fileName cannot be null");
 
     return downloadFileAs(fileName, fileName);
-  }
-
-  @Override
-  public MongoGridFsClient downloadFileAs(String fileName, String newFileName, Handler<AsyncResult<Long>> resultHandler) {
-    Future<Long> future = downloadFileAs(fileName, newFileName);
-    setHandler(future, resultHandler);
-    return this;
   }
 
   @Override
@@ -239,14 +168,6 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
         return handleDownload(publisher, file);
       });
   }
-
-  @Override
-  public MongoGridFsClient downloadFileByID(String id, String fileName, Handler<AsyncResult<Long>> resultHandler) {
-    Future<Long> future = downloadFileByID(id, fileName);
-    setHandler(future, resultHandler);
-    return this;
-  }
-
   @Override
   public Future<Long> downloadFileByID(String id, String fileName) {
     requireNonNull(fileName, "fileName cannot be null");
@@ -262,13 +183,6 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient drop(Handler<AsyncResult<Void>> resultHandler) {
-    Future<Void> future = drop();
-    setHandler(future, resultHandler);
-    return this;
-  }
-
-  @Override
   public Future<Void> drop() {
     Promise<Void> promise = vertx.promise();
     bucket.drop().subscribe(new CompletionSubscriber<>(promise));
@@ -276,24 +190,10 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   }
 
   @Override
-  public MongoGridFsClient findAllIds(Handler<AsyncResult<List<String>>> resultHandler) {
-    Future<List<String>> future = findAllIds();
-    setHandler(future, resultHandler);
-    return this;
-  }
-
-  @Override
   public Future<List<String>> findAllIds() {
     Promise<List<String>> promise = vertx.promise();
     bucket.find().subscribe(new MappingAndBufferingSubscriber<>(gridFSFile -> gridFSFile.getObjectId().toHexString(), promise));
     return promise.future();
-  }
-
-  @Override
-  public MongoGridFsClient findIds(JsonObject query, Handler<AsyncResult<List<String>>> resultHandler) {
-    Future<List<String>> future = findIds(query);
-    setHandler(future, resultHandler);
-    return this;
   }
 
   @Override
