@@ -3,15 +3,17 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.ConnectionString;
 import com.mongodb.connection.SslSettings;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.core.net.impl.TrustAllTrustManager;
 
-import javax.net.ssl.*;
-import java.security.*;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import java.security.SecureRandom;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
