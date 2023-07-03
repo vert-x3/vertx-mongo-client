@@ -482,6 +482,15 @@ public interface MongoClient {
   Future<Void> dropIndex(String collection, String indexName);
 
   /**
+   * Drops the index given the keys used to create it.
+   *
+   * @param collection the collection
+   * @param key        the key(s) of the index to remove
+   * @return a future notified when complete
+   */
+  Future<Void> dropIndex(String collection, JsonObject key);
+
+  /**
    * Run an arbitrary MongoDB command.
    *
    * @param commandName   the name of the command

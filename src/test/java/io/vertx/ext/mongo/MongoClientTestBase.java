@@ -176,6 +176,26 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testCreateAndDropIndexWithJsonObject() {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
+      JsonObject key = JsonObject.of("field", 1);
+      mongoClient.createIndex(collection, key).onComplete(onSuccess(res2 -> {
+        mongoClient.dropIndex(collection, key).onComplete(onSuccess(res3 -> {
+          mongoClient.listIndexes(collection).onComplete(onSuccess(res4 -> {
+            long cnt = res4.stream()
+                .filter(o -> ((JsonObject) o).getJsonObject("key").containsKey("field"))
+                .count();
+            assertEquals(cnt, 0);
+            testComplete();
+          }));
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testRunCommand() throws Exception {
     JsonObject command = new JsonObject().put("isMaster", 1);
     mongoClient.runCommand("isMaster", command).onComplete(onSuccess(reply -> {

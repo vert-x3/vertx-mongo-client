@@ -707,6 +707,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   @Override
   public Future<JsonArray> listIndexes(String collection) {
     requireNonNull(collection, COLLECTION_CANNOT_BE_NULL);
+
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<List<JsonObject>> promise = vertx.promise();
     coll.listIndexes(JsonObject.class).subscribe(new BufferingSubscriber<>(promise));
@@ -717,6 +718,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   public Future<Void> dropIndex(String collection, String indexName) {
     requireNonNull(collection, COLLECTION_CANNOT_BE_NULL);
     requireNonNull(indexName, "indexName cannot be null");
+
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<Void> promise = vertx.promise();
     coll.dropIndex(indexName).subscribe(new CompletionSubscriber<>(promise));
@@ -724,9 +726,21 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<Void> dropIndex(String collection, JsonObject key) {
+    requireNonNull(collection, COLLECTION_CANNOT_BE_NULL);
+    requireNonNull(key, FIELD_NAME_CANNOT_BE_NULL);
+
+    MongoCollection<JsonObject> coll = getCollection(collection);
+    Promise<Void> promise = vertx.promise();
+    coll.dropIndex(wrap(key)).subscribe(new CompletionSubscriber<>(promise));
+    return promise.future();
+  }
+
+  @Override
   public Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command) {
     requireNonNull(commandName, "commandName cannot be null");
     requireNonNull(command, "command cannot be null");
+
     // The command name must be the first entry in the bson, so to ensure this we must recreate and add the command
     // name as first (JsonObject is internally ordered)
     JsonObject json = new JsonObject();
