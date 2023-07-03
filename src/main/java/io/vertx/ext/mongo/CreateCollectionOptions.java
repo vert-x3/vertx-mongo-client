@@ -7,6 +7,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Options for creating a collection
@@ -21,6 +22,7 @@ public class CreateCollectionOptions {
   private JsonObject indexOptionDefaults;
   private ValidationOptions validationOptions;
   private CollationOptions collation;
+  private Long expireAfterSeconds;
 
   public CreateCollectionOptions() {
     this.maxDocuments = null;
@@ -31,17 +33,19 @@ public class CreateCollectionOptions {
     this.indexOptionDefaults = null;
     this.validationOptions = null;
     this.collation = null;
+    this.expireAfterSeconds = null;
   }
 
-  public CreateCollectionOptions(CreateCollectionOptions createCollectionOptions) {
-    this.maxDocuments = createCollectionOptions.getMaxDocuments();
-    this.capped = createCollectionOptions.getCapped();
-    this.timeSeriesOptions = createCollectionOptions.getTimeSeriesOptions();
-    this.sizeInBytes = createCollectionOptions.getSizeInBytes();
-    this.storageEngineOptions = createCollectionOptions.getStorageEngineOptions();
-    this.indexOptionDefaults = createCollectionOptions.getIndexOptionDefaults();
-    this.validationOptions = createCollectionOptions.getValidationOptions();
-    this.collation = createCollectionOptions.getCollation();
+  public CreateCollectionOptions(CreateCollectionOptions other) {
+    this.maxDocuments = other.getMaxDocuments();
+    this.capped = other.getCapped();
+    this.timeSeriesOptions = other.getTimeSeriesOptions();
+    this.sizeInBytes = other.getSizeInBytes();
+    this.storageEngineOptions = other.getStorageEngineOptions();
+    this.indexOptionDefaults = other.getIndexOptionDefaults();
+    this.validationOptions = other.getValidationOptions();
+    this.collation = other.getCollation();
+    this.expireAfterSeconds = other.getExpireAfterSeconds();
   }
 
   public CreateCollectionOptions(JsonObject json) {
@@ -104,6 +108,9 @@ public class CreateCollectionOptions {
     }
     if (storageEngineOptions != null) {
       createCollectionOptions.storageEngineOptions(org.bson.BsonDocument.parse(storageEngineOptions.encode()));
+    }
+    if (expireAfterSeconds != null) {
+      createCollectionOptions.expireAfter(expireAfterSeconds, TimeUnit.SECONDS);
     }
     return createCollectionOptions;
   }
@@ -204,16 +211,35 @@ public class CreateCollectionOptions {
     return this;
   }
 
+  public Long getExpireAfterSeconds() {
+    return expireAfterSeconds;
+  }
+
+  /**
+   * Optional.
+   * A duration indicating after how long old time-series data should be deleted.
+   * Currently, applies only to time-series collections, so if this value is set then so must the time-series options.
+   *
+   * @param expireAfterSeconds duration, in seconds, indicating after how long old time-series data should be deleted
+   * @return CreateCollectionOptions
+   */
+  public CreateCollectionOptions setExpireAfterSeconds(Long expireAfterSeconds) {
+    this.expireAfterSeconds = expireAfterSeconds;
+    return this;
+  }
+
   @Override
   public String toString() {
     return "CreateCollectionOptions{" +
       "maxDocuments=" + maxDocuments +
       ", capped=" + capped +
+      ", timeSeriesOptions=" + timeSeriesOptions +
       ", sizeInBytes=" + sizeInBytes +
       ", storageEngineOptions=" + storageEngineOptions +
       ", indexOptionDefaults=" + indexOptionDefaults +
       ", validationOptions=" + validationOptions +
       ", collation=" + collation +
+      ", expireAfter=" + expireAfterSeconds +
       '}';
   }
 
@@ -222,11 +248,11 @@ public class CreateCollectionOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CreateCollectionOptions that = (CreateCollectionOptions) o;
-    return Objects.equals(maxDocuments, that.maxDocuments) && Objects.equals(capped, that.capped) && Objects.equals(sizeInBytes, that.sizeInBytes) && Objects.equals(storageEngineOptions, that.storageEngineOptions) && Objects.equals(indexOptionDefaults, that.indexOptionDefaults) && Objects.equals(validationOptions, that.validationOptions) && Objects.equals(collation, that.collation);
+    return Objects.equals(maxDocuments, that.maxDocuments) && Objects.equals(capped, that.capped) && Objects.equals(timeSeriesOptions, that.timeSeriesOptions) && Objects.equals(sizeInBytes, that.sizeInBytes) && Objects.equals(storageEngineOptions, that.storageEngineOptions) && Objects.equals(indexOptionDefaults, that.indexOptionDefaults) && Objects.equals(validationOptions, that.validationOptions) && Objects.equals(collation, that.collation) && Objects.equals(expireAfterSeconds, that.expireAfterSeconds);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(maxDocuments, capped, sizeInBytes, storageEngineOptions, indexOptionDefaults, validationOptions, collation);
+    return Objects.hash(maxDocuments, capped, timeSeriesOptions, sizeInBytes, storageEngineOptions, indexOptionDefaults, validationOptions, collation, expireAfterSeconds);
   }
 }
