@@ -30,6 +30,11 @@ public class CreateCollectionOptionsConverter {
             obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
+        case "expireAfterSeconds":
+          if (member.getValue() instanceof Number) {
+            obj.setExpireAfterSeconds(((Number)member.getValue()).longValue());
+          }
+          break;
         case "indexOptionDefaults":
           if (member.getValue() instanceof JsonObject) {
             obj.setIndexOptionDefaults(((JsonObject)member.getValue()).copy());
@@ -74,6 +79,9 @@ public class CreateCollectionOptionsConverter {
     }
     if (obj.getCollation() != null) {
       json.put("collation", obj.getCollation().toJson());
+    }
+    if (obj.getExpireAfterSeconds() != null) {
+      json.put("expireAfterSeconds", obj.getExpireAfterSeconds());
     }
     if (obj.getIndexOptionDefaults() != null) {
       json.put("indexOptionDefaults", obj.getIndexOptionDefaults());

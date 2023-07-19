@@ -1073,12 +1073,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
         callback.run();
       }
       if (client != null) {
-        MongoClientImpl.this.vertx.executeBlocking(p -> {
-          try {
-            client.close();
-          } catch (IOException e) {
-            p.fail(e);
-          }
+        MongoClientImpl.this.vertx.executeBlocking(() -> {
+          client.close();
+          return null;
         });
       }
     }
