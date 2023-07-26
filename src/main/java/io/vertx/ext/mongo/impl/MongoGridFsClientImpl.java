@@ -4,11 +4,10 @@ import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
 import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadPublisher;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.buffer.impl.BufferInternal;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -226,7 +225,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     @Override
     public Buffer apply(ByteBuffer bb) {
-      Buffer buffer = Buffer.buffer(copiedBuffer(bb));
+      Buffer buffer = BufferInternal.buffer(copiedBuffer(bb));
       count += buffer.length();
       return buffer;
     }
@@ -235,8 +234,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   private static class MapBuffer implements Function<ByteBuffer, Buffer> {
     @Override
     public Buffer apply(ByteBuffer bb) {
-      Buffer buffer = Buffer.buffer(copiedBuffer(bb));
-      return buffer;
+      return BufferInternal.buffer(copiedBuffer(bb));
     }
   }
 }
