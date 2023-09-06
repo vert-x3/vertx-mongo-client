@@ -17,6 +17,7 @@
 package io.vertx.ext.mongo.impl;
 
 import com.mongodb.MongoClientSettings;
+import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.*;
@@ -738,8 +739,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command) {
+    return runCommand(commandName, command, ReadPreference.primary());
+  }
+
+  public Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command, ReadPreference readPreference) {
     requireNonNull(commandName, "commandName cannot be null");
     requireNonNull(command, "command cannot be null");
+    requireNonNull(readPreference, "readPreference cannot be null");
 
     // The command name must be the first entry in the bson, so to ensure this we must recreate and add the command
     // name as first (JsonObject is internally ordered)
@@ -756,7 +762,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     });
 
     Promise<JsonObject> promise = vertx.promise();
-    holder.db.runCommand(wrap(json), JsonObject.class).subscribe(new SingleResultSubscriber<>(promise));
+    holder.db.runCommand(wrap(json), readPreference, JsonObject.class).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 

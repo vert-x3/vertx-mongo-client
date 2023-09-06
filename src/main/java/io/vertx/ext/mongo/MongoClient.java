@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo;
 
 import com.mongodb.MongoClientSettings;
+import com.mongodb.ReadPreference;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
@@ -491,13 +492,23 @@ public interface MongoClient {
   Future<Void> dropIndex(String collection, JsonObject key);
 
   /**
-   * Run an arbitrary MongoDB command.
+   * Run an arbitrary MongoDB command with read preference on primary.
    *
    * @param commandName   the name of the command
    * @param command       the command
    * @return a future notified with the result.
    */
   Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command);
+
+  /**
+   * Run an arbitrary MongoDB command.
+   *
+   * @param commandName      the name of the command
+   * @param command          the command
+   * @param readPreference   the read preference
+   * @return a future notified with the result.
+   */
+  Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command, ReadPreference readPreference);
 
   /**
    * Gets the distinct values of the specified field name.
