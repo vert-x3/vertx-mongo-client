@@ -508,6 +508,7 @@ public interface MongoClient {
    * @param readPreference   the read preference
    * @return a future notified with the result.
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command, ReadPreference readPreference);
 
   /**
