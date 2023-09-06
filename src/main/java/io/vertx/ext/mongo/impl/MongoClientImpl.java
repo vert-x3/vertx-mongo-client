@@ -742,6 +742,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return runCommand(commandName, command, ReadPreference.primary());
   }
 
+  @Override
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   public Future<@Nullable JsonObject> runCommand(String commandName, JsonObject command, ReadPreference readPreference) {
     requireNonNull(commandName, "commandName cannot be null");
     requireNonNull(command, "command cannot be null");
