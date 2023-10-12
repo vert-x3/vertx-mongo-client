@@ -209,7 +209,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(options, OPTIONS_CANNOT_BE_NULL);
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     Bson bupdate = wrap(encodeKeyWhenUseObjectId(generateIdIfNeeded(query, update, options)));
 
     com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
@@ -248,7 +248,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(options, OPTIONS_CANNOT_BE_NULL);
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     List<Bson> bpipeline = new ArrayList<>(pipeline.size());
     for (int i=0 ; i<pipeline.size() ; i++) {
       bpipeline.add(wrap(pipeline.getJsonObject(i)));
@@ -307,7 +307,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(options, OPTIONS_CANNOT_BE_NULL);
 
     MongoCollection<JsonObject> coll = getCollection(collection, options.getWriteOption());
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     com.mongodb.client.model.ReplaceOptions replaceOptions = new com.mongodb.client.model.ReplaceOptions().upsert(options.isUpsert());
     if (options.getHint() != null) {
       replaceOptions.hint(wrap(options.getHint()));
@@ -334,7 +334,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(query, QUERY_CANNOT_BE_NULL);
 
     Promise<List<JsonObject>> promise = vertx.promise();
-    doFind(collection, encodeKeyWhenUseObjectId(query), options)
+    doFind(collection, deepEncodeKeyWhenUseObjectId(query), options)
       .subscribe(new MappingAndBufferingSubscriber<>(this::decodeKeyWhenUseObjectId, promise));
     return promise.future();
   }
@@ -357,7 +357,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(collection, COLLECTION_CANNOT_BE_NULL);
     requireNonNull(query, QUERY_CANNOT_BE_NULL);
 
-    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+    JsonObject encodedQuery = deepEncodeKeyWhenUseObjectId(query);
 
     Bson bquery = wrap(encodedQuery);
     Bson bfields = wrap(fields);
@@ -379,7 +379,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(findOptions, FIND_OPTIONS_CANNOT_BE_NULL);
     requireNonNull(updateOptions, "update options cannot be null");
 
-    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+    JsonObject encodedQuery = deepEncodeKeyWhenUseObjectId(query);
 
     Bson bquery = wrap(encodedQuery);
     Bson bupdate = wrap(update);
@@ -430,7 +430,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(findOptions, FIND_OPTIONS_CANNOT_BE_NULL);
     requireNonNull(updateOptions, "update options cannot be null");
 
-    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+    JsonObject encodedQuery = deepEncodeKeyWhenUseObjectId(query);
 
     Bson bquery = wrap(encodedQuery);
     FindOneAndReplaceOptions foarOptions = new FindOneAndReplaceOptions();
@@ -472,7 +472,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(query, QUERY_CANNOT_BE_NULL);
     requireNonNull(findOptions, FIND_OPTIONS_CANNOT_BE_NULL);
 
-    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+    JsonObject encodedQuery = deepEncodeKeyWhenUseObjectId(query);
 
     Bson bquery = wrap(encodedQuery);
     FindOneAndDeleteOptions foadOptions = new FindOneAndDeleteOptions();
@@ -506,7 +506,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(collection, COLLECTION_CANNOT_BE_NULL);
     requireNonNull(query, QUERY_CANNOT_BE_NULL);
 
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<Long> promise = vertx.promise();
     Publisher<Long> countPublisher = countOptions != null
@@ -527,7 +527,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(query, QUERY_CANNOT_BE_NULL);
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     Promise<DeleteResult> promise = vertx.promise();
     coll.deleteMany(bquery).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientDeleteResult);
@@ -544,7 +544,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(query, QUERY_CANNOT_BE_NULL);
 
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     Promise<DeleteResult> promise = vertx.promise();
     coll.deleteOne(bquery).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientDeleteResult);
@@ -573,7 +573,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     for (BulkOperation bulkOperation : operations) {
       switch (bulkOperation.getType()) {
         case DELETE:
-          Bson bsonFilter = toBson(encodeKeyWhenUseObjectId(bulkOperation.getFilter()));
+          Bson bsonFilter = toBson(deepEncodeKeyWhenUseObjectId(bulkOperation.getFilter()));
           DeleteOptions deleteOptions = new DeleteOptions();
           if (bulkOperation.getHint() != null) {
             deleteOptions.hint(toBson(bulkOperation.getHint()));
@@ -591,7 +591,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
           }
           break;
         case INSERT:
-          result.add(new InsertOneModel<>(encodeKeyWhenUseObjectId(bulkOperation.getDocument())));
+          result.add(new InsertOneModel<>(deepEncodeKeyWhenUseObjectId(bulkOperation.getDocument())));
           break;
         case REPLACE:
           ReplaceOptions replaceOptions = new ReplaceOptions();
@@ -604,11 +604,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
           if (bulkOperation.getHintString() != null && !bulkOperation.getHintString().isEmpty()) {
             replaceOptions.hintString(bulkOperation.getHintString());
           }
-          result.add(new ReplaceOneModel<>(toBson(encodeKeyWhenUseObjectId(bulkOperation.getFilter())), bulkOperation.getDocument(),
+          result.add(new ReplaceOneModel<>(toBson(deepEncodeKeyWhenUseObjectId(bulkOperation.getFilter())), bulkOperation.getDocument(),
             replaceOptions.upsert(bulkOperation.isUpsert())));
           break;
         case UPDATE:
-          Bson filter = toBson(encodeKeyWhenUseObjectId(bulkOperation.getFilter()));
+          Bson filter = toBson(deepEncodeKeyWhenUseObjectId(bulkOperation.getFilter()));
           Bson document = toBson(encodeKeyWhenUseObjectId(bulkOperation.getDocument()));
           com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions()
             .upsert(bulkOperation.isUpsert());
@@ -874,7 +874,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(fieldName, FIELD_NAME_CANNOT_BE_NULL);
     requireNonNull(query, QUERY_CANNOT_BE_NULL);
 
-    JsonObject encodedQuery = encodeKeyWhenUseObjectId(query);
+    JsonObject encodedQuery = deepEncodeKeyWhenUseObjectId(query);
 
     Bson bquery = wrap(encodedQuery);
 
@@ -907,16 +907,18 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return aggregate;
   }
 
-  JsonArray encodeKeyWhenUseObjectId(JsonArray arr) {
+
+
+  JsonArray deepEncodeKeyWhenUseObjectId(JsonArray arr) {
     if(!useObjectId) return arr;
 
     JsonArray newArr = new JsonArray(new ArrayList<>(arr.size()));
 
     for (Object item : arr) {
       if (item instanceof JsonArray) {
-        newArr.add(encodeKeyWhenUseObjectId((JsonArray) item));
+        newArr.add(deepEncodeKeyWhenUseObjectId((JsonArray) item));
       } else if (item instanceof JsonObject) {
-        newArr.add(encodeKeyWhenUseObjectId((JsonObject) item));
+        newArr.add(deepEncodeKeyWhenUseObjectId((JsonObject) item));
       } else {
         newArr.add(item);
       }
@@ -926,7 +928,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return newArr;
   }
 
-  JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
+  JsonObject deepEncodeKeyWhenUseObjectId(JsonObject json) {
     if(!useObjectId) return json;
 
     JsonObject newJson = new JsonObject(new LinkedHashMap<>(json.size()));
@@ -939,9 +941,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
           && ObjectId.isValid((String) value)) {
         newJson.put(key, new JsonObject().put(JsonObjectCodec.OID_FIELD, value));
       } else if (value instanceof JsonObject) {
-        newJson.put(key, encodeKeyWhenUseObjectId((JsonObject) value));
+        newJson.put(key, deepEncodeKeyWhenUseObjectId((JsonObject) value));
       } else if (value instanceof JsonArray) {
-        newJson.put(key, encodeKeyWhenUseObjectId((JsonArray) value));
+        newJson.put(key, deepEncodeKeyWhenUseObjectId((JsonArray) value));
       } else {
         newJson.put(key, value);
       }
@@ -949,6 +951,18 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     }
 
     return newJson;
+  }
+
+  JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
+    if (!useObjectId)
+      return json;
+
+    Object idString = json.getValue(ID_FIELD, null);
+    if (idString instanceof String && ObjectId.isValid((String) idString)) {
+      json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, idString));
+    }
+
+    return json;
   }
 
   private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
@@ -967,7 +981,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   private FindPublisher<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {
     MongoCollection<JsonObject> coll = getCollection(collection);
-    Bson bquery = wrap(encodeKeyWhenUseObjectId(query));
+    Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     FindPublisher<JsonObject> find = coll.find(bquery, JsonObject.class);
     if (options.getLimit() != -1) {
       find.limit(options.getLimit());
