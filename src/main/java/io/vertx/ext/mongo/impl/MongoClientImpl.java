@@ -55,7 +55,9 @@ import org.reactivestreams.Publisher;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -905,15 +907,48 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return aggregate;
   }
 
-  JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
-    if (!useObjectId) return json;
+  JsonArray encodeKeyWhenUseObjectId(JsonArray arr) {
+    if(!useObjectId) return arr;
 
-    Object idString = json.getValue(ID_FIELD, null);
-    if (idString instanceof String && ObjectId.isValid((String) idString)) {
-      json.put(ID_FIELD, new JsonObject().put(JsonObjectCodec.OID_FIELD, idString));
+    JsonArray newArr = new JsonArray(new ArrayList<>(arr.size()));
+
+    for (Object item : arr) {
+      if (item instanceof JsonArray) {
+        newArr.add(encodeKeyWhenUseObjectId((JsonArray) item));
+      } else if (item instanceof JsonObject) {
+        newArr.add(encodeKeyWhenUseObjectId((JsonObject) item));
+      } else {
+        newArr.add(item);
+      }
+      // we don't handle cases that value instanceof Map or List
     }
 
-    return json;
+    return newArr;
+  }
+
+  JsonObject encodeKeyWhenUseObjectId(JsonObject json) {
+    if(!useObjectId) return json;
+
+    JsonObject newJson = new JsonObject(new LinkedHashMap<>(json.size()));
+
+    for (Map.Entry<String, Object> entry : json) {
+      String key = entry.getKey();
+      Object value = entry.getValue();
+      if (key.equals(ID_FIELD)
+          && value instanceof String
+          && ObjectId.isValid((String) value)) {
+        newJson.put(key, new JsonObject().put(JsonObjectCodec.OID_FIELD, value));
+      } else if (value instanceof JsonObject) {
+        newJson.put(key, encodeKeyWhenUseObjectId((JsonObject) value));
+      } else if (value instanceof JsonArray) {
+        newJson.put(key, encodeKeyWhenUseObjectId((JsonArray) value));
+      } else {
+        newJson.put(key, value);
+      }
+      // we don't handle cases that value instanceof Map or List
+    }
+
+    return newJson;
   }
 
   private JsonObject decodeKeyWhenUseObjectId(JsonObject json) {
