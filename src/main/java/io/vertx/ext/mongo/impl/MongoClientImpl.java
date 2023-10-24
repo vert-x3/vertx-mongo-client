@@ -591,7 +591,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
           }
           break;
         case INSERT:
-          result.add(new InsertOneModel<>(deepEncodeKeyWhenUseObjectId(bulkOperation.getDocument())));
+          result.add(new InsertOneModel<>(encodeKeyWhenUseObjectId(bulkOperation.getDocument())));
           break;
         case REPLACE:
           ReplaceOptions replaceOptions = new ReplaceOptions();
