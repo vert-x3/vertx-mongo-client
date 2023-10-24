@@ -182,7 +182,14 @@ public abstract class MongoTestBase extends VertxTestBase {
         .put("myarr", new JsonArray()
           .add("blah")
           .add(true)
-          .add(312)));
+          .add(312)))
+      .put("nested_id1", new JsonObject()
+        .put("_id", new ObjectId().toHexString()))
+      .put("nested_id2", new JsonArray()
+        .add(new JsonObject()
+          .put("_id", new ObjectId().toHexString()))
+        .add(new JsonObject()
+          .put("_id", new ObjectId().toHexString())));
   }
 
   protected JsonObject createDoc(int num) {
@@ -208,6 +215,30 @@ public abstract class MongoTestBase extends VertxTestBase {
       .put("other", new JsonObject().put("quux", "flib")
       .put("myarr", new JsonArray().add("blah").add(true).add(312)))
       .put("longval", 123456789L).put("dblval", 1.23);
+  }
+
+  // WARN: try to getObjectId from doc will generate new objectId on doc if not exists
+  protected String getObjectId(JsonObject doc) {
+    Object idVal = doc.getValue("_id");
+
+    // auto generate when not exists
+    if(idVal == null) {
+      String _id = new ObjectId().toHexString();
+      doc.put("_id", JsonObject.of("$oid", _id));
+      return _id;
+    }
+
+    // return string
+    if(idVal instanceof String) {
+      return (String) idVal;
+    }
+
+    // return $oid from ObjectId object
+    if(idVal instanceof JsonObject) {
+      return ((JsonObject) idVal).getString("$oid");
+    }
+
+    return null;
   }
 
 }
