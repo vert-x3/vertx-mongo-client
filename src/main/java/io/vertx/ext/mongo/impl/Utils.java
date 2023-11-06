@@ -43,7 +43,7 @@ class Utils {
   }
 
   static MongoClientUpdateResult toMongoClientUpdateResult(UpdateResult updateResult) {
-    return updateResult.wasAcknowledged() ? new MongoClientUpdateResult(updateResult.getMatchedCount(), convertUpsertId(updateResult.getUpsertedId()), updateResult.getModifiedCount()) : null;
+    return updateResult.wasAcknowledged() ? new MongoClientUpdateResult(updateResult.getMatchedCount(), convertWriteResultId(updateResult.getUpsertedId()), updateResult.getModifiedCount()) : null;
   }
 
   static MongoClientBulkWriteResult toMongoClientBulkWriteResult(BulkWriteResult bulkWriteResult) {
@@ -51,28 +51,35 @@ class Utils {
       return null;
     }
 
-    List<JsonObject> upsertResult = bulkWriteResult.getUpserts().stream().map(upsert -> {
-      JsonObject upsertValue = convertUpsertId(upsert.getId());
-      upsertValue.put(MongoClientBulkWriteResult.INDEX, upsert.getIndex());
-      return upsertValue;
-    }).collect(Collectors.toList());
+    List<JsonObject> upsertResult = bulkWriteResult.getUpserts().stream().map(upsert ->
+      convertBulkWriteResultId(upsert.getId(), upsert.getIndex())).collect(Collectors.toList());
+
+    List<JsonObject> insertResult = bulkWriteResult.getInserts().stream().map(insert ->
+      convertBulkWriteResultId(insert.getId(), insert.getIndex())).collect(Collectors.toList());
 
     return new MongoClientBulkWriteResult(
       bulkWriteResult.getInsertedCount(),
       bulkWriteResult.getMatchedCount(),
       bulkWriteResult.getDeletedCount(),
       bulkWriteResult.getModifiedCount(),
-      upsertResult
+      upsertResult,
+      insertResult
     );
   }
 
-  private static JsonObject convertUpsertId(BsonValue upsertId) {
+  private static JsonObject convertBulkWriteResultId(BsonValue writeResultId, int resultIdIndex) {
+    JsonObject upsertValue = convertWriteResultId(writeResultId);
+    upsertValue.put(MongoClientBulkWriteResult.INDEX, resultIdIndex);
+    return upsertValue;
+  }
+
+  private static JsonObject convertWriteResultId(BsonValue writeResultId) {
     JsonObject jsonUpsertId;
-    if (upsertId != null) {
+    if (writeResultId != null) {
       JsonObjectCodec jsonObjectCodec = new JsonObjectCodec(new JsonObject());
 
       BsonDocument upsertIdDocument = new BsonDocument();
-      upsertIdDocument.append(ID_FIELD, upsertId);
+      upsertIdDocument.append(ID_FIELD, writeResultId);
 
       BsonDocumentReader bsonDocumentReader = new BsonDocumentReader(upsertIdDocument);
       jsonUpsertId = jsonObjectCodec.decode(bsonDocumentReader, DecoderContext.builder().build());
