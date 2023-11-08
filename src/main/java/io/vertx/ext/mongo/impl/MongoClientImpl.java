@@ -908,7 +908,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
 
-
   JsonArray deepEncodeKeyWhenUseObjectId(JsonArray arr) {
     if(!useObjectId) return arr;
 
@@ -917,12 +916,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     for (Object item : arr) {
       if (item instanceof JsonArray) {
         newArr.add(deepEncodeKeyWhenUseObjectId((JsonArray) item));
+      } else if(item instanceof List) {
+        newArr.add(deepEncodeKeyWhenUseObjectId(new JsonArray((List) item)));
       } else if (item instanceof JsonObject) {
         newArr.add(deepEncodeKeyWhenUseObjectId((JsonObject) item));
+      } else if (item instanceof Map) {
+        newArr.add(deepEncodeKeyWhenUseObjectId(new JsonObject((Map) item)));
       } else {
         newArr.add(item);
       }
-      // we don't handle cases that value instanceof Map or List
     }
 
     return newArr;
@@ -942,12 +944,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
         newJson.put(key, new JsonObject().put(JsonObjectCodec.OID_FIELD, value));
       } else if (value instanceof JsonObject) {
         newJson.put(key, deepEncodeKeyWhenUseObjectId((JsonObject) value));
+      } else if (value instanceof Map) {
+        newJson.put(key, deepEncodeKeyWhenUseObjectId(new JsonObject((Map) value)));
       } else if (value instanceof JsonArray) {
         newJson.put(key, deepEncodeKeyWhenUseObjectId((JsonArray) value));
+      } else if (value instanceof List) {
+        newJson.put(key, deepEncodeKeyWhenUseObjectId(new JsonArray((List) value)));
       } else {
         newJson.put(key, value);
       }
-      // we don't handle cases that value instanceof Map or List
     }
 
     return newJson;
