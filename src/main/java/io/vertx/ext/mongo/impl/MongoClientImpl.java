@@ -29,10 +29,13 @@ import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBuckets;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
-import io.vertx.core.*;
+import io.vertx.core.Closeable;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
@@ -41,7 +44,6 @@ import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.mongo.BulkWriteOptions;
 import io.vertx.ext.mongo.CountOptions;
 import io.vertx.ext.mongo.CreateCollectionOptions;
-import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.IndexModel;
 import io.vertx.ext.mongo.IndexOptions;
 import io.vertx.ext.mongo.UpdateOptions;
@@ -53,12 +55,7 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.reactivestreams.Publisher;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -213,9 +210,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Bson bupdate = wrap(encodeKeyWhenUseObjectId(generateIdIfNeeded(query, update, options)));
 
     com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
-    if (options.getArrayFilters() != null && !options.getArrayFilters().isEmpty()) {
-      final List<Bson> bArrayFilters = new ArrayList<>(options.getArrayFilters().size());
-      options.getArrayFilters().getList().forEach(entry -> bArrayFilters.add(wrap(JsonObject.mapFrom(entry))));
+    JsonArray arrayFilters = options.getArrayFilters();
+    if (arrayFilters != null && !arrayFilters.isEmpty()) {
+      List<Bson> bArrayFilters = new ArrayList<>(arrayFilters.size());
+      for (int i = 0; i < arrayFilters.size(); i++) {
+        bArrayFilters.add(wrap(arrayFilters.getJsonObject(i)));
+      }
       updateOptions.arrayFilters(bArrayFilters);
     }
     if (options.getHint() != null) {
@@ -255,9 +255,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     }
 
     com.mongodb.client.model.UpdateOptions updateOptions = new com.mongodb.client.model.UpdateOptions().upsert(options.isUpsert());
-    if (options.getArrayFilters() != null && !options.getArrayFilters().isEmpty()) {
-      final List<Bson> bArrayFilters = new ArrayList<>(options.getArrayFilters().size());
-      options.getArrayFilters().getList().forEach(entry -> bArrayFilters.add(wrap(JsonObject.mapFrom(entry))));
+    JsonArray arrayFilters = options.getArrayFilters();
+    if (arrayFilters != null && !arrayFilters.isEmpty()) {
+      List<Bson> bArrayFilters = new ArrayList<>(arrayFilters.size());
+      for (int i = 0; i < arrayFilters.size(); i++) {
+        bArrayFilters.add(wrap(arrayFilters.getJsonObject(i)));
+      }
       updateOptions.arrayFilters(bArrayFilters);
     }
     if (options.getHint() != null) {
@@ -388,9 +391,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     foauOptions.projection(wrap(findOptions.getFields()));
     foauOptions.upsert(updateOptions.isUpsert());
     foauOptions.returnDocument(updateOptions.isReturningNewDocument() ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
-    if (updateOptions.getArrayFilters() != null && !updateOptions.getArrayFilters().isEmpty()) {
-      final List<Bson> bArrayFilters = new ArrayList<>(updateOptions.getArrayFilters().size());
-      updateOptions.getArrayFilters().getList().forEach(entry -> bArrayFilters.add(wrap(JsonObject.mapFrom(entry))));
+    JsonArray arrayFilters = updateOptions.getArrayFilters();
+    if (arrayFilters != null && !arrayFilters.isEmpty()) {
+      List<Bson> bArrayFilters = new ArrayList<>(arrayFilters.size());
+      for (int i = 0; i < arrayFilters.size(); i++) {
+        bArrayFilters.add(wrap(arrayFilters.getJsonObject(i)));
+      }
       foauOptions.arrayFilters(bArrayFilters);
     }
     if (findOptions.getHint() != null) {
@@ -856,7 +862,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(pipeline, PIPELINE_CANNOT_BE_NULL);
     MongoCollection<JsonObject> coll = getCollection(collection);
     final List<Bson> bpipeline = new ArrayList<>(pipeline.size());
-    pipeline.getList().forEach(entry -> bpipeline.add(wrap(JsonObject.mapFrom(entry))));
+    for (int i = 0; i < pipeline.size(); i++) {
+      bpipeline.add(wrap(pipeline.getJsonObject(i)));
+    }
     ChangeStreamPublisher<JsonObject> changeStreamPublisher = coll.watch(bpipeline, JsonObject.class);
     if (withUpdatedDoc) {
       // By default, only "insert" and "replace" operations return fullDocument
@@ -889,7 +897,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(aggregateOptions, "aggregateOptions cannot be null");
     final MongoCollection<JsonObject> coll = getCollection(collection);
     final List<Bson> bpipeline = new ArrayList<>(pipeline.size());
-    pipeline.getList().forEach(entry -> bpipeline.add(wrap(JsonObject.mapFrom(entry))));
+    for (int i = 0; i < pipeline.size(); i++) {
+      bpipeline.add(wrap(pipeline.getJsonObject(i)));
+    }
     AggregatePublisher<JsonObject> aggregate = coll.aggregate(bpipeline, JsonObject.class);
 
     if(aggregateOptions.getCollation() != null) {
