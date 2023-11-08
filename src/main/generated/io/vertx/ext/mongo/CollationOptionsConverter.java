@@ -20,14 +20,9 @@ public class CollationOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, CollationOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "backwards":
+        case "normalization":
           if (member.getValue() instanceof Boolean) {
-            obj.setBackwards((Boolean)member.getValue());
-          }
-          break;
-        case "caseLevel":
-          if (member.getValue() instanceof Boolean) {
-            obj.setCaseLevel((Boolean)member.getValue());
+            obj.setNormalization((Boolean)member.getValue());
           }
           break;
         case "locale":
@@ -35,9 +30,14 @@ public class CollationOptionsConverter {
             obj.setLocale((String)member.getValue());
           }
           break;
-        case "normalization":
+        case "caseLevel":
           if (member.getValue() instanceof Boolean) {
-            obj.setNormalization((Boolean)member.getValue());
+            obj.setCaseLevel((Boolean)member.getValue());
+          }
+          break;
+        case "strength":
+          if (member.getValue() instanceof String) {
+            obj.setStrength(com.mongodb.client.model.CollationStrength.valueOf((String)member.getValue()));
           }
           break;
         case "numericOrdering":
@@ -45,9 +45,9 @@ public class CollationOptionsConverter {
             obj.setNumericOrdering((Boolean)member.getValue());
           }
           break;
-        case "strength":
-          if (member.getValue() instanceof String) {
-            obj.setStrength(com.mongodb.client.model.CollationStrength.valueOf((String)member.getValue()));
+        case "backwards":
+          if (member.getValue() instanceof Boolean) {
+            obj.setBackwards((Boolean)member.getValue());
           }
           break;
       }
@@ -59,23 +59,23 @@ public class CollationOptionsConverter {
   }
 
   public static void toJson(CollationOptions obj, java.util.Map<String, Object> json) {
-    if (obj.isBackwards() != null) {
-      json.put("backwards", obj.isBackwards());
-    }
-    if (obj.isCaseLevel() != null) {
-      json.put("caseLevel", obj.isCaseLevel());
+    if (obj.isNormalization() != null) {
+      json.put("normalization", obj.isNormalization());
     }
     if (obj.getLocale() != null) {
       json.put("locale", obj.getLocale());
     }
-    if (obj.isNormalization() != null) {
-      json.put("normalization", obj.isNormalization());
+    if (obj.isCaseLevel() != null) {
+      json.put("caseLevel", obj.isCaseLevel());
+    }
+    if (obj.getStrength() != null) {
+      json.put("strength", obj.getStrength().name());
     }
     if (obj.isNumericOrdering() != null) {
       json.put("numericOrdering", obj.isNumericOrdering());
     }
-    if (obj.getStrength() != null) {
-      json.put("strength", obj.getStrength().name());
+    if (obj.isBackwards() != null) {
+      json.put("backwards", obj.isBackwards());
     }
   }
 }

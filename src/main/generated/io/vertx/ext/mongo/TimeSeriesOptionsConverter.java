@@ -20,9 +20,9 @@ public class TimeSeriesOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, TimeSeriesOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "granularity":
+        case "timeField":
           if (member.getValue() instanceof String) {
-            obj.setGranularity(io.vertx.ext.mongo.TimeSeriesGranularity.valueOf((String)member.getValue()));
+            obj.setTimeField((String)member.getValue());
           }
           break;
         case "metaField":
@@ -30,9 +30,9 @@ public class TimeSeriesOptionsConverter {
             obj.setMetaField((String)member.getValue());
           }
           break;
-        case "timeField":
+        case "granularity":
           if (member.getValue() instanceof String) {
-            obj.setTimeField((String)member.getValue());
+            obj.setGranularity(io.vertx.ext.mongo.TimeSeriesGranularity.valueOf((String)member.getValue()));
           }
           break;
       }
@@ -44,14 +44,14 @@ public class TimeSeriesOptionsConverter {
   }
 
   public static void toJson(TimeSeriesOptions obj, java.util.Map<String, Object> json) {
-    if (obj.getGranularity() != null) {
-      json.put("granularity", obj.getGranularity().name());
+    if (obj.getTimeField() != null) {
+      json.put("timeField", obj.getTimeField());
     }
     if (obj.getMetaField() != null) {
       json.put("metaField", obj.getMetaField());
     }
-    if (obj.getTimeField() != null) {
-      json.put("timeField", obj.getTimeField());
+    if (obj.getGranularity() != null) {
+      json.put("granularity", obj.getGranularity().name());
     }
   }
 }

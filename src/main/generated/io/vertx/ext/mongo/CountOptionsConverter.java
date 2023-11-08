@@ -20,11 +20,6 @@ public class CountOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, CountOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "collation":
-          if (member.getValue() instanceof JsonObject) {
-            obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
-          }
-          break;
         case "hint":
           if (member.getValue() instanceof JsonObject) {
             obj.setHint(((JsonObject)member.getValue()).copy());
@@ -40,14 +35,19 @@ public class CountOptionsConverter {
             obj.setLimit(((Number)member.getValue()).intValue());
           }
           break;
+        case "skip":
+          if (member.getValue() instanceof Number) {
+            obj.setSkip(((Number)member.getValue()).intValue());
+          }
+          break;
         case "maxTime":
           if (member.getValue() instanceof Number) {
             obj.setMaxTime(((Number)member.getValue()).longValue());
           }
           break;
-        case "skip":
-          if (member.getValue() instanceof Number) {
-            obj.setSkip(((Number)member.getValue()).intValue());
+        case "collation":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
       }
@@ -59,9 +59,6 @@ public class CountOptionsConverter {
   }
 
   public static void toJson(CountOptions obj, java.util.Map<String, Object> json) {
-    if (obj.getCollation() != null) {
-      json.put("collation", obj.getCollation().toJson());
-    }
     if (obj.getHint() != null) {
       json.put("hint", obj.getHint());
     }
@@ -71,11 +68,14 @@ public class CountOptionsConverter {
     if (obj.getLimit() != null) {
       json.put("limit", obj.getLimit());
     }
+    if (obj.getSkip() != null) {
+      json.put("skip", obj.getSkip());
+    }
     if (obj.getMaxTime() != null) {
       json.put("maxTime", obj.getMaxTime());
     }
-    if (obj.getSkip() != null) {
-      json.put("skip", obj.getSkip());
+    if (obj.getCollation() != null) {
+      json.put("collation", obj.getCollation().toJson());
     }
   }
 }

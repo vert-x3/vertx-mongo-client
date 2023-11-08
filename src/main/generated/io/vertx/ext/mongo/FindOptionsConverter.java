@@ -20,11 +20,6 @@ public class FindOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, FindOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "batchSize":
-          if (member.getValue() instanceof Number) {
-            obj.setBatchSize(((Number)member.getValue()).intValue());
-          }
-          break;
         case "collation":
           if (member.getValue() instanceof JsonObject) {
             obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
@@ -35,14 +30,9 @@ public class FindOptionsConverter {
             obj.setFields(((JsonObject)member.getValue()).copy());
           }
           break;
-        case "hint":
+        case "sort":
           if (member.getValue() instanceof JsonObject) {
-            obj.setHint(((JsonObject)member.getValue()).copy());
-          }
-          break;
-        case "hintString":
-          if (member.getValue() instanceof String) {
-            obj.setHintString((String)member.getValue());
+            obj.setSort(((JsonObject)member.getValue()).copy());
           }
           break;
         case "limit":
@@ -55,9 +45,19 @@ public class FindOptionsConverter {
             obj.setSkip(((Number)member.getValue()).intValue());
           }
           break;
-        case "sort":
+        case "batchSize":
+          if (member.getValue() instanceof Number) {
+            obj.setBatchSize(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "hint":
           if (member.getValue() instanceof JsonObject) {
-            obj.setSort(((JsonObject)member.getValue()).copy());
+            obj.setHint(((JsonObject)member.getValue()).copy());
+          }
+          break;
+        case "hintString":
+          if (member.getValue() instanceof String) {
+            obj.setHintString((String)member.getValue());
           }
           break;
       }
@@ -69,23 +69,23 @@ public class FindOptionsConverter {
   }
 
   public static void toJson(FindOptions obj, java.util.Map<String, Object> json) {
-    json.put("batchSize", obj.getBatchSize());
     if (obj.getCollation() != null) {
       json.put("collation", obj.getCollation().toJson());
     }
     if (obj.getFields() != null) {
       json.put("fields", obj.getFields());
     }
+    if (obj.getSort() != null) {
+      json.put("sort", obj.getSort());
+    }
+    json.put("limit", obj.getLimit());
+    json.put("skip", obj.getSkip());
+    json.put("batchSize", obj.getBatchSize());
     if (obj.getHint() != null) {
       json.put("hint", obj.getHint());
     }
     if (obj.getHintString() != null) {
       json.put("hintString", obj.getHintString());
-    }
-    json.put("limit", obj.getLimit());
-    json.put("skip", obj.getSkip());
-    if (obj.getSort() != null) {
-      json.put("sort", obj.getSort());
     }
   }
 }

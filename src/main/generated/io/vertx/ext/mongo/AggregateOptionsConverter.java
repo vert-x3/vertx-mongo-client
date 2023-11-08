@@ -20,16 +20,6 @@ public class AggregateOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, AggregateOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "allowDiskUse":
-          if (member.getValue() instanceof Boolean) {
-            obj.setAllowDiskUse((Boolean)member.getValue());
-          }
-          break;
-        case "batchSize":
-          if (member.getValue() instanceof Number) {
-            obj.setBatchSize(((Number)member.getValue()).intValue());
-          }
-          break;
         case "collation":
           if (member.getValue() instanceof JsonObject) {
             obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
@@ -38,6 +28,16 @@ public class AggregateOptionsConverter {
         case "maxTime":
           if (member.getValue() instanceof Number) {
             obj.setMaxTime(((Number)member.getValue()).longValue());
+          }
+          break;
+        case "batchSize":
+          if (member.getValue() instanceof Number) {
+            obj.setBatchSize(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "allowDiskUse":
+          if (member.getValue() instanceof Boolean) {
+            obj.setAllowDiskUse((Boolean)member.getValue());
           }
           break;
       }
@@ -49,13 +49,13 @@ public class AggregateOptionsConverter {
   }
 
   public static void toJson(AggregateOptions obj, java.util.Map<String, Object> json) {
-    if (obj.getAllowDiskUse() != null) {
-      json.put("allowDiskUse", obj.getAllowDiskUse());
-    }
-    json.put("batchSize", obj.getBatchSize());
     if (obj.getCollation() != null) {
       json.put("collation", obj.getCollation().toJson());
     }
     json.put("maxTime", obj.getMaxTime());
+    json.put("batchSize", obj.getBatchSize());
+    if (obj.getAllowDiskUse() != null) {
+      json.put("allowDiskUse", obj.getAllowDiskUse());
+    }
   }
 }

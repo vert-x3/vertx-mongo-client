@@ -20,9 +20,9 @@ public class ValidationOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, ValidationOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "validationAction":
-          if (member.getValue() instanceof String) {
-            obj.setValidationAction(com.mongodb.client.model.ValidationAction.valueOf((String)member.getValue()));
+        case "validator":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setValidator(((JsonObject)member.getValue()).copy());
           }
           break;
         case "validationLevel":
@@ -30,9 +30,9 @@ public class ValidationOptionsConverter {
             obj.setValidationLevel(com.mongodb.client.model.ValidationLevel.valueOf((String)member.getValue()));
           }
           break;
-        case "validator":
-          if (member.getValue() instanceof JsonObject) {
-            obj.setValidator(((JsonObject)member.getValue()).copy());
+        case "validationAction":
+          if (member.getValue() instanceof String) {
+            obj.setValidationAction(com.mongodb.client.model.ValidationAction.valueOf((String)member.getValue()));
           }
           break;
       }
@@ -44,14 +44,14 @@ public class ValidationOptionsConverter {
   }
 
   public static void toJson(ValidationOptions obj, java.util.Map<String, Object> json) {
-    if (obj.getValidationAction() != null) {
-      json.put("validationAction", obj.getValidationAction().name());
+    if (obj.getValidator() != null) {
+      json.put("validator", obj.getValidator());
     }
     if (obj.getValidationLevel() != null) {
       json.put("validationLevel", obj.getValidationLevel().name());
     }
-    if (obj.getValidator() != null) {
-      json.put("validator", obj.getValidator());
+    if (obj.getValidationAction() != null) {
+      json.put("validationAction", obj.getValidationAction().name());
     }
   }
 }
