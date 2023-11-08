@@ -7,7 +7,6 @@ import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
-
 import org.junit.Test;
 
 import java.io.File;
@@ -234,7 +233,7 @@ public class GridFsTest extends MongoTestBase {
       gridFsClient.get().findIds(query, findPromise);
       return findPromise.future();
     }).compose(list -> {
-      assertTrue(list.size() > 0);
+      assertFalse(list.isEmpty());
       testComplete();
       return Future.succeededFuture();
     }).onComplete(event -> {
@@ -671,7 +670,8 @@ public class GridFsTest extends MongoTestBase {
     String fileName = createTempFileWithContent(1024);
     GridFsUploadOptions options = new GridFsUploadOptions();
     options.setChunkSizeBytes(1024);
-    options.setMetadata(new JsonObject().put("meta_test", "Kamapua`a"));
+    options.setMetadata(new JsonObject().put("meta_test", "Kamapua`a")
+      .put("nested", new JsonObject().put("foobar", true)));
 
     AtomicReference<MongoGridFsClient> gridFsClient = new AtomicReference<>();
 
