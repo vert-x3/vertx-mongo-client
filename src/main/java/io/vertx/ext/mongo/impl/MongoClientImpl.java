@@ -837,7 +837,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public Future<MongoGridFsClient> createGridFsBucketService(String bucketName) {
-    MongoGridFsClientImpl impl = new MongoGridFsClientImpl(vertx, this, getGridFSBucket(bucketName));
+    MongoGridFsClientImpl impl = new MongoGridFsClientImpl(vertx, this, getGridFSBucket(bucketName), holder.db.getCodecRegistry());
     return Future.succeededFuture(impl);
   }
 

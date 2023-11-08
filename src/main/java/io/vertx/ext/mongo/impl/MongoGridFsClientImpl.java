@@ -13,8 +13,14 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
-import io.vertx.ext.mongo.*;
+import io.vertx.ext.mongo.GridFsDownloadOptions;
+import io.vertx.ext.mongo.GridFsUploadOptions;
+import io.vertx.ext.mongo.MongoGridFsClient;
+import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.codecs.Codec;
+import org.bson.codecs.DecoderContext;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
@@ -36,11 +42,13 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   private final GridFSBucket bucket;
   private final MongoClientImpl clientImpl;
   private final VertxInternal vertx;
+  private final CodecRegistry codecRegistry;
 
-  public MongoGridFsClientImpl(VertxInternal vertx, MongoClientImpl mongoClient, GridFSBucket gridFSBucket) {
+  public MongoGridFsClientImpl(VertxInternal vertx, MongoClientImpl mongoClient, GridFSBucket gridFSBucket, CodecRegistry codecRegistry) {
     this.vertx = vertx;
     this.clientImpl = mongoClient;
     this.bucket = gridFSBucket;
+    this.codecRegistry = codecRegistry;
   }
 
   @Override
@@ -55,12 +63,20 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
   public Future<String> uploadByFileNameWithOptions(ReadStream<Buffer> stream, String fileName, GridFsUploadOptions options) {
     GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
     uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
-    if (options.getMetadata() != null) uploadOptions.metadata(new Document(options.getMetadata().getMap()));
+    if (options.getMetadata() != null) {
+      uploadOptions.metadata(wrap(options.getMetadata()));
+    }
 
     GridFSReadStreamPublisher publisher = new GridFSReadStreamPublisher(stream);
     Promise<ObjectId> promise = vertx.promise();
     bucket.uploadFromPublisher(fileName, publisher, uploadOptions).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(ObjectId::toHexString);
+  }
+
+  private Document wrap(JsonObject json) {
+    Codec<Document> codec = codecRegistry.get(Document.class);
+    BsonDocument bsonDocument = new JsonObjectBsonAdapter(json).toBsonDocument(BsonDocument.class, codecRegistry);
+    return codec.decode(bsonDocument.asBsonReader(), DecoderContext.builder().build());
   }
 
   @Override
@@ -85,7 +101,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
           GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
           uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
           if (options.getMetadata() != null) {
-            uploadOptions.metadata(new Document(options.getMetadata().getMap()));
+            uploadOptions.metadata(wrap(options.getMetadata()));
           }
           bucket.uploadFromPublisher(fileName, publisher, uploadOptions).subscribe(new SingleResultSubscriber<>(promise));
         }
