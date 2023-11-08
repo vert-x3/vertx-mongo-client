@@ -1,9 +1,13 @@
 package io.vertx.ext.mongo;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.bson.types.ObjectId;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static io.vertx.ext.mongo.WriteOption.ACKNOWLEDGED;
@@ -78,6 +82,32 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
   }
 
   @Test
+  public void testFindOneWithNestedQueryReturnsStringId() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
+      JsonObject orig = createDoc();
+      JsonObject doc = orig.copy();
+      String objectId = getObjectId(doc);
+      JsonObject query = JsonObject.of("$and", JsonArray.of(
+        JsonObject.of("foo", "bar"),
+        JsonObject.of("_id", objectId)));
+      mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
+        // no auto-generated objectId from mongo
+        assertNull(id);
+        mongoClient.findOne(collection, query, null).onComplete(onSuccess(obj -> {
+          assertTrue(obj.containsKey("_id"));
+          assertTrue(obj.getValue("_id") instanceof String);
+          obj.remove("_id");
+          // nested "_id" will not be modified when insert
+          assertEquals(orig, obj);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testFindOneReturnsNothing() throws Exception {
     String collection = randomCollection();
     mongoClient.createCollection(collection, onSuccess(res -> {
@@ -108,6 +138,65 @@ public class MongoClientWithObjectIdTest extends MongoClientTestBase {
           assertTrue(obj.containsKey("_id"));
           assertTrue(obj.getValue("_id") instanceof String);
           obj.remove("_id");
+          assertEquals(orig, obj);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+
+  @Test
+  public void testFindWithNestedQueryReturnsStringId() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
+      JsonObject orig = createDoc();
+      JsonObject doc = orig.copy();
+      String objectId = getObjectId(doc);
+      JsonObject query = JsonObject.of("$and", JsonArray.of(
+          JsonObject.of("foo", "bar"),
+          JsonObject.of("_id", objectId)));
+      mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
+        // no auto-generated objectId from mongo
+        assertNull(id);
+        mongoClient.find(collection, query).onComplete(onSuccess(list -> {
+          assertTrue(list.size() == 1);
+          JsonObject obj = list.get(0);
+          assertTrue(obj.containsKey("_id"));
+          assertTrue(obj.getValue("_id") instanceof String);
+          obj.remove("_id");
+          // nested "_id" will not be modified when insert
+          assertEquals(orig, obj);
+          testComplete();
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testFindWithNestedQueryWithListMapReturnsStringId() throws Exception {
+    String collection = randomCollection();
+    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
+      JsonObject orig = createDoc();
+      JsonObject doc = orig.copy();
+      String objectId = getObjectId(doc);
+      Map<String, String> m1 = new HashMap<>();
+      m1.put("foo", "bar");
+      Map<String, String> m2 = new HashMap<>();
+      m2.put("_id", objectId);
+      JsonObject query = JsonObject.of("$and", Arrays.asList(m1, m2));
+      mongoClient.insert(collection, doc).onComplete(onSuccess(id -> {
+        // no auto-generated objectId from mongo
+        assertNull(id);
+        mongoClient.find(collection, query).onComplete(onSuccess(list -> {
+          assertTrue(list.size() == 1);
+          JsonObject obj = list.get(0);
+          assertTrue(obj.containsKey("_id"));
+          assertTrue(obj.getValue("_id") instanceof String);
+          obj.remove("_id");
+          // nested "_id" will not be modified when insert
           assertEquals(orig, obj);
           testComplete();
         }));
