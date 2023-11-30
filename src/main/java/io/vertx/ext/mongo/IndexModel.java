@@ -1,11 +1,13 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
 
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class IndexModel {
   private JsonObject key;
   private IndexOptions options;

@@ -4,6 +4,7 @@ import com.mongodb.assertions.Assertions;
 import com.mongodb.client.model.IndexOptionDefaults;
 import com.mongodb.lang.Nullable;
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
@@ -11,7 +12,8 @@ import java.util.Objects;
 /**
  * Options for creating a collection
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class CreateCollectionOptions {
   private Long maxDocuments;
   private Boolean capped;
