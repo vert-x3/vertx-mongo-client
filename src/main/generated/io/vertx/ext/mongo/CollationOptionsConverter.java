@@ -17,7 +17,7 @@ public class CollationOptionsConverter {
   private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
   private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
-  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, CollationOptions obj) {
+   static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, CollationOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
         case "normalization":
@@ -54,11 +54,11 @@ public class CollationOptionsConverter {
     }
   }
 
-  public static void toJson(CollationOptions obj, JsonObject json) {
+   static void toJson(CollationOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
 
-  public static void toJson(CollationOptions obj, java.util.Map<String, Object> json) {
+   static void toJson(CollationOptions obj, java.util.Map<String, Object> json) {
     if (obj.isNormalization() != null) {
       json.put("normalization", obj.isNormalization());
     }

@@ -17,7 +17,7 @@ public class ValidationOptionsConverter {
   private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
   private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
-  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, ValidationOptions obj) {
+   static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, ValidationOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
         case "validator":
@@ -39,11 +39,11 @@ public class ValidationOptionsConverter {
     }
   }
 
-  public static void toJson(ValidationOptions obj, JsonObject json) {
+   static void toJson(ValidationOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
 
-  public static void toJson(ValidationOptions obj, java.util.Map<String, Object> json) {
+   static void toJson(ValidationOptions obj, java.util.Map<String, Object> json) {
     if (obj.getValidator() != null) {
       json.put("validator", obj.getValidator());
     }

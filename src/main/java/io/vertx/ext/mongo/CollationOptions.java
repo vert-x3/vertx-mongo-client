@@ -3,6 +3,7 @@ package io.vertx.ext.mongo;
 import com.mongodb.client.model.*;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
@@ -12,7 +13,8 @@ import java.util.Objects;
  *
  * @author <a href="mailto:christoph.spoerk@gmail.com">Christoph Spörk</a>
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class CollationOptions {
   /**
    * Default locale : {@code simple}

@@ -2,13 +2,15 @@ package io.vertx.ext.mongo;
 
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.impl.JsonObjectBsonAdapter;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class CountOptions {
   private JsonObject hint;
   private String hintString;

@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
@@ -12,7 +13,8 @@ import java.util.Objects;
  *
  * @author <a href="mailto:mail@liuchong.io">Liu Chong</a>
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class TimeSeriesOptions {
 
   /**
