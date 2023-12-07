@@ -4,7 +4,7 @@ import com.mongodb.assertions.Assertions;
 import com.mongodb.client.model.IndexOptionDefaults;
 import com.mongodb.lang.Nullable;
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.annotations.JsonGen;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
