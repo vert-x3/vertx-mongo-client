@@ -17,7 +17,7 @@ public class IndexModelConverter {
   private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
   private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
-  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, IndexModel obj) {
+   static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, IndexModel obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
         case "key":
@@ -34,11 +34,11 @@ public class IndexModelConverter {
     }
   }
 
-  public static void toJson(IndexModel obj, JsonObject json) {
+   static void toJson(IndexModel obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
 
-  public static void toJson(IndexModel obj, java.util.Map<String, Object> json) {
+   static void toJson(IndexModel obj, java.util.Map<String, Object> json) {
     if (obj.getKey() != null) {
       json.put("key", obj.getKey());
     }

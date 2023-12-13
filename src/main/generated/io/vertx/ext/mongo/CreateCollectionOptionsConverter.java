@@ -17,7 +17,7 @@ public class CreateCollectionOptionsConverter {
   private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
   private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
-  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, CreateCollectionOptions obj) {
+   static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, CreateCollectionOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
         case "capped":
@@ -64,11 +64,11 @@ public class CreateCollectionOptionsConverter {
     }
   }
 
-  public static void toJson(CreateCollectionOptions obj, JsonObject json) {
+   static void toJson(CreateCollectionOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
 
-  public static void toJson(CreateCollectionOptions obj, java.util.Map<String, Object> json) {
+   static void toJson(CreateCollectionOptions obj, java.util.Map<String, Object> json) {
     if (obj.getCapped() != null) {
       json.put("capped", obj.getCapped());
     }
