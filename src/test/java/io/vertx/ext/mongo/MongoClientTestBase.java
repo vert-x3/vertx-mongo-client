@@ -80,6 +80,47 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testRenameCollection() {
+    String oldCollection = randomCollection();
+    String newCollection = randomCollection();
+    insertDocs(mongoClient, oldCollection, 3).onComplete(onSuccess(res -> {
+      mongoClient.renameCollection(oldCollection, newCollection).onComplete(onSuccess(res2 -> {
+        mongoClient.getCollections().onComplete(onSuccess(list -> {
+          assertTrue(list.contains(newCollection));
+          assertFalse(list.contains(oldCollection));
+          mongoClient.find(newCollection, new JsonObject()).onComplete(onSuccess(objs -> {
+            assertEquals(3, objs.size());
+            testComplete();
+          }));
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
+  public void testRenameCollectionWithDropTarget() {
+    String oldCollection = randomCollection();
+    String newCollection = randomCollection();
+    mongoClient.createCollection(oldCollection).onComplete(onSuccess(res -> {
+      insertDocs(mongoClient, newCollection, 3).onComplete(onSuccess(res2 -> {
+        RenameCollectionOptions options = new RenameCollectionOptions().setDropTarget(true);
+        mongoClient.renameCollectionWithOptions(oldCollection, newCollection, options).onComplete(onSuccess(res3 -> {
+          mongoClient.getCollections().onComplete(onSuccess(list -> {
+            assertTrue(list.contains(newCollection));
+            assertFalse(list.contains(oldCollection));
+            mongoClient.find(newCollection, new JsonObject()).onComplete(onSuccess(objs -> {
+              assertEquals(0, objs.size());
+              testComplete();
+            }));
+          }));
+        }));
+      }));
+    }));
+    await();
+  }
+
+  @Test
   public void testCreateIndexes() {
     String collection = randomCollection();
     mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
