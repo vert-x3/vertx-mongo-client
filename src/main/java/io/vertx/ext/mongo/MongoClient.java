@@ -431,6 +431,25 @@ public interface MongoClient {
   Future<Void> dropCollection(String collection);
 
   /**
+   * Rename a collection
+   *
+   * @param oldCollectionName the name of the collection
+   * @param newCollectionName the new name of the collection
+   * @return a future notified when complete
+   */
+  Future<Void> renameCollection(String oldCollectionName, String newCollectionName);
+
+  /**
+   * Rename a collection
+   *
+   * @param oldCollectionName the name of the collection
+   * @param newCollectionName the new name of the collection
+   * @param collectionOptions options of the collection
+   * @return a future notified when complete
+   */
+  Future<Void> renameCollectionWithOptions(String oldCollectionName, String newCollectionName, RenameCollectionOptions collectionOptions);
+
+  /**
    * Creates an index.
    *
    * @param collection    the collection

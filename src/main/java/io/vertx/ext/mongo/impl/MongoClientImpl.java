@@ -17,6 +17,7 @@
 package io.vertx.ext.mongo.impl;
 
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoNamespace;
 import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.*;
@@ -46,6 +47,7 @@ import io.vertx.ext.mongo.CountOptions;
 import io.vertx.ext.mongo.CreateCollectionOptions;
 import io.vertx.ext.mongo.IndexModel;
 import io.vertx.ext.mongo.IndexOptions;
+import io.vertx.ext.mongo.RenameCollectionOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.*;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
@@ -673,6 +675,25 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<Void> promise = vertx.promise();
     coll.drop().subscribe(new CompletionSubscriber<>(promise));
+    return promise.future();
+  }
+
+  @Override
+  public Future<Void> renameCollection(String oldCollectionName, String newCollectionName) {
+    return renameCollectionWithOptions(oldCollectionName, newCollectionName, new RenameCollectionOptions());
+  }
+
+  @Override
+  public Future<Void> renameCollectionWithOptions(String oldCollectionName, String newCollectionName, RenameCollectionOptions options) {
+    requireNonNull(oldCollectionName, "oldCollectionName can not be null");
+    requireNonNull(newCollectionName, "newCollectionName can not be null");
+    requireNonNull(options, OPTIONS_CANNOT_BE_NULL);
+
+    MongoCollection<JsonObject> coll = getCollection(oldCollectionName);
+    Promise<Void> promise = vertx.promise();
+    MongoNamespace newNamespace = new MongoNamespace(coll.getNamespace().getDatabaseName(), newCollectionName);
+    coll.renameCollection(newNamespace, options.toMongoDriverObject())
+      .subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
