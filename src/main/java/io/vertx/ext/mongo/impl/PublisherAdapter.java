@@ -17,7 +17,7 @@
 package io.vertx.ext.mongo.impl;
 
 import io.vertx.core.Handler;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.impl.InboundBuffer;
 import org.reactivestreams.Publisher;
