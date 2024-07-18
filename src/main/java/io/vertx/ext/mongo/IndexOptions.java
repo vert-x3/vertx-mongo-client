@@ -32,7 +32,6 @@ public class IndexOptions {
   private Integer bits;
   private Double min;
   private Double max;
-  private Double bucketSize;
   private JsonObject storageEngine;
   private JsonObject partialFilterExpression;
   private CollationOptions collation;
@@ -66,7 +65,6 @@ public class IndexOptions {
     bits = options.bits;
     min = options.min;
     max = options.max;
-    bucketSize = options.bucketSize;
     storageEngine = options.storageEngine;
     partialFilterExpression = options.partialFilterExpression;
     collation = options.collation;
@@ -92,7 +90,6 @@ public class IndexOptions {
     bits = options.getInteger("bits");
     min = options.getDouble("min");
     max = options.getDouble("max");
-    bucketSize = options.getDouble("bucketSize");
     storageEngine = options.getJsonObject("storageEngine");
     partialFilterExpression = options.getJsonObject("partialFilterExpression");
     collation = options.getJsonObject("collation") != null ? new CollationOptions(options.getJsonObject("collation")) : null;
@@ -164,9 +161,6 @@ public class IndexOptions {
     }
     if (max != null) {
       json.put("max", max);
-    }
-    if (bucketSize != null) {
-      json.put("bucketSize", bucketSize);
     }
     if (storageEngine != null) {
       json.put("storageEngine", storageEngine);
@@ -484,26 +478,6 @@ public class IndexOptions {
   }
 
   /**
-   * Gets the specified the number of units within which to group the location values for geoHaystack Indexes
-   *
-   * @return the specified the number of units within which to group the location values for geoHaystack Indexes
-   */
-  public Double getBucketSize() {
-    return bucketSize;
-  }
-
-  /**
-   * Sets the specified the number of units within which to group the location values for geoHaystack Indexes
-   *
-   * @param bucketSize the specified the number of units within which to group the location values for geoHaystack Indexes
-   * @return reference to this, for fluency
-   */
-  public IndexOptions bucketSize(Double bucketSize) {
-    this.bucketSize = bucketSize;
-    return this;
-  }
-
-  /**
    * Gets the storage engine options document for this index.
    *
    * @return the storage engine options
@@ -548,12 +522,12 @@ public class IndexOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     IndexOptions that = (IndexOptions) o;
-    return background == that.background && unique == that.unique && sparse == that.sparse && Objects.equals(name, that.name) && Objects.equals(expireAfterSeconds, that.expireAfterSeconds) && Objects.equals(version, that.version) && Objects.equals(weights, that.weights) && Objects.equals(defaultLanguage, that.defaultLanguage) && Objects.equals(languageOverride, that.languageOverride) && Objects.equals(textVersion, that.textVersion) && Objects.equals(sphereVersion, that.sphereVersion) && Objects.equals(bits, that.bits) && Objects.equals(min, that.min) && Objects.equals(max, that.max) && Objects.equals(bucketSize, that.bucketSize) && Objects.equals(storageEngine, that.storageEngine) && Objects.equals(partialFilterExpression, that.partialFilterExpression) && Objects.equals(collation, that.collation);
+    return background == that.background && unique == that.unique && sparse == that.sparse && Objects.equals(name, that.name) && Objects.equals(expireAfterSeconds, that.expireAfterSeconds) && Objects.equals(version, that.version) && Objects.equals(weights, that.weights) && Objects.equals(defaultLanguage, that.defaultLanguage) && Objects.equals(languageOverride, that.languageOverride) && Objects.equals(textVersion, that.textVersion) && Objects.equals(sphereVersion, that.sphereVersion) && Objects.equals(bits, that.bits) && Objects.equals(min, that.min) && Objects.equals(max, that.max) && Objects.equals(storageEngine, that.storageEngine) && Objects.equals(partialFilterExpression, that.partialFilterExpression) && Objects.equals(collation, that.collation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(background, unique, name, sparse, expireAfterSeconds, version, weights, defaultLanguage, languageOverride, textVersion, sphereVersion, bits, min, max, bucketSize, storageEngine, partialFilterExpression, collation);
+    return Objects.hash(background, unique, name, sparse, expireAfterSeconds, version, weights, defaultLanguage, languageOverride, textVersion, sphereVersion, bits, min, max, storageEngine, partialFilterExpression, collation);
   }
 
   @Override
@@ -573,7 +547,6 @@ public class IndexOptions {
       ", bits=" + bits +
       ", min=" + min +
       ", max=" + max +
-      ", bucketSize=" + bucketSize +
       ", storageEngine=" + storageEngine +
       ", partialFilterExpression=" + partialFilterExpression +
       ", collation=" + collation +

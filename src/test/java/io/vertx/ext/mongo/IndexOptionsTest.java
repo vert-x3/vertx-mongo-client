@@ -30,7 +30,6 @@ public class IndexOptionsTest {
     assertNotEqual((a, b) -> { a.bits(5); b.bits(6); });
     assertNotEqual((a, b) -> { a.min(2.3); b.min(2.4); });
     assertNotEqual((a, b) -> { a.max(3.2); b.max(3.3); });
-    assertNotEqual((a, b) -> { a.bucketSize(23d); b.bucketSize(24d); });
     assertNotEqual((a, b) -> { a.storageEngine(new JsonObject("{ \"f\": 3 }")); b.storageEngine(new JsonObject()); });
     assertNotEqual((a, b) -> { a.partialFilterExpression(new JsonObject("{ \"f\": 3 }")); b.partialFilterExpression(new JsonObject()); });
 
@@ -58,7 +57,6 @@ public class IndexOptionsTest {
     assertNotEqual(hash, o -> o.bits(13));
     assertNotEqual(hash, o -> o.min(2.5));
     assertNotEqual(hash, o -> o.max(6.1));
-    assertNotEqual(hash, o -> o.bucketSize(12d));
     assertNotEqual(hash, o -> o.storageEngine(new JsonObject("{ \"f\": 12 }")));
     assertNotEqual(hash, o -> o.partialFilterExpression(new JsonObject("{ \"f\": 4 }")));
   }
@@ -67,7 +65,7 @@ public class IndexOptionsTest {
     IndexOptions a = new IndexOptions();
     IndexOptions b = new IndexOptions();
     f.accept(a, b);
-    assertNotEquals(a, b);    
+    assertNotEquals(a, b);
   }
 
   private static void assertNotEqual(int expected, Consumer<IndexOptions> f) {
