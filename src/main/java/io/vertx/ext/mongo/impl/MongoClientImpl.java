@@ -35,8 +35,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.ContextInternal;
-import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.PromiseInternal;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
@@ -1072,7 +1072,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       .bits(options.getBits())
       .min(options.getMin())
       .max(options.getMax())
-      .bucketSize(options.getBucketSize())
       .storageEngine(toBson(options.getStorageEngine()))
       .partialFilterExpression(toBson(options.getPartialFilterExpression()));
       if (co != null) {
