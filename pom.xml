@@ -14,107 +14,199 @@
   ~
   ~  You may elect to redistribute this code under either of these licenses.
   --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <artifactId>vertx-ext-parent</artifactId>
-    <groupId>io.vertx</groupId>
-    <version>38</version>
-  </parent>
-
-  <modelVersion>4.0.0</modelVersion>
-
-  <artifactId>vertx-mongo-client</artifactId>
-  <version>4.5.10-SNAPSHOT</version>
-
-  <properties>
-    <stack.version>4.5.10-SNAPSHOT</stack.version>
-    <mongodb.driver.reactivestreams.version>4.8.1</mongodb.driver.reactivestreams.version>
-    <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
+      
+    <parent>
+            
+        <artifactId>vertx-ext-parent</artifactId>
+            
         <groupId>io.vertx</groupId>
-        <artifactId>vertx-dependencies</artifactId>
-        <version>${stack.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+            
+        <version>38</version>
+          
+    </parent>
+      
+    <modelVersion>4.0.0</modelVersion>
+      
+    <artifactId>vertx-mongo-client</artifactId>
+      
+    <version>4.5.10</version>
+      
+    <properties>
+            
+        <stack.version>4.5.10</stack.version>
+            
+        <mongodb.driver.reactivestreams.version>4.8.1</mongodb.driver.reactivestreams.version>
+            
+        <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
+          
+    </properties>
+      
+    <dependencyManagement>
+            
+        <dependencies>
+                  
+            <dependency>
+                        
+                <groupId>io.vertx</groupId>
+                        
+                <artifactId>vertx-dependencies</artifactId>
+                        
+                <version>${stack.version}</version>
+                        
+                <type>pom</type>
+                        
+                <scope>import</scope>
+                      
+            </dependency>
+                
+        </dependencies>
+          
+    </dependencyManagement>
+      
+    <dependencies>
+            
+        <dependency>
+                  
+            <groupId>io.vertx</groupId>
+                  
+            <artifactId>vertx-core</artifactId>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>org.mongodb</groupId>
+                  
+            <artifactId>mongodb-driver-reactivestreams</artifactId>
+                  
+            <version>${mongodb.driver.reactivestreams.version}</version>
+                  
+            <exclusions>
+                        
+                <exclusion>
+                              
+                    <groupId>io.netty</groupId>
+                              
+                    <artifactId>netty-transport</artifactId>
+                            
+                </exclusion>
+                        
+                <exclusion>
+                              
+                    <groupId>io.netty</groupId>
+                              
+                    <artifactId>netty-buffer</artifactId>
+                            
+                </exclusion>
+                        
+                <exclusion>
+                              
+                    <groupId>io.netty</groupId>
+                              
+                    <artifactId>netty-handler</artifactId>
+                            
+                </exclusion>
+                        
+                <exclusion>
+                              
+                    <groupId>org.reactivestreams</groupId>
+                              
+                    <artifactId>reactive-streams</artifactId>
+                            
+                </exclusion>
+                      
+            </exclusions>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>org.reactivestreams</groupId>
+                  
+            <artifactId>reactive-streams</artifactId>
+                  
+            <version>1.0.3</version>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>org.testcontainers</groupId>
+                  
+            <artifactId>mongodb</artifactId>
+                  
+            <version>1.17.1</version>
+                  
+            <scope>test</scope>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>org.apache.commons</groupId>
+                  
+            <artifactId>commons-collections4</artifactId>
+                  
+            <version>4.4</version>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>io.vertx</groupId>
+                  
+            <artifactId>vertx-codegen</artifactId>
+                  
+            <optional>true</optional>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>io.vertx</groupId>
+                  
+            <artifactId>vertx-docgen</artifactId>
+                  
+            <optional>true</optional>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>io.vertx</groupId>
+                  
+            <artifactId>vertx-core</artifactId>
+                  
+            <type>test-jar</type>
+                  
+            <scope>test</scope>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>junit</groupId>
+                  
+            <artifactId>junit</artifactId>
+                  
+            <scope>test</scope>
+                  
+            <version>4.13.1</version>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>pl.pragmatists</groupId>
+                  
+            <artifactId>JUnitParams</artifactId>
+                  
+            <version>1.1.1</version>
+                  
+            <scope>test</scope>
+                
+        </dependency>
+          
     </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongodb-driver-reactivestreams</artifactId>
-      <version>${mongodb.driver.reactivestreams.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-buffer</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-handler</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.reactivestreams</groupId>
-          <artifactId>reactive-streams</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.reactivestreams</groupId>
-      <artifactId>reactive-streams</artifactId>
-      <version>1.0.3</version>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>mongodb</artifactId>
-      <version>1.17.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-collections4</artifactId>
-      <version>4.4</version>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-codegen</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-docgen</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-      <version>4.13.1</version>
-    </dependency>
-    <dependency>
-      <groupId>pl.pragmatists</groupId>
-      <artifactId>JUnitParams</artifactId>
-      <version>1.1.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
+    
 </project>
