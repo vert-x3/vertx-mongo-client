@@ -16,9 +16,8 @@
 
 package io.vertx.ext.mongo;
 
-import io.vertx.core.AsyncResult;
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
@@ -126,7 +125,7 @@ public abstract class MongoTestBase extends VertxTestBase {
     return "ext-mongo" + TestUtils.randomAlphaString(20);
   }
 
-  protected void insertDocs(MongoClient mongoClient, String collection, int num, Handler<AsyncResult<Void>> resultHandler) {
+  protected void insertDocs(MongoClient mongoClient, String collection, int num, Completable<Void> resultHandler) {
     insertDocs(mongoClient, collection, num, this::createDoc, resultHandler);
   }
 
@@ -138,22 +137,22 @@ public abstract class MongoTestBase extends VertxTestBase {
     return Future.future(h -> insertDocs(mongoClient, collection, num, docSupplier, h));
   }
 
-  protected void insertDocs(MongoClient mongoClient, String collection, int num, Function<Integer, JsonObject> docSupplier, Handler<AsyncResult<Void>> resultHandler) {
+  protected void insertDocs(MongoClient mongoClient, String collection, int num, Function<Integer, JsonObject> docSupplier, Completable<Void> resultHandler) {
     if (num != 0) {
       AtomicInteger cnt = new AtomicInteger();
       for (int i = 0; i < num; i++) {
         mongoClient.insert(collection, docSupplier.apply(i)).onComplete(ar -> {
           if (ar.succeeded()) {
             if (cnt.incrementAndGet() == num) {
-              resultHandler.handle(Future.succeededFuture());
+              resultHandler.succeed();
             }
           } else {
-            resultHandler.handle(Future.failedFuture(ar.cause()));
+            resultHandler.fail(ar.cause());
           }
         });
       }
     } else {
-      resultHandler.handle(Future.succeededFuture());
+      resultHandler.succeed();
     }
   }
 

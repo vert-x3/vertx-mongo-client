@@ -177,7 +177,7 @@ public class MongoClientTest extends MongoClientTestBase {
     CountDownLatch latch = new CountDownLatch(1);
     AtomicReference<List<String>> foos = new AtomicReference<>();
     mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
-      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
+      insertDocs(mongoClient, collection, numDocs).onComplete(onSuccess(res2 -> {
         FindOptions findOptions = new FindOptions().setSort(new JsonObject().put("counter", 1)).setBatchSize(1);
         ReadStream<JsonObject> stream = mongoClient.findBatchWithOptions(collection, new JsonObject(), findOptions);
         streamReference.set(stream);
@@ -239,7 +239,7 @@ public class MongoClientTest extends MongoClientTestBase {
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicLong count = new AtomicLong();
     mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
-      insertDocs(mongoClient, collection, numDocs, onSuccess(res2 -> {
+      insertDocs(mongoClient, collection, numDocs).onComplete(onSuccess(res2 -> {
         mongoClient.aggregate(collection,
             new JsonArray().add(new JsonObject().put("$match", new JsonObject().put("foo", new JsonObject().put("$regex", "bar1"))))
               .add(new JsonObject().put("$count", "foo_starting_with_bar1")))
@@ -263,7 +263,7 @@ public class MongoClientTest extends MongoClientTestBase {
     final CountDownLatch fetchLatch = new CountDownLatch(numDocs);
     final CountDownLatch endLatch = new CountDownLatch(1);
     final String collection = randomCollection();
-    insertDocs(mongoClient, collection, numDocs, onSuccess(res -> {
+    insertDocs(mongoClient, collection, numDocs).onComplete(onSuccess(res -> {
       mongoClient.aggregateWithOptions(collection, pipeline, aggregateOptions)
         .exceptionHandler(this::fail)
         .handler(j -> fetchLatch.countDown())
