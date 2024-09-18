@@ -9,7 +9,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class ConnectionPoolSettingsParser {
+public class ConnectionPoolSettingsParser {
 
   private final ConnectionPoolSettings settings;
 

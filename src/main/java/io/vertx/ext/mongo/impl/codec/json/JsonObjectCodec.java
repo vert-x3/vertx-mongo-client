@@ -10,7 +10,6 @@ import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -151,7 +150,7 @@ public class JsonObjectCodec extends AbstractJsonCodec<JsonObject, JsonArray> im
   }
 
   @Override
-  protected BsonType getBsonType(Object value) {
+  public BsonType getBsonType(Object value) {
     BsonType type = super.getBsonType(value);
     if (type == BsonType.DOCUMENT) {
       JsonObject obj = (JsonObject) value;

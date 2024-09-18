@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-class Utils {
+public class Utils {
   static final String ID_FIELD = "_id";
 
   static MongoClientDeleteResult toMongoClientDeleteResult(DeleteResult deleteResult) {
@@ -46,7 +46,7 @@ class Utils {
     return updateResult.wasAcknowledged() ? new MongoClientUpdateResult(updateResult.getMatchedCount(), convertWriteResultId(updateResult.getUpsertedId()), updateResult.getModifiedCount()) : null;
   }
 
-  static MongoClientBulkWriteResult toMongoClientBulkWriteResult(BulkWriteResult bulkWriteResult) {
+  public static MongoClientBulkWriteResult toMongoClientBulkWriteResult(BulkWriteResult bulkWriteResult) {
     if (!bulkWriteResult.wasAcknowledged()) {
       return null;
     }

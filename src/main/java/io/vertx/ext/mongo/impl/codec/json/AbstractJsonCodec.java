@@ -81,7 +81,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
   }
 
   @SuppressWarnings("unchecked")
-  protected void writeValue(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+  public void writeValue(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     BsonType type = getBsonType(value);
     if (type == null) {
       throw new IllegalStateException("Unknown BsonType for '" + value + "'");
@@ -155,7 +155,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     }
   }
 
-  protected BsonType getBsonType(Object value) {
+  public BsonType getBsonType(Object value) {
     if (value == null) {
       return BsonType.NULL;
     } else if (value instanceof Boolean) {
@@ -246,7 +246,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
 
   //-------------- JSON Object
 
-  protected O readDocument(BsonReader reader, DecoderContext ctx) {
+  public O readDocument(BsonReader reader, DecoderContext ctx) {
     O object = newObject();
 
     reader.readStartDocument();
@@ -259,7 +259,7 @@ public abstract class AbstractJsonCodec<O, A> implements Codec<O> {
     return object;
   }
 
-  protected void writeDocument(BsonWriter writer, String name, Object value, EncoderContext ctx) {
+  public void writeDocument(BsonWriter writer, String name, Object value, EncoderContext ctx) {
     @SuppressWarnings("unchecked")
     O object = (O) value;
 

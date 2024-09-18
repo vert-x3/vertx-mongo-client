@@ -8,7 +8,7 @@ import static java.util.concurrent.TimeUnit.*;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class ServerSettingsParser {
+public class ServerSettingsParser {
   private final ServerSettings settings;
 
   public ServerSettingsParser(JsonObject config) {

@@ -9,7 +9,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class SocketSettingsParser {
+public class SocketSettingsParser {
   private final SocketSettings settings;
 
   public SocketSettingsParser(ConnectionString connectionString, JsonObject config) {

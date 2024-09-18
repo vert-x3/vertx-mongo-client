@@ -9,10 +9,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class WriteConcernParser {
+public class WriteConcernParser {
   private final WriteConcern writeConcern;
 
-  WriteConcernParser(ConnectionString connectionString, JsonObject config) {
+  public WriteConcernParser(ConnectionString connectionString, JsonObject config) {
     WriteConcern writeConcern = fromConfig(config);
     if (writeConcern == null && connectionString != null) {
       writeConcern = connectionString.getWriteConcern();
@@ -70,7 +70,7 @@ class WriteConcernParser {
     return wc;
   }
 
-  WriteConcern writeConcern() {
+  public WriteConcern writeConcern() {
     return writeConcern;
   }
 }

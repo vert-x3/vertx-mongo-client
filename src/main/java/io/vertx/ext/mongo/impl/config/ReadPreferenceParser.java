@@ -15,10 +15,10 @@ import java.util.stream.Stream;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class ReadPreferenceParser {
+public class ReadPreferenceParser {
   private final ReadPreference readPreference;
 
-  ReadPreferenceParser(ConnectionString connectionString, JsonObject config) {
+  public ReadPreferenceParser(ConnectionString connectionString, JsonObject config) {
     ReadPreference readPreference = fromConfig(config);
     if (readPreference == null && connectionString != null) {
       readPreference = connectionString.getReadPreference();
@@ -56,7 +56,7 @@ class ReadPreferenceParser {
     return readPreference;
   }
 
-  ReadPreference readPreference() {
+  public ReadPreference readPreference() {
     return readPreference;
   }
 }

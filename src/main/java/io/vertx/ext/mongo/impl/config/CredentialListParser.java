@@ -14,7 +14,7 @@ import static com.mongodb.AuthenticationMechanism.*;
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
  */
-class CredentialListParser {
+public class CredentialListParser {
 
   private final List<MongoCredential> credentials;
 
