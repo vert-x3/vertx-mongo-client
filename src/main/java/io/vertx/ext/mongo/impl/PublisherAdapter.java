@@ -16,248 +16,238 @@
 
 package io.vertx.ext.mongo.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.internal.ContextInternal;
+import io.vertx.core.internal.EventExecutor;
+import io.vertx.core.internal.concurrent.InboundMessageQueue;
 import io.vertx.core.streams.ReadStream;
-import io.vertx.core.streams.impl.InboundBuffer;
+import io.vertx.core.streams.impl.InboundReadQueue;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscription;
 
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class PublisherAdapter<T> implements ReadStream<T> {
 
-  private enum State {
-    IDLE, STARTED, EXHAUSTED, STOPPED
-  }
-
   private final ContextInternal context;
   private final Publisher<T> publisher;
-  private final InboundBuffer<T> internalQueue;
+
   private final int batchSize;
 
-  private State state;
-  private int requestedNotReceived, receivedNotDelivered;
   private Handler<T> handler;
   private Handler<Throwable> exceptionHandler;
   private Handler<Void> endHandler;
-  private Subscription subscription;
 
-  public PublisherAdapter(ContextInternal context, Publisher<T> publisher, int batchSize) {
+  private Subscriber subscriber;
+  private long demand;
+
+  public PublisherAdapter(Context context, Publisher<T> publisher, int batchSize) {
     Objects.requireNonNull(context, "context is null");
     Objects.requireNonNull(publisher, "publisher is null");
-    this.context = context;
+    this.context = (ContextInternal) context;
     this.publisher = publisher;
-    this.batchSize = batchSize > 0 ? batchSize : 256;
-    internalQueue = new InboundBuffer<T>(context);
-    state = State.IDLE;
+    this.batchSize = batchSize;
+    this.demand = Long.MAX_VALUE;
   }
 
   @Override
   public synchronized ReadStream<T> exceptionHandler(Handler<Throwable> handler) {
-    if (state != State.STOPPED) {
-      exceptionHandler = handler;
-    }
+    exceptionHandler = handler;
     return this;
   }
 
   @Override
-  public ReadStream<T> handler(Handler<T> handler) {
-    synchronized (this) {
-      if (state == State.STOPPED) {
-        return this;
+  public synchronized ReadStream<T> endHandler(Handler<Void> handler) {
+    endHandler = handler;
+    return this;
+  }
+
+  @Override
+  public ReadStream<T> handler(Handler<T> h) {
+    Subscriber s;
+    if (h == null) {
+      synchronized (this) {
+        handler = h;
+        s = subscriber;
+        subscriber = null;
+        demand = Long.MAX_VALUE;
       }
-    }
-    if (handler == null) {
-      stop();
-      context.runOnContext(v -> handleEnd());
+      if (s != null) {
+        s.cancel();
+      }
     } else {
+      long d;
       synchronized (this) {
-        this.handler = handler;
-      }
-      internalQueue.handler(this::handleOut);
-      boolean subscribe = false;
-      synchronized (this) {
-        if (state == State.IDLE) {
-          state = State.STARTED;
-          subscribe = true;
+        handler = h;
+        s = subscriber;
+        if (s != null) {
+          return this;
+        }
+        s = new Subscriber();
+        subscriber = s;
+        d = demand;
+        if (d > 0L) {
+          s.fetch(d);
+        } else {
+          s.pause();
         }
       }
-      if (subscribe) {
-        publisher.subscribe(new Subscriber());
-      }
+      publisher.subscribe(s);
     }
     return this;
   }
 
   @Override
   public ReadStream<T> pause() {
+    Subscriber s;
     synchronized (this) {
-      if (state == State.STOPPED) {
-        return this;
-      }
+      demand = 0L;
+      s = subscriber;
     }
-    internalQueue.pause();
+    if (s != null) {
+      s.pause();
+    }
     return this;
   }
 
   @Override
   public ReadStream<T> resume() {
-    synchronized (this) {
-      if (state == State.STOPPED) {
-        return this;
-      }
-    }
-    internalQueue.resume();
-    return this;
+    return fetch(Long.MAX_VALUE);
   }
 
   @Override
   public synchronized ReadStream<T> fetch(long amount) {
+    if (amount < 0L) {
+      throw new IllegalArgumentException();
+    }
+    if (amount == 0L) {
+      return this;
+    }
+    long d;
+    Subscriber s;
     synchronized (this) {
-      if (state == State.STOPPED) {
-        return this;
+      demand += amount;
+      if (demand < 0L) {
+        demand = Long.MAX_VALUE;
       }
+      d = demand;
+      s = subscriber;
     }
-    internalQueue.fetch(amount);
-    return this;
-  }
-
-  @Override
-  public synchronized ReadStream<T> endHandler(Handler<Void> endHandler) {
-    if (state != State.STOPPED) {
-      this.endHandler = endHandler;
-    }
-    return this;
-  }
-
-  private void handleIn(T item) {
-    synchronized (this) {
-      if (state == State.STOPPED) {
-        return;
-      }
-      receivedNotDelivered++;
-      requestedNotReceived--;
-    }
-    internalQueue.write(item);
-  }
-
-  private void handleOut(T item) {
-    synchronized (this) {
-      if (state == State.STOPPED) {
-        return;
-      }
-      receivedNotDelivered--;
-    }
-    handler.handle(item);
-    State s;
-    boolean requestMore;
-    synchronized (this) {
-      if (receivedNotDelivered != 0) {
-        return;
-      }
-      s = state;
-      requestMore = requestedNotReceived == 0;
-    }
-    if (s == State.EXHAUSTED) {
-      stop();
-      handleEnd();
-    } else if (requestMore) {
-      requestMore();
-    }
-  }
-
-  private void handleOnComplete() {
-    boolean stop;
-    synchronized (this) {
-      if (state == State.STOPPED) {
-        return;
-      }
-      state = State.EXHAUSTED;
-      stop = receivedNotDelivered == 0;
-    }
-    if (stop) {
-      stop();
-      handleEnd();
-    }
-  }
-
-  private void handleException(Throwable cause) {
-    Handler<Throwable> h;
-    synchronized (this) {
-      h = state != State.STOPPED ? exceptionHandler : null;
-    }
-    if (h != null) {
-      stop();
-      h.handle(cause);
-    } else {
-      context.reportException(cause);
-    }
-  }
-
-  private void requestMore() {
-    Subscription s;
-    synchronized (this) {
-      if (state == State.STOPPED) {
-        return;
-      }
-      s = this.subscription;
-      requestedNotReceived += batchSize;
-    }
-    try {
-      s.request(batchSize);
-    } catch (Exception e) {
-      handleException(e);
-    }
-  }
-
-  private void handleEnd() {
-    Handler<Void> h;
-    synchronized (this) {
-      h = endHandler;
-    }
-    if (h != null) {
-      h.handle(null);
-    }
-  }
-
-  private void stop() {
-    Subscription s;
-    synchronized (this) {
-      state = State.STOPPED;
-      s = this.subscription;
-    }
-    internalQueue.handler(null).drainHandler(null);
     if (s != null) {
-      s.cancel();
+      s.fetch(d);
     }
+    return this;
   }
 
-  private class Subscriber implements org.reactivestreams.Subscriber<T> {
+  private final Lock lock = new ReentrantLock();
+  private final EventExecutor syncExec = new EventExecutor() {
+    @Override
+    public boolean inThread() {
+      return true;
+    }
+    @Override
+    public void execute(Runnable command) {
+      lock.lock();
+      try {
+        command.run();
+      } finally {
+        lock.unlock();
+      }
+    }
+  };
+
+  private static final Object END = new Object();
+
+  private class Subscriber extends InboundMessageQueue<Object> implements org.reactivestreams.Subscriber<T> {
+
+    public Subscriber() {
+      super(syncExec, context.executor(), InboundReadQueue.SPSC);
+    }
+
+    private Subscription subscription;
+    private boolean paused;
+    private int inflight = batchSize;
+
+    @Override
+    protected void handleResume() {
+      paused = false;
+      if (inflight == 0) {
+        inflight += batchSize;
+        subscription.request(batchSize);
+      }
+    }
+
+    @Override
+    protected void handlePause() {
+      paused = true;
+    }
+
+    @Override
+    protected void handleMessage(Object msg) {
+      Handler handler;
+      synchronized (PublisherAdapter.this) {
+        if (msg == END) {
+          msg = null;
+          handler = PublisherAdapter.this.endHandler;
+        } else if (msg instanceof Throwable) {
+          handler = PublisherAdapter.this.exceptionHandler;
+        } else {
+          handler = PublisherAdapter.this.handler;
+        }
+      }
+      if (handler != null) {
+        context.dispatch(msg, handler);
+      }
+    }
 
     @Override
     public void onSubscribe(Subscription subscription) {
-      context.runOnContext(v -> {
-        synchronized (PublisherAdapter.this) {
-          PublisherAdapter.this.subscription = subscription;
-        }
-        requestMore();
-      });
+      synchronized (PublisherAdapter.this) {
+        this.subscription = subscription;
+      }
+      subscription.request(batchSize);
+    }
+
+    void cancel() {
+      subscription.cancel();
     }
 
     @Override
     public void onNext(T t) {
-      context.runOnContext(v -> handleIn(t));
+      lock.lock();
+      inflight--;
+      try {
+        write(t);
+        if (inflight == 0 && !paused) {
+          inflight += batchSize;
+          subscription.request(batchSize);
+        }
+      } finally {
+        lock.unlock();
+      }
     }
 
     @Override
     public void onError(Throwable t) {
-      context.runOnContext(v -> handleException(t));
+      lock.lock();
+      try {
+        write(t);
+      } finally {
+        lock.unlock();
+      }
     }
 
     @Override
     public void onComplete() {
-      context.runOnContext(v -> handleOnComplete());
+      lock.lock();
+      try {
+        write(END);
+      } finally {
+        lock.unlock();
+      }
     }
   }
 }
