@@ -22,7 +22,6 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.EventExecutor;
 import io.vertx.core.internal.concurrent.InboundMessageQueue;
 import io.vertx.core.streams.ReadStream;
-import io.vertx.core.streams.impl.InboundReadQueue;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscription;
 
@@ -164,7 +163,7 @@ public class PublisherAdapter<T> implements ReadStream<T> {
   private class Subscriber extends InboundMessageQueue<Object> implements org.reactivestreams.Subscriber<T> {
 
     public Subscriber() {
-      super(syncExec, context.executor(), InboundReadQueue.SPSC);
+      super(syncExec, context.executor());
     }
 
     private Subscription subscription;
