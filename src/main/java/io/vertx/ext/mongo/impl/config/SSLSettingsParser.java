@@ -8,12 +8,14 @@ import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.impl.TrustAllTrustManager;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 /**
  * @author <a href="mailto:nscavell@redhat.com">Nick Scavelli</a>
@@ -51,7 +53,18 @@ class SSLSettingsParser {
       final TrustManager[] tms;
       if (config.getBoolean("trustAll", false)) {
         log.warn("Mongo client has been set to trust ALL certificates, this can open you up to security issues. Make sure you know the risks.");
-        tms = new TrustManager[]{TrustAllTrustManager.INSTANCE};
+        tms = new TrustManager[]{new X509TrustManager() {
+          @Override
+          public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+          }
+          @Override
+          public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+          }
+          @Override
+          public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+          }
+        }};
       } else if (!pemTrustOptions.getCertPaths().isEmpty()) {
         tms = pemTrustOptions.getTrustManagerFactory(vertx).getTrustManagers();
       } else {
