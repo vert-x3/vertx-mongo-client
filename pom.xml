@@ -33,7 +33,6 @@
 
   <properties>
     <mongodb.driver.reactivestreams.version>5.0.1</mongodb.driver.reactivestreams.version>
-    <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
     <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
   </properties>
 
