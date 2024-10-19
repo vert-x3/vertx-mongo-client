@@ -793,7 +793,3 @@ For `snappy` and `zstd` compression algorithms support, additional dependencies 
 
 NOTE: Most of the default values listed above use the default values of the MongoDB Java Driver.
 Please consult the driver documentation for up-to-date information.
-
-ifeval::["$lang" == "java"]
-include::override/rxjava3.adoc[]
-endif::[]
