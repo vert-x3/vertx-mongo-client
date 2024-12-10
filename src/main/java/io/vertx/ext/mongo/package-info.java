@@ -14,7 +14,7 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-@ModuleGen(name = "vertx-mongo", groupPackage = "io.vertx", useFutures = true)
+@ModuleGen(name = "vertx-mongo", groupPackage = "io.vertx")
 package io.vertx.ext.mongo;
 
 import io.vertx.codegen.annotations.ModuleGen;
