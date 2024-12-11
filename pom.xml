@@ -23,7 +23,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>vertx-mongo-client</artifactId>
-  <version>5.0.0.CR3</version>
+  <version>5.0.0-SNAPSHOT</version>
 
   <scm>
     <connection>scm:git:git@github.com:vert-x3/vertx-mongo-client.git</connection>
