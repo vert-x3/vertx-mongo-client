@@ -3,6 +3,7 @@ package io.vertx.ext.mongo.impl.config;
 import com.mongodb.*;
 import com.mongodb.connection.*;
 import io.vertx.core.Vertx;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
@@ -90,6 +91,10 @@ public class MongoClientOptionsParser {
 
     //retryable settings
     applyRetryableSetting(options, connectionString, config);
+
+    options.transportSettings(TransportSettings.nettyBuilder()
+      .eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup())
+      .build());
 
     this.settings = options.build();
   }
