@@ -25,6 +25,12 @@
   <artifactId>vertx-mongo-client</artifactId>
   <version>4.5.15-SNAPSHOT</version>
 
+  <scm>
+    <connection>scm:git:git@github.com:vert-x3/vertx-mongo-client.git</connection>
+    <developerConnection>scm:git:git@github.com:vert-x3/vertx-mongo-client.git</developerConnection>
+    <url>git@github.com:vert-x3/vertx-mongo-client.git</url>
+  </scm>
+
   <properties>
     <mongodb.driver.reactivestreams.version>4.8.1</mongodb.driver.reactivestreams.version>
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
