@@ -30,10 +30,7 @@ import com.mongodb.reactivestreams.client.gridfs.GridFSBucket;
 import com.mongodb.reactivestreams.client.gridfs.GridFSBuckets;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
-import io.vertx.core.Closeable;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.VertxInternal;
@@ -128,9 +125,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
-  public void close(Promise<Void> completionHandler) {
+  public void close(Completable<Void> completionHandler) {
     holder.close();
-    completionHandler.complete();
+    completionHandler.succeed();
   }
 
   @Override
