@@ -23,6 +23,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>vertx-mongo-client</artifactId>
+  <name>Vert.x Mongo Client</name>
   <version>4.5.16-SNAPSHOT</version>
 
   <scm>
