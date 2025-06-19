@@ -24,7 +24,7 @@
 
   <artifactId>vertx-mongo-client</artifactId>
   <name>Vert.x Mongo Client</name>
-  <version>4.5.16-SNAPSHOT</version>
+  <version>4.5.16</version>
 
   <scm>
     <connection>scm:git:git@github.com:vert-x3/vertx-mongo-client.git</connection>
