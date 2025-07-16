@@ -92,9 +92,11 @@ public class MongoClientOptionsParser {
     //retryable settings
     applyRetryableSetting(options, connectionString, config);
 
-    options.transportSettings(TransportSettings.nettyBuilder()
-      .eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup())
-      .build());
+    NettyTransportSettings.Builder nettyBuilder = TransportSettings.nettyBuilder();
+    if (!vertx.isNativeTransportEnabled()) {
+      nettyBuilder.eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup());
+    }
+    options.transportSettings(nettyBuilder.build());
 
     this.settings = options.build();
   }
