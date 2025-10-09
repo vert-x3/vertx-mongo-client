@@ -49,10 +49,13 @@ import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.*;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
+import io.vertx.ext.mongo.impl.tracing.MongoTracer;
+import io.vertx.ext.mongo.tracing.MongoTracerRequest;
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -152,7 +155,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     if (id == null) {
       Promise<Void> promise = vertx.promise();
-      coll.insertOne(document).subscribe(new CompletionSubscriber<>(promise));
+      MongoTracerRequest.Builder trace = tracingRequest(collection, "insertOne")
+        .command("document", document);
+      if (writeOption != null) {
+        trace.option("writeOption", writeOption.name());
+      }
+      subscribeWithTracing(promise, trace, coll.insertOne(document), new CompletionSubscriber<>(promise));
       return promise.future().map(v -> useObjectId ? document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) : document.getString(ID_FIELD));
     }
 
@@ -163,7 +171,14 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
 
     Promise<Void> promise = vertx.promise();
-    coll.replaceOne(wrap(filter), encodedDocument, replaceOptions).subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "replaceOne")
+      .command("filter", filter)
+      .command("document", encodedDocument)
+      .options(new JsonObject().put("upsert", true));
+    if (writeOption != null) {
+      trace.option("writeOption", writeOption.name());
+    }
+    subscribeWithTracing(promise, trace, coll.replaceOne(wrap(filter), encodedDocument, replaceOptions), new CompletionSubscriber<>(promise));
     return promise.future().mapEmpty();
   }
 
@@ -183,7 +198,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
 
     Promise<Void> promise = vertx.promise();
-    coll.insertOne(encodedDocument).subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "insertOne")
+      .command("document", encodedDocument);
+    if (writeOption != null) {
+      trace.option("writeOption", writeOption.name());
+    }
+    subscribeWithTracing(promise, trace, coll.insertOne(encodedDocument), new CompletionSubscriber<>(promise));
     return promise.future().map(v -> hasCustomId ? null : decodeKeyWhenUseObjectId(encodedDocument).getString(ID_FIELD));
   }
 
@@ -235,7 +255,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     }
 
     Promise<UpdateResult> promise = vertx.promise();
-    publisher.subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, options.isMulti() ? "updateMany" : "updateOne")
+      .command("filter", query)
+      .command("update", update)
+      .options(options.toJson());
+    subscribeWithTracing(promise, trace, publisher, new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientUpdateResult);
   }
 
@@ -275,7 +299,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Publisher<UpdateResult> publisher = coll.updateMany(bquery, bpipeline, updateOptions);
 
     Promise<UpdateResult> promise = vertx.promise();
-    publisher.subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "updateMany")
+      .command("filter", query)
+      .command("pipeline", pipeline)
+      .options(options.toJson());
+    subscribeWithTracing(promise, trace, publisher, new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientUpdateResult);
   }
 
@@ -321,7 +349,11 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       replaceOptions.collation(options.getCollation().toMongoDriverObject());
     }
     Promise<UpdateResult> promise = vertx.promise();
-    coll.replaceOne(bquery, encodeKeyWhenUseObjectId(replace), replaceOptions).subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "replaceOne")
+      .command("filter", query)
+      .command("document", replace)
+      .options(options.toJson());
+    subscribeWithTracing(promise, trace, coll.replaceOne(bquery, encodeKeyWhenUseObjectId(replace), replaceOptions), new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientUpdateResult);
   }
 
@@ -336,8 +368,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(query, QUERY_CANNOT_BE_NULL);
 
     Promise<List<JsonObject>> promise = vertx.promise();
-    doFind(collection, deepEncodeKeyWhenUseObjectId(query), options)
-      .subscribe(new MappingAndBufferingSubscriber<>(this::decodeKeyWhenUseObjectId, promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "find")
+      .command("filter", query)
+      .options(options.toJson());
+    subscribeWithTracing(promise, trace, doFind(collection, deepEncodeKeyWhenUseObjectId(query), options), new MappingAndBufferingSubscriber<>(this::decodeKeyWhenUseObjectId, promise));
     return promise.future();
   }
 
@@ -351,7 +385,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(collection, COLLECTION_CANNOT_BE_NULL);
     requireNonNull(query, QUERY_CANNOT_BE_NULL);
     FindPublisher<JsonObject> view = doFind(collection, query, options);
-    return new PublisherAdapter<>(vertx.getOrCreateContext(), view, options.getBatchSize());
+    ContextInternal context = vertx.getOrCreateContext();
+    MongoTracerRequest request = tracingRequest(collection, "find")
+      .command("filter", query)
+      .options(options.toJson())
+      .build();
+    return new PublisherAdapter<>(context, MongoTracer.publisher(context, request, view), options.getBatchSize());
   }
 
   @Override
@@ -364,7 +403,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Bson bquery = wrap(encodedQuery);
     Bson bfields = wrap(fields);
     Promise<JsonObject> promise = vertx.promise();
-    getCollection(collection).find(bquery).projection(bfields).first().subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "findOne")
+      .command("filter", query)
+      .command("fields", fields);
+    subscribeWithTracing(promise, trace, getCollection(collection).find(bquery).projection(bfields).first(), new SingleResultSubscriber<>(promise));
     return promise.future().map(object -> object == null ? null : decodeKeyWhenUseObjectId(object));
   }
 
@@ -419,7 +461,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<JsonObject> promise = vertx.promise();
-    coll.findOneAndUpdate(bquery, bupdate, foauOptions).subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "findOneAndUpdate")
+      .command("filter", query)
+      .command("update", update)
+      .options(findOptions.toJson())
+      .options(updateOptions.toJson());
+    subscribeWithTracing(promise, trace, coll.findOneAndUpdate(bquery, bupdate, foauOptions), new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
@@ -462,7 +509,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<JsonObject> promise = vertx.promise();
-    coll.findOneAndReplace(bquery, replace, foarOptions).subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "findOneAndReplace")
+      .command("filter", query)
+      .command("replace", replace)
+      .options(findOptions.toJson())
+      .options(updateOptions.toJson());
+    subscribeWithTracing(promise, trace, coll.findOneAndReplace(bquery, replace, foarOptions), new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
@@ -497,7 +549,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<JsonObject> promise = vertx.promise();
-    coll.findOneAndDelete(bquery, foadOptions).subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "findOneAndDelete")
+      .command("filter", query)
+      .options(findOptions.toJson());
+    subscribeWithTracing(promise, trace, coll.findOneAndDelete(bquery, foadOptions), new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
@@ -517,7 +572,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Publisher<Long> countPublisher = countOptions != null
       ? coll.countDocuments(bquery, countOptions.toMongoDriverObject())
       : coll.countDocuments(bquery);
-    countPublisher.subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "countDocuments")
+      .command("filter", query);
+    if (countOptions != null) {
+      trace.options(countOptions.toJson());
+    }
+    subscribeWithTracing(promise, trace, countPublisher, new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
@@ -534,7 +594,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     Promise<DeleteResult> promise = vertx.promise();
-    coll.deleteMany(bquery).subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "deleteMany")
+      .command("filter", query);
+    if (writeOption != null) {
+      trace.option("writeOption", writeOption.name());
+    }
+    subscribeWithTracing(promise, trace, coll.deleteMany(bquery), new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientDeleteResult);
   }
 
@@ -551,7 +616,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     Promise<DeleteResult> promise = vertx.promise();
-    coll.deleteOne(bquery).subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "deleteOne")
+      .command("filter", query);
+    if (writeOption != null) {
+      trace.option("writeOption", writeOption.name());
+    }
+    subscribeWithTracing(promise, trace, coll.deleteOne(bquery), new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientDeleteResult);
   }
 
@@ -569,7 +639,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     List<WriteModel<JsonObject>> bulkOperations = convertBulkOperations(operations);
     com.mongodb.client.model.BulkWriteOptions options = new com.mongodb.client.model.BulkWriteOptions().ordered(bulkWriteOptions.isOrdered());
     Promise<BulkWriteResult> promise = vertx.promise();
-    coll.bulkWrite(bulkOperations, options).subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "bulkWrite")
+      .command("operations", operations.stream().map(BulkOperation::toJson).collect(Collectors.toList()))
+      .options(bulkWriteOptions.toJson());
+    subscribeWithTracing(promise, trace, coll.bulkWrite(bulkOperations, options), new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientBulkWriteResult);
   }
 
@@ -644,7 +717,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(collectionName, "collectionName cannot be null");
 
     Promise<Void> promise = vertx.promise();
-    holder.db.createCollection(collectionName).subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collectionName, "createCollection");
+    subscribeWithTracing(promise, trace, holder.db.createCollection(collectionName), new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
@@ -653,15 +727,17 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(collectionName, "collectionName cannot be null");
 
     Promise<Void> promise = vertx.promise();
-    holder.db.createCollection(collectionName, collectionOptions.toMongoDriverObject())
-      .subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collectionName, "createCollection")
+      .options(collectionOptions.toJson());
+    subscribeWithTracing(promise, trace, holder.db.createCollection(collectionName, collectionOptions.toMongoDriverObject()), new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public Future<List<String>> getCollections() {
     Promise<List<String>> promise = vertx.promise();
-    holder.db.listCollectionNames().subscribe(new BufferingSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(null, "listCollections");
+    subscribeWithTracing(promise, trace, holder.db.listCollectionNames(), new BufferingSubscriber<>(promise));
     return promise.future();
   }
 
@@ -671,7 +747,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<Void> promise = vertx.promise();
-    coll.drop().subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "dropCollection");
+    subscribeWithTracing(promise, trace, coll.drop(), new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
@@ -689,8 +766,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(oldCollectionName);
     Promise<Void> promise = vertx.promise();
     MongoNamespace newNamespace = new MongoNamespace(coll.getNamespace().getDatabaseName(), newCollectionName);
-    coll.renameCollection(newNamespace, options.toMongoDriverObject())
-      .subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(oldCollectionName, "renameCollection")
+      .command("newCollection", newCollectionName)
+      .options(options.toJson());
+    subscribeWithTracing(promise, trace, coll.renameCollection(newNamespace, options.toMongoDriverObject()), new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
@@ -707,7 +786,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection);
     com.mongodb.client.model.IndexOptions driverOpts = mongoIndexOptions(options);
     Promise<Void> promise = vertx.promise();
-    coll.createIndex(wrap(key), driverOpts).subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "createIndex")
+      .command("keys", key)
+      .options(options.toJson());
+    subscribeWithTracing(promise, trace, coll.createIndex(wrap(key), driverOpts), new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
@@ -722,7 +804,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     }).collect(Collectors.toList());
 
     Promise<Void> promise = vertx.promise();
-    getCollection(collection).createIndexes(transformIndexes).subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "createIndexes")
+      .command("indexes", indexes.stream().map(IndexModel::toJson).collect(Collectors.toList()));
+    subscribeWithTracing(promise, trace, getCollection(collection).createIndexes(transformIndexes), new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
@@ -736,7 +820,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<List<JsonObject>> promise = vertx.promise();
-    coll.listIndexes(JsonObject.class).subscribe(new BufferingSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "listIndexes");
+    subscribeWithTracing(promise, trace, coll.listIndexes(JsonObject.class), new BufferingSubscriber<>(promise));
     return promise.future().map(JsonArray::new);
   }
 
@@ -747,7 +832,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<Void> promise = vertx.promise();
-    coll.dropIndex(indexName).subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "dropIndex")
+      .command("indexName", indexName);
+    subscribeWithTracing(promise, trace, coll.dropIndex(indexName), new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
@@ -758,7 +845,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<Void> promise = vertx.promise();
-    coll.dropIndex(wrap(key)).subscribe(new CompletionSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(collection, "dropIndex")
+      .command("keys", key);
+    subscribeWithTracing(promise, trace, coll.dropIndex(wrap(key)), new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
@@ -782,7 +871,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     });
 
     Promise<JsonObject> promise = vertx.promise();
-    holder.db.runCommand(wrap(json), JsonObject.class).subscribe(new SingleResultSubscriber<>(promise));
+    MongoTracerRequest.Builder trace = tracingRequest(null, "runCommand")
+      .command("name", commandName)
+      .command("command", json);
+    subscribeWithTracing(promise, trace, holder.db.runCommand(wrap(json), JsonObject.class), new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
@@ -805,7 +897,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   public Future<JsonArray> distinctWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions) {
     try {
       PromiseInternal<List<Object>> promise = vertx.promise();
-      findDistinctValuesWithQuery(collection, fieldName, resultClassname, query, distinctOptions).subscribe(new BufferingSubscriber<>(promise));
+      DistinctPublisher<?> publisher = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query, distinctOptions);
+      MongoTracerRequest.Builder trace = tracingRequest(collection, "distinct")
+        .command("field", fieldName)
+        .command("query", query)
+        .command("resultClass", resultClassname);
+      if (distinctOptions != null) {
+        trace.options(distinctOptions.toJson());
+      }
+      subscribeWithTracing(promise, trace, publisher, new BufferingSubscriber<>(promise));
       return promise.future().map(JsonArray::new);
     } catch (ClassNotFoundException e) {
       return vertx.getOrCreateContext().failedFuture(e);
@@ -841,7 +941,14 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   public ReadStream<JsonObject> distinctBatchWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, int batchSize, DistinctOptions distinctOptions) {
     try {
       DistinctPublisher<?> distinctValuesWithQuery = findDistinctValuesWithQuery(collection, fieldName, resultClassname, query, distinctOptions);
-      PublisherAdapter<?> readStream = new PublisherAdapter<>(vertx.getOrCreateContext(), distinctValuesWithQuery, batchSize);
+      ContextInternal context = vertx.getOrCreateContext();
+      MongoTracerRequest request = tracingRequest(collection, "distinct")
+        .command("field", fieldName)
+        .command("query", query)
+        .command("resultClass", resultClassname)
+        .options(distinctOptions != null ? distinctOptions.toJson() : null)
+        .build();
+      PublisherAdapter<?> readStream = new PublisherAdapter<>(context, MongoTracer.publisher(context, request, distinctValuesWithQuery), batchSize);
       return new MappingStream<>(readStream, value -> new JsonObject().put(fieldName, value));
     } catch (ClassNotFoundException e) {
       return new FailedStream(e);
@@ -871,7 +978,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   @Override
   public ReadStream<JsonObject> aggregateWithOptions(final String collection, final JsonArray pipeline, final AggregateOptions options) {
     AggregatePublisher<JsonObject> view = doAggregate(collection, pipeline, options);
-    return new PublisherAdapter<>(vertx.getOrCreateContext(), view, options.getBatchSize());
+    ContextInternal context = vertx.getOrCreateContext();
+    MongoTracerRequest request = tracingRequest(collection, "aggregate")
+      .command("pipeline", pipeline)
+      .options(options.toJson())
+      .build();
+    return new PublisherAdapter<>(context, MongoTracer.publisher(context, request, view), options.getBatchSize());
   }
 
   @Override
@@ -892,7 +1004,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     if (batchSize < 1) {
       batchSize = 1;
     }
-    return new PublisherAdapter<>(vertx.getOrCreateContext(), changeStreamPublisher, batchSize);
+    ContextInternal context = vertx.getOrCreateContext();
+    MongoTracerRequest request = tracingRequest(collection, "watch")
+      .command("pipeline", pipeline)
+      .option("withUpdatedDocument", withUpdatedDoc)
+      .option("batchSize", batchSize)
+      .build();
+    return new PublisherAdapter<>(context, MongoTracer.publisher(context, request, changeStreamPublisher), batchSize);
   }
 
   private DistinctPublisher<?> findDistinctValuesWithQuery(String collection, String fieldName, String resultClassname, JsonObject query, DistinctOptions distinctOptions) throws ClassNotFoundException {
@@ -1010,6 +1128,33 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     json.put(ID_FIELD, idString);
 
     return json;
+  }
+
+  private MongoTracerRequest.Builder tracingRequest(String collection, String operation) {
+    String target = collection != null ? collection : "$cmd";
+    return MongoTracerRequest.create(holder.db.getName(), target, operation);
+  }
+
+  String databaseName() {
+    return holder.db.getName();
+  }
+
+  private <T> void subscribeWithTracing(Promise<?> promise, MongoTracerRequest.Builder builder, Publisher<T> publisher, Subscriber<T> subscriber) {
+    subscribeWithTracing(contextFromPromise(promise), builder.build(), publisher, subscriber);
+  }
+
+  private <T> void subscribeWithTracing(ContextInternal context, MongoTracerRequest request, Publisher<T> publisher, Subscriber<T> subscriber) {
+    MongoTracer.subscribe(context, request, publisher, subscriber);
+  }
+
+  private ContextInternal contextFromPromise(Promise<?> promise) {
+    if (promise instanceof PromiseInternal) {
+      ContextInternal ctx = ((PromiseInternal<?>) promise).context();
+      if (ctx != null) {
+        return ctx;
+      }
+    }
+    return vertx.getOrCreateContext();
   }
 
   private FindPublisher<JsonObject> doFind(String collection, JsonObject query, FindOptions options) {

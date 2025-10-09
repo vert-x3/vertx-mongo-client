@@ -13,5 +13,6 @@ module io.vertx.mongo.client {
   requires io.netty.buffer;
 
   exports io.vertx.ext.mongo;
+  exports io.vertx.ext.mongo.tracing;
 
 }
