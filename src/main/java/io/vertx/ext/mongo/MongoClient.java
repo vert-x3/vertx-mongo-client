@@ -678,6 +678,8 @@ public interface MongoClient {
    */
   Future<MongoGridFsClient> createGridFsBucketService(String bucketName);
 
+  Future<MongoTransactionalClient> createTransactionContext();
+
   /**
    * Close the client and release its resources
    */
