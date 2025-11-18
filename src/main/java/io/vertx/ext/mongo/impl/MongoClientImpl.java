@@ -922,7 +922,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
-  public Future<MongoTransactionalClient> createTransactionContext() {
+  public Future<MongoTransaction> createTransaction() {
     final Promise<ClientSession> promise = Promise.promise();
     MongoClientImpl mongoClient = new MongoClientImpl(vertx, config, dataSourceName, settings);
     mongoClient.mongo.startSession().subscribe(new SingleResultSubscriber<>(promise));
@@ -930,7 +930,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return promise.future().map(newSession -> {
       mongoClient.session = newSession;
       // TODO handle shutdown here with hooks?
-      return new MongoTransactionalClientImpl(mongoClient, newSession);
+      return new MongoTransactionWrapperImpl(mongoClient, newSession);
     });
   }
 

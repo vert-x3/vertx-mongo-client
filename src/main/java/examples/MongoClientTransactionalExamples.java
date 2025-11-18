@@ -24,7 +24,7 @@ import io.vertx.ext.mongo.*;
 public class MongoClientTransactionalExamples {
 
   public void example1(MongoClient mongoClient) {
-    mongoClient.createTransactionContext()
+    mongoClient.createTransaction()
       .flatMap(client ->
         {
           // Match any documents with title=The Hobbit

@@ -3,6 +3,7 @@ package io.vertx.ext.mongo.tests;
 import com.mongodb.MongoClientSettings;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.MongoTransaction;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.junit.Test;
 
@@ -41,9 +42,9 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
     String collection = randomCollection();
     String collection2 = randomCollection();
 
-    mongoClient.createTransactionContext().onComplete(
-      onSuccess(client -> {
-        client.start();
+    mongoClient.createTransaction()
+      .flatMap(MongoTransaction::start)
+      .onComplete(onSuccess(client -> {
         JsonObject doc = createDoc();
         JsonObject doc2 = createDoc();
 

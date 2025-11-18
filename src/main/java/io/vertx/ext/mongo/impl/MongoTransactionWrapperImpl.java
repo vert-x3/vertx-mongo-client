@@ -31,11 +31,11 @@ import io.vertx.ext.mongo.*;
 import java.util.List;
 import java.util.Objects;
 
-public class MongoTransactionalClientImpl implements MongoTransactionalClient, Closeable {
+public class MongoTransactionWrapperImpl implements MongoTransaction, Closeable {
   private final MongoClient delegate;
   private final ClientSession session;
 
-  public MongoTransactionalClientImpl(MongoClient delegate, ClientSession session) {
+  public MongoTransactionWrapperImpl(MongoClient delegate, ClientSession session) {
     Objects.requireNonNull(delegate);
     Objects.requireNonNull(session);
     this.delegate = delegate;
@@ -328,7 +328,7 @@ public class MongoTransactionalClientImpl implements MongoTransactionalClient, C
   }
 
   @Override
-  public Future<MongoTransactionalClient> createTransactionContext() {
+  public Future<MongoTransaction> createTransaction() {
     return Future.failedFuture(new IllegalStateException("Cmon bruh"));
   }
 
@@ -344,8 +344,15 @@ public class MongoTransactionalClientImpl implements MongoTransactionalClient, C
   }
 
   @Override
-  public void start() {
-    session.startTransaction();
+  public Future<MongoTransaction> start() {
+    Promise<MongoTransaction> promise = Promise.promise();
+    try {
+      session.startTransaction();
+      promise.succeed(this);
+    } catch (Exception e) {
+      promise.fail(e);
+    }
+    return promise.future();
   }
 
   @Override
