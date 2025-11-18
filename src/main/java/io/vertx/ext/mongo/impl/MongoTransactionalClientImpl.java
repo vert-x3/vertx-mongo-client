@@ -344,6 +344,11 @@ public class MongoTransactionalClientImpl implements MongoTransactionalClient, C
   }
 
   @Override
+  public void start() {
+    session.startTransaction();
+  }
+
+  @Override
   public Future<Void> commit() {
     final Promise<Void> promise = Promise.promise();
     session.commitTransaction().subscribe(new ClientSessionSubscriber<>(promise, session));
