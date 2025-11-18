@@ -44,16 +44,16 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
 
     mongoClient.createTransaction()
       .flatMap(MongoTransaction::start)
-      .onComplete(onSuccess(client -> {
+      .onComplete(onSuccess(tx -> {
         JsonObject doc = createDoc();
         JsonObject doc2 = createDoc();
 
-        client.insert(collection, doc).onComplete(onSuccess(id -> {
+        tx.insert(collection, doc).onComplete(onSuccess(id -> {
           assertNotNull(id);
 
-          client.insert(collection2, doc2).onComplete(onSuccess(id2 -> {
+          tx.insert(collection2, doc2).onComplete(onSuccess(id2 -> {
             assertNotNull(id2);
-            client.commit()
+            tx.commit()
               .onComplete(onSuccess(v -> {
                 assertNull(v);
                 testComplete();
