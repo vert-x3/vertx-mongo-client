@@ -19,6 +19,8 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.reactivestreams.client.ClientSession;
 import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.Closeable;
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -29,12 +31,13 @@ import io.vertx.ext.mongo.*;
 import java.util.List;
 import java.util.Objects;
 
-public class MongoTransactionalClientImpl implements MongoTransactionalClient {
+public class MongoTransactionalClientImpl implements MongoTransactionalClient, Closeable {
   private final MongoClient delegate;
   private final ClientSession session;
 
   public MongoTransactionalClientImpl(MongoClient delegate, ClientSession session) {
     Objects.requireNonNull(delegate);
+    Objects.requireNonNull(session);
     this.delegate = delegate;
     this.session = session;
   }
@@ -332,6 +335,12 @@ public class MongoTransactionalClientImpl implements MongoTransactionalClient {
   @Override
   public Future<Void> close() {
     return delegate.close();
+  }
+
+  @Override
+  public void close(Completable<Void> completionHandler) {
+    delegate.close();
+    completionHandler.succeed();
   }
 
   @Override
