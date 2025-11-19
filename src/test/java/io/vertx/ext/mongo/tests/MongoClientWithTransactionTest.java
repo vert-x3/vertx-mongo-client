@@ -7,6 +7,7 @@ import io.vertx.ext.mongo.MongoTransaction;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -38,7 +39,7 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   }
 
   @Test
-  public void testReplaceUpsert() {
+  public void testReplaceUpsertCommit() {
     String collection = randomCollection();
     String collection2 = randomCollection();
 
@@ -53,15 +54,69 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
 
           tx.insert(collection2, doc2).onComplete(onSuccess(id2 -> {
             assertNotNull(id2);
-            tx.commit()
-              .onComplete(onSuccess(v -> {
-                assertNull(v);
-                testComplete();
+
+            tx.commit().onComplete(onSuccess(v -> {
+              assertNull(v);
+
+              mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
+                assertIdOfFirstRecord(id, coll);
+
+                mongoClient.find(collection2, new JsonObject()).onComplete(onSuccess(coll2 -> {
+                  assertIdOfFirstRecord(id2, coll2);
+
+                  testComplete();
+                }));
               }));
+            }));
           }));
         }));
       }));
 
     await();
+  }
+
+  @Test
+  public void testReplaceUpsertAbort() {
+    String collection = randomCollection();
+    String collection2 = randomCollection();
+
+    mongoClient.createTransaction()
+      .flatMap(MongoTransaction::start)
+      .onComplete(onSuccess(tx -> {
+        JsonObject doc = createDoc();
+        JsonObject doc2 = createDoc();
+
+        tx.insert(collection, doc).onComplete(onSuccess(id -> {
+          assertNotNull(id);
+
+          tx.insert(collection2, doc2).onComplete(onSuccess(id2 -> {
+            assertNotNull(id2);
+
+            tx.abort().onComplete(onSuccess(v -> {
+              assertNull(v);
+
+              mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
+                assertEquals(0, coll.size());
+
+                mongoClient.find(collection2, new JsonObject()).onComplete(onSuccess(coll2 -> {
+                  assertEquals(0, coll2.size());
+
+                  testComplete();
+                }));
+              }));
+            }));
+          }));
+        }));
+      }));
+
+    await();
+  }
+
+  private void assertIdOfFirstRecord(String id, List<JsonObject> coll) {
+    assertEquals(1, coll.size());
+    final JsonObject actual = coll.get(0);
+    assertTrue(actual.containsKey("_id"));
+    assertTrue(actual.getValue("_id") instanceof String);
+    assertEquals(id, actual.getString("_id"));
   }
 }
