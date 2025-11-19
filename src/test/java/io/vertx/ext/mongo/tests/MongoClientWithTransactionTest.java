@@ -112,6 +112,37 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
     await();
   }
 
+  @Test
+  public void testReplaceUpsertAbortWithError() {
+    String collection = randomCollection();
+
+    mongoClient.createTransaction()
+      .flatMap(MongoTransaction::start)
+      .onComplete(onSuccess(tx -> {
+        JsonObject doc = createDoc();
+
+        tx.insert(collection, doc).onComplete(onSuccess(id -> {
+          assertNotNull(id);
+
+          tx.find("wrongcollection", new JsonObject().put("$eq", new JsonObject().put("$notARealOperator", 1)))
+            .onFailure(ex -> {
+              assertNotNull(ex);
+
+              tx.abort();
+
+              mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
+                assertEquals(0, coll.size());
+
+                testComplete();
+              }));
+            })
+          ;
+        }));
+      }));
+
+    await();
+  }
+
   private void assertIdOfFirstRecord(String id, List<JsonObject> coll) {
     assertEquals(1, coll.size());
     final JsonObject actual = coll.get(0);
