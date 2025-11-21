@@ -14,6 +14,7 @@ import io.vertx.ext.mongo.impl.MongoClientImpl;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 /**
  * A Vert.x service used to interact with MongoDB server instances.
@@ -677,6 +678,47 @@ public interface MongoClient {
    * @return a future notified with the {@link MongoGridFsClient} to interact with the bucket named bucketName
    */
   Future<MongoGridFsClient> createGridFsBucketService(String bucketName);
+
+  /**
+   * Starts a session and returns a {@link MongoSession} which is a wrapper over the client
+   * that also allows manual control of the transaction.
+   *
+   * @return a future notified with a {@link MongoSession} used to control the transaction
+   */
+  Future<MongoSession> createSession();
+
+  /**
+   * Starts a session and returns a {@link MongoSession} which is a wrapper over the client
+   * that also allows manual control of the transaction. The specified {@link SessionOptions}
+   * will be applied to the session and all transactions.
+   *
+   * @param options    options to use for the session and transactions
+   *
+   * @return a future notified with a {@link MongoSession} used to control the transaction
+   */
+  Future<MongoSession> createSession(SessionOptions options);
+
+  /**
+   * Starts a session and executes the passed work in a distributed transaction.
+   *
+   * @param work     the operations to execute inside the transaction
+   * @param <T>      the return type from the work function
+   *
+   * @return a future notified with the result of work
+   */
+  <T> Future<@Nullable T> inTransaction(Function<MongoSession, Future<@Nullable T>> work);
+
+  /**
+   * Starts a session and executes the passed work in a distributed transaction.
+   * The specified {@link SessionOptions} will be applied to the session and all transactions.
+   *
+   * @param options    options to use for the session and transactions
+   * @param work       the operations to execute inside the transaction
+   * @param <T>        the return type from the work function
+   *
+   * @return a future notified with the result of work
+   */
+  <T> Future<@Nullable T> inTransaction(Function<MongoSession, Future<@Nullable T>> work, SessionOptions options);
 
   /**
    * Close the client and release its resources
