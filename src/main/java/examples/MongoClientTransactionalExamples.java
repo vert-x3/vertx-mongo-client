@@ -15,13 +15,40 @@
  */
 package examples;
 
+import com.mongodb.ClientSessionOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.*;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.SessionOptions;
+import io.vertx.ext.mongo.UpdateOptions;
 
 public class MongoClientTransactionalExamples {
 
-  public void example1(MongoClient mongoClient) {
+  public void inTransactionExample(MongoClient mongoClient) {
     mongoClient.inTransaction(tx -> {
+        // Match any documents with title=The Hobbit
+        JsonObject query = new JsonObject()
+          .put("title", "The Hobbit");
+        // Set the author field
+        JsonObject update = new JsonObject().put("$set", new JsonObject()
+          .put("author", "J. R. R. Tolkien"));
+        UpdateOptions options = new UpdateOptions().setMulti(true);
+
+        return tx.updateCollectionWithOptions("books", query, update, options)
+          .compose(updateResult -> tx.insert("authors", update));
+      })
+      .onComplete(res -> {
+        if (res.succeeded()) {
+          System.out.println("Book and Author updated !");
+        } else {
+          res.cause().printStackTrace();
+        }
+      });
+  }
+
+  public void createSessionExample(MongoClient mongoClient) {
+    mongoClient.createSession(new SessionOptions().setCloseSession(false)
+        .setClientSessionOptions(ClientSessionOptions.builder().build()))
+      .flatMap(tx -> {
         // Match any documents with title=The Hobbit
         JsonObject query = new JsonObject()
           .put("title", "The Hobbit");
@@ -33,10 +60,12 @@ public class MongoClientTransactionalExamples {
         return tx.updateCollectionWithOptions("books", query, update, options)
           .compose(
             updateResult -> tx.insert("authors", update))
-          .compose(
-            insert -> tx.commit());
-      })
-      .onComplete(res -> {
+          .compose(insert -> tx.commit())
+          .onFailure(throwable -> {
+            System.err.println(throwable.getMessage());
+            tx.abort();
+          });
+      }).onComplete(res -> {
         if (res.succeeded()) {
           System.out.println("Book and Author updated !");
         } else {
