@@ -69,6 +69,10 @@ public class MongoSessionImpl implements MongoSession, Closeable {
 
   @Override
   public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, TransactionOptions options) {
+    if (options == null) {
+      return Future.failedFuture(new IllegalArgumentException("TransactionOptions cannot be null"));
+    }
+
     return executeTransaction(operations, options.toMongoDriverObject());
   }
 
@@ -100,27 +104,29 @@ public class MongoSessionImpl implements MongoSession, Closeable {
 
   @Override
   public Future<Void> start() {
-    if (inTransaction) {
-      return alreadyHasTransaction();
-    }
-
-    try {
-      session.startTransaction();
-      inTransaction = true;
-      return Future.succeededFuture();
-    } catch (Exception e) {
-      return Future.failedFuture(e);
-    }
+    return start(this.transactionOptions);
   }
 
   @Override
   public Future<Void> start(TransactionOptions transactionOptions) {
+    if (transactionOptions == null) {
+      return Future.failedFuture(new IllegalArgumentException("TransactionOptions cannot be null"));
+    }
+
+    return start(transactionOptions.toMongoDriverObject());
+  }
+
+  public Future<Void> start(com.mongodb.TransactionOptions transactionOptions) {
     if (inTransaction) {
       return alreadyHasTransaction();
     }
 
     try {
-      session.startTransaction(transactionOptions.toMongoDriverObject());
+      if (transactionOptions != null) {
+        session.startTransaction(transactionOptions);
+      } else {
+        session.startTransaction();
+      }
       inTransaction = true;
       return Future.succeededFuture();
     } catch (Exception e) {
