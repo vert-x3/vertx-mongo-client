@@ -23,21 +23,19 @@ import io.vertx.ext.mongo.UpdateOptions;
 public class MongoClientTransactionalExamples {
 
   public void executeTransactionExample(MongoClient mongoClient) {
-    mongoClient.executeTransaction(session -> {
-        // Match any documents with title=The Hobbit
-        JsonObject query = new JsonObject()
-          .put("title", "The Hobbit");
-        // Set the author field
-        JsonObject update = new JsonObject().put("$set", new JsonObject()
-          .put("author", "J. R. R. Tolkien"));
-        UpdateOptions options = new UpdateOptions().setMulti(true);
+    // Match any documents with title=The Hobbit
+    JsonObject query = new JsonObject()
+      .put("title", "The Hobbit");
+    // Set the author field
+    JsonObject update = new JsonObject().put("$set", new JsonObject()
+      .put("author", "J. R. R. Tolkien"));
+    UpdateOptions options = new UpdateOptions().setMulti(true);
 
-        return session.executeTransaction(client ->
-          Future.join(
-            client.updateCollectionWithOptions("books", query, update, options),
-            client.insert("authors", update)
-          ));
-      })
+    mongoClient.executeTransaction(client -> Future.join(
+        client.updateCollectionWithOptions("books", query, update, options),
+        client.insert("authors", update)
+      ))
+      .onFailure(throwable -> System.err.println(throwable.getMessage()))
       .onComplete(res -> {
         if (res.succeeded()) {
           System.out.println("Book and Author updated !");
@@ -59,14 +57,12 @@ public class MongoClientTransactionalExamples {
         UpdateOptions options = new UpdateOptions().setMulti(true);
 
         return session.executeTransaction(client -> Future.join(
-            client.updateCollectionWithOptions("books", query, update, options),
-            client.insert("authors", update))
-          ).compose(insert -> session.commit())
-          .onFailure(throwable -> {
-            System.err.println(throwable.getMessage());
-            session.abort();
-          });
-      }).onComplete(res -> {
+          client.updateCollectionWithOptions("books", query, update, options),
+          client.insert("authors", update))
+        );
+      })
+      .onFailure(throwable -> System.err.println(throwable.getMessage()))
+      .onComplete(res -> {
         if (res.succeeded()) {
           System.out.println("Book and Author updated !");
         } else {
