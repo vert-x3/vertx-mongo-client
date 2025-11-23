@@ -690,16 +690,16 @@ public interface MongoClient {
 
   /**
    * Starts a session and returns a {@link MongoSession} which is a wrapper over the client
-   * that also allows manual control of the transaction. The specified {@link SessionOptions}
+   * that also allows manual control of the transaction. The specified {@link ClientSessionOptions}
    * will be applied to the session and all of its transactions.
    * By default, the session is closed automatically after the transaction ends,
-   * this can be also overruled using {@link SessionOptions#setAutoClose(boolean)}}.
+   * this can be also overruled using {@link ClientSessionOptions#setAutoClose(boolean)}}.
    *
    * @param options    options to use for the session and transactions
    *
    * @return a future notified with a {@link MongoSession} used to control the transaction scope
    */
-  Future<MongoSession> startSession(SessionOptions options);
+  Future<MongoSession> startSession(ClientSessionOptions options);
 
   /**
    * Starts a session and executes the passed operations in a distributed transaction.
@@ -714,9 +714,9 @@ public interface MongoClient {
 
   /**
    * Starts a session and executes the passed operations in a distributed transaction.
-   * The specified {@link SessionOptions} will be applied to the session and all of its transactions.
+   * The specified {@link ClientSessionOptions} will be applied to the session and all of its transactions.
    * By default, the session is closed automatically after the transaction ends,
-   * this can be also overruled using {@link SessionOptions#setAutoClose(boolean)}}.
+   * this can be also overruled using {@link ClientSessionOptions#setAutoClose(boolean)}}.
    *
    * @param operations       the operations to execute inside the transaction
    *                   @param options    options to use for the session and transaction
@@ -724,7 +724,7 @@ public interface MongoClient {
    *
    * @return a future notified with the result of operations
    */
-  <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, SessionOptions options);
+  <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, ClientSessionOptions options);
 
   /**
    * Close the client and release its resources

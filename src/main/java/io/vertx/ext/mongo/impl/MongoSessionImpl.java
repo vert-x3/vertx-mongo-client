@@ -16,7 +16,6 @@
 
 package io.vertx.ext.mongo.impl;
 
-import com.mongodb.TransactionOptions;
 import com.mongodb.reactivestreams.client.ClientSession;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Closeable;
@@ -24,9 +23,10 @@ import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
+import io.vertx.ext.mongo.ClientSessionOptions;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoSession;
-import io.vertx.ext.mongo.SessionOptions;
+import io.vertx.ext.mongo.TransactionOptions;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -36,22 +36,22 @@ public class MongoSessionImpl implements MongoSession, Closeable {
   private final ContextInternal creatingContext;
 
   private final MongoClient delegate;
-  private final TransactionOptions transactionOptions;
+  private final com.mongodb.TransactionOptions transactionOptions;
   private final ClientSession session;
   private final boolean autoStart;
   private final boolean autoClose;
   private boolean inTransaction;
   private boolean isClosed;
 
-  public MongoSessionImpl(ContextInternal creatingContext, MongoClient delegate, ClientSession session, SessionOptions sessionOptions) {
+  public MongoSessionImpl(ContextInternal creatingContext, MongoClient delegate, ClientSession session, ClientSessionOptions sessionOptions) {
     Objects.requireNonNull(creatingContext);
     Objects.requireNonNull(delegate);
     Objects.requireNonNull(session);
     this.creatingContext = creatingContext;
     this.delegate = delegate;
     this.session = session;
-    this.transactionOptions = (sessionOptions != null && sessionOptions.getClientSessionOptions() != null)
-      ? sessionOptions.getClientSessionOptions().getDefaultTransactionOptions()
+    this.transactionOptions = (sessionOptions != null)
+      ? sessionOptions.getDefaultTransactionOptions().toMongoDriverObject()
       : null;
     this.autoStart = (sessionOptions == null) || sessionOptions.isAutoStart();
     this.autoClose = (sessionOptions == null) || sessionOptions.isAutoClose();
@@ -69,6 +69,11 @@ public class MongoSessionImpl implements MongoSession, Closeable {
 
   @Override
   public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, TransactionOptions options) {
+    return executeTransaction(operations, options.toMongoDriverObject());
+  }
+
+  private <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations,
+                                                     com.mongodb.TransactionOptions options) {
     if (isClosed) {
       return sessionClosed();
     }
@@ -115,7 +120,7 @@ public class MongoSessionImpl implements MongoSession, Closeable {
     }
 
     try {
-      session.startTransaction(transactionOptions);
+      session.startTransaction(transactionOptions.toMongoDriverObject());
       inTransaction = true;
       return Future.succeededFuture();
     } catch (Exception e) {

@@ -1,13 +1,12 @@
 package io.vertx.ext.mongo.tests;
 
-import com.mongodb.ClientSessionOptions;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoQueryException;
-import com.mongodb.TransactionOptions;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.ClientSessionOptions;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.SessionOptions;
+import io.vertx.ext.mongo.TransactionOptions;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.types.ObjectId;
 import org.junit.Ignore;
@@ -128,7 +127,7 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   public void testAbort() {
     String collection = randomCollection();
 
-    mongoClient.startSession(new SessionOptions().setAutoClose(false))
+    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
       .onComplete(onSuccess(session -> {
         JsonObject doc = createDoc();
         session.executeTransaction(client ->
@@ -222,14 +221,9 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
               testComplete();
             }));
         }));
-    }, new SessionOptions()
-      .setClientSessionOptions(
-        ClientSessionOptions.builder()
-          .defaultTransactionOptions(
-            TransactionOptions.builder()
-              .maxCommitTime(100L, TimeUnit.SECONDS)
-              .build())
-          .build()));
+    }, new ClientSessionOptions().setDefaultTransactionOptions(
+      new TransactionOptions().setMaxCommitTime(100L, TimeUnit.SECONDS)
+    ));
 
     await();
   }

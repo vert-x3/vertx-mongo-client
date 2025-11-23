@@ -906,15 +906,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
-  public Future<MongoSession> startSession(SessionOptions options) {
+  public Future<MongoSession> startSession(ClientSessionOptions options) {
     final ClusterType clusterType = mongo.getClusterDescription().getType();
     if (clusterType == ClusterType.STANDALONE || clusterType == ClusterType.UNKNOWN) {
       return Future.failedFuture(new IllegalStateException("Cluster type " + clusterType.name() +
         " does not support distributed transactions."));
     }
 
-    final Publisher<ClientSession> publisher = (options != null && options.getClientSessionOptions() != null)
-      ? mongo.startSession(options.getClientSessionOptions())
+    final Publisher<ClientSession> publisher = (options != null)
+      ? mongo.startSession(options.toMongoDriverObject())
       : mongo.startSession();
 
     final Promise<ClientSession> promise = Promise.promise();
@@ -931,7 +931,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
-  public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, SessionOptions options) {
+  public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, ClientSessionOptions options) {
     return startSession(options).compose(session -> session.executeTransaction(operations));
   }
 
