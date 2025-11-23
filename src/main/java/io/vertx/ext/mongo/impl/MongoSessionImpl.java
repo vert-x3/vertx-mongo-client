@@ -50,7 +50,7 @@ public class MongoSessionImpl implements MongoSession, Closeable {
     this.creatingContext = creatingContext;
     this.delegate = delegate;
     this.session = session;
-    this.transactionOptions = (sessionOptions != null)
+    this.transactionOptions = ((sessionOptions != null) && (sessionOptions.getDefaultTransactionOptions() != null))
       ? sessionOptions.getDefaultTransactionOptions().toMongoDriverObject()
       : null;
     this.autoStart = (sessionOptions == null) || sessionOptions.isAutoStart();
