@@ -902,32 +902,42 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public Future<MongoSession> startSession() {
-    return startSession(null);
+    return startSessionInternal(null);
   }
 
   @Override
   public Future<MongoSession> startSession(ClientSessionOptions options) {
+    if (options == null) {
+      return Future.failedFuture(new IllegalArgumentException("ClientSessionOptions cannot be null"));
+    }
+
+    return startSessionInternal(options);
+  }
+
+  private Future<MongoSession> startSessionInternal(ClientSessionOptions options) {
     final ClusterType clusterType = mongo.getClusterDescription().getType();
     if (clusterType == ClusterType.STANDALONE || clusterType == ClusterType.UNKNOWN) {
       return Future.failedFuture(new IllegalStateException("Cluster type " + clusterType.name() +
         " does not support distributed transactions."));
     }
 
-    final Publisher<ClientSession> publisher = (options != null)
-      ? mongo.startSession(options.toMongoDriverObject())
-      : mongo.startSession();
-
     final Promise<ClientSession> promise = Promise.promise();
-    publisher.subscribe(new SingleResultSubscriber<>(promise));
+    clientSessionPublisher(options).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(session -> {
       MongoClient sessionClient = new MongoClientImpl(vertx, creatingContext, holder, useObjectId, session);
       return new MongoSessionImpl(creatingContext, sessionClient, session, options);
     });
   }
 
+  private Publisher<ClientSession> clientSessionPublisher(ClientSessionOptions options) {
+    return (options != null)
+      ? mongo.startSession(options.toMongoDriverObject())
+      : mongo.startSession();
+  }
+
   @Override
   public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations) {
-    return executeTransaction(operations, null);
+    return startSession().compose(session -> session.executeTransaction(operations));
   }
 
   @Override
