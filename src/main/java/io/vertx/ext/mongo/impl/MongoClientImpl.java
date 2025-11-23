@@ -47,6 +47,7 @@ import io.vertx.ext.mongo.CountOptions;
 import io.vertx.ext.mongo.CreateCollectionOptions;
 import io.vertx.ext.mongo.IndexModel;
 import io.vertx.ext.mongo.IndexOptions;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.RenameCollectionOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
@@ -92,11 +93,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   private final MongoHolder holder;
   private final boolean useObjectId;
 
-  private final JsonObject config;
-  private final String dataSourceName;
-  private final MongoClientSettings settings;
-
-  protected ClientSession session;
+  protected ClientSession clientSession;
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName) {
     Objects.requireNonNull(vertx);
@@ -107,10 +104,6 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     this.holder = lookupHolder(dataSourceName, config);
     this.mongo = holder.mongo(vertx);
     this.useObjectId = config.getBoolean("useObjectId", false);
-
-    this.config = config;
-    this.dataSourceName = dataSourceName;
-    this.settings = null;
 
     creatingContext.addCloseHook(this);
   }
@@ -126,11 +119,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     this.mongo = holder.mongo(vertx, settings);
     this.useObjectId = config.getBoolean("useObjectId", false);
 
-    this.config = config;
-    this.dataSourceName = dataSourceName;
-    this.settings = settings;
-
     creatingContext.addCloseHook(this);
+  }
+
+  private MongoClientImpl(VertxInternal vertxInternal, ContextInternal creatingContext, MongoHolder holder, boolean useObjectId, ClientSession clientSession) {
+    this.vertx = vertxInternal;
+    this.creatingContext = creatingContext;
+    this.holder = holder;
+    this.useObjectId = useObjectId;
+    this.clientSession = clientSession;
   }
 
   @GenIgnore
@@ -169,7 +166,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     if (id == null) {
       Promise<Void> promise = vertx.promise();
-      Publisher<InsertOneResult> publisher = (session != null) ? coll.insertOne(session, document) : coll.insertOne(document);
+      Publisher<InsertOneResult> publisher = (clientSession != null) ? coll.insertOne(clientSession, document) : coll.insertOne(document);
       publisher.subscribe(new CompletionSubscriber<>(promise));
       return promise.future().map(v -> useObjectId ? document.getJsonObject(ID_FIELD).getString(JsonObjectCodec.OID_FIELD) : document.getString(ID_FIELD));
     }
@@ -181,8 +178,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
 
     Promise<Void> promise = vertx.promise();
-    Publisher<UpdateResult> publisher = (session != null)
-      ? coll.replaceOne(session, wrap(filter), encodedDocument, replaceOptions)
+    Publisher<UpdateResult> publisher = (clientSession != null)
+      ? coll.replaceOne(clientSession, wrap(filter), encodedDocument, replaceOptions)
       : coll.replaceOne(wrap(filter), encodedDocument, replaceOptions);
     publisher.subscribe(new CompletionSubscriber<>(promise));
     return promise.future().mapEmpty();
@@ -204,7 +201,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
 
     Promise<Void> promise = vertx.promise();
-    Publisher<InsertOneResult> publisher = (session != null) ? coll.insertOne(session, encodedDocument) : coll.insertOne(encodedDocument);
+    Publisher<InsertOneResult> publisher = (clientSession != null) ? coll.insertOne(clientSession, encodedDocument) : coll.insertOne(encodedDocument);
     publisher.subscribe(new CompletionSubscriber<>(promise));
     return promise.future().map(v -> hasCustomId ? null : decodeKeyWhenUseObjectId(encodedDocument).getString(ID_FIELD));
   }
@@ -257,9 +254,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   private Publisher<UpdateResult> update(final boolean isMulti, MongoCollection<JsonObject> coll, Bson bquery, Bson bupdate, com.mongodb.client.model.UpdateOptions updateOptions) {
     if (isMulti) {
-      return (session != null) ? coll.updateMany(session, bquery, bupdate, updateOptions) : coll.updateMany(bquery, bupdate, updateOptions);
+      return (clientSession != null) ? coll.updateMany(clientSession, bquery, bupdate, updateOptions) : coll.updateMany(bquery, bupdate, updateOptions);
     } else {
-      return (session != null) ? coll.updateOne(session, bquery, bupdate, updateOptions) : coll.updateOne(bquery, bupdate, updateOptions);
+      return (clientSession != null) ? coll.updateOne(clientSession, bquery, bupdate, updateOptions) : coll.updateOne(bquery, bupdate, updateOptions);
     }
   }
 
@@ -296,8 +293,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       updateOptions.collation(options.getCollation().toMongoDriverObject());
     }
 
-    Publisher<UpdateResult> publisher = (session != null)
-      ? coll.updateMany(session, bquery, bpipeline, updateOptions)
+    Publisher<UpdateResult> publisher = (clientSession != null)
+      ? coll.updateMany(clientSession, bquery, bpipeline, updateOptions)
       : coll.updateMany(bquery, bpipeline, updateOptions);
 
     Promise<UpdateResult> promise = vertx.promise();
@@ -347,8 +344,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       replaceOptions.collation(options.getCollation().toMongoDriverObject());
     }
     Promise<UpdateResult> promise = vertx.promise();
-    Publisher<UpdateResult> publisher = (session != null)
-      ? coll.replaceOne(session, bquery, encodeKeyWhenUseObjectId(replace), replaceOptions)
+    Publisher<UpdateResult> publisher = (clientSession != null)
+      ? coll.replaceOne(clientSession, bquery, encodeKeyWhenUseObjectId(replace), replaceOptions)
       : coll.replaceOne(bquery, encodeKeyWhenUseObjectId(replace), replaceOptions);
 
     publisher.subscribe(new SingleResultSubscriber<>(promise));
@@ -449,8 +446,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<JsonObject> promise = vertx.promise();
-    Publisher<JsonObject> publisher = (session != null)
-      ? coll.findOneAndUpdate(session, bquery, bupdate, foauOptions)
+    Publisher<JsonObject> publisher = (clientSession != null)
+      ? coll.findOneAndUpdate(clientSession, bquery, bupdate, foauOptions)
       : coll.findOneAndUpdate(bquery, bupdate, foauOptions);
     publisher.subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
@@ -495,8 +492,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<JsonObject> promise = vertx.promise();
-    Publisher<JsonObject> publisher = (session != null)
-      ? coll.findOneAndReplace(session, bquery, replace, foarOptions)
+    Publisher<JsonObject> publisher = (clientSession != null)
+      ? coll.findOneAndReplace(clientSession, bquery, replace, foarOptions)
       : coll.findOneAndReplace(bquery, replace, foarOptions);
     publisher.subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
@@ -533,8 +530,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<JsonObject> promise = vertx.promise();
-    Publisher<JsonObject> publisher = (session != null)
-      ? coll.findOneAndDelete(session, bquery, foadOptions)
+    Publisher<JsonObject> publisher = (clientSession != null)
+      ? coll.findOneAndDelete(clientSession, bquery, foadOptions)
       : coll.findOneAndDelete(bquery, foadOptions);
     publisher.subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
@@ -573,8 +570,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     Promise<DeleteResult> promise = vertx.promise();
-    Publisher<DeleteResult> publisher = (session != null)
-      ? coll.deleteMany(session, bquery)
+    Publisher<DeleteResult> publisher = (clientSession != null)
+      ? coll.deleteMany(clientSession, bquery)
       : coll.deleteMany(bquery);
     publisher.subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientDeleteResult);
@@ -593,7 +590,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection, writeOption);
     Bson bquery = wrap(deepEncodeKeyWhenUseObjectId(query));
     Promise<DeleteResult> promise = vertx.promise();
-    Publisher<DeleteResult> publisher = (session != null) ? coll.deleteOne(session, bquery) : coll.deleteOne(bquery);
+    Publisher<DeleteResult> publisher = (clientSession != null) ? coll.deleteOne(clientSession, bquery) : coll.deleteOne(bquery);
     publisher.subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientDeleteResult);
   }
@@ -612,7 +609,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     List<WriteModel<JsonObject>> bulkOperations = convertBulkOperations(operations);
     com.mongodb.client.model.BulkWriteOptions options = new com.mongodb.client.model.BulkWriteOptions().ordered(bulkWriteOptions.isOrdered());
     Promise<BulkWriteResult> promise = vertx.promise();
-    Publisher<BulkWriteResult> publisher = (session != null) ? coll.bulkWrite(session, bulkOperations, options) : coll.bulkWrite(bulkOperations, options);
+    Publisher<BulkWriteResult> publisher = (clientSession != null) ? coll.bulkWrite(clientSession, bulkOperations, options) : coll.bulkWrite(bulkOperations, options);
     publisher.subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(Utils::toMongoClientBulkWriteResult);
   }
@@ -904,52 +901,38 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
-  public Future<MongoSession> createSession() {
-    return createSession(null);
+  public Future<MongoSession> startSession() {
+    return startSession(null);
   }
 
   @Override
-  public Future<MongoSession> createSession(SessionOptions options) {
+  public Future<MongoSession> startSession(SessionOptions options) {
     final ClusterType clusterType = mongo.getClusterDescription().getType();
     if (clusterType == ClusterType.STANDALONE || clusterType == ClusterType.UNKNOWN) {
       return Future.failedFuture(new IllegalStateException("Cluster type " + clusterType.name() +
         " does not support distributed transactions."));
     }
 
-    final MongoClientImpl mongoClient = (settings != null)
-      ? new MongoClientImpl(vertx, config, dataSourceName, settings)
-      : new MongoClientImpl(vertx, config, dataSourceName);
     final Publisher<ClientSession> publisher = (options != null && options.getClientSessionOptions() != null)
-      ? mongoClient.mongo.startSession(options.getClientSessionOptions())
-      : mongoClient.mongo.startSession();
+      ? mongo.startSession(options.getClientSessionOptions())
+      : mongo.startSession();
 
     final Promise<ClientSession> promise = Promise.promise();
     publisher.subscribe(new SingleResultSubscriber<>(promise));
-    return promise.future().map(newSession -> {
-      mongoClient.session = newSession;
-      final boolean closeSession = (options != null) ? options.closeSession() : true;
-      return new MongoSessionImpl(mongoClient, newSession, closeSession);
+    return promise.future().map(session -> {
+      MongoClient sessionClient = new MongoClientImpl(vertx, creatingContext, holder, useObjectId, session);
+      return new MongoSessionImpl(creatingContext, sessionClient, session, options);
     });
   }
 
   @Override
-  public <T> Future<@Nullable T> inTransaction(Function<MongoSession, Future<@Nullable T>> work) {
-    return inTransaction(work, null);
+  public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations) {
+    return executeTransaction(operations, null);
   }
 
   @Override
-  public <T> Future<@Nullable T> inTransaction(Function<MongoSession, Future<@Nullable T>> work, SessionOptions options) {
-    return createSession(options)
-      .compose(tx ->
-        tx.start()
-          .compose(v ->
-            work.apply(tx)
-              .compose(
-                result -> tx.commit().map(result),
-                err -> tx.abort().compose(v2 -> Future.failedFuture(err))
-              )
-          )
-      );
+  public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, SessionOptions options) {
+    return startSession(options).compose(session -> session.executeTransaction(operations));
   }
 
   private GridFSBucket getGridFSBucket(String bucketName) {
@@ -1060,8 +1043,8 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       String key = entry.getKey();
       Object value = entry.getValue();
       if (key.equals(ID_FIELD)
-          && value instanceof String
-          && ObjectId.isValid((String) value)) {
+        && value instanceof String
+        && ObjectId.isValid((String) value)) {
         newJson.put(key, new JsonObject().put(JsonObjectCodec.OID_FIELD, value));
       } else if (value instanceof JsonObject) {
         newJson.put(key, deepEncodeKeyWhenUseObjectId((JsonObject) value));
@@ -1164,10 +1147,10 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       .max(options.getMax())
       .storageEngine(toBson(options.getStorageEngine()))
       .partialFilterExpression(toBson(options.getPartialFilterExpression()));
-      if (co != null) {
-        o.collation(co.toMongoDriverObject());
-      }
-      return o;
+    if (co != null) {
+      o.collation(co.toMongoDriverObject());
+    }
+    return o;
   }
 
   @Nullable JsonObjectBsonAdapter wrap(@Nullable JsonObject jsonObject) {

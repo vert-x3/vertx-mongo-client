@@ -16,7 +16,8 @@ import java.util.Objects;
 @JsonGen(publicConverter = false)
 public class SessionOptions {
 
-  private boolean closeSession;
+  private boolean autoClose;
+  private boolean autoStart;
   private ClientSessionOptions clientSessionOptions;
 
   public SessionOptions() {
@@ -24,14 +25,15 @@ public class SessionOptions {
   }
 
   private void init() {
-    closeSession = true;
+    autoStart = true;
+    autoClose = true;
   }
 
   /**
    * Copy constructor.
    */
   public SessionOptions(SessionOptions options) {
-    closeSession = options.closeSession;
+    autoClose = options.autoClose;
     clientSessionOptions = options.clientSessionOptions;
   }
 
@@ -47,17 +49,32 @@ public class SessionOptions {
   }
 
   /**
-   * @return the closeSession
+   * @return the autoStart flag
    */
-  public boolean closeSession() {
-    return closeSession;
+  public boolean isAutoStart() {
+    return autoStart;
   }
 
   /**
-   * @param closeSession the closeSession to set
+   * @param autoStart the autoStart flag to set
    */
-  public SessionOptions setCloseSession(boolean closeSession) {
-    this.closeSession = closeSession;
+  public SessionOptions setAutoStart(boolean autoStart) {
+    this.autoStart = autoStart;
+    return this;
+  }
+
+  /**
+   * @return the autoClose flag
+   */
+  public boolean isAutoClose() {
+    return autoClose;
+  }
+
+  /**
+   * @param autoClose the autoClose flag to set
+   */
+  public SessionOptions setAutoClose(boolean autoClose) {
+    this.autoClose = autoClose;
     return this;
   }
 
@@ -79,8 +96,8 @@ public class SessionOptions {
   @Override
   public String toString() {
     return "SessionOptions{"
-      + "closeSession='"
-      + closeSession
+      + "autoClose='"
+      + autoClose
       + '\''
       + ", clientSessionOptions="
       + clientSessionOptions
@@ -92,13 +109,13 @@ public class SessionOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SessionOptions that = (SessionOptions) o;
-    return closeSession == that.closeSession &&
+    return autoClose == that.autoClose &&
       Objects.equals(clientSessionOptions, that.clientSessionOptions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(closeSession, clientSessionOptions);
+    return Objects.hash(autoClose, clientSessionOptions);
   }
 
 }

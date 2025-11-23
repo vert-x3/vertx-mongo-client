@@ -23,17 +23,19 @@ import org.reactivestreams.Subscription;
 
 import java.util.Objects;
 
-public class ClientSessionSubscriber<T> implements Subscriber<T> {
+public class TransactionSubscriber<T> implements Subscriber<T> {
 
   private final Promise<Void> promise;
   private final ClientSession session;
-  private final boolean closeSession;
+  private final boolean autoClose;
+  private final Runnable callback;
 
-  public ClientSessionSubscriber(Promise<Void> promise, ClientSession session, boolean closeSession) {
+  public TransactionSubscriber(Promise<Void> promise, ClientSession session, boolean autoClose, Runnable callback) {
     Objects.requireNonNull(promise, "promise is null");
     this.promise = promise;
     this.session = session;
-    this.closeSession = closeSession;
+    this.autoClose = autoClose;
+    this.callback = callback;
   }
 
   @Override
@@ -47,13 +49,19 @@ public class ClientSessionSubscriber<T> implements Subscriber<T> {
 
   @Override
   public void onError(Throwable t) {
-    if (closeSession) session.close();
+    callback.run();
+    if (autoClose) {
+      session.close();
+    }
     promise.fail(t);
   }
 
   @Override
   public void onComplete() {
-    if (closeSession) session.close();
+    callback.run();
+    if (autoClose) {
+      session.close();
+    }
     promise.complete();
   }
 }

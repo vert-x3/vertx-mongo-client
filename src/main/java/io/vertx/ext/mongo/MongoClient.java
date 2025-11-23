@@ -682,43 +682,49 @@ public interface MongoClient {
   /**
    * Starts a session and returns a {@link MongoSession} which is a wrapper over the client
    * that also allows manual control of the transaction.
+   * By default, the session is closed automatically after the transaction ends.
    *
-   * @return a future notified with a {@link MongoSession} used to control the transaction
+   * @return a future notified with a {@link MongoSession} used to control the transaction scope
    */
-  Future<MongoSession> createSession();
+  Future<MongoSession> startSession();
 
   /**
    * Starts a session and returns a {@link MongoSession} which is a wrapper over the client
    * that also allows manual control of the transaction. The specified {@link SessionOptions}
-   * will be applied to the session and all transactions.
+   * will be applied to the session and all of its transactions.
+   * By default, the session is closed automatically after the transaction ends,
+   * this can be also overruled using {@link SessionOptions#setAutoClose(boolean)}}.
    *
    * @param options    options to use for the session and transactions
    *
-   * @return a future notified with a {@link MongoSession} used to control the transaction
+   * @return a future notified with a {@link MongoSession} used to control the transaction scope
    */
-  Future<MongoSession> createSession(SessionOptions options);
+  Future<MongoSession> startSession(SessionOptions options);
 
   /**
-   * Starts a session and executes the passed work in a distributed transaction.
+   * Starts a session and executes the passed operations in a distributed transaction.
+   * By default, the session is closed automatically after the transaction ends.
    *
-   * @param work     the operations to execute inside the transaction
-   * @param <T>      the return type from the work function
+   * @param operations     the operations to execute inside the transaction
+   * @param <T>      the return type from the operations function
    *
-   * @return a future notified with the result of work
+   * @return a future notified with the result of operations
    */
-  <T> Future<@Nullable T> inTransaction(Function<MongoSession, Future<@Nullable T>> work);
+  <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations);
 
   /**
-   * Starts a session and executes the passed work in a distributed transaction.
-   * The specified {@link SessionOptions} will be applied to the session and all transactions.
+   * Starts a session and executes the passed operations in a distributed transaction.
+   * The specified {@link SessionOptions} will be applied to the session and all of its transactions.
+   * By default, the session is closed automatically after the transaction ends,
+   * this can be also overruled using {@link SessionOptions#setAutoClose(boolean)}}.
    *
-   * @param options    options to use for the session and transactions
-   * @param work       the operations to execute inside the transaction
-   * @param <T>        the return type from the work function
+   * @param operations       the operations to execute inside the transaction
+   *                   @param options    options to use for the session and transaction
+   * @param <T>        the return type from the operations function
    *
-   * @return a future notified with the result of work
+   * @return a future notified with the result of operations
    */
-  <T> Future<@Nullable T> inTransaction(Function<MongoSession, Future<@Nullable T>> work, SessionOptions options);
+  <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, SessionOptions options);
 
   /**
    * Close the client and release its resources
