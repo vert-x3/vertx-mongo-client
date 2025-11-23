@@ -23,10 +23,7 @@ public class TransactionOptions {
   private Long timeoutMillis;
 
   public TransactionOptions() {
-    init();
-  }
-
-  private void init() {
+    // default constructor
   }
 
   /**
@@ -41,7 +38,6 @@ public class TransactionOptions {
   }
 
   public TransactionOptions(JsonObject json) {
-    init();
     TransactionOptionsConverter.fromJson(json, this);
   }
 
@@ -162,7 +158,7 @@ public class TransactionOptions {
       ", writeConcern=" + writeConcern +
       ", readPreference=" + readPreference +
       ", maxCommitTimeMillis=" + maxCommitTimeMillis +
-      ", timeoutMS=" + timeoutMillis +
+      ", timeoutMillis=" + timeoutMillis +
       '}';
   }
 
