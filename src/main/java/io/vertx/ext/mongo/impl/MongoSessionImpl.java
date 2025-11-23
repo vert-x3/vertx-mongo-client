@@ -182,7 +182,12 @@ public class MongoSessionImpl implements MongoSession, Closeable {
 
   @Override
   public void close(Completable<Void> completionHandler) {
-    session.close();
+    try {
+      session.close();
+    } catch (Exception e) {
+      completionHandler.fail(e);
+    }
+
     inTransaction = false;
     isClosed = true;
 
