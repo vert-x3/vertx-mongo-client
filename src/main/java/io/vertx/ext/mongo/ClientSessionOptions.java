@@ -168,8 +168,8 @@ public class ClientSessionOptions {
   @Override
   public String toString() {
     return "ClientSessionOptions{" +
-      "autoClose=" + autoClose +
-      ", autoStart=" + autoStart +
+      "autoStart=" + autoStart +
+      ", autoClose=" + autoClose +
       ", causallyConsistent=" + causallyConsistent +
       ", snapshot=" + snapshot +
       ", defaultTimeoutMillis=" + defaultTimeoutMillis +
