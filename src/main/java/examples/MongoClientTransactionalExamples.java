@@ -15,16 +15,15 @@
  */
 package examples;
 
-import com.mongodb.ClientSessionOptions;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.SessionOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 
 public class MongoClientTransactionalExamples {
 
-  public void inTransactionExample(MongoClient mongoClient) {
-    mongoClient.inTransaction(tx -> {
+  public void executeTransactionExample(MongoClient mongoClient) {
+    mongoClient.executeTransaction(session -> {
         // Match any documents with title=The Hobbit
         JsonObject query = new JsonObject()
           .put("title", "The Hobbit");
@@ -33,8 +32,11 @@ public class MongoClientTransactionalExamples {
           .put("author", "J. R. R. Tolkien"));
         UpdateOptions options = new UpdateOptions().setMulti(true);
 
-        return tx.updateCollectionWithOptions("books", query, update, options)
-          .compose(updateResult -> tx.insert("authors", update));
+        return session.executeTransaction(client ->
+          Future.join(
+            client.updateCollectionWithOptions("books", query, update, options),
+            client.insert("authors", update)
+          ));
       })
       .onComplete(res -> {
         if (res.succeeded()) {
@@ -45,10 +47,9 @@ public class MongoClientTransactionalExamples {
       });
   }
 
-  public void createSessionExample(MongoClient mongoClient) {
-    mongoClient.createSession(new SessionOptions().setCloseSession(false)
-        .setClientSessionOptions(ClientSessionOptions.builder().build()))
-      .flatMap(tx -> {
+  public void startSessionExample(MongoClient mongoClient) {
+    mongoClient.startSession()
+      .flatMap(session -> {
         // Match any documents with title=The Hobbit
         JsonObject query = new JsonObject()
           .put("title", "The Hobbit");
@@ -57,13 +58,13 @@ public class MongoClientTransactionalExamples {
           .put("author", "J. R. R. Tolkien"));
         UpdateOptions options = new UpdateOptions().setMulti(true);
 
-        return tx.updateCollectionWithOptions("books", query, update, options)
-          .compose(
-            updateResult -> tx.insert("authors", update))
-          .compose(insert -> tx.commit())
+        return session.executeTransaction(client -> Future.join(
+            client.updateCollectionWithOptions("books", query, update, options),
+            client.insert("authors", update))
+          ).compose(insert -> session.commit())
           .onFailure(throwable -> {
             System.err.println(throwable.getMessage());
-            tx.abort();
+            session.abort();
           });
       }).onComplete(res -> {
         if (res.succeeded()) {
