@@ -121,8 +121,6 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
     await();
   }
 
-  //TODO review and rewrite
-  @Ignore("rewrite")
   @Test
   public void testAbort() {
     String collection = randomCollection();
@@ -131,21 +129,20 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
       .onComplete(onSuccess(session -> {
         JsonObject doc = createDoc();
         session.executeTransaction(client ->
-          Future.join(
-            session.abort(),
-            client.insert(collection, doc).onComplete(onSuccess(id -> assertTrue(ObjectId.isValid(id))))
-          )
+          client.insert(collection, doc)
+            .onComplete(onSuccess(id -> assertTrue(ObjectId.isValid(id))))
+            .compose(id -> session.abort())
         ).onFailure(ex -> {
           assertNotNull(ex);
 
-          session.close().result();
+          session.close()
+            .onComplete(onSuccess(closed ->
+              mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
+                assertEquals(0, coll.size());
 
-          mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
-            assertEquals(0, coll.size());
-
-            testComplete();
-          }));
-        }).onSuccess(onSuccess(id -> session.close().result()));
+                testComplete();
+              }))));
+        });
       }));
 
     await();
