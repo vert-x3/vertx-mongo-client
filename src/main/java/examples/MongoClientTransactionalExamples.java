@@ -17,6 +17,7 @@ package examples;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.ClientSessionOptions;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
 
@@ -37,8 +38,10 @@ public class MongoClientTransactionalExamples {
       ))
       .onFailure(throwable -> System.err.println(throwable.getMessage()))
       .onComplete(res -> {
+        final Object updateResult = res.result().resultAt(0);
+        final Object insertResult = res.result().resultAt(1);
         if (res.succeeded()) {
-          System.out.println("Book and Author updated !");
+          System.out.println("Book and Author updated ! updated:" + updateResult + " inserted: " + insertResult);
         } else {
           res.cause().printStackTrace();
         }
@@ -46,7 +49,10 @@ public class MongoClientTransactionalExamples {
   }
 
   public void startSessionExample(MongoClient mongoClient) {
-    mongoClient.startSession()
+    mongoClient.startSession(new ClientSessionOptions()
+        .setAutoStart(true)
+        .setAutoClose(true)
+      )
       .flatMap(session -> {
         // Match any documents with title=The Hobbit
         JsonObject query = new JsonObject()
@@ -56,15 +62,18 @@ public class MongoClientTransactionalExamples {
           .put("author", "J. R. R. Tolkien"));
         UpdateOptions options = new UpdateOptions().setMulti(true);
 
-        return session.executeTransaction(client -> Future.join(
-          client.updateCollectionWithOptions("books", query, update, options),
-          client.insert("authors", update))
+        return session.executeTransaction(client ->
+          Future.join(
+            client.updateCollectionWithOptions("books", query, update, options),
+            client.insert("authors", update))
         );
       })
       .onFailure(throwable -> System.err.println(throwable.getMessage()))
       .onComplete(res -> {
+        final Object updateResult = res.result().resultAt(0);
+        final Object insertResult = res.result().resultAt(1);
         if (res.succeeded()) {
-          System.out.println("Book and Author updated !");
+          System.out.println("Book and Author updated ! updated:" + updateResult + " inserted: " + insertResult);
         } else {
           res.cause().printStackTrace();
         }
