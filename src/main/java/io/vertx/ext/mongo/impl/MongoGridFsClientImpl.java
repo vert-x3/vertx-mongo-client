@@ -7,19 +7,15 @@ import com.mongodb.reactivestreams.client.gridfs.GridFSDownloadPublisher;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.internal.ContextInternal;
-import io.vertx.core.internal.PromiseInternal;
-import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.file.OpenOptions;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.mongo.GridFsDownloadOptions;
 import io.vertx.ext.mongo.GridFsUploadOptions;
 import io.vertx.ext.mongo.MongoGridFsClient;
-import io.vertx.ext.mongo.impl.tracing.MongoTracer;
-import io.vertx.ext.mongo.tracing.MongoTracerRequest;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.codecs.Codec;
@@ -27,8 +23,6 @@ import org.bson.codecs.DecoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -57,31 +51,11 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     this.codecRegistry = codecRegistry;
   }
 
-  private MongoTracerRequest.Builder tracingRequest(String operation) {
-    return MongoTracerRequest.create(clientImpl.databaseName(), bucket.getBucketName(), operation);
-  }
-
-  private <T> void subscribeWithTracing(Promise<?> promise, MongoTracerRequest.Builder builder, Publisher<T> publisher, Subscriber<T> subscriber) {
-    MongoTracer.subscribe(contextFromPromise(promise), builder.build(), publisher, subscriber);
-  }
-
-  private ContextInternal contextFromPromise(Promise<?> promise) {
-    if (promise instanceof PromiseInternal) {
-      ContextInternal context = ((PromiseInternal<?>) promise).context();
-      if (context != null) {
-        return context;
-      }
-    }
-    return vertx.getOrCreateContext();
-  }
-
   @Override
   public Future<String> uploadByFileName(ReadStream<Buffer> stream, String fileName) {
     GridFSReadStreamPublisher publisher = new GridFSReadStreamPublisher(stream);
     Promise<ObjectId> promise = vertx.promise();
-    MongoTracerRequest.Builder trace = tracingRequest("upload")
-      .command("fileName", fileName);
-    subscribeWithTracing(promise, trace, bucket.uploadFromPublisher(fileName, publisher), new SingleResultSubscriber<>(promise));
+    bucket.uploadFromPublisher(fileName, publisher).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(ObjectId::toHexString);
   }
 
@@ -95,12 +69,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     GridFSReadStreamPublisher publisher = new GridFSReadStreamPublisher(stream);
     Promise<ObjectId> promise = vertx.promise();
-    MongoTracerRequest.Builder trace = tracingRequest("upload")
-      .command("fileName", fileName);
-    if (options != null) {
-      trace.options(options.toJson());
-    }
-    subscribeWithTracing(promise, trace, bucket.uploadFromPublisher(fileName, publisher, uploadOptions), new SingleResultSubscriber<>(promise));
+    bucket.uploadFromPublisher(fileName, publisher, uploadOptions).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(ObjectId::toHexString);
   }
 
@@ -108,11 +77,6 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     Codec<Document> codec = codecRegistry.get(Document.class);
     BsonDocument bsonDocument = new JsonObjectBsonAdapter(json).toBsonDocument(BsonDocument.class, codecRegistry);
     return codec.decode(bsonDocument.asBsonReader(), DecoderContext.builder().build());
-  }
-
-  private <T> PublisherAdapter<T> tracedAdapter(Publisher<T> publisher, int batchSize, MongoTracerRequest request) {
-    ContextInternal context = vertx.getOrCreateContext();
-    return new PublisherAdapter<>(context, MongoTracer.publisher(context, request, publisher), batchSize);
   }
 
   @Override
@@ -131,18 +95,15 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
       .flatMap(file -> {
         GridFSReadStreamPublisher publisher = new GridFSReadStreamPublisher(file);
         Promise<ObjectId> promise = vertx.promise();
-        MongoTracerRequest.Builder trace = tracingRequest("upload")
-          .command("fileName", fileName);
         if (options == null) {
-          subscribeWithTracing(promise, trace, bucket.uploadFromPublisher(fileName, publisher), new SingleResultSubscriber<>(promise));
+          bucket.uploadFromPublisher(fileName, publisher).subscribe(new SingleResultSubscriber<>(promise));
         } else {
           GridFSUploadOptions uploadOptions = new GridFSUploadOptions();
           uploadOptions.chunkSizeBytes(options.getChunkSizeBytes());
           if (options.getMetadata() != null) {
             uploadOptions.metadata(wrap(options.getMetadata()));
           }
-          trace.options(options.toJson());
-          subscribeWithTracing(promise, trace, bucket.uploadFromPublisher(fileName, publisher, uploadOptions), new SingleResultSubscriber<>(promise));
+          bucket.uploadFromPublisher(fileName, publisher, uploadOptions).subscribe(new SingleResultSubscriber<>(promise));
         }
         return promise.future().map(ObjectId::toHexString);
       });
@@ -158,74 +119,48 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     ObjectId objectId = new ObjectId(id);
     Promise<Void> promise = vertx.promise();
-    MongoTracerRequest.Builder trace = tracingRequest("delete")
-      .command("fileId", id);
-    subscribeWithTracing(promise, trace, bucket.delete(objectId), new CompletionSubscriber<>(promise));
+    bucket.delete(objectId).subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public ReadStream<Buffer> readByFileName(String fileName) {
     GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName);
-    MongoTracerRequest request = tracingRequest("read")
-      .command("fileName", fileName)
-      .build();
-    return handleRead(publisher, request);
+    return handleRead(publisher);
   }
 
   @Override
   public ReadStream<Buffer> readByFileNameWithOptions(String fileName, GridFsDownloadOptions options) {
     GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions();
     GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName, downloadOptions);
-    MongoTracerRequest.Builder trace = tracingRequest("read")
-      .command("fileName", fileName);
-    if (options != null) {
-      trace.options(options.toJson());
-    }
-    MongoTracerRequest request = trace.build();
-    return handleRead(publisher, request);
+    return handleRead(publisher);
   }
 
   @Override
   public ReadStream<Buffer> readById(String id) {
     ObjectId objectId = new ObjectId(id);
     GridFSDownloadPublisher publisher = bucket.downloadToPublisher(objectId);
-    MongoTracerRequest request = tracingRequest("read")
-      .command("fileId", id)
-      .build();
-    return handleRead(publisher, request);
+    return handleRead(publisher);
   }
 
   @Override
   public Future<Long> downloadByFileName(WriteStream<Buffer> stream, String fileName) {
     GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName);
-    MongoTracerRequest request = tracingRequest("download")
-      .command("fileName", fileName)
-      .build();
-    return handleDownload(publisher, stream, request);
+    return handleDownload(publisher, stream);
   }
 
   @Override
   public Future<Long> downloadByFileNameWithOptions(WriteStream<Buffer> stream, String fileName, GridFsDownloadOptions options) {
     GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions();
     GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName, downloadOptions);
-    MongoTracerRequest.Builder trace = tracingRequest("download")
-      .command("fileName", fileName);
-    if (options != null) {
-      trace.options(options.toJson());
-    }
-    MongoTracerRequest request = trace.build();
-    return handleDownload(publisher, stream, request);
+    return handleDownload(publisher, stream);
   }
 
   @Override
   public Future<Long> downloadById(WriteStream<Buffer> stream, String id) {
     ObjectId objectId = new ObjectId(id);
     GridFSDownloadPublisher publisher = bucket.downloadToPublisher(objectId);
-    MongoTracerRequest request = tracingRequest("download")
-      .command("fileId", id)
-      .build();
-    return handleDownload(publisher, stream, request);
+    return handleDownload(publisher, stream);
   }
 
   @Override
@@ -245,11 +180,7 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
     return vertx.fileSystem().open(newFileName, options)
       .flatMap(file -> {
         GridFSDownloadPublisher publisher = bucket.downloadToPublisher(fileName);
-        MongoTracerRequest request = tracingRequest("download")
-          .command("fileName", fileName)
-          .command("target", newFileName)
-          .build();
-        return handleDownload(publisher, file, request);
+        return handleDownload(publisher, file);
       });
   }
   @Override
@@ -262,28 +193,21 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
       .flatMap(file -> {
         ObjectId objectId = new ObjectId(id);
         GridFSDownloadPublisher publisher = bucket.downloadToPublisher(objectId);
-        MongoTracerRequest request = tracingRequest("download")
-          .command("fileId", id)
-          .command("target", fileName)
-          .build();
-        return handleDownload(publisher, file, request);
+        return handleDownload(publisher, file);
       });
   }
 
   @Override
   public Future<Void> drop() {
     Promise<Void> promise = vertx.promise();
-    MongoTracerRequest.Builder trace = tracingRequest("drop");
-    subscribeWithTracing(promise, trace, bucket.drop(), new CompletionSubscriber<>(promise));
+    bucket.drop().subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
   @Override
   public Future<List<String>> findAllIds() {
     Promise<List<String>> promise = vertx.promise();
-    MongoTracerRequest.Builder trace = tracingRequest("find")
-      .command("operation", "allIds");
-    subscribeWithTracing(promise, trace, bucket.find(), new MappingAndBufferingSubscriber<>(gridFSFile -> gridFSFile.getObjectId().toHexString(), promise));
+    bucket.find().subscribe(new MappingAndBufferingSubscriber<>(gridFSFile -> gridFSFile.getObjectId().toHexString(), promise));
     return promise.future();
   }
 
@@ -295,21 +219,19 @@ public class MongoGridFsClientImpl implements MongoGridFsClient {
 
     Bson bquery = clientImpl.wrap(encodedQuery);
     Promise<List<String>> promise = vertx.promise();
-    MongoTracerRequest.Builder trace = tracingRequest("find")
-      .command("query", query);
-    subscribeWithTracing(promise, trace, bucket.find(bquery), new MappingAndBufferingSubscriber<>(gridFSFile -> gridFSFile.getObjectId().toHexString(), promise));
+    bucket.find(bquery).subscribe(new MappingAndBufferingSubscriber<>(gridFSFile -> gridFSFile.getObjectId().toHexString(), promise));
     return promise.future();
   }
 
-  private Future<Long> handleDownload(GridFSDownloadPublisher publisher, WriteStream<Buffer> stream, MongoTracerRequest request) {
-    ReadStream<ByteBuffer> adapter = tracedAdapter(publisher, 16, request);
+  private Future<Long> handleDownload(GridFSDownloadPublisher publisher, WriteStream<Buffer> stream) {
+    ReadStream<ByteBuffer> adapter = new PublisherAdapter<>(vertx.getOrCreateContext(), publisher, 16);
     MapAndCountBuffer mapper = new MapAndCountBuffer();
     MappingStream<ByteBuffer, Buffer> rs = new MappingStream<>(adapter, mapper);
     return rs.pipeTo(stream).map(v -> mapper.count);
   }
 
-  private ReadStream<Buffer> handleRead(GridFSDownloadPublisher publisher, MongoTracerRequest request) {
-    ReadStream<ByteBuffer> adapter = tracedAdapter(publisher, 16, request);
+  private ReadStream<Buffer> handleRead(GridFSDownloadPublisher publisher) {
+    ReadStream<ByteBuffer> adapter = new PublisherAdapter<>(vertx.getOrCreateContext(), publisher, 16);
     MapBuffer mapper = new MapBuffer();
     return new MappingStream<>(adapter, mapper);
   }
