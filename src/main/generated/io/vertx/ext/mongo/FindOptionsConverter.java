@@ -2,8 +2,6 @@ package io.vertx.ext.mongo;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Converter and mapper for {@link io.vertx.ext.mongo.FindOptions}.
@@ -14,19 +12,9 @@ public class FindOptionsConverter {
    static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, FindOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "collation":
+        case "hint":
           if (member.getValue() instanceof JsonObject) {
-            obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
-          }
-          break;
-        case "fields":
-          if (member.getValue() instanceof JsonObject) {
-            obj.setFields(((JsonObject)member.getValue()).copy());
-          }
-          break;
-        case "sort":
-          if (member.getValue() instanceof JsonObject) {
-            obj.setSort(((JsonObject)member.getValue()).copy());
+            obj.setHint(((JsonObject)member.getValue()).copy());
           }
           break;
         case "limit":
@@ -34,24 +22,34 @@ public class FindOptionsConverter {
             obj.setLimit(((Number)member.getValue()).intValue());
           }
           break;
+        case "sort":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setSort(((JsonObject)member.getValue()).copy());
+          }
+          break;
         case "skip":
           if (member.getValue() instanceof Number) {
             obj.setSkip(((Number)member.getValue()).intValue());
           }
           break;
-        case "batchSize":
-          if (member.getValue() instanceof Number) {
-            obj.setBatchSize(((Number)member.getValue()).intValue());
-          }
-          break;
-        case "hint":
+        case "collation":
           if (member.getValue() instanceof JsonObject) {
-            obj.setHint(((JsonObject)member.getValue()).copy());
+            obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "hintString":
           if (member.getValue() instanceof String) {
             obj.setHintString((String)member.getValue());
+          }
+          break;
+        case "fields":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setFields(((JsonObject)member.getValue()).copy());
+          }
+          break;
+        case "batchSize":
+          if (member.getValue() instanceof Number) {
+            obj.setBatchSize(((Number)member.getValue()).intValue());
           }
           break;
       }
@@ -63,23 +61,23 @@ public class FindOptionsConverter {
   }
 
    static void toJson(FindOptions obj, java.util.Map<String, Object> json) {
-    if (obj.getCollation() != null) {
-      json.put("collation", obj.getCollation().toJson());
+    if (obj.getHint() != null) {
+      json.put("hint", obj.getHint());
     }
-    if (obj.getFields() != null) {
-      json.put("fields", obj.getFields());
-    }
+    json.put("limit", obj.getLimit());
     if (obj.getSort() != null) {
       json.put("sort", obj.getSort());
     }
-    json.put("limit", obj.getLimit());
     json.put("skip", obj.getSkip());
-    json.put("batchSize", obj.getBatchSize());
-    if (obj.getHint() != null) {
-      json.put("hint", obj.getHint());
+    if (obj.getCollation() != null) {
+      json.put("collation", obj.getCollation().toJson());
     }
     if (obj.getHintString() != null) {
       json.put("hintString", obj.getHintString());
     }
+    if (obj.getFields() != null) {
+      json.put("fields", obj.getFields());
+    }
+    json.put("batchSize", obj.getBatchSize());
   }
 }

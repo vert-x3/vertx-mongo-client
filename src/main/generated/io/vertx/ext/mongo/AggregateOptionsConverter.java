@@ -2,8 +2,6 @@ package io.vertx.ext.mongo;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Converter and mapper for {@link io.vertx.ext.mongo.AggregateOptions}.
@@ -14,11 +12,6 @@ public class AggregateOptionsConverter {
    static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, AggregateOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "collation":
-          if (member.getValue() instanceof JsonObject) {
-            obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
-          }
-          break;
         case "maxTime":
           if (member.getValue() instanceof Number) {
             obj.setMaxTime(((Number)member.getValue()).longValue());
@@ -27,6 +20,11 @@ public class AggregateOptionsConverter {
         case "batchSize":
           if (member.getValue() instanceof Number) {
             obj.setBatchSize(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "collation":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setCollation(new io.vertx.ext.mongo.CollationOptions((io.vertx.core.json.JsonObject)member.getValue()));
           }
           break;
         case "allowDiskUse":
@@ -43,11 +41,11 @@ public class AggregateOptionsConverter {
   }
 
    static void toJson(AggregateOptions obj, java.util.Map<String, Object> json) {
+    json.put("maxTime", obj.getMaxTime());
+    json.put("batchSize", obj.getBatchSize());
     if (obj.getCollation() != null) {
       json.put("collation", obj.getCollation().toJson());
     }
-    json.put("maxTime", obj.getMaxTime());
-    json.put("batchSize", obj.getBatchSize());
     if (obj.getAllowDiskUse() != null) {
       json.put("allowDiskUse", obj.getAllowDiskUse());
     }

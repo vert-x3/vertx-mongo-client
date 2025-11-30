@@ -2,8 +2,6 @@ package io.vertx.ext.mongo;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Converter and mapper for {@link io.vertx.ext.mongo.ValidationOptions}.
@@ -19,14 +17,14 @@ public class ValidationOptionsConverter {
             obj.setValidator(((JsonObject)member.getValue()).copy());
           }
           break;
-        case "validationLevel":
-          if (member.getValue() instanceof String) {
-            obj.setValidationLevel(com.mongodb.client.model.ValidationLevel.valueOf((String)member.getValue()));
-          }
-          break;
         case "validationAction":
           if (member.getValue() instanceof String) {
             obj.setValidationAction(com.mongodb.client.model.ValidationAction.valueOf((String)member.getValue()));
+          }
+          break;
+        case "validationLevel":
+          if (member.getValue() instanceof String) {
+            obj.setValidationLevel(com.mongodb.client.model.ValidationLevel.valueOf((String)member.getValue()));
           }
           break;
       }
@@ -41,11 +39,11 @@ public class ValidationOptionsConverter {
     if (obj.getValidator() != null) {
       json.put("validator", obj.getValidator());
     }
-    if (obj.getValidationLevel() != null) {
-      json.put("validationLevel", obj.getValidationLevel().name());
-    }
     if (obj.getValidationAction() != null) {
       json.put("validationAction", obj.getValidationAction().name());
+    }
+    if (obj.getValidationLevel() != null) {
+      json.put("validationLevel", obj.getValidationLevel().name());
     }
   }
 }
