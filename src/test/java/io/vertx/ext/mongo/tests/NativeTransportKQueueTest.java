@@ -1,34 +1,41 @@
 package io.vertx.ext.mongo.tests;
 
+import static io.vertx.core.transport.Transport.KQUEUE;
+
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
+import java.util.concurrent.CountDownLatch;
 import org.junit.Assume;
 import org.junit.Test;
 
-import java.util.concurrent.CountDownLatch;
-
-import static io.vertx.core.transport.Transport.EPOLL;
-
-public class NativeTransportTest extends MongoTestBase {
+public class NativeTransportKQueueTest extends MongoTestBase {
 
   private MongoClient mongoClient;
 
   @Override
   protected VertxOptions getOptions() {
-    return super.getOptions().setPreferNativeTransport(true);
+    VertxOptions options = super.getOptions();
+    if (KQUEUE.available()) {
+      options.setPreferNativeTransport(true);
+    }
+    return options;
   }
 
   @Override
   protected VertxBuilder createVertxBuilder(VertxOptions options) {
-    Assume.assumeTrue("EPOLL Transport not available", options.getPreferNativeTransport() && EPOLL.available());
-    return super.createVertxBuilder(options).withTransport(EPOLL);
+    VertxBuilder builder = super.createVertxBuilder(options);
+    if (KQUEUE.available()) {
+      builder.withTransport(KQUEUE);
+    }
+    return builder;
   }
 
   @Override
   public void setUp() throws Exception {
+    Assume.assumeTrue("KQUEUE Transport not available, skipping test", KQUEUE.available());
     super.setUp();
     JsonObject config = getConfig();
     mongoClient = MongoClient.create(vertx, config);
@@ -39,7 +46,9 @@ public class NativeTransportTest extends MongoTestBase {
 
   @Override
   public void tearDown() throws Exception {
-    mongoClient.close();
+    if (mongoClient != null) {
+      mongoClient.close();
+    }
     super.tearDown();
   }
 

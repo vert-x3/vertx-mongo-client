@@ -1,7 +1,12 @@
 package io.vertx.ext.mongo.impl.config;
 
+import static io.vertx.core.transport.Transport.EPOLL;
+import static io.vertx.core.transport.Transport.IO_URING;
+import static io.vertx.core.transport.Transport.KQUEUE;
+
 import com.mongodb.*;
 import com.mongodb.connection.*;
+import io.netty.channel.socket.SocketChannel;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -92,11 +97,7 @@ public class MongoClientOptionsParser {
     //retryable settings
     applyRetryableSetting(options, connectionString, config);
 
-    NettyTransportSettings.Builder nettyBuilder = TransportSettings.nettyBuilder();
-    if (!vertx.isNativeTransportEnabled()) {
-      nettyBuilder.eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup());
-    }
-    options.transportSettings(nettyBuilder.build());
+    applyNativeTransportSettings(vertx, options, config);
 
     this.settings = options.build();
   }
@@ -122,5 +123,38 @@ public class MongoClientOptionsParser {
 
   public String database() {
     return database;
+  }
+
+  @SuppressWarnings("unchecked") // for Class.forName
+  private void applyNativeTransportSettings(Vertx vertx, MongoClientSettings.Builder options, JsonObject config) {
+    NettyTransportSettings.Builder nettyBuilder = TransportSettings.nettyBuilder();
+    if (vertx.isNativeTransportEnabled()) {
+      // native transport for mongo client can be disabled even if vertx uses it
+      if (config.getBoolean("preferNativeTransport", true)) {
+        // TODO: use channel factory instead of hardcoded class names when/if
+        //  the Mongo driver starts supporting it
+        Class<?> tr = ((VertxInternal) vertx).transport().getClass();
+        String channelClassName = null;
+        if (tr.equals(EPOLL.implementation().getClass())) {
+          channelClassName = "io.netty.channel.epoll.EpollSocketChannel";
+        } else if (tr.equals(IO_URING.implementation().getClass())) {
+          channelClassName = "io.netty.channel.uring.IoUringSocketChannel";
+        } else if (tr.equals(KQUEUE.implementation().getClass())) {
+          channelClassName = "io.netty.channel.kqueue.KQueueSocketChannel";
+        }
+        if (channelClassName != null) {
+          try {
+            nettyBuilder.socketChannelClass((Class<? extends SocketChannel>) Class.forName(channelClassName))
+              .eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup());
+          } catch (ClassNotFoundException | NoClassDefFoundError | ClassCastException e) {
+            // failed to use native socket channel class, cannot reuse
+            // vertx event loop group
+          }
+        }
+      }
+    } else { // no native transport, mongo can safely use vertx event loop group
+      nettyBuilder.eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup());
+    }
+    options.transportSettings(nettyBuilder.build());
   }
 }

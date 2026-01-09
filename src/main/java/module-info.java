@@ -11,6 +11,7 @@ module io.vertx.mongo.client {
   requires org.mongodb.driver.reactivestreams;
   requires org.reactivestreams;
   requires io.netty.buffer;
+  requires io.netty.transport;
 
   exports io.vertx.ext.mongo;
 
