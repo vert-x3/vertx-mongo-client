@@ -16,18 +16,9 @@ public class NativeTransportKQueueTest extends MongoTestBase {
   private MongoClient mongoClient;
 
   @Override
-  protected VertxOptions getOptions() {
-    VertxOptions options = super.getOptions();
-    if (KQUEUE.available()) {
-      options.setPreferNativeTransport(true);
-    }
-    return options;
-  }
-
-  @Override
   protected VertxBuilder createVertxBuilder(VertxOptions options) {
     VertxBuilder builder = super.createVertxBuilder(options);
-    if (KQUEUE.available()) {
+    if (KQUEUE != null && KQUEUE.available()) {
       builder.withTransport(KQUEUE);
     }
     return builder;
@@ -35,9 +26,10 @@ public class NativeTransportKQueueTest extends MongoTestBase {
 
   @Override
   public void setUp() throws Exception {
-    Assume.assumeTrue("KQUEUE Transport not available, skipping test", KQUEUE.available());
+    Assume.assumeTrue("KQUEUE Transport not available, skipping test", KQUEUE != null && KQUEUE.available());
     super.setUp();
     JsonObject config = getConfig();
+    config.put("transport", KQUEUE.name());
     mongoClient = MongoClient.create(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);

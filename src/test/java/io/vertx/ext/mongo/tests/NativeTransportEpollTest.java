@@ -16,18 +16,9 @@ public class NativeTransportEpollTest extends MongoTestBase {
   private MongoClient mongoClient;
 
   @Override
-  protected VertxOptions getOptions() {
-    VertxOptions options = super.getOptions();
-    if (EPOLL.available()) {
-      options.setPreferNativeTransport(true);
-    }
-    return options;
-  }
-
-  @Override
   protected VertxBuilder createVertxBuilder(VertxOptions options) {
     VertxBuilder builder = super.createVertxBuilder(options);
-    if (EPOLL.available()) {
+    if (EPOLL != null && EPOLL.available()) {
       builder.withTransport(EPOLL);
     }
     return builder;
@@ -35,9 +26,10 @@ public class NativeTransportEpollTest extends MongoTestBase {
 
   @Override
   public void setUp() throws Exception {
-    Assume.assumeTrue("EPOLL Transport not available", EPOLL.available());
+    Assume.assumeTrue("EPOLL Transport not available, skipping test", EPOLL != null && EPOLL.available());
     super.setUp();
     JsonObject config = getConfig();
+    config.put("transport", EPOLL.name());
     mongoClient = MongoClient.create(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);

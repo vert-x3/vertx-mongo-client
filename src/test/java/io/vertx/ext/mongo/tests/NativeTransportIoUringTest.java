@@ -16,18 +16,9 @@ public class NativeTransportIoUringTest extends MongoTestBase {
   private MongoClient mongoClient;
 
   @Override
-  protected VertxOptions getOptions() {
-    VertxOptions options = super.getOptions();
-    if (IO_URING.available()) {
-      options.setPreferNativeTransport(true);
-    }
-    return options;
-  }
-
-  @Override
   protected VertxBuilder createVertxBuilder(VertxOptions options) {
     VertxBuilder builder = super.createVertxBuilder(options);
-    if (IO_URING.available()) {
+    if (IO_URING != null && IO_URING.available()) {
       builder.withTransport(IO_URING);
     }
     return builder;
@@ -35,9 +26,10 @@ public class NativeTransportIoUringTest extends MongoTestBase {
 
   @Override
   public void setUp() throws Exception {
-    Assume.assumeTrue("IO_URING Transport not available, skipping test", IO_URING.available());
+    Assume.assumeTrue("IO_URING Transport not available, skipping test", IO_URING != null && IO_URING.available());
     super.setUp();
     JsonObject config = getConfig();
+    config.put("transport", IO_URING.name());
     mongoClient = MongoClient.create(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);
