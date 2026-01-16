@@ -679,11 +679,12 @@ be saved as native Mongodb ObjectId types in the document collection. This will 
 time. You can also derive the creation time from the hex-string using ObjectId::getDate(). Set to `false` for other types of your choosing.
 If set to false, or left to default, hex strings will be generated as the document _id if the _id is omitted from the document.
 Defaults to `false`.
-`transport`:: Which transport to use if available. If the attempt to use native
-transport fails, falls back to java NIO transport. This option is independent
-of Vertx transport configuration and affects only the MongoDB driver's
-networking. Supported values are: `nio`, `epoll`, `io_uring` and `kqueue`.
-Defaults to `nio`.
+`transport`:: Which transport to use if available.
+Supported values are: `nio`, `epoll`, `io_uring`, `kqueue` for specific
+transport, and `auto` for using the same transport as vertx is using.
+If the attempt to use specified transport fails, falls back to the same
+transport used by vertx (`auto` behavior).
+Defaults to `auto`.
 
 The mongo client tries to support most options that are allowed by the driver. There are two ways to configure mongo
 for use by the driver, either by a connection string or by separate configuration options.

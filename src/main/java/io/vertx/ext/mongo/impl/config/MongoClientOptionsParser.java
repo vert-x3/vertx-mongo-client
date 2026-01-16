@@ -7,6 +7,8 @@ import static io.vertx.core.transport.Transport.NIO;
 
 import com.mongodb.*;
 import com.mongodb.connection.*;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.VertxInternal;
@@ -14,6 +16,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.transport.Transport;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
+import java.util.Locale;
 import org.bson.codecs.*;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -27,6 +30,7 @@ import java.util.Optional;
  */
 public class MongoClientOptionsParser {
 
+  private static final String TRANSPORT_NAME_AUTO = "auto";
   private static final String TRANSPORT_NAME_NIO = "nio";
   private static final String TRANSPORT_NAME_EPOLL = "epoll";
   private static final String TRANSPORT_NAME_IO_URING = "io_uring";
@@ -103,7 +107,7 @@ public class MongoClientOptionsParser {
     //retryable settings
     applyRetryableSetting(options, connectionString, config);
 
-    applyNativeTransportSettings(vertx, options, config);
+    applyTransportSettings(vertx, options, config);
 
     this.settings = options.build();
   }
@@ -132,42 +136,55 @@ public class MongoClientOptionsParser {
   }
 
   @SuppressWarnings("unchecked") // for Class.forName()
-  private void applyNativeTransportSettings(Vertx vertx, MongoClientSettings.Builder options, JsonObject config) {
+  private void applyTransportSettings(Vertx vertx, MongoClientSettings.Builder options, JsonObject config) {
     NettyTransportSettings.Builder nettyBuilder = TransportSettings.nettyBuilder();
-    String mongoTransport = config.getString("transport", TRANSPORT_NAME_NIO).toLowerCase();
+    String vertxTransport = transportNameOfTransportClass(((VertxInternal) vertx).transport().getClass());
+    String mongoTransport = config.getString("transport", TRANSPORT_NAME_AUTO).strip().toLowerCase(Locale.ROOT);
+    if (mongoTransport.equals(TRANSPORT_NAME_AUTO)) {
+      mongoTransport = (vertxTransport != null) ? vertxTransport : TRANSPORT_NAME_NIO;
+    }
     String channelClassName = channelClassNameForTransport(mongoTransport);
-    if (channelClassName != null) {
+    try {
+      nettyBuilder.socketChannelClass((Class<? extends SocketChannel>) Class.forName(channelClassName));
+    } catch (ClassNotFoundException | NoClassDefFoundError | ClassCastException e) {
+      // fallback to vertx transport
+      mongoTransport = vertxTransport;
+      channelClassName = channelClassNameForTransport(vertxTransport);
       try {
         nettyBuilder.socketChannelClass((Class<? extends SocketChannel>) Class.forName(channelClassName));
-      } catch (ClassNotFoundException | NoClassDefFoundError | ClassCastException e) {
-        mongoTransport = TRANSPORT_NAME_NIO; // fallback to nio
+      } catch (ClassNotFoundException ex) {
+        // this is impossible to happen - if vertx already using this transport, the class must be present
+        throw new IllegalStateException("Can't load netty channel class used by Vertx", ex);
       }
     }
-    String vertxTransport = transportNameOfTransportClass(((VertxInternal) vertx).transport().getClass());
     if (mongoTransport.equals(vertxTransport)) {
       // reuse vertx event loop group
       nettyBuilder.eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup());
+    } else {
+      // build separate EL for mongo
+      nettyBuilder.eventLoopGroup(buildEventLoopGroup(mongoTransport));
     }
     options.transportSettings(nettyBuilder.build());
   }
 
-  private static String channelClassNameForTransport(String mongoTransport) {
-    String channelClassName = null;
-    if (mongoTransport.equals(TRANSPORT_NAME_EPOLL)) {
-      channelClassName = "io.netty.channel.epoll.EpollSocketChannel";
-    } else if (mongoTransport.equals(TRANSPORT_NAME_IO_URING)) {
-      channelClassName = "io.netty.channel.uring.IoUringSocketChannel";
-    } else if (mongoTransport.equals(TRANSPORT_NAME_KQUEUE)) {
-      channelClassName = "io.netty.channel.kqueue.KQueueSocketChannel";
-    } else if (!mongoTransport.equals(TRANSPORT_NAME_NIO)) {
-      throw new IllegalArgumentException("Unknown MongoClient transport: " + mongoTransport);
+  private static String channelClassNameForTransport(String transport) {
+    switch (transport) {
+      case TRANSPORT_NAME_NIO:
+        return "io.netty.channel.socket.nio.NioSocketChannel";
+      case TRANSPORT_NAME_EPOLL:
+        return "io.netty.channel.epoll.EpollSocketChannel";
+      case TRANSPORT_NAME_IO_URING:
+        return "io.netty.channel.uring.IoUringSocketChannel";
+      case TRANSPORT_NAME_KQUEUE:
+        return "io.netty.channel.kqueue.KQueueSocketChannel";
+      default:
+        throw new IllegalArgumentException("Invalid MongoClient transport: " + transport);
     }
-    return channelClassName;
   }
 
   private static String transportNameOfTransportClass(Class<? extends Transport> vertxTransportClass) {
     String vertxTransport = null;
-    // NOTE: EPOLL, IO_URING, KQUEUE can be null if corresponding jars are not present on classpath
+    // NOTE: EPOLL, IO_URING, KQUEUE can be null if corresponding jars are not present on the classpath
     if (vertxTransportClass.equals(NIO.implementation().getClass())) { // NIO is never null
       vertxTransport = TRANSPORT_NAME_NIO;
     } else if (EPOLL != null && vertxTransportClass.equals(EPOLL.implementation().getClass())) {
@@ -179,4 +196,31 @@ public class MongoClientOptionsParser {
     }
     return vertxTransport;
   }
+
+  private static EventLoopGroup buildEventLoopGroup(String transportName) {
+    // follow the way how Vertx builds its event loop group (using Transport#ioHandlerFactory()), but with the
+    // default number of threads (2 x cpus)
+    io.vertx.core.transport.Transport transport;
+    switch (transportName) {
+      case TRANSPORT_NAME_NIO:
+        transport = NIO;
+        break;
+      case TRANSPORT_NAME_EPOLL:
+        transport = EPOLL;
+        break;
+      case TRANSPORT_NAME_KQUEUE:
+        transport = KQUEUE;
+        break;
+      case TRANSPORT_NAME_IO_URING:
+        transport = IO_URING;
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown MongoClient transport: " + transportName);
+    }
+    return new MultiThreadIoEventLoopGroup(transport.implementation().ioHandlerFactory());
+  }
+
+  // TODO: ............. here ...............
+  //  - refactor tests into a single one, just build vertx and mongo each time from scratch with different settings
+  //  - add unit tests for MongoClientOptionsParser
 }

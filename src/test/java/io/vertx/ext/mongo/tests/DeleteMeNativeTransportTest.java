@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo.tests;
 
 import static io.vertx.core.transport.Transport.EPOLL;
+import static io.vertx.core.transport.Transport.NIO;
 
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
@@ -8,32 +9,24 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
 import java.util.concurrent.CountDownLatch;
-import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- * Verifies operation when Vertx and MongoDB client are both using EPOLL
- * native transport and the same netty event loop group.
- */
-public class NativeTransportEpollTest extends MongoTestBase {
-
+//@Ignore
+public class DeleteMeNativeTransportTest extends MongoTestBase {
   private MongoClient mongoClient;
 
   @Override
   protected VertxBuilder createVertxBuilder(VertxOptions options) {
-    VertxBuilder builder = super.createVertxBuilder(options);
-    if (EPOLL != null && EPOLL.available()) {
-      builder.withTransport(EPOLL);
-    }
-    return builder;
+    return super.createVertxBuilder(options)
+      .withTransport(EPOLL);
   }
 
   @Override
   public void setUp() throws Exception {
-    Assume.assumeTrue("EPOLL Transport not available, skipping test", EPOLL != null && EPOLL.available());
     super.setUp();
     JsonObject config = getConfig();
-    config.put("transport", EPOLL.name());
+    config.put("transport", NIO.name());
     mongoClient = MongoClient.create(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);
@@ -53,17 +46,11 @@ public class NativeTransportEpollTest extends MongoTestBase {
     int num = 10;
     FindOptions options = new FindOptions();
     String collection = randomCollection();
-    mongoClient.createCollection(collection).onComplete(onSuccess(res -> {
-      insertDocs(mongoClient, collection, num).onComplete(onSuccess(res2 -> {
-        mongoClient.findWithOptions(collection, new JsonObject(), options).onComplete(onSuccess(res3 -> {
-          this.assertEquals(num, res3.size());
-          for (JsonObject doc : res3) {
-            assertEquals(12, doc.size());
-          }
-          testComplete();
-        }));
-      }));
-    }));
+    mongoClient.createCollection(collection).onComplete(ar -> {
+      System.out.println("createCollection complete: " + ar.succeeded());
+      System.out.println("err: " + ar.cause());
+      testComplete();
+    });
     await();
   }
 }

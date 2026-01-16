@@ -12,6 +12,7 @@ module io.vertx.mongo.client {
   requires org.reactivestreams;
   requires io.netty.buffer;
   requires io.netty.transport;
+  requires io.netty.common;
 
   exports io.vertx.ext.mongo;
 

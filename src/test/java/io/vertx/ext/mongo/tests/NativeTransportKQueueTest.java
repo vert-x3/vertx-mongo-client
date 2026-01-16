@@ -11,6 +11,10 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Assume;
 import org.junit.Test;
 
+/**
+ * Verifies operation when Vertx and MongoDB client are both using KQUEUE
+ * native transport and the same netty event loop group.
+ */
 public class NativeTransportKQueueTest extends MongoTestBase {
 
   private MongoClient mongoClient;

@@ -11,6 +11,10 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Assume;
 import org.junit.Test;
 
+/**
+ * Verifies operation when Vertx and MongoDB client are both using IO_URING
+ * native transport and the same netty event loop group.
+ */
 public class NativeTransportIoUringTest extends MongoTestBase {
 
   private MongoClient mongoClient;

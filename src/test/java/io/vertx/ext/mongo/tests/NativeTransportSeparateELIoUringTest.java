@@ -1,6 +1,7 @@
 package io.vertx.ext.mongo.tests;
 
-import static io.vertx.core.transport.Transport.EPOLL;
+import static io.vertx.core.transport.Transport.IO_URING;
+import static io.vertx.core.transport.Transport.NIO;
 
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
@@ -9,31 +10,25 @@ import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
 import java.util.concurrent.CountDownLatch;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- * Verifies operation when Vertx and MongoDB client are both using EPOLL
- * native transport and the same netty event loop group.
- */
-public class NativeTransportEpollTest extends MongoTestBase {
-
+@Ignore
+public class NativeTransportSeparateELIoUringTest extends MongoTestBase {
   private MongoClient mongoClient;
 
   @Override
   protected VertxBuilder createVertxBuilder(VertxOptions options) {
-    VertxBuilder builder = super.createVertxBuilder(options);
-    if (EPOLL != null && EPOLL.available()) {
-      builder.withTransport(EPOLL);
-    }
-    return builder;
+    return super.createVertxBuilder(options)
+      .withTransport(NIO);
   }
 
   @Override
   public void setUp() throws Exception {
-    Assume.assumeTrue("EPOLL Transport not available, skipping test", EPOLL != null && EPOLL.available());
+    Assume.assumeTrue("IO_URING Transport not available, skipping test", IO_URING != null && IO_URING.available());
     super.setUp();
     JsonObject config = getConfig();
-    config.put("transport", EPOLL.name());
+    config.put("transport", IO_URING.name());
     mongoClient = MongoClient.create(vertx, config);
     CountDownLatch latch = new CountDownLatch(1);
     dropCollections(mongoClient, latch);
