@@ -16,6 +16,7 @@ import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.transport.Transport;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
+import java.util.concurrent.CompletableFuture;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.After;
@@ -47,7 +48,15 @@ public class MongoClientOptionsParserTransportTest {
   @After
   public void tearDown() {
     if (vertx != null) {
-      vertx.close();
+      CompletableFuture<Void> closeFuture = new CompletableFuture<>();
+      vertx.close().onComplete(ar -> {
+        if (ar.succeeded()) {
+          closeFuture.complete(null);
+        } else {
+          closeFuture.completeExceptionally(ar.cause());
+        }
+      });
+      closeFuture.join();
     }
   }
 
