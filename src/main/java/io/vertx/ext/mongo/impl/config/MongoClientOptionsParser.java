@@ -219,8 +219,4 @@ public class MongoClientOptionsParser {
     }
     return new MultiThreadIoEventLoopGroup(transport.implementation().ioHandlerFactory());
   }
-
-  // TODO: ............. here ...............
-  //  - refactor tests into a single one, just build vertx and mongo each time from scratch with different settings
-  //  - add unit tests for MongoClientOptionsParser
 }
