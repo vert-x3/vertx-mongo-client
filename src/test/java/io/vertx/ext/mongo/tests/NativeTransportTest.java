@@ -5,6 +5,7 @@ import static io.vertx.core.transport.Transport.IO_URING;
 import static io.vertx.core.transport.Transport.KQUEUE;
 import static io.vertx.core.transport.Transport.NIO;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
@@ -57,6 +58,15 @@ public class NativeTransportTest extends MongoTestBase {
     // options.preferNativeTransport
     return super.createVertxBuilder(options)
       .withTransport(vertxTransport);
+  }
+
+  @Override
+  protected Vertx createVertx(VertxOptions options) {
+    // Parent's "createVertx" performs additional check on transport to prevent
+    // accidental usage of transport that is not available. But this check
+    // implementation relies on the global "vertx.transport" system property,
+    // which is not used in this test.
+    return createVertxBuilder(options).build();
   }
 
   @Override
