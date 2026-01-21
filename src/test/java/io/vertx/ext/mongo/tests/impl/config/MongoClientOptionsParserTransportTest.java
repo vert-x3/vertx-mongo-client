@@ -11,6 +11,7 @@ import static org.junit.Assert.assertNotNull;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.connection.NettyTransportSettings;
 import io.netty.channel.EventLoopGroup;
+import io.netty.util.concurrent.EventExecutor;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -129,6 +130,17 @@ public class MongoClientOptionsParserTransportTest {
     } else {
       assertNotNull(parsedTransportSettings.getEventLoopGroup());
       assertNotEquals(vertxEventLoop, parsedTransportSettings.getEventLoopGroup());
+
+      // and: the newly created event-loop has the same size as the vertx event-loop
+      int vertxEventLoopSize = 0;
+      for (EventExecutor el : vertxEventLoop) {
+        vertxEventLoopSize++;
+      }
+      int mongoEventLoopSize = 0;
+      for (EventExecutor el : parsedTransportSettings.getEventLoopGroup()) {
+        mongoEventLoopSize++;
+      }
+      assertEquals(vertxEventLoopSize, mongoEventLoopSize);
     }
   }
 

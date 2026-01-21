@@ -7,9 +7,11 @@ import static io.vertx.core.transport.Transport.NIO;
 
 import com.mongodb.*;
 import com.mongodb.connection.*;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.util.concurrent.EventExecutor;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -162,7 +164,7 @@ public class MongoClientOptionsParser {
       nettyBuilder.eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup());
     } else {
       // build separate EL for mongo
-      nettyBuilder.eventLoopGroup(buildEventLoopGroup(mongoTransport));
+      nettyBuilder.eventLoopGroup(buildEventLoopGroup(mongoTransport, vertx));
     }
     options.transportSettings(nettyBuilder.build());
   }
@@ -197,9 +199,9 @@ public class MongoClientOptionsParser {
     return vertxTransport;
   }
 
-  private static EventLoopGroup buildEventLoopGroup(String transportName) {
-    // follow the way how Vertx builds its event loop group (using Transport#ioHandlerFactory()), but with the
-    // default number of threads (2 x cpus)
+  private static EventLoopGroup buildEventLoopGroup(String transportName, Vertx vertx) {
+    // follow the way how Vertx builds its event loop group (using Transport#ioHandlerFactory()), with the
+    // same number of threads as in Vertx instance
     io.vertx.core.transport.Transport transport;
     switch (transportName) {
       case TRANSPORT_NAME_NIO:
@@ -217,6 +219,11 @@ public class MongoClientOptionsParser {
       default:
         throw new IllegalArgumentException("Unknown MongoClient transport: " + transportName);
     }
-    return new MultiThreadIoEventLoopGroup(transport.implementation().ioHandlerFactory());
+    // there's no simple method "size", need to iterate and count
+    int numThreadsInVertxEl = 0;
+    for (EventExecutor el : ((VertxInternal) vertx).nettyEventLoopGroup()) {
+      numThreadsInVertxEl++;
+    }
+    return new MultiThreadIoEventLoopGroup(numThreadsInVertxEl, transport.implementation().ioHandlerFactory());
   }
 }
