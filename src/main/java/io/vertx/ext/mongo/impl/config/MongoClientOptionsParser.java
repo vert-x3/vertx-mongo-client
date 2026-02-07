@@ -10,6 +10,8 @@ import com.mongodb.connection.*;
 import io.netty.channel.socket.SocketChannel;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.transport.Transport;
 import io.vertx.ext.mongo.MongoClient;
@@ -27,6 +29,7 @@ import java.util.Optional;
  */
 public class MongoClientOptionsParser {
 
+  private static final Logger log = LoggerFactory.getLogger(MongoClientOptionsParser.class);
   private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
     new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec(), new DocumentCodec());
   private final MongoClientSettings settings;
@@ -131,6 +134,8 @@ public class MongoClientOptionsParser {
         // This should not happen - if vertx is already using this transport, the class must be present.
         // Even if this happens, we're not specifying any netty transport settings, falling back to the default
         // mongo driver setup (separate EL group with 2*numCPU threads with NIO transport).
+        log.warn("Failed to set MongoDB transport class to match Vert.x transport, falling back to NIO: class=" +
+          mongoChannelTransportClass);
       }
     }
     options.transportSettings(nettyBuilder.build());
