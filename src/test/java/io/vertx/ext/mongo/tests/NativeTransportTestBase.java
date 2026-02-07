@@ -1,5 +1,6 @@
 package io.vertx.ext.mongo.tests;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
@@ -27,6 +28,14 @@ public abstract class NativeTransportTestBase extends MongoTestBase {
     Transport transport = vertxTransport();
     Assume.assumeTrue("Transport not available", transport != null && transport.available());
     return super.createVertxBuilder(options).withTransport(transport);
+  }
+
+  @Override
+  protected Vertx createVertx(VertxOptions options) {
+    // This test sets specific transport and does not respect the global
+    // "vertx.transport" system property ensured in parent's "createVertx". So
+    // we don't call super here.
+    return createVertxBuilder(options).build();
   }
 
   @Override
