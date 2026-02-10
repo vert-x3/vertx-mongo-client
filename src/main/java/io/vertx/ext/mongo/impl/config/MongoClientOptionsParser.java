@@ -135,7 +135,7 @@ public class MongoClientOptionsParser {
         // Even if this happens, we're not specifying any netty transport settings, falling back to the default
         // mongo driver setup (separate EL group with 2*numCPU threads with NIO transport).
         log.warn("Failed to set MongoDB transport class to match Vert.x transport, falling back to NIO: " +
-          "attemptedTransportClass=" + mongoChannelTransportClass);
+          "attemptedTransportClass=" + mongoChannelTransportClass, e);
       }
     }
     options.transportSettings(nettyBuilder.build());
