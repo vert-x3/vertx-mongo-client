@@ -1,30 +1,41 @@
 package io.vertx.ext.mongo.tests;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.transport.Transport;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
+import java.util.concurrent.CountDownLatch;
 import org.junit.Assume;
 import org.junit.Test;
 
-import java.util.concurrent.CountDownLatch;
-
-import static io.vertx.core.transport.Transport.EPOLL;
-
-public class NativeTransportTest extends MongoTestBase {
+/**
+ * Verifies a few basic mongo operations with different netty transports.
+ */
+public abstract class NativeTransportTestBase extends MongoTestBase {
 
   private MongoClient mongoClient;
 
-  @Override
-  protected VertxOptions getOptions() {
-    return super.getOptions().setPreferNativeTransport(true);
-  }
+  /**
+   * Subclasses should use this method to specify which transport to use for the test.
+   */
+  protected abstract Transport vertxTransport();
 
   @Override
   protected VertxBuilder createVertxBuilder(VertxOptions options) {
-    Assume.assumeTrue("EPOLL Transport not available", options.getPreferNativeTransport() && EPOLL.available());
-    return super.createVertxBuilder(options).withTransport(EPOLL);
+    Transport transport = vertxTransport();
+    Assume.assumeTrue("Transport not available", transport != null && transport.available());
+    return super.createVertxBuilder(options).withTransport(transport);
+  }
+
+  @Override
+  protected Vertx createVertx(VertxOptions options) {
+    // This test sets specific transport and does not respect the global
+    // "vertx.transport" system property ensured in parent's "createVertx". So
+    // we don't call super here.
+    return createVertxBuilder(options).build();
   }
 
   @Override
@@ -39,7 +50,9 @@ public class NativeTransportTest extends MongoTestBase {
 
   @Override
   public void tearDown() throws Exception {
-    mongoClient.close();
+    if (mongoClient != null) {
+      mongoClient.close();
+    }
     super.tearDown();
   }
 

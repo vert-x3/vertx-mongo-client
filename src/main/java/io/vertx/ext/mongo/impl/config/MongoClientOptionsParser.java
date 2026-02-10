@@ -1,10 +1,19 @@
 package io.vertx.ext.mongo.impl.config;
 
+import static io.vertx.core.transport.Transport.EPOLL;
+import static io.vertx.core.transport.Transport.IO_URING;
+import static io.vertx.core.transport.Transport.KQUEUE;
+import static io.vertx.core.transport.Transport.NIO;
+
 import com.mongodb.*;
 import com.mongodb.connection.*;
+import io.netty.channel.socket.SocketChannel;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.transport.Transport;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.impl.codec.json.JsonObjectCodec;
 import org.bson.codecs.*;
@@ -20,6 +29,7 @@ import java.util.Optional;
  */
 public class MongoClientOptionsParser {
 
+  private static final Logger log = LoggerFactory.getLogger(MongoClientOptionsParser.class);
   private final static CodecRegistry commonCodecRegistry = CodecRegistries.fromCodecs(new StringCodec(), new IntegerCodec(),
     new BooleanCodec(), new DoubleCodec(), new LongCodec(), new BsonDocumentCodec(), new DocumentCodec());
   private final MongoClientSettings settings;
@@ -92,11 +102,7 @@ public class MongoClientOptionsParser {
     //retryable settings
     applyRetryableSetting(options, connectionString, config);
 
-    NettyTransportSettings.Builder nettyBuilder = TransportSettings.nettyBuilder();
-    if (!vertx.isNativeTransportEnabled()) {
-      nettyBuilder.eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup());
-    }
-    options.transportSettings(nettyBuilder.build());
+    applyTransportSettings(vertx, options);
 
     this.settings = options.build();
   }
@@ -114,6 +120,40 @@ public class MongoClientOptionsParser {
     if (retryReads != null) {
       options.retryReads(retryReads);
     }
+  }
+
+  @SuppressWarnings("unchecked") // for Class.forName()
+  private void applyTransportSettings(Vertx vertx, MongoClientSettings.Builder options) {
+    NettyTransportSettings.Builder nettyBuilder = TransportSettings.nettyBuilder();
+    String mongoChannelTransportClass = nettyTransportClassOf(((VertxInternal) vertx).transport().getClass());
+    if (mongoChannelTransportClass != null) {
+      try {
+        nettyBuilder.socketChannelClass((Class<? extends SocketChannel>) Class.forName(mongoChannelTransportClass))
+          .eventLoopGroup(((VertxInternal) vertx).nettyEventLoopGroup());
+      } catch (ClassNotFoundException | NoClassDefFoundError | ClassCastException e) {
+        // This should not happen - if vertx is already using this transport, the class must be present.
+        // Even if this happens, we're not specifying any netty transport settings, falling back to the default
+        // mongo driver setup (separate EL group with 2*numCPU threads with NIO transport).
+        log.warn("Failed to set MongoDB transport class to match Vert.x transport, falling back to NIO: " +
+          "attemptedTransportClass=" + mongoChannelTransportClass, e);
+      }
+    }
+    options.transportSettings(nettyBuilder.build());
+  }
+
+  private static String nettyTransportClassOf(Class<? extends Transport> vertxTransportClass) {
+    String transportClass = null;
+    // EPOLL, IO_URING, KQUEUE can be null if corresponding jars are not present on the classpath
+    if (vertxTransportClass.equals(NIO.implementation().getClass())) { // NIO is never null
+      transportClass = "io.netty.channel.socket.nio.NioSocketChannel";
+    } else if (EPOLL != null && vertxTransportClass.equals(EPOLL.implementation().getClass())) {
+      transportClass = "io.netty.channel.epoll.EpollSocketChannel";
+    } else if (IO_URING != null && vertxTransportClass.equals(IO_URING.implementation().getClass())) {
+      transportClass = "io.netty.channel.uring.IoUringSocketChannel";
+    } else if (KQUEUE != null && vertxTransportClass.equals(KQUEUE.implementation().getClass())) {
+      transportClass = "io.netty.channel.kqueue.KQueueSocketChannel";
+    }
+    return transportClass;
   }
 
   public MongoClientSettings settings() {
