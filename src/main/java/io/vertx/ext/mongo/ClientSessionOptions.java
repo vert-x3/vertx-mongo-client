@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class ClientSessionOptions {
 
   private boolean autoClose;
-  private boolean autoStart;
+  private boolean autoStartTransaction;
 
   private Boolean causallyConsistent;
   private Boolean snapshot;
@@ -29,7 +29,7 @@ public class ClientSessionOptions {
   }
 
   private void init() {
-    autoStart = true;
+    autoStartTransaction = true;
     autoClose = true;
   }
 
@@ -38,7 +38,7 @@ public class ClientSessionOptions {
    */
   public ClientSessionOptions(ClientSessionOptions options) {
     autoClose = options.autoClose;
-    autoStart = options.autoStart;
+    autoStartTransaction = options.autoStartTransaction;
 
     causallyConsistent = options.causallyConsistent;
     snapshot = options.snapshot;
@@ -58,17 +58,17 @@ public class ClientSessionOptions {
   }
 
   /**
-   * @return the autoStart flag
+   * @return the autoStartTransaction flag
    */
-  public boolean isAutoStart() {
-    return autoStart;
+  public boolean isAutoStartTransaction() {
+    return autoStartTransaction;
   }
 
   /**
-   * @param autoStart the autoStart flag to set
+   * @param autoStartTransaction the autoStartTransaction flag to set
    */
-  public ClientSessionOptions setAutoStart(boolean autoStart) {
-    this.autoStart = autoStart;
+  public ClientSessionOptions setAutoStartTransaction(boolean autoStartTransaction) {
+    this.autoStartTransaction = autoStartTransaction;
     return this;
   }
 
@@ -168,7 +168,7 @@ public class ClientSessionOptions {
   @Override
   public String toString() {
     return "ClientSessionOptions{" +
-      "autoStart=" + autoStart +
+      "autoStartTransaction=" + autoStartTransaction +
       ", autoClose=" + autoClose +
       ", causallyConsistent=" + causallyConsistent +
       ", snapshot=" + snapshot +
@@ -181,7 +181,7 @@ public class ClientSessionOptions {
   public boolean equals(Object o) {
     if (!(o instanceof ClientSessionOptions)) return false;
     ClientSessionOptions that = (ClientSessionOptions) o;
-    return autoClose == that.autoClose && autoStart == that.autoStart
+    return autoClose == that.autoClose && autoStartTransaction == that.autoStartTransaction
       && Objects.equals(causallyConsistent, that.causallyConsistent)
       && Objects.equals(snapshot, that.snapshot)
       && Objects.equals(defaultTimeoutMillis, that.defaultTimeoutMillis)
@@ -190,7 +190,7 @@ public class ClientSessionOptions {
 
   @Override
   public int hashCode() {
-    return Objects.hash(autoClose, autoStart, causallyConsistent, snapshot,
+    return Objects.hash(autoClose, autoStartTransaction, causallyConsistent, snapshot,
       defaultTimeoutMillis, defaultTransactionOptions);
   }
 

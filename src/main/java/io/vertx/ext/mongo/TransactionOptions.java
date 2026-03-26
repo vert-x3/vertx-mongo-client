@@ -39,12 +39,45 @@ public class TransactionOptions {
 
   public TransactionOptions(JsonObject json) {
     TransactionOptionsConverter.fromJson(json, this);
+    if (json.containsKey("readConcernLevel")) {
+      this.readConcern = new com.mongodb.ReadConcern(
+        com.mongodb.ReadConcernLevel.fromString(json.getString("readConcernLevel")));
+    }
+    if (json.containsKey("writeConcern")) {
+      this.writeConcern = com.mongodb.WriteConcern.valueOf(json.getString("writeConcern"));
+    }
+    if (json.containsKey("readPreference")) {
+      this.readPreference = com.mongodb.ReadPreference.valueOf(json.getString("readPreference"));
+    }
   }
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     TransactionOptionsConverter.toJson(this, json);
+    if (readConcern != null && readConcern.getLevel() != null) {
+      json.put("readConcernLevel", readConcern.getLevel().getValue());
+    }
+    if (writeConcern != null) {
+      String wcName = writeConcernName(writeConcern);
+      if (wcName != null) {
+        json.put("writeConcern", wcName);
+      }
+    }
+    if (readPreference != null) {
+      json.put("readPreference", readPreference.getName());
+    }
     return json;
+  }
+
+  private static String writeConcernName(com.mongodb.WriteConcern wc) {
+    if (wc.equals(com.mongodb.WriteConcern.ACKNOWLEDGED)) return "ACKNOWLEDGED";
+    if (wc.equals(com.mongodb.WriteConcern.W1)) return "W1";
+    if (wc.equals(com.mongodb.WriteConcern.W2)) return "W2";
+    if (wc.equals(com.mongodb.WriteConcern.W3)) return "W3";
+    if (wc.equals(com.mongodb.WriteConcern.UNACKNOWLEDGED)) return "UNACKNOWLEDGED";
+    if (wc.equals(com.mongodb.WriteConcern.JOURNALED)) return "JOURNALED";
+    if (wc.equals(com.mongodb.WriteConcern.MAJORITY)) return "MAJORITY";
+    return null;
   }
 
   /**

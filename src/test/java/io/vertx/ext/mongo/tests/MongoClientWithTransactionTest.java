@@ -9,7 +9,6 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.TransactionOptions;
 import io.vertx.ext.mongo.impl.config.MongoClientOptionsParser;
 import org.bson.types.ObjectId;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -248,6 +247,199 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
     await();
   }
 
+  @Test
+  public void testManualStartCommit() {
+    String collection = randomCollection();
+
+    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
+      .onComplete(onSuccess(session -> {
+        JsonObject doc = createDoc();
+        session.executeTransaction(client ->
+          client.insert(collection, doc)
+        ).onComplete(onSuccess(id -> {
+          assertTrue(ObjectId.isValid(id));
+
+          mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
+            assertEquals(1, coll.size());
+            session.close().onComplete(onSuccess(closed -> testComplete()));
+          }));
+        }));
+      }));
+
+    await();
+  }
+
+  @Test
+  public void testCommitOnClosedSession() {
+    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
+      .onComplete(onSuccess(session -> {
+        session.close()
+          .onComplete(onSuccess(v -> {
+            session.commit()
+              .onComplete(onFailure(err -> {
+                assertTrue(err instanceof IllegalStateException);
+                assertTrue(err.getMessage().contains("closed"));
+                testComplete();
+              }));
+          }));
+      }));
+
+    await();
+  }
+
+  @Test
+  public void testCommitWithoutTransaction() {
+    mongoClient.startSession(new ClientSessionOptions().setAutoStartTransaction(false).setAutoClose(false))
+      .onComplete(onSuccess(session -> {
+        session.commit()
+          .onComplete(onFailure(err -> {
+            assertTrue(err instanceof IllegalStateException);
+            assertTrue(err.getMessage().contains("not in transaction"));
+            session.close().onComplete(onSuccess(v -> testComplete()));
+          }));
+      }));
+
+    await();
+  }
+
+  @Test
+  public void testDoubleStart() {
+    mongoClient.startSession(new ClientSessionOptions().setAutoStartTransaction(false).setAutoClose(false))
+      .onComplete(onSuccess(session -> session.start()
+        .onComplete(onSuccess(v -> session.start()
+          .onComplete(onFailure(err -> {
+            assertTrue(err instanceof IllegalStateException);
+            assertTrue(err.getMessage().contains("already in transaction"));
+            session.abort().onComplete(onSuccess(v2 ->
+              session.close().onComplete(onSuccess(v3 -> testComplete()))
+            ));
+          }))
+        ))
+      ));
+
+    await();
+  }
+
+  @Test
+  public void testExecuteTransactionOnClosedSession() {
+    String collection = randomCollection();
+
+    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
+      .onComplete(onSuccess(session -> {
+        session.close()
+          .onComplete(onSuccess(v -> session.executeTransaction(client ->
+            client.insert(collection, createDoc())
+          ).onComplete(onFailure(err -> {
+            assertTrue(err instanceof IllegalStateException);
+            assertTrue(err.getMessage().contains("closed"));
+            testComplete();
+          }))));
+      }));
+
+    await();
+  }
+
+  @Test
+  public void testExecuteTransactionWithoutAutoStartAndNoManualStart() {
+    String collection = randomCollection();
+
+    mongoClient.startSession(new ClientSessionOptions().setAutoStartTransaction(false).setAutoClose(false))
+      .onComplete(onSuccess(session -> session.executeTransaction(client ->
+        client.insert(collection, createDoc())
+      ).onComplete(onFailure(err -> {
+        assertTrue(err instanceof IllegalStateException);
+        assertTrue(err.getMessage().contains("autoStartTransaction is disabled"));
+        session.close().onComplete(onSuccess(v -> testComplete()));
+      }))));
+
+    await();
+  }
+
+  @Test
+  public void testNestedSessionPrevented() {
+    mongoClient.executeTransaction(client ->
+      client.startSession().compose(nestedSession ->
+        Future.failedFuture("Should not reach here"))
+    ).onComplete(onFailure(err -> {
+      assertTrue(err instanceof IllegalStateException);
+      assertTrue(err.getMessage().contains("nested session"));
+      testComplete();
+    }));
+
+    await();
+  }
+
+  @Test
+  public void testFindOneInsideTransaction() {
+    String collection = randomCollection();
+    JsonObject doc = createDoc();
+
+    mongoClient.executeTransaction(client ->
+      client.insert(collection, doc)
+        .compose(id -> client.findOne(collection, JsonObject.of("_id", id), null)
+          .map(found -> {
+            assertNotNull(found);
+            assertEquals("bar", found.getString("foo"));
+            return id;
+          }))
+    ).onComplete(onSuccess(id -> {
+      assertTrue(ObjectId.isValid(id));
+      testComplete();
+    }));
+
+    await();
+  }
+
+  @Test
+  public void testUncommittedWriteNotVisibleOutsideTransaction() {
+    String collection = randomCollection();
+
+    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
+      .onComplete(onSuccess(session -> {
+        JsonObject doc = createDoc();
+        session.executeTransaction(client ->
+          client.insert(collection, doc)
+            .compose(id -> {
+              // Read from OUTSIDE the transaction — should not see the uncommitted insert
+              return mongoClient.findOne(collection, new JsonObject().put("_id", id), null)
+                .map(found -> {
+                  assertNull(found);
+                  return id;
+                });
+            })
+        ).onComplete(onSuccess(id -> {
+          // After commit, the doc should now be visible outside the transaction
+          mongoClient.findOne(collection, new JsonObject().put("_id", id), null)
+            .onComplete(onSuccess(found -> {
+              assertNotNull(found);
+              assertEquals("bar", found.getString("foo"));
+              session.close().onComplete(onSuccess(v -> testComplete()));
+            }));
+        }));
+      }));
+
+    await();
+  }
+
+  @Test
+  public void testCountInsideTransaction() {
+    String collection = randomCollection();
+
+    mongoClient.executeTransaction(client ->
+      client.insert(collection, createDoc())
+        .compose(id -> client.count(collection, new JsonObject()))
+        .map(count -> {
+          assertEquals(1L, count.longValue());
+          return count;
+        })
+    ).onComplete(onSuccess(count -> {
+      assertEquals(1L, count.longValue());
+      testComplete();
+    }));
+
+    await();
+  }
+
   private void assertIdOfFirstRecord(String id, List<JsonObject> coll) {
     assertEquals(1, coll.size());
     final JsonObject actual = coll.get(0);
@@ -255,4 +447,5 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
     assertTrue(actual.getValue("_id") instanceof String);
     assertEquals(id, actual.getString("_id"));
   }
+
 }
