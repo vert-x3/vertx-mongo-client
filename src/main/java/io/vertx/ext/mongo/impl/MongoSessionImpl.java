@@ -16,6 +16,7 @@
 
 package io.vertx.ext.mongo.impl;
 
+import com.mongodb.MongoException;
 import com.mongodb.reactivestreams.client.ClientSession;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Closeable;
@@ -33,15 +34,19 @@ import java.util.function.Function;
 
 public class MongoSessionImpl implements MongoSession, Closeable {
 
+  private static final long DEFAULT_TRANSACTION_TIMEOUT_MS = 120_000;
+  private static final String TRANSIENT_TRANSACTION_ERROR = "TransientTransactionError";
+  private static final String UNKNOWN_TRANSACTION_COMMIT_RESULT = "UnknownTransactionCommitResult";
+
   private final ContextInternal creatingContext;
 
   private final MongoClient delegate;
   private final com.mongodb.TransactionOptions transactionOptions;
   private final ClientSession session;
-  private final boolean autoStart;
+  private final boolean autoStartTransaction;
   private final boolean autoClose;
-  private boolean inTransaction;
-  private boolean isClosed;
+  private volatile boolean inTransaction;
+  private volatile boolean isClosed;
 
   public MongoSessionImpl(ContextInternal creatingContext, MongoClient delegate, ClientSession session, ClientSessionOptions sessionOptions) {
     Objects.requireNonNull(creatingContext);
@@ -53,7 +58,7 @@ public class MongoSessionImpl implements MongoSession, Closeable {
     this.transactionOptions = ((sessionOptions != null) && (sessionOptions.getDefaultTransactionOptions() != null))
       ? sessionOptions.getDefaultTransactionOptions().toMongoDriverObject()
       : null;
-    this.autoStart = (sessionOptions == null) || sessionOptions.isAutoStart();
+    this.autoStartTransaction = (sessionOptions == null) || sessionOptions.isAutoStartTransaction();
     this.autoClose = (sessionOptions == null) || sessionOptions.isAutoClose();
 
     creatingContext.addCloseHook(this);
@@ -69,11 +74,7 @@ public class MongoSessionImpl implements MongoSession, Closeable {
 
   @Override
   public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, TransactionOptions options) {
-    if (options == null) {
-      return Future.failedFuture(new IllegalArgumentException("TransactionOptions cannot be null"));
-    }
-
-    return executeTransaction(operations, options.toMongoDriverObject());
+    return executeTransaction(operations, options != null ? options.toMongoDriverObject() : null);
   }
 
   private <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations,
@@ -86,7 +87,19 @@ public class MongoSessionImpl implements MongoSession, Closeable {
       return alreadyHasTransaction();
     }
 
-    if (autoStart) {
+    if (!autoStartTransaction && !inTransaction) {
+      return Future.failedFuture(new IllegalStateException(
+        "autoStartTransaction is disabled and no transaction has been started. Call start() first."));
+    }
+
+    long deadline = System.currentTimeMillis() + DEFAULT_TRANSACTION_TIMEOUT_MS;
+    return attemptTransaction(operations, options, deadline);
+  }
+
+  private <T> Future<@Nullable T> attemptTransaction(Function<MongoClient, Future<@Nullable T>> operations,
+                                                      com.mongodb.TransactionOptions options,
+                                                      long deadline) {
+    if (autoStartTransaction) {
       if (options != null) {
         session.startTransaction(options);
       } else {
@@ -97,9 +110,29 @@ public class MongoSessionImpl implements MongoSession, Closeable {
 
     return operations.apply(delegate)
       .compose(
-        result -> commit().map(result),
-        err -> abort().compose(v2 -> Future.failedFuture(err))
+        result -> commitWithRetry(deadline).map(result),
+        err -> abort().compose(v -> {
+          if (hasErrorLabel(err, TRANSIENT_TRANSACTION_ERROR) && System.currentTimeMillis() < deadline) {
+            return attemptTransaction(operations, options, deadline);
+          }
+          return Future.failedFuture(err);
+        })
       );
+  }
+
+  private Future<Void> commitWithRetry(long deadline) {
+    return commit().recover(err -> {
+      if (hasErrorLabel(err, UNKNOWN_TRANSACTION_COMMIT_RESULT) && System.currentTimeMillis() < deadline) {
+        // Transaction is still active after unknown commit result, so inTransaction must stay true for retry
+        this.inTransaction = true;
+        return commitWithRetry(deadline);
+      }
+      return Future.failedFuture(err);
+    });
+  }
+
+  private boolean hasErrorLabel(Throwable t, String label) {
+    return t instanceof MongoException && ((MongoException) t).hasErrorLabel(label);
   }
 
   @Override
@@ -109,11 +142,7 @@ public class MongoSessionImpl implements MongoSession, Closeable {
 
   @Override
   public Future<Void> start(TransactionOptions transactionOptions) {
-    if (transactionOptions == null) {
-      return Future.failedFuture(new IllegalArgumentException("TransactionOptions cannot be null"));
-    }
-
-    return start(transactionOptions.toMongoDriverObject());
+    return start(transactionOptions != null ? transactionOptions.toMongoDriverObject() : null);
   }
 
   public Future<Void> start(com.mongodb.TransactionOptions transactionOptions) {
@@ -145,7 +174,13 @@ public class MongoSessionImpl implements MongoSession, Closeable {
     }
 
     final Promise<Void> promise = Promise.promise();
-    session.commitTransaction().subscribe(new TransactionSubscriber<>(promise, session, autoClose, () -> this.inTransaction = false));
+    session.commitTransaction().subscribe(new TransactionSubscriber<>(promise, session, autoClose, () -> {
+      this.inTransaction = false;
+      if (autoClose) {
+        this.isClosed = true;
+        creatingContext.removeCloseHook(this);
+      }
+    }));
     return promise.future();
   }
 
@@ -156,7 +191,13 @@ public class MongoSessionImpl implements MongoSession, Closeable {
     }
 
     final Promise<Void> promise = Promise.promise();
-    session.abortTransaction().subscribe(new TransactionSubscriber<>(promise, session, autoClose, () -> this.inTransaction = false));
+    session.abortTransaction().subscribe(new TransactionSubscriber<>(promise, session, autoClose, () -> {
+      this.inTransaction = false;
+      if (autoClose) {
+        this.isClosed = true;
+        creatingContext.removeCloseHook(this);
+      }
+    }));
     return promise.future();
   }
 
@@ -193,17 +234,16 @@ public class MongoSessionImpl implements MongoSession, Closeable {
 
   @Override
   public void close(Completable<Void> completionHandler) {
+    inTransaction = false;
+    isClosed = true;
+    creatingContext.removeCloseHook(this);
+
     try {
       session.close();
+      completionHandler.succeed();
     } catch (Exception e) {
       completionHandler.fail(e);
     }
-
-    inTransaction = false;
-    isClosed = true;
-
-    creatingContext.removeCloseHook(this);
-    completionHandler.succeed();
   }
 
 }
