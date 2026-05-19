@@ -18,9 +18,6 @@ package io.vertx.ext.mongo.impl;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClientBulkWriteResult;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
@@ -32,7 +29,6 @@ import org.bson.BsonValue;
 import org.bson.codecs.DecoderContext;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Utils {
