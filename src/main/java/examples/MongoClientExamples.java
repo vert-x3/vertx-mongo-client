@@ -15,7 +15,6 @@
  */
 package examples;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.json.JsonArray;
