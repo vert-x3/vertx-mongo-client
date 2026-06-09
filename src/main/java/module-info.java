@@ -14,5 +14,6 @@ module io.vertx.mongo.client {
   requires io.netty.transport;
 
   exports io.vertx.ext.mongo;
+  exports io.vertx.ext.mongo.tracing;
 
 }
