@@ -120,6 +120,36 @@ public class PublisherAdapterTest {
   }
 
   @Test
+  public void testFetchOneByOneDeliversExactDemand() throws Exception {
+    int totalDocs = 20;
+    int fetchCount = 4;
+    MyPublisher<Integer> publisher = new MyPublisher<>();
+    PublisherAdapter<Integer> adapter = new PublisherAdapter<>(context, publisher, 256);
+    adapter.pause();
+    AtomicInteger received = new AtomicInteger();
+    AtomicInteger fetched = new AtomicInteger();
+    CountDownLatch latch = new CountDownLatch(1);
+    adapter.handler(item -> {
+      int r = received.incrementAndGet();
+      if (fetched.get() < fetchCount) {
+        fetched.incrementAndGet();
+        adapter.fetch(1);
+      }
+      if (r >= fetchCount) {
+        latch.countDown();
+      }
+    });
+    for (int i = 0; i < totalDocs; i++) {
+      publisher.subscriber.onNext(i);
+    }
+    fetched.incrementAndGet();
+    adapter.fetch(1);
+    assertTrue(latch.await(20, TimeUnit.SECONDS));
+    Thread.sleep(200);
+    assertEquals(fetchCount, received.get());
+  }
+
+  @Test
   public void testUnsubscribe() throws Exception {
     MyPublisher<Integer> publisher = new MyPublisher<>();
     PublisherAdapter<Integer> adapter = new PublisherAdapter<Integer>(context, publisher, 5);

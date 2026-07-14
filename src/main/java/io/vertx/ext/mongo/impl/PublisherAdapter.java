@@ -41,7 +41,8 @@ public class PublisherAdapter<T> implements ReadStream<T> {
   private Handler<Void> endHandler;
 
   private Subscriber subscriber;
-  private long demand;
+  // Buffers demand from pause/fetch calls that arrive before the subscriber is created
+  private long pendingDemand;
 
   public PublisherAdapter(Context context, Publisher<T> publisher, int batchSize) {
     Objects.requireNonNull(context, "context is null");
@@ -49,7 +50,7 @@ public class PublisherAdapter<T> implements ReadStream<T> {
     this.context = (ContextInternal) context;
     this.publisher = publisher;
     this.batchSize = batchSize;
-    this.demand = Long.MAX_VALUE;
+    this.pendingDemand = Long.MAX_VALUE;
   }
 
   @Override
@@ -72,13 +73,12 @@ public class PublisherAdapter<T> implements ReadStream<T> {
         handler = h;
         s = subscriber;
         subscriber = null;
-        demand = Long.MAX_VALUE;
+        pendingDemand = Long.MAX_VALUE;
       }
       if (s != null) {
         s.cancel();
       }
     } else {
-      long d;
       synchronized (this) {
         handler = h;
         s = subscriber;
@@ -87,9 +87,8 @@ public class PublisherAdapter<T> implements ReadStream<T> {
         }
         s = new Subscriber();
         subscriber = s;
-        d = demand;
-        if (d > 0L) {
-          s.fetch(d);
+        if (pendingDemand > 0L) {
+          s.fetch(pendingDemand);
         } else {
           s.pause();
         }
@@ -103,12 +102,13 @@ public class PublisherAdapter<T> implements ReadStream<T> {
   public ReadStream<T> pause() {
     Subscriber s;
     synchronized (this) {
-      demand = 0L;
       s = subscriber;
+      if (s == null) {
+        pendingDemand = 0L;
+        return this;
+      }
     }
-    if (s != null) {
-      s.pause();
-    }
+    s.pause();
     return this;
   }
 
@@ -118,26 +118,25 @@ public class PublisherAdapter<T> implements ReadStream<T> {
   }
 
   @Override
-  public synchronized ReadStream<T> fetch(long amount) {
+  public ReadStream<T> fetch(long amount) {
     if (amount < 0L) {
       throw new IllegalArgumentException();
     }
     if (amount == 0L) {
       return this;
     }
-    long d;
     Subscriber s;
     synchronized (this) {
-      demand += amount;
-      if (demand < 0L) {
-        demand = Long.MAX_VALUE;
-      }
-      d = demand;
       s = subscriber;
+      if (s == null) {
+        pendingDemand += amount;
+        if (pendingDemand < 0L) {
+          pendingDemand = Long.MAX_VALUE;
+        }
+        return this;
+      }
     }
-    if (s != null) {
-      s.fetch(d);
-    }
+    s.fetch(amount);
     return this;
   }
 
