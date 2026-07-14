@@ -12,9 +12,9 @@ public class ClientSessionOptionsConverter {
    static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, ClientSessionOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "autoStart":
+        case "autoStartTransaction":
           if (member.getValue() instanceof Boolean) {
-            obj.setAutoStart((Boolean)member.getValue());
+            obj.setAutoStartTransaction((Boolean)member.getValue());
           }
           break;
         case "autoClose":
@@ -51,7 +51,7 @@ public class ClientSessionOptionsConverter {
   }
 
    static void toJson(ClientSessionOptions obj, java.util.Map<String, Object> json) {
-    json.put("autoStart", obj.isAutoStart());
+    json.put("autoStartTransaction", obj.isAutoStartTransaction());
     json.put("autoClose", obj.isAutoClose());
     if (obj.getCausallyConsistent() != null) {
       json.put("causallyConsistent", obj.getCausallyConsistent());
