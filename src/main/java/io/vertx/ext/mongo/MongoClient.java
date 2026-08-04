@@ -687,51 +687,44 @@ public interface MongoClient {
   Future<@Nullable JsonObject> ping();
 
   /**
-   * Starts a session and returns a {@link MongoSession} which is a wrapper over the client
-   * that also allows manual control of the transaction.
-   * By default, the session is closed automatically after the transaction ends.
+   * Starts a {@link MongoSession}, which can run several sequential transactions and stays open
+   * until {@link MongoSession#close()} is called. Use the session only with this client, and issue
+   * its operations sequentially.
    *
-   * @return a future notified with a {@link MongoSession} used to control the transaction scope
+   * @return a future notified with the new {@link MongoSession}
    */
   Future<MongoSession> startSession();
 
   /**
-   * Starts a session and returns a {@link MongoSession} which is a wrapper over the client
-   * that also allows manual control of the transaction. The specified {@link ClientSessionOptions}
-   * will be applied to the session and all of its transactions.
-   * By default, the session is closed automatically after the transaction ends,
-   * this can be also overruled using {@link ClientSessionOptions#setAutoClose(boolean)}}.
+   * Like {@link #startSession()} with the specified {@link ClientSessionOptions} applied to the
+   * session and all of its transactions.
    *
-   * @param options    options to use for the session and transactions
-   *
-   * @return a future notified with a {@link MongoSession} used to control the transaction scope
+   * @param options options to use for the session and its transactions
+   * @return a future notified with the new {@link MongoSession}
    */
   Future<MongoSession> startSession(ClientSessionOptions options);
 
   /**
-   * Starts a session and executes the passed operations in a distributed transaction.
-   * By default, the session is closed automatically after the transaction ends.
+   * Starts a session, executes the operations in a transaction and closes the session.
+   * The transaction commits on success, aborts on failure, and retries transient errors
+   * and unknown commit results as recommended by MongoDB.
    *
-   * @param operations     the operations to execute inside the transaction
-   * @param <T>      the return type from the operations function
-   *
+   * @param operations the operations to execute inside the transaction
+   * @param <T>        the return type of the operations function
    * @return a future notified with the result of operations
    */
-  <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations);
+  <T> Future<@Nullable T> withTransaction(Function<MongoClient, Future<@Nullable T>> operations);
 
   /**
-   * Starts a session and executes the passed operations in a distributed transaction.
-   * The specified {@link ClientSessionOptions} will be applied to the session and all of its transactions.
-   * By default, the session is closed automatically after the transaction ends,
-   * this can be also overruled using {@link ClientSessionOptions#setAutoClose(boolean)}}.
+   * Like {@link #withTransaction(Function)} with the specified {@link ClientSessionOptions} applied
+   * to the session and its transaction.
    *
-   * @param operations       the operations to execute inside the transaction
-   *                   @param options    options to use for the session and transaction
-   * @param <T>        the return type from the operations function
-   *
+   * @param operations the operations to execute inside the transaction
+   * @param options    options to use for the session and its transaction
+   * @param <T>        the return type of the operations function
    * @return a future notified with the result of operations
    */
-  <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, ClientSessionOptions options);
+  <T> Future<@Nullable T> withTransaction(Function<MongoClient, Future<@Nullable T>> operations, ClientSessionOptions options);
 
   /**
    * Close the client and release its resources

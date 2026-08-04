@@ -1,5 +1,9 @@
 package io.vertx.ext.mongo;
 
+import com.mongodb.ReadConcern;
+import com.mongodb.ReadConcernLevel;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
@@ -16,9 +20,9 @@ import java.util.concurrent.TimeUnit;
 @JsonGen(publicConverter = false)
 public class TransactionOptions {
 
-  private com.mongodb.ReadConcern readConcern;
-  private com.mongodb.WriteConcern writeConcern;
-  private com.mongodb.ReadPreference readPreference;
+  private String readConcernLevel;
+  private String writeConcern;
+  private String readPreference;
   private Long maxCommitTimeMillis;
   private Long timeoutMillis;
 
@@ -30,7 +34,7 @@ public class TransactionOptions {
    * Copy constructor.
    */
   public TransactionOptions(TransactionOptions options) {
-    readConcern = options.readConcern;
+    readConcernLevel = options.readConcernLevel;
     writeConcern = options.writeConcern;
     readPreference = options.readPreference;
     maxCommitTimeMillis = options.maxCommitTimeMillis;
@@ -39,89 +43,55 @@ public class TransactionOptions {
 
   public TransactionOptions(JsonObject json) {
     TransactionOptionsConverter.fromJson(json, this);
-    if (json.containsKey("readConcernLevel")) {
-      this.readConcern = new com.mongodb.ReadConcern(
-        com.mongodb.ReadConcernLevel.fromString(json.getString("readConcernLevel")));
-    }
-    if (json.containsKey("writeConcern")) {
-      this.writeConcern = com.mongodb.WriteConcern.valueOf(json.getString("writeConcern"));
-    }
-    if (json.containsKey("readPreference")) {
-      this.readPreference = com.mongodb.ReadPreference.valueOf(json.getString("readPreference"));
-    }
   }
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     TransactionOptionsConverter.toJson(this, json);
-    if (readConcern != null && readConcern.getLevel() != null) {
-      json.put("readConcernLevel", readConcern.getLevel().getValue());
-    }
-    if (writeConcern != null) {
-      String wcName = writeConcernName(writeConcern);
-      if (wcName != null) {
-        json.put("writeConcern", wcName);
-      }
-    }
-    if (readPreference != null) {
-      json.put("readPreference", readPreference.getName());
-    }
     return json;
   }
 
-  private static String writeConcernName(com.mongodb.WriteConcern wc) {
-    if (wc.equals(com.mongodb.WriteConcern.ACKNOWLEDGED)) return "ACKNOWLEDGED";
-    if (wc.equals(com.mongodb.WriteConcern.W1)) return "W1";
-    if (wc.equals(com.mongodb.WriteConcern.W2)) return "W2";
-    if (wc.equals(com.mongodb.WriteConcern.W3)) return "W3";
-    if (wc.equals(com.mongodb.WriteConcern.UNACKNOWLEDGED)) return "UNACKNOWLEDGED";
-    if (wc.equals(com.mongodb.WriteConcern.JOURNALED)) return "JOURNALED";
-    if (wc.equals(com.mongodb.WriteConcern.MAJORITY)) return "MAJORITY";
-    return null;
+  /**
+   * @return the read concern level, e.g. {@code "local"} or {@code "majority"}
+   */
+  public String getReadConcernLevel() {
+    return readConcernLevel;
   }
 
   /**
-   * @return the readConcern
+   * @param readConcernLevel the read concern level to set, e.g. {@code "local"} or {@code "majority"}
    */
-  public com.mongodb.ReadConcern getReadConcern() {
-    return readConcern;
-  }
-
-  /**
-   * @param readConcern the readConcern to set
-   */
-  public TransactionOptions setReadConcern(com.mongodb.ReadConcern readConcern) {
-    this.readConcern = readConcern;
+  public TransactionOptions setReadConcernLevel(String readConcernLevel) {
+    this.readConcernLevel = readConcernLevel;
     return this;
   }
 
   /**
-   * @return the writeConcern
+   * @return the write concern, either a named one such as {@code "majority"} or a number of nodes
    */
-  public com.mongodb.WriteConcern getWriteConcern() {
+  public String getWriteConcern() {
     return writeConcern;
   }
 
-
   /**
-   * @param writeConcern the writeConcern to set
+   * @param writeConcern the write concern to set, either a named one such as {@code "majority"} or a number of nodes
    */
-  public TransactionOptions setWriteConcern(com.mongodb.WriteConcern writeConcern) {
+  public TransactionOptions setWriteConcern(String writeConcern) {
     this.writeConcern = writeConcern;
     return this;
   }
 
   /**
-   * @return the readPreference
+   * @return the read preference, e.g. {@code "primary"}
    */
-  public com.mongodb.ReadPreference getReadPreference() {
+  public String getReadPreference() {
     return readPreference;
   }
 
   /**
-   * @param readPreference the readPreference to set
+   * @param readPreference the read preference to set, e.g. {@code "primary"}
    */
-  public TransactionOptions setReadPreference(com.mongodb.ReadPreference readPreference) {
+  public TransactionOptions setReadPreference(String readPreference) {
     this.readPreference = readPreference;
     return this;
   }
@@ -158,7 +128,7 @@ public class TransactionOptions {
   }
 
   /**
-   * @param timeoutMillis the timeoutMillis to set
+   * @param timeoutMillis the timeoutMillis to set, also bounds the transaction retry loop
    */
   public TransactionOptions setTimeoutMillis(Long timeoutMillis) {
     this.timeoutMillis = timeoutMillis;
@@ -175,19 +145,38 @@ public class TransactionOptions {
   }
 
   public com.mongodb.TransactionOptions toMongoDriverObject() {
-    final com.mongodb.TransactionOptions.Builder builder = com.mongodb.TransactionOptions.builder();
-    if (readConcern != null) builder.readConcern(readConcern);
-    if (writeConcern != null) builder.writeConcern(writeConcern);
-    if (readPreference != null) builder.readPreference(readPreference);
-    if (maxCommitTimeMillis != null) builder.maxCommitTime(maxCommitTimeMillis, TimeUnit.MILLISECONDS);
-    if (timeoutMillis != null) builder.timeout(timeoutMillis, TimeUnit.MILLISECONDS);
+    com.mongodb.TransactionOptions.Builder builder = com.mongodb.TransactionOptions.builder();
+    if (readConcernLevel != null) {
+      builder.readConcern(new ReadConcern(ReadConcernLevel.fromString(readConcernLevel)));
+    }
+    if (writeConcern != null) {
+      builder.writeConcern(toWriteConcern(writeConcern));
+    }
+    if (readPreference != null) {
+      builder.readPreference(ReadPreference.valueOf(readPreference));
+    }
+    if (maxCommitTimeMillis != null) {
+      builder.maxCommitTime(maxCommitTimeMillis, TimeUnit.MILLISECONDS);
+    }
+    if (timeoutMillis != null) {
+      builder.timeout(timeoutMillis, TimeUnit.MILLISECONDS);
+    }
     return builder.build();
+  }
+
+  private static WriteConcern toWriteConcern(String value) {
+    try {
+      return new WriteConcern(Integer.parseInt(value));
+    } catch (NumberFormatException ignored) {
+      // do nothing
+    }
+    return WriteConcern.valueOf(value);
   }
 
   @Override
   public String toString() {
     return "TransactionOptions{" +
-      "readConcern=" + readConcern +
+      "readConcernLevel=" + readConcernLevel +
       ", writeConcern=" + writeConcern +
       ", readPreference=" + readPreference +
       ", maxCommitTimeMillis=" + maxCommitTimeMillis +
@@ -199,7 +188,7 @@ public class TransactionOptions {
   public boolean equals(Object o) {
     if (!(o instanceof TransactionOptions)) return false;
     TransactionOptions that = (TransactionOptions) o;
-    return Objects.equals(readConcern, that.readConcern)
+    return Objects.equals(readConcernLevel, that.readConcernLevel)
       && Objects.equals(writeConcern, that.writeConcern)
       && Objects.equals(readPreference, that.readPreference)
       && Objects.equals(maxCommitTimeMillis, that.maxCommitTimeMillis)
@@ -208,7 +197,7 @@ public class TransactionOptions {
 
   @Override
   public int hashCode() {
-    return Objects.hash(readConcern, writeConcern, readPreference, maxCommitTimeMillis, timeoutMillis);
+    return Objects.hash(readConcernLevel, writeConcern, readPreference, maxCommitTimeMillis, timeoutMillis);
   }
 
 }

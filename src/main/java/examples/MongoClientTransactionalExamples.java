@@ -22,91 +22,71 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.TransactionOptions;
 import io.vertx.ext.mongo.UpdateOptions;
 
-import com.mongodb.ReadConcern;
-import com.mongodb.WriteConcern;
-
 import java.util.concurrent.TimeUnit;
 
 public class MongoClientTransactionalExamples {
 
-  public void executeTransactionExample(MongoClient mongoClient) {
-    JsonObject query = new JsonObject()
-      .put("title", "The Hobbit");
-    JsonObject update = new JsonObject().put("$set", new JsonObject()
-      .put("author", "J. R. R. Tolkien"));
+  public void withTransactionExample(MongoClient mongoClient) {
+    JsonObject query = JsonObject.of("title", "The Hobbit");
+    JsonObject update = JsonObject.of("$set", JsonObject.of("author", "J. R. R. Tolkien"));
     UpdateOptions options = new UpdateOptions().setMulti(true);
+    JsonObject author = JsonObject.of("name", "J. R. R. Tolkien");
 
-    mongoClient.executeTransaction(client -> Future.join(
-        client.updateCollectionWithOptions("books", query, update, options),
-        client.insert("authors", update)
-      ))
-      .onFailure(throwable -> System.err.println(throwable.getMessage()))
-      .onComplete(res -> {
-        final Object updateResult = res.result().resultAt(0);
-        final Object insertResult = res.result().resultAt(1);
-        if (res.succeeded()) {
-          System.out.println("Book and Author updated ! updated:" + updateResult + " inserted: " + insertResult);
-        } else {
-          res.cause().printStackTrace();
-        }
-      });
+    mongoClient.withTransaction(client ->
+        client.updateCollectionWithOptions("books", query, update, options)
+          .compose(updateResult -> client.insert("authors", author))
+      )
+      .onSuccess(insertedId -> System.out.println("Book updated and author inserted: " + insertedId))
+      .onFailure(err -> System.err.println("Transaction failed: " + err.getMessage()));
   }
 
   public void startSessionExample(MongoClient mongoClient) {
-    mongoClient.startSession(new ClientSessionOptions()
-        .setAutoStartTransaction(true)
-        .setAutoClose(true)
-      )
-      .flatMap(session -> {
-        // Match any documents with title=The Hobbit
-        JsonObject query = new JsonObject()
-          .put("title", "The Hobbit");
-        // Set the author field
-        JsonObject update = new JsonObject().put("$set", new JsonObject()
-          .put("author", "J. R. R. Tolkien"));
-        UpdateOptions options = new UpdateOptions().setMulti(true);
+    JsonObject query = JsonObject.of("title", "The Hobbit");
+    JsonObject update = JsonObject.of("$set", JsonObject.of("author", "J. R. R. Tolkien"));
+    UpdateOptions options = new UpdateOptions().setMulti(true);
+    JsonObject author = JsonObject.of("name", "J. R. R. Tolkien");
 
-        return session.executeTransaction(client ->
-          Future.join(
-            client.updateCollectionWithOptions("books", query, update, options),
-            client.insert("authors", update))
-        );
-      })
-      .onFailure(throwable -> System.err.println(throwable.getMessage()))
-      .onComplete(res -> {
-        final Object updateResult = res.result().resultAt(0);
-        final Object insertResult = res.result().resultAt(1);
-        if (res.succeeded()) {
-          System.out.println("Book and Author updated ! updated:" + updateResult + " inserted: " + insertResult);
-        } else {
-          res.cause().printStackTrace();
-        }
-      });
+    mongoClient.startSession()
+      .flatMap(session ->
+        session.withTransaction(client ->
+            client.updateCollectionWithOptions("books", query, update, options)
+              .compose(updateResult -> client.insert("authors", author))
+          )
+          .eventually(session::close)
+      )
+      .onSuccess(insertedId -> System.out.println("Book updated and author inserted: " + insertedId))
+      .onFailure(err -> System.err.println("Transaction failed: " + err.getMessage()));
+  }
+
+  public void sessionReuseExample(MongoClient mongoClient) {
+    JsonObject firstBook = JsonObject.of("title", "The Fellowship of the Ring");
+    JsonObject secondBook = JsonObject.of("title", "The Two Towers");
+
+    mongoClient.startSession()
+      .flatMap(session ->
+        session.withTransaction(client -> client.insert("books", firstBook))
+          .compose(id -> session.withTransaction(client -> client.insert("books", secondBook)))
+          .eventually(session::close)
+      )
+      .onSuccess(id -> System.out.println("Both transactions committed"))
+      .onFailure(err -> System.err.println("Transaction failed: " + err.getMessage()));
   }
 
   public void manualTransactionExample(MongoClient mongoClient) {
-    mongoClient.startSession(new ClientSessionOptions()
-        .setAutoStartTransaction(false)
-        .setAutoClose(false)
-      )
-      .flatMap(session ->
-        session.start()
-          .flatMap(v -> {
-            JsonObject doc = new JsonObject()
-              .put("title", "The Hobbit")
-              .put("author", "J. R. R. Tolkien");
+    JsonObject doc = JsonObject.of("title", "The Hobbit", "author", "J. R. R. Tolkien");
 
-            return session.executeTransaction(client ->
-              client.insert("books", doc)
-                .flatMap(id -> client.findOne("books", new JsonObject().put("_id", id), null))
-            );
-          })
+    mongoClient.startSession()
+      .flatMap(session -> {
+        MongoClient client = session.client();
+        return session.startTransaction()
+          .flatMap(v -> client.insert("books", doc))
+          .flatMap(id -> client.findOne("books", JsonObject.of("_id", id), null))
           .compose(
-            result -> session.commit().map(result),
-            err -> session.abort().compose(v -> Future.failedFuture(err))
+            book -> session.commit().map(book),
+            err -> session.abort().transform(v -> Future.failedFuture(err))
           )
-          .eventually(() -> session.close())
-      )
+          .eventually(session::close);
+      })
       .onSuccess(book -> System.out.println("Inserted and verified: " + book.getString("title")))
       .onFailure(err -> System.err.println("Transaction failed: " + err.getMessage()));
   }
@@ -114,25 +94,19 @@ public class MongoClientTransactionalExamples {
   public void transactionWithOptionsExample(MongoClient mongoClient) {
     ClientSessionOptions sessionOptions = new ClientSessionOptions()
       .setDefaultTransactionOptions(new TransactionOptions()
-        .setReadConcern(ReadConcern.MAJORITY)
-        .setWriteConcern(WriteConcern.MAJORITY)
+        .setReadConcernLevel("majority")
+        .setWriteConcern("majority")
         .setMaxCommitTime(30, TimeUnit.SECONDS)
       );
 
-    mongoClient.executeTransaction(client -> {
-        JsonObject book = new JsonObject()
-          .put("title", "The Silmarillion")
-          .put("author", "J. R. R. Tolkien");
-        JsonObject author = new JsonObject()
-          .put("name", "J. R. R. Tolkien")
-          .put("genre", "Fantasy");
+    JsonObject book = JsonObject.of("title", "The Silmarillion", "author", "J. R. R. Tolkien");
+    JsonObject author = JsonObject.of("name", "J. R. R. Tolkien", "genre", "Fantasy");
 
-        return Future.join(
-          client.insert("books", book),
-          client.insert("authors", author)
-        );
-      }, sessionOptions)
-      .onSuccess(cf -> System.out.println("Both inserts committed with majority write concern"))
+    mongoClient.withTransaction(client ->
+        client.insert("books", book)
+          .compose(bookId -> client.insert("authors", author))
+        , sessionOptions)
+      .onSuccess(id -> System.out.println("Both inserts committed with majority write concern"))
       .onFailure(err -> System.err.println("Transaction failed: " + err.getMessage()));
   }
 

@@ -12,16 +12,6 @@ public class ClientSessionOptionsConverter {
    static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, ClientSessionOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "autoStartTransaction":
-          if (member.getValue() instanceof Boolean) {
-            obj.setAutoStartTransaction((Boolean)member.getValue());
-          }
-          break;
-        case "autoClose":
-          if (member.getValue() instanceof Boolean) {
-            obj.setAutoClose((Boolean)member.getValue());
-          }
-          break;
         case "causallyConsistent":
           if (member.getValue() instanceof Boolean) {
             obj.setCausallyConsistent((Boolean)member.getValue());
@@ -51,8 +41,6 @@ public class ClientSessionOptionsConverter {
   }
 
    static void toJson(ClientSessionOptions obj, java.util.Map<String, Object> json) {
-    json.put("autoStartTransaction", obj.isAutoStartTransaction());
-    json.put("autoClose", obj.isAutoClose());
     if (obj.getCausallyConsistent() != null) {
       json.put("causallyConsistent", obj.getCausallyConsistent());
     }

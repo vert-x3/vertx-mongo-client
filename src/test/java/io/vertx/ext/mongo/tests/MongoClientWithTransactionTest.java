@@ -45,7 +45,7 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   }
 
   @Test
-  public void testReplaceUpsertCommit() {
+  public void testSessionTransactionCommit() {
     String collection = randomCollection();
     String collection2 = randomCollection();
 
@@ -57,23 +57,24 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
         JsonObject doc = createDoc();
         JsonObject doc2 = createDoc();
 
-        session.executeTransaction(client ->
-            Future.join(
-              client.insert(collection, doc).onComplete(onSuccess(insertedId -> {
+        session.withTransaction(client ->
+            client.insert(collection, doc)
+              .compose(insertedId -> {
                 assertTrue(ObjectId.isValid(insertedId));
                 id1.set(insertedId);
-              })),
-              client.insert(collection2, doc2).onComplete(onSuccess(insertedId -> {
+                return client.insert(collection2, doc2);
+              })
+              .andThen(onSuccess(insertedId -> {
                 assertTrue(ObjectId.isValid(insertedId));
                 id2.set(insertedId);
               }))
-            )
           )
+          .eventually(session::close)
           .onComplete(onSuccess(id -> {
-            mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
+            mongoClient.find(collection, JsonObject.of()).onComplete(onSuccess(coll -> {
               assertIdOfFirstRecord(id1.get(), coll);
 
-              mongoClient.find(collection2, new JsonObject()).onComplete(onSuccess(coll2 -> {
+              mongoClient.find(collection2, JsonObject.of()).onComplete(onSuccess(coll2 -> {
                 assertIdOfFirstRecord(id2.get(), coll2);
 
                 testComplete();
@@ -96,26 +97,55 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
     JsonObject doc = createDoc();
     JsonObject doc2 = createDoc();
 
-    Future.join(
-      mongoClient.executeTransaction(client -> client.insert(collection, doc).onComplete(onSuccess(insertedId -> {
+    mongoClient.withTransaction(client -> client.insert(collection, doc).andThen(onSuccess(insertedId -> {
         assertTrue(ObjectId.isValid(insertedId));
         id1.set(insertedId);
-      }))),
-      mongoClient.executeTransaction(client -> client.insert(collection2, doc2).onComplete(onSuccess(insertedId -> {
+      })))
+      .compose(v -> mongoClient.withTransaction(client -> client.insert(collection2, doc2).andThen(onSuccess(insertedId -> {
         assertTrue(ObjectId.isValid(insertedId));
         id2.set(insertedId);
-      })))
-    ).onComplete(onSuccess(id -> {
-      mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
-        assertIdOfFirstRecord(id1.get(), coll);
+      }))))
+      .onComplete(onSuccess(id -> {
+        mongoClient.find(collection, JsonObject.of()).onComplete(onSuccess(coll -> {
+          assertIdOfFirstRecord(id1.get(), coll);
 
-        mongoClient.find(collection2, new JsonObject()).onComplete(onSuccess(coll2 -> {
-          assertIdOfFirstRecord(id2.get(), coll2);
+          mongoClient.find(collection2, JsonObject.of()).onComplete(onSuccess(coll2 -> {
+            assertIdOfFirstRecord(id2.get(), coll2);
 
-          testComplete();
+            testComplete();
+          }));
         }));
       }));
-    }));
+
+    await();
+  }
+
+  @Test
+  public void testSessionReuseForSequentialTransactions() {
+    String collection = randomCollection();
+    String collection2 = randomCollection();
+
+    mongoClient.startSession()
+      .onComplete(onSuccess(session -> {
+        session.withTransaction(client -> client.insert(collection, createDoc()))
+          .compose(id1 -> {
+            assertTrue(ObjectId.isValid(id1));
+            return session.withTransaction(client -> client.insert(collection2, createDoc()));
+          })
+          .eventually(session::close)
+          .onComplete(onSuccess(id2 -> {
+            assertTrue(ObjectId.isValid(id2));
+
+            mongoClient.count(collection, JsonObject.of()).onComplete(onSuccess(count -> {
+              assertEquals(1L, count.longValue());
+
+              mongoClient.count(collection2, JsonObject.of()).onComplete(onSuccess(count2 -> {
+                assertEquals(1L, count2.longValue());
+                testComplete();
+              }));
+            }));
+          }));
+      }));
 
     await();
   }
@@ -124,24 +154,23 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   public void testAbort() {
     String collection = randomCollection();
 
-    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
+    mongoClient.startSession()
       .onComplete(onSuccess(session -> {
-        JsonObject doc = createDoc();
-        session.executeTransaction(client ->
-          client.insert(collection, doc)
-            .onComplete(onSuccess(id -> assertTrue(ObjectId.isValid(id))))
-            .compose(id -> session.abort())
-        ).onFailure(ex -> {
-          assertNotNull(ex);
+        MongoClient client = session.client();
+        session.startTransaction()
+          .compose(v -> client.insert(collection, createDoc()))
+          .compose(id -> {
+            assertTrue(ObjectId.isValid(id));
+            return session.abort();
+          })
+          .eventually(session::close)
+          .onComplete(onSuccess(v -> {
+            mongoClient.find(collection, JsonObject.of()).onComplete(onSuccess(coll -> {
+              assertEquals(0, coll.size());
 
-          session.close()
-            .onComplete(onSuccess(closed ->
-              mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
-                assertEquals(0, coll.size());
-
-                testComplete();
-              }))));
-        });
+              testComplete();
+            }));
+          }));
       }));
 
     await();
@@ -154,40 +183,45 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
     mongoClient.startSession()
       .onComplete(onSuccess(session -> {
         JsonObject doc = createDoc();
-        session.executeTransaction(client ->
-          Future.join(
-            client.insert(collection, doc).onComplete(onSuccess(id -> assertTrue(ObjectId.isValid(id)))),
-            client.updateCollection("wrongcollection", new JsonObject(), new JsonObject().put("$noSuchOperator", new JsonObject().put("x", 1)))
+        session.withTransaction(client ->
+            client.insert(collection, doc)
+              .compose(id -> {
+                assertTrue(ObjectId.isValid(id));
+                return client.updateCollection("wrongcollection", JsonObject.of(),
+                  JsonObject.of("$noSuchOperator", JsonObject.of("x", 1)));
+              })
           )
-        ).onFailure(ex -> {
-          assertNotNull(ex);
+          .eventually(session::close)
+          .onComplete(onFailure(ex -> {
+            assertNotNull(ex);
 
-          mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
-            assertEquals(0, coll.size());
+            mongoClient.find(collection, JsonObject.of()).onComplete(onSuccess(coll -> {
+              assertEquals(0, coll.size());
 
-            testComplete();
+              testComplete();
+            }));
           }));
-        });
       }));
 
     await();
   }
 
   @Test
-  public void testExecuteTransactionCommit() {
+  public void testWithTransactionCommit() {
     String collection = randomCollection();
     String collection2 = randomCollection();
 
-    mongoClient.executeTransaction(tx -> {
+    mongoClient.withTransaction(client -> {
         JsonObject doc = createDoc();
         JsonObject doc2 = createDoc();
-        return Future.join(
-          tx.insert(collection, doc),
-          tx.insert(collection2, doc2));
+        return client.insert(collection, doc)
+          .compose(id -> {
+            assertTrue(ObjectId.isValid(id));
+            return client.insert(collection2, doc2);
+          });
       })
-      .onComplete(onSuccess(cf -> {
-        assertTrue(ObjectId.isValid(cf.resultAt(0)));
-        assertTrue(ObjectId.isValid(cf.resultAt(1)));
+      .onComplete(onSuccess(id2 -> {
+        assertTrue(ObjectId.isValid(id2));
         testComplete();
       }));
 
@@ -195,54 +229,53 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   }
 
   @Test
-  public void testExecuteTransactionCommitForMultipleTransactions() {
+  public void testWithTransactionCommitForMultipleInserts() {
     String collection = randomCollection();
     String collection2 = randomCollection();
     String collection3 = randomCollection();
 
-    mongoClient.executeTransaction(client -> {
-      JsonObject doc = createDoc();
-      JsonObject doc2 = createDoc();
-      return Future.join(
-          client.insert(collection, doc),
-          client.insert(collection2, doc2))
-        .onComplete(onSuccess(cf -> {
-          assertTrue(ObjectId.isValid(cf.resultAt(0)));
-          assertTrue(ObjectId.isValid(cf.resultAt(1)));
+    mongoClient.withTransaction(client ->
+        client.insert(collection, createDoc())
+          .compose(id -> {
+            assertTrue(ObjectId.isValid(id));
+            return client.insert(collection2, createDoc());
+          })
+          .compose(id2 -> {
+            assertTrue(ObjectId.isValid(id2));
+            return client.insert(collection3, createDoc());
+          })
+      , new ClientSessionOptions().setDefaultTransactionOptions(
+        new TransactionOptions().setMaxCommitTime(100L, TimeUnit.SECONDS)
+      ))
+      .onComplete(onSuccess(id3 -> {
+        assertTrue(ObjectId.isValid(id3));
 
-          JsonObject doc3 = createDoc();
-          client.insert(collection3, doc3)
-            .onComplete(onSuccess(id3 -> {
-              assertTrue(ObjectId.isValid(id3));
-              testComplete();
-            }));
+        mongoClient.count(collection3, JsonObject.of()).onComplete(onSuccess(count -> {
+          assertEquals(1L, count.longValue());
+          testComplete();
         }));
-    }, new ClientSessionOptions().setDefaultTransactionOptions(
-      new TransactionOptions().setMaxCommitTime(100L, TimeUnit.SECONDS)
-    ));
+      }));
 
     await();
   }
 
   @Test
-  public void testExecuteTransactionAbortByException() {
+  public void testWithTransactionAbortByException() {
     String collection = randomCollection();
 
-    mongoClient.executeTransaction(client -> {
-        JsonObject doc = createDoc();
-        return Future.join(
-          client.insert(collection, doc),
-          client.find("wrongcollection",
-            new JsonObject().put("$notARealOperator", 1)));
-      })
-      .onFailure(ex -> {
+    mongoClient.withTransaction(client ->
+        client.insert(collection, createDoc())
+          .compose(id -> client.find("wrongcollection",
+            JsonObject.of("$notARealOperator", 1)))
+      )
+      .onComplete(onFailure(ex -> {
         assertTrue(ex instanceof MongoQueryException);
 
-        mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
+        mongoClient.find(collection, JsonObject.of()).onComplete(onSuccess(coll -> {
           assertEquals(0, coll.size());
           testComplete();
         }));
-      });
+      }));
 
     await();
   }
@@ -251,19 +284,22 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   public void testManualStartCommit() {
     String collection = randomCollection();
 
-    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
+    mongoClient.startSession()
       .onComplete(onSuccess(session -> {
-        JsonObject doc = createDoc();
-        session.executeTransaction(client ->
-          client.insert(collection, doc)
-        ).onComplete(onSuccess(id -> {
-          assertTrue(ObjectId.isValid(id));
-
-          mongoClient.find(collection, new JsonObject()).onComplete(onSuccess(coll -> {
-            assertEquals(1, coll.size());
-            session.close().onComplete(onSuccess(closed -> testComplete()));
+        MongoClient client = session.client();
+        session.startTransaction()
+          .compose(v -> client.insert(collection, createDoc()))
+          .compose(id -> {
+            assertTrue(ObjectId.isValid(id));
+            return session.commit();
+          })
+          .eventually(session::close)
+          .onComplete(onSuccess(v -> {
+            mongoClient.find(collection, JsonObject.of()).onComplete(onSuccess(coll -> {
+              assertEquals(1, coll.size());
+              testComplete();
+            }));
           }));
-        }));
       }));
 
     await();
@@ -271,7 +307,7 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
 
   @Test
   public void testCommitOnClosedSession() {
-    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
+    mongoClient.startSession()
       .onComplete(onSuccess(session -> {
         session.close()
           .onComplete(onSuccess(v -> {
@@ -289,7 +325,7 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
 
   @Test
   public void testCommitWithoutTransaction() {
-    mongoClient.startSession(new ClientSessionOptions().setAutoStartTransaction(false).setAutoClose(false))
+    mongoClient.startSession()
       .onComplete(onSuccess(session -> {
         session.commit()
           .onComplete(onFailure(err -> {
@@ -304,9 +340,9 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
 
   @Test
   public void testDoubleStart() {
-    mongoClient.startSession(new ClientSessionOptions().setAutoStartTransaction(false).setAutoClose(false))
-      .onComplete(onSuccess(session -> session.start()
-        .onComplete(onSuccess(v -> session.start()
+    mongoClient.startSession()
+      .onComplete(onSuccess(session -> session.startTransaction()
+        .onComplete(onSuccess(v -> session.startTransaction()
           .onComplete(onFailure(err -> {
             assertTrue(err instanceof IllegalStateException);
             assertTrue(err.getMessage().contains("already in transaction"));
@@ -321,13 +357,13 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   }
 
   @Test
-  public void testExecuteTransactionOnClosedSession() {
+  public void testWithTransactionOnClosedSession() {
     String collection = randomCollection();
 
-    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
+    mongoClient.startSession()
       .onComplete(onSuccess(session -> {
         session.close()
-          .onComplete(onSuccess(v -> session.executeTransaction(client ->
+          .onComplete(onSuccess(v -> session.withTransaction(client ->
             client.insert(collection, createDoc())
           ).onComplete(onFailure(err -> {
             assertTrue(err instanceof IllegalStateException);
@@ -340,24 +376,27 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   }
 
   @Test
-  public void testExecuteTransactionWithoutAutoStartAndNoManualStart() {
+  public void testWithTransactionWhileManualTransactionActive() {
     String collection = randomCollection();
 
-    mongoClient.startSession(new ClientSessionOptions().setAutoStartTransaction(false).setAutoClose(false))
-      .onComplete(onSuccess(session -> session.executeTransaction(client ->
-        client.insert(collection, createDoc())
-      ).onComplete(onFailure(err -> {
-        assertTrue(err instanceof IllegalStateException);
-        assertTrue(err.getMessage().contains("autoStartTransaction is disabled"));
-        session.close().onComplete(onSuccess(v -> testComplete()));
-      }))));
+    mongoClient.startSession()
+      .onComplete(onSuccess(session -> session.startTransaction()
+        .onComplete(onSuccess(v -> session.withTransaction(client ->
+          client.insert(collection, createDoc())
+        ).onComplete(onFailure(err -> {
+          assertTrue(err instanceof IllegalStateException);
+          assertTrue(err.getMessage().contains("already active"));
+          session.abort().onComplete(onSuccess(v2 ->
+            session.close().onComplete(onSuccess(v3 -> testComplete()))
+          ));
+        }))))));
 
     await();
   }
 
   @Test
   public void testNestedSessionPrevented() {
-    mongoClient.executeTransaction(client ->
+    mongoClient.withTransaction(client ->
       client.startSession().compose(nestedSession ->
         Future.failedFuture("Should not reach here"))
     ).onComplete(onFailure(err -> {
@@ -374,7 +413,7 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
     String collection = randomCollection();
     JsonObject doc = createDoc();
 
-    mongoClient.executeTransaction(client ->
+    mongoClient.withTransaction(client ->
       client.insert(collection, doc)
         .compose(id -> client.findOne(collection, JsonObject.of("_id", id), null)
           .map(found -> {
@@ -394,28 +433,30 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   public void testUncommittedWriteNotVisibleOutsideTransaction() {
     String collection = randomCollection();
 
-    mongoClient.startSession(new ClientSessionOptions().setAutoClose(false))
+    mongoClient.startSession()
       .onComplete(onSuccess(session -> {
         JsonObject doc = createDoc();
-        session.executeTransaction(client ->
-          client.insert(collection, doc)
-            .compose(id -> {
-              // Read from OUTSIDE the transaction — should not see the uncommitted insert
-              return mongoClient.findOne(collection, new JsonObject().put("_id", id), null)
-                .map(found -> {
-                  assertNull(found);
-                  return id;
-                });
-            })
-        ).onComplete(onSuccess(id -> {
-          // After commit, the doc should now be visible outside the transaction
-          mongoClient.findOne(collection, new JsonObject().put("_id", id), null)
-            .onComplete(onSuccess(found -> {
-              assertNotNull(found);
-              assertEquals("bar", found.getString("foo"));
-              session.close().onComplete(onSuccess(v -> testComplete()));
-            }));
-        }));
+        session.withTransaction(client ->
+            client.insert(collection, doc)
+              .compose(id -> {
+                // Read from OUTSIDE the transaction — should not see the uncommitted insert
+                return mongoClient.findOne(collection, JsonObject.of("_id", id), null)
+                  .map(found -> {
+                    assertNull(found);
+                    return id;
+                  });
+              })
+          )
+          .eventually(session::close)
+          .onComplete(onSuccess(id -> {
+            // After commit, the doc should now be visible outside the transaction
+            mongoClient.findOne(collection, JsonObject.of("_id", id), null)
+              .onComplete(onSuccess(found -> {
+                assertNotNull(found);
+                assertEquals("bar", found.getString("foo"));
+                testComplete();
+              }));
+          }));
       }));
 
     await();
@@ -425,9 +466,9 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
   public void testCountInsideTransaction() {
     String collection = randomCollection();
 
-    mongoClient.executeTransaction(client ->
+    mongoClient.withTransaction(client ->
       client.insert(collection, createDoc())
-        .compose(id -> client.count(collection, new JsonObject()))
+        .compose(id -> client.count(collection, JsonObject.of()))
         .map(count -> {
           assertEquals(1L, count.longValue());
           return count;
@@ -436,6 +477,41 @@ public class MongoClientWithTransactionTest extends MongoClientTestBase {
       assertEquals(1L, count.longValue());
       testComplete();
     }));
+
+    await();
+  }
+
+  @Test
+  public void testTransientErrorRetried() {
+    String collection = randomCollection();
+
+    mongoClient.insert(collection, createDoc())
+      .onComplete(onSuccess(id -> {
+        JsonObject byId = JsonObject.of("_id", id);
+
+        mongoClient.startSession()
+          .onComplete(onSuccess(blocker -> {
+            blocker.startTransaction()
+              .compose(v -> blocker.client().updateCollection(collection, byId,
+                JsonObject.of("$set", JsonObject.of("a", 1))))
+              .onComplete(onSuccess(blocked -> {
+                // The blocker holds a write lock on the doc: the transaction below hits a write
+                // conflict with the TransientTransactionError label and retries until the commit
+                vertx.setTimer(500, t -> blocker.commit());
+
+                mongoClient.withTransaction(client -> client.updateCollection(collection, byId,
+                    JsonObject.of("$set", JsonObject.of("b", 2))))
+                  .compose(res -> blocker.close())
+                  .onComplete(onSuccess(v -> {
+                    mongoClient.findOne(collection, byId, null).onComplete(onSuccess(found -> {
+                      assertEquals(1, found.getInteger("a").intValue());
+                      assertEquals(2, found.getInteger("b").intValue());
+                      testComplete();
+                    }));
+                  }));
+              }));
+          }));
+      }));
 
     await();
   }

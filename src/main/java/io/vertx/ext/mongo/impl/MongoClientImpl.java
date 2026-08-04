@@ -128,7 +128,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
-  private MongoClientImpl(VertxInternal vertxInternal, ContextInternal creatingContext, MongoHolder holder, boolean useObjectId, ClientSession clientSession) {
+  private MongoClientImpl(VertxInternal vertxInternal, ContextInternal creatingContext, CloseableResource<MongoHolder> holder, boolean useObjectId, ClientSession clientSession) {
     this.vertx = vertxInternal;
     this.creatingContext = creatingContext;
     this.holder = holder;
@@ -909,6 +909,14 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
+  public Future<@Nullable JsonObject> ping() {
+    Promise<JsonObject> promise = vertx.promise();
+    JsonObject pingCommand = new JsonObject().put("ping", 1);
+    holder.get().db.runCommand(wrap(pingCommand), JsonObject.class).subscribe(new SingleResultSubscriber<>(promise));
+    return promise.future();
+  }
+
+  @Override
   public Future<JsonArray> distinct(String collection, String fieldName, String resultClassname) {
     return distinct(collection, fieldName, resultClassname, (DistinctOptions) null);
   }
@@ -1001,12 +1009,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     }
 
     final ClusterType clusterType = mongo.getClusterDescription().getType();
-    if (clusterType == ClusterType.STANDALONE || clusterType == ClusterType.UNKNOWN) {
+    if (clusterType == ClusterType.STANDALONE) {
       return Future.failedFuture(new IllegalStateException("Cluster type " + clusterType.name() +
         " does not support distributed transactions."));
     }
 
-    final Promise<ClientSession> promise = Promise.promise();
+    final Promise<ClientSession> promise = vertx.promise();
     clientSessionPublisher(options).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future().map(session -> {
       MongoClient sessionClient = new MongoClientImpl(vertx, creatingContext, holder, useObjectId, session);
@@ -1021,13 +1029,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   @Override
-  public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations) {
-    return startSession().compose(session -> session.executeTransaction(operations));
+  public <T> Future<@Nullable T> withTransaction(Function<MongoClient, Future<@Nullable T>> operations) {
+    return startSession().compose(session -> session.withTransaction(operations).eventually(session::close));
   }
 
   @Override
-  public <T> Future<@Nullable T> executeTransaction(Function<MongoClient, Future<@Nullable T>> operations, ClientSessionOptions options) {
-    return startSession(options).compose(session -> session.executeTransaction(operations));
+  public <T> Future<@Nullable T> withTransaction(Function<MongoClient, Future<@Nullable T>> operations, ClientSessionOptions options) {
+    return startSession(options).compose(session -> session.withTransaction(operations).eventually(session::close));
   }
 
   private GridFSBucket getGridFSBucket(String bucketName) {

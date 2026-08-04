@@ -16,30 +16,18 @@ import java.util.concurrent.TimeUnit;
 @JsonGen(publicConverter = false)
 public class ClientSessionOptions {
 
-  private boolean autoClose;
-  private boolean autoStartTransaction;
-
   private Boolean causallyConsistent;
   private Boolean snapshot;
   private Long defaultTimeoutMillis;
   private TransactionOptions defaultTransactionOptions;
 
   public ClientSessionOptions() {
-    init();
-  }
-
-  private void init() {
-    autoStartTransaction = true;
-    autoClose = true;
   }
 
   /**
    * Copy constructor.
    */
   public ClientSessionOptions(ClientSessionOptions options) {
-    autoClose = options.autoClose;
-    autoStartTransaction = options.autoStartTransaction;
-
     causallyConsistent = options.causallyConsistent;
     snapshot = options.snapshot;
     defaultTimeoutMillis = options.defaultTimeoutMillis;
@@ -47,7 +35,6 @@ public class ClientSessionOptions {
   }
 
   public ClientSessionOptions(JsonObject json) {
-    init();
     ClientSessionOptionsConverter.fromJson(json, this);
   }
 
@@ -55,36 +42,6 @@ public class ClientSessionOptions {
     JsonObject json = new JsonObject();
     ClientSessionOptionsConverter.toJson(this, json);
     return json;
-  }
-
-  /**
-   * @return the autoStartTransaction flag
-   */
-  public boolean isAutoStartTransaction() {
-    return autoStartTransaction;
-  }
-
-  /**
-   * @param autoStartTransaction the autoStartTransaction flag to set
-   */
-  public ClientSessionOptions setAutoStartTransaction(boolean autoStartTransaction) {
-    this.autoStartTransaction = autoStartTransaction;
-    return this;
-  }
-
-  /**
-   * @return the autoClose flag
-   */
-  public boolean isAutoClose() {
-    return autoClose;
-  }
-
-  /**
-   * @param autoClose the autoClose flag to set
-   */
-  public ClientSessionOptions setAutoClose(boolean autoClose) {
-    this.autoClose = autoClose;
-    return this;
   }
 
   /**
@@ -168,9 +125,7 @@ public class ClientSessionOptions {
   @Override
   public String toString() {
     return "ClientSessionOptions{" +
-      "autoStartTransaction=" + autoStartTransaction +
-      ", autoClose=" + autoClose +
-      ", causallyConsistent=" + causallyConsistent +
+      "causallyConsistent=" + causallyConsistent +
       ", snapshot=" + snapshot +
       ", defaultTimeoutMillis=" + defaultTimeoutMillis +
       ", defaultTransactionOptions=" + defaultTransactionOptions +
@@ -181,8 +136,7 @@ public class ClientSessionOptions {
   public boolean equals(Object o) {
     if (!(o instanceof ClientSessionOptions)) return false;
     ClientSessionOptions that = (ClientSessionOptions) o;
-    return autoClose == that.autoClose && autoStartTransaction == that.autoStartTransaction
-      && Objects.equals(causallyConsistent, that.causallyConsistent)
+    return Objects.equals(causallyConsistent, that.causallyConsistent)
       && Objects.equals(snapshot, that.snapshot)
       && Objects.equals(defaultTimeoutMillis, that.defaultTimeoutMillis)
       && Objects.equals(defaultTransactionOptions, that.defaultTransactionOptions);
@@ -190,8 +144,7 @@ public class ClientSessionOptions {
 
   @Override
   public int hashCode() {
-    return Objects.hash(autoClose, autoStartTransaction, causallyConsistent, snapshot,
-      defaultTimeoutMillis, defaultTransactionOptions);
+    return Objects.hash(causallyConsistent, snapshot, defaultTimeoutMillis, defaultTransactionOptions);
   }
 
 }
