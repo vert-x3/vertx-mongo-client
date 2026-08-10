@@ -31,13 +31,12 @@ import com.mongodb.reactivestreams.client.gridfs.GridFSBuckets;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.*;
+import io.vertx.core.internal.CloseableResource;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
-import io.vertx.core.shareddata.Shareable;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.mongo.BulkWriteOptions;
 import io.vertx.ext.mongo.CountOptions;
@@ -54,6 +53,7 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.reactivestreams.Publisher;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -86,20 +86,23 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   private final ContextInternal creatingContext;
   protected com.mongodb.reactivestreams.client.MongoClient mongo;
 
-  private final MongoHolder holder;
+  private final CloseableResource<MongoHolder> holder;
   private final boolean useObjectId;
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName) {
     Objects.requireNonNull(vertx);
     Objects.requireNonNull(config);
     Objects.requireNonNull(dataSourceName);
-    this.vertx = (VertxInternal) vertx;
-    this.creatingContext = this.vertx.getOrCreateContext();
-    this.holder = lookupHolder(dataSourceName, config);
-    this.mongo = holder.mongo(vertx);
-    this.useObjectId = config.getBoolean("useObjectId", false);
 
-    creatingContext.addCloseHook(this);
+    ContextInternal ctx = ((VertxInternal) vertx).getOrCreateContext();
+    CloseableResource<MongoHolder> mongoResource = ((VertxInternal) vertx).createSharedResource(DS_LOCAL_MAP_NAME, dataSourceName, () -> new MongoHolder(config));
+    mongoResource = ctx.registerResource(mongoResource);
+
+    this.vertx = (VertxInternal) vertx;
+    this.creatingContext = ctx;
+    this.holder = mongoResource;
+    this.mongo = mongoResource.get().mongo(vertx);
+    this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
   public MongoClientImpl(Vertx vertx, JsonObject config, String dataSourceName, MongoClientSettings settings) {
@@ -107,13 +110,16 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     Objects.requireNonNull(config);
     Objects.requireNonNull(dataSourceName);
     Objects.requireNonNull(settings);
-    this.vertx = (VertxInternal) vertx;
-    this.creatingContext = this.vertx.getOrCreateContext();
-    this.holder = lookupHolder(dataSourceName, config);
-    this.mongo = holder.mongo(vertx, settings);
-    this.useObjectId = config.getBoolean("useObjectId", false);
 
-    creatingContext.addCloseHook(this);
+    ContextInternal ctx = ((VertxInternal) vertx).getOrCreateContext();
+    CloseableResource<MongoHolder> mongoResource = ((VertxInternal) vertx).createSharedResource(DS_LOCAL_MAP_NAME, dataSourceName, () -> new MongoHolder(config));
+    mongoResource = ctx.registerResource(mongoResource);
+
+    this.vertx = (VertxInternal) vertx;
+    this.creatingContext = ctx;
+    this.holder = mongoResource;
+    this.mongo = mongoResource.get().mongo(vertx, settings);
+    this.useObjectId = config.getBoolean("useObjectId", false);
   }
 
   @GenIgnore
@@ -644,7 +650,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(collectionName, "collectionName cannot be null");
 
     Promise<Void> promise = vertx.promise();
-    holder.db.createCollection(collectionName).subscribe(new CompletionSubscriber<>(promise));
+    holder.get().db.createCollection(collectionName).subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
 
@@ -653,7 +659,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     requireNonNull(collectionName, "collectionName cannot be null");
 
     Promise<Void> promise = vertx.promise();
-    holder.db.createCollection(collectionName, collectionOptions.toMongoDriverObject())
+    holder.get().db.createCollection(collectionName, collectionOptions.toMongoDriverObject())
       .subscribe(new CompletionSubscriber<>(promise));
     return promise.future();
   }
@@ -661,7 +667,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   @Override
   public Future<List<String>> getCollections() {
     Promise<List<String>> promise = vertx.promise();
-    holder.db.listCollectionNames().subscribe(new BufferingSubscriber<>(promise));
+    holder.get().db.listCollectionNames().subscribe(new BufferingSubscriber<>(promise));
     return promise.future();
   }
 
@@ -782,7 +788,15 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     });
 
     Promise<JsonObject> promise = vertx.promise();
-    holder.db.runCommand(wrap(json), JsonObject.class).subscribe(new SingleResultSubscriber<>(promise));
+    holder.get().db.runCommand(wrap(json), JsonObject.class).subscribe(new SingleResultSubscriber<>(promise));
+    return promise.future();
+  }
+
+  @Override
+  public Future<@Nullable JsonObject> ping() {
+    Promise<JsonObject> promise = vertx.promise();
+    JsonObject pingCommand = new JsonObject().put("ping", 1);
+    holder.get().db.runCommand(wrap(pingCommand), JsonObject.class).subscribe(new SingleResultSubscriber<>(promise));
     return promise.future();
   }
 
@@ -855,12 +869,12 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
 
   @Override
   public Future<MongoGridFsClient> createGridFsBucketService(String bucketName) {
-    MongoGridFsClientImpl impl = new MongoGridFsClientImpl(vertx, this, getGridFSBucket(bucketName), holder.db.getCodecRegistry());
+    MongoGridFsClientImpl impl = new MongoGridFsClientImpl(vertx, this, getGridFSBucket(bucketName), holder.get().db.getCodecRegistry());
     return Future.succeededFuture(impl);
   }
 
   private GridFSBucket getGridFSBucket(String bucketName) {
-    return GridFSBuckets.create(holder.db, bucketName);
+    return GridFSBuckets.create(holder.get().db, bucketName);
   }
 
   @Override
@@ -1045,7 +1059,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
   }
 
   private MongoCollection<JsonObject> getCollection(String name, @Nullable WriteOption writeOption) {
-    MongoCollection<JsonObject> coll = holder.db.getCollection(name, JsonObject.class);
+    MongoCollection<JsonObject> coll = holder.get().db.getCollection(name, JsonObject.class);
     if (coll != null && writeOption != null) {
       coll = coll.withWriteConcern(WriteConcern.valueOf(writeOption.name()));
     }
@@ -1081,39 +1095,13 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     return jsonObject == null ? null : new JsonObjectBsonAdapter(jsonObject);
   }
 
-  private void removeFromMap(LocalMap<String, MongoHolder> map, String dataSourceName) {
-    synchronized (vertx) {
-      map.remove(dataSourceName);
-      if (map.isEmpty()) {
-        map.close();
-      }
-    }
-  }
-
-  private MongoHolder lookupHolder(String datasourceName, JsonObject config) {
-    synchronized (vertx) {
-      LocalMap<String, MongoHolder> map = vertx.sharedData().getLocalMap(DS_LOCAL_MAP_NAME);
-      MongoHolder theHolder = map.get(datasourceName);
-      if (theHolder == null) {
-        theHolder = new MongoHolder(config, () -> removeFromMap(map, datasourceName));
-        map.put(datasourceName, theHolder);
-      } else {
-        theHolder.incRefCount();
-      }
-      return theHolder;
-    }
-  }
-
-  private class MongoHolder implements Shareable {
+  private class MongoHolder implements io.vertx.core.internal.Closeable {
     com.mongodb.reactivestreams.client.MongoClient mongo;
     MongoDatabase db;
     JsonObject config;
-    Runnable closeRunner;
-    int refCount = 1;
 
-    MongoHolder(JsonObject config, Runnable closeRunner) {
+    MongoHolder(JsonObject config) {
       this.config = config;
-      this.closeRunner = closeRunner;
     }
 
     synchronized com.mongodb.reactivestreams.client.MongoClient mongo(Vertx vertx) {
@@ -1134,30 +1122,20 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
       return mongo;
     }
 
-    synchronized void incRefCount() {
-      refCount++;
-    }
-
-    void close() {
+    @Override
+    public Future<Void> shutdown(Duration timeout) {
       java.io.Closeable client;
-      Runnable callback;
       synchronized (this) {
-        if (--refCount > 0) {
-          return;
-        }
         client = mongo;
         mongo = null;
-        callback = closeRunner;
-        closeRunner = null;
-      }
-      if (callback != null) {
-        callback.run();
       }
       if (client != null) {
-        MongoClientImpl.this.vertx.executeBlocking(() -> {
+        return MongoClientImpl.this.vertx.executeBlocking(() -> {
           client.close();
           return null;
         });
+      } else {
+        return Future.succeededFuture();
       }
     }
   }

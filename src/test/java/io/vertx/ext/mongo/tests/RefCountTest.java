@@ -47,7 +47,6 @@ public class RefCountTest extends MongoTestBase {
     client3.close();
     assertWaitUntil(() -> map.size() == 0);
     assertWaitUntil(() -> getLocalMap().size() == 0);
-    assertWaitUntil(() -> map != getLocalMap()); // Map has been closed
   }
 
   @Test
@@ -66,7 +65,6 @@ public class RefCountTest extends MongoTestBase {
     assertEquals(1, map.size());
     client3.close();
     assertEquals(0, map.size());
-    assertNotSame(map, getLocalMap());
   }
 
   @Test
@@ -100,6 +98,5 @@ public class RefCountTest extends MongoTestBase {
     assertEquals(1, map.size());
     client6.close();
     assertEquals(0, map.size());
-    assertNotSame(map, getLocalMap());
   }
 }
