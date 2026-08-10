@@ -679,6 +679,13 @@ public interface MongoClient {
   Future<MongoGridFsClient> createGridFsBucketService(String bucketName);
 
   /**
+   * Send a ping command to the MongoDB server.
+   *
+   * @return a future notified with the ping response document
+   */
+  Future<@Nullable JsonObject> ping();
+
+  /**
    * Close the client and release its resources
    */
   Future<Void> close();

@@ -248,6 +248,15 @@ public abstract class MongoClientTestBase extends MongoTestBase {
   }
 
   @Test
+  public void testPing() throws Exception {
+    mongoClient.ping().onComplete(onSuccess(reply -> {
+      assertEquals(1.0, reply.getDouble("ok"), 0.0);
+      testComplete();
+    }));
+    await();
+  }
+
+  @Test
   public void testRunCommandWithBody() throws Exception {
 
     JsonObject command = new JsonObject()
