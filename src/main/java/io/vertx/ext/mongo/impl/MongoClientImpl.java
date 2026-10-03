@@ -426,7 +426,7 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     MongoCollection<JsonObject> coll = getCollection(collection);
     Promise<JsonObject> promise = vertx.promise();
     coll.findOneAndUpdate(bquery, bupdate, foauOptions).subscribe(new SingleResultSubscriber<>(promise));
-    return promise.future();
+    return promise.future().map(object -> object == null ? null : decodeKeyWhenUseObjectId(object));
   }
 
   @Override
