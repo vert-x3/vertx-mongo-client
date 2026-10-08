@@ -666,6 +666,60 @@ Here is an example of downloading a file to a stream using the object's ID:
 {@link examples.MongoClientExamples#example33}
 ----
 
+== Distributed (multi-document) Transactions
+
+Transactions allow you to run a series of operations that do not change any data until the entire transaction is committed. If any operation in the transaction fails, the transaction is aborted and all data changes are discarded before they ever become visible.
+Multi-document transactions are ACID compliant: MongoDB guarantees that the data involved in your transaction operations remains consistent, even if the driver encounters unexpected errors.
+
+The simplest way to run a transaction is `withTransaction` on the client. It starts a session, executes the provided operations in a transaction, commits on success, aborts on failure, retries transient errors and unknown commit results as recommended by MongoDB, and finally closes the session:
+
+[source,$lang]
+----
+{@link examples.MongoClientTransactionalExamples#withTransactionExample}
+----
+
+For more control, `startSession` returns a `MongoSession` that stays open until you close it and can run several sequential transactions. `MongoSession#withTransaction` offers the same commit/abort/retry handling as above on your own session:
+
+[source,$lang]
+----
+{@link examples.MongoClientTransactionalExamples#startSessionExample}
+----
+
+Reusing a session this way avoids creating a new one for each transaction:
+
+[source,$lang]
+----
+{@link examples.MongoClientTransactionalExamples#sessionReuseExample}
+----
+
+Alternatively, a transaction can be controlled manually. `MongoSession#client` returns a `MongoClient` whose operations execute in the scope of the session and its active transaction:
+
+`MongoSession#startTransaction`:: starts a transaction on the session
+`MongoSession#commit`:: commits the active transaction
+`MongoSession#abort`:: aborts the active transaction
+`MongoSession#close`:: closes the session; an active transaction is aborted by the server
+
+[source,$lang]
+----
+{@link examples.MongoClientTransactionalExamples#manualTransactionExample}
+----
+
+Read concern, write concern, read preference and timeouts of a transaction can be configured with `TransactionOptions`, either per transaction or as session defaults via `ClientSessionOptions`:
+
+[source,$lang]
+----
+{@link examples.MongoClientTransactionalExamples#transactionWithOptionsExample}
+----
+
+[NOTE]
+====
+* Transactions require a replica set or a sharded cluster; they are not available on standalone servers.
+* Use a session only with the `MongoClient` that created it, and issue its operations sequentially — never run operations on the same session concurrently (e.g. do not combine them with `Future.all`/`Future.join`).
+* Do not set a per-operation write concern inside a transaction; configure it via `TransactionOptions` instead.
+* Some operations are not allowed in transactions, e.g. `watch`, `dropCollection`, `renameCollection` and GridFS operations
+* Creating collections and indexes inside a transaction requires MongoDB 4.4 or later.
+====
+
 == Configuring the client
 
 The client is configured with a json object.

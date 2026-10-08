@@ -14,6 +14,7 @@ import io.vertx.ext.mongo.impl.MongoClientImpl;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 /**
  * A Vert.x service used to interact with MongoDB server instances.
@@ -684,6 +685,46 @@ public interface MongoClient {
    * @return a future notified with the ping response document
    */
   Future<@Nullable JsonObject> ping();
+
+  /**
+   * Starts a {@link MongoSession}, which can run several sequential transactions and stays open
+   * until {@link MongoSession#close()} is called. Use the session only with this client, and issue
+   * its operations sequentially.
+   *
+   * @return a future notified with the new {@link MongoSession}
+   */
+  Future<MongoSession> startSession();
+
+  /**
+   * Like {@link #startSession()} with the specified {@link ClientSessionOptions} applied to the
+   * session and all of its transactions.
+   *
+   * @param options options to use for the session and its transactions
+   * @return a future notified with the new {@link MongoSession}
+   */
+  Future<MongoSession> startSession(ClientSessionOptions options);
+
+  /**
+   * Starts a session, executes the operations in a transaction and closes the session.
+   * The transaction commits on success, aborts on failure, and retries transient errors
+   * and unknown commit results as recommended by MongoDB.
+   *
+   * @param operations the operations to execute inside the transaction
+   * @param <T>        the return type of the operations function
+   * @return a future notified with the result of operations
+   */
+  <T> Future<@Nullable T> withTransaction(Function<MongoClient, Future<@Nullable T>> operations);
+
+  /**
+   * Like {@link #withTransaction(Function)} with the specified {@link ClientSessionOptions} applied
+   * to the session and its transaction.
+   *
+   * @param operations the operations to execute inside the transaction
+   * @param options    options to use for the session and its transaction
+   * @param <T>        the return type of the operations function
+   * @return a future notified with the result of operations
+   */
+  <T> Future<@Nullable T> withTransaction(Function<MongoClient, Future<@Nullable T>> operations, ClientSessionOptions options);
 
   /**
    * Close the client and release its resources
