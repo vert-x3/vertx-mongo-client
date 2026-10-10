@@ -1033,6 +1033,9 @@ public class MongoClientImpl implements io.vertx.ext.mongo.MongoClient, Closeabl
     if (options.getLimit() != -1) {
       find.limit(options.getLimit());
     }
+    if (options.getBatchSize() > 0) {
+      find.batchSize(options.getBatchSize());
+    }
     if (options.getSkip() > 0) {
       find.skip(options.getSkip());
     }
