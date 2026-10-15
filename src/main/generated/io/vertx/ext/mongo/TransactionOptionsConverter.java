@@ -32,11 +32,6 @@ public class TransactionOptionsConverter {
             obj.setMaxCommitTimeMillis(((Number)member.getValue()).longValue());
           }
           break;
-        case "timeoutMillis":
-          if (member.getValue() instanceof Number) {
-            obj.setTimeoutMillis(((Number)member.getValue()).longValue());
-          }
-          break;
       }
     }
   }
@@ -57,9 +52,6 @@ public class TransactionOptionsConverter {
     }
     if (obj.getMaxCommitTimeMillis() != null) {
       json.put("maxCommitTimeMillis", obj.getMaxCommitTimeMillis());
-    }
-    if (obj.getTimeoutMillis() != null) {
-      json.put("timeoutMillis", obj.getTimeoutMillis());
     }
   }
 }

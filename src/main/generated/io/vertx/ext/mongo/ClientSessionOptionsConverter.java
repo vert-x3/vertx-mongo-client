@@ -22,11 +22,6 @@ public class ClientSessionOptionsConverter {
             obj.setSnapshot((Boolean)member.getValue());
           }
           break;
-        case "defaultTimeoutMillis":
-          if (member.getValue() instanceof Number) {
-            obj.setDefaultTimeoutMillis(((Number)member.getValue()).longValue());
-          }
-          break;
         case "defaultTransactionOptions":
           if (member.getValue() instanceof JsonObject) {
             obj.setDefaultTransactionOptions(new io.vertx.ext.mongo.TransactionOptions((io.vertx.core.json.JsonObject)member.getValue()));
@@ -46,9 +41,6 @@ public class ClientSessionOptionsConverter {
     }
     if (obj.getSnapshot() != null) {
       json.put("snapshot", obj.getSnapshot());
-    }
-    if (obj.getDefaultTimeoutMillis() != null) {
-      json.put("defaultTimeoutMillis", obj.getDefaultTimeoutMillis());
     }
     if (obj.getDefaultTransactionOptions() != null) {
       json.put("defaultTransactionOptions", obj.getDefaultTransactionOptions().toJson());

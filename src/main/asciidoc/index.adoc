@@ -671,7 +671,7 @@ Here is an example of downloading a file to a stream using the object's ID:
 Transactions allow you to run a series of operations that do not change any data until the entire transaction is committed. If any operation in the transaction fails, the transaction is aborted and all data changes are discarded before they ever become visible.
 Multi-document transactions are ACID compliant: MongoDB guarantees that the data involved in your transaction operations remains consistent, even if the driver encounters unexpected errors.
 
-The simplest way to run a transaction is `withTransaction` on the client. It starts a session, executes the provided operations in a transaction, commits on success, aborts on failure, retries transient errors and unknown commit results as recommended by MongoDB, and finally closes the session:
+The simplest way to run a transaction is `withTransaction` on the client. It starts a session, executes the provided operations in a transaction, commits on success, aborts on failure, retries transient errors and unknown commit results for up to 2 minutes as recommended by MongoDB, and finally closes the session:
 
 [source,$lang]
 ----
@@ -704,7 +704,7 @@ Alternatively, a transaction can be controlled manually. `MongoSession#client` r
 {@link examples.MongoClientTransactionalExamples#manualTransactionExample}
 ----
 
-Read concern, write concern, read preference and timeouts of a transaction can be configured with `TransactionOptions`, either per transaction or as session defaults via `ClientSessionOptions`:
+Read concern, write concern, read preference and the maximum commit time of a transaction can be configured with `TransactionOptions`, either per transaction or as session defaults via `ClientSessionOptions`:
 
 [source,$lang]
 ----

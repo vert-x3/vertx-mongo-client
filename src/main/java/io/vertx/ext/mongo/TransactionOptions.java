@@ -24,7 +24,6 @@ public class TransactionOptions {
   private String writeConcern;
   private String readPreference;
   private Long maxCommitTimeMillis;
-  private Long timeoutMillis;
 
   public TransactionOptions() {
     // default constructor
@@ -38,7 +37,6 @@ public class TransactionOptions {
     writeConcern = options.writeConcern;
     readPreference = options.readPreference;
     maxCommitTimeMillis = options.maxCommitTimeMillis;
-    timeoutMillis = options.timeoutMillis;
   }
 
   public TransactionOptions(JsonObject json) {
@@ -120,30 +118,6 @@ public class TransactionOptions {
     return this;
   }
 
-  /**
-   * @return the timeoutMillis
-   */
-  public Long getTimeoutMillis() {
-    return timeoutMillis;
-  }
-
-  /**
-   * @param timeoutMillis the timeoutMillis to set, also bounds the transaction retry loop
-   */
-  public TransactionOptions setTimeoutMillis(Long timeoutMillis) {
-    this.timeoutMillis = timeoutMillis;
-    return this;
-  }
-
-  /**
-   * @param timeout the timeout to set
-   * @param timeUnit the timeUnit of timeout
-   */
-  public TransactionOptions setTimeout(long timeout, TimeUnit timeUnit) {
-    this.timeoutMillis = timeUnit.toMillis(timeout);
-    return this;
-  }
-
   public com.mongodb.TransactionOptions toMongoDriverObject() {
     com.mongodb.TransactionOptions.Builder builder = com.mongodb.TransactionOptions.builder();
     if (readConcernLevel != null) {
@@ -157,9 +131,6 @@ public class TransactionOptions {
     }
     if (maxCommitTimeMillis != null) {
       builder.maxCommitTime(maxCommitTimeMillis, TimeUnit.MILLISECONDS);
-    }
-    if (timeoutMillis != null) {
-      builder.timeout(timeoutMillis, TimeUnit.MILLISECONDS);
     }
     return builder.build();
   }
@@ -180,7 +151,6 @@ public class TransactionOptions {
       ", writeConcern=" + writeConcern +
       ", readPreference=" + readPreference +
       ", maxCommitTimeMillis=" + maxCommitTimeMillis +
-      ", timeoutMillis=" + timeoutMillis +
       '}';
   }
 
@@ -191,13 +161,12 @@ public class TransactionOptions {
     return Objects.equals(readConcernLevel, that.readConcernLevel)
       && Objects.equals(writeConcern, that.writeConcern)
       && Objects.equals(readPreference, that.readPreference)
-      && Objects.equals(maxCommitTimeMillis, that.maxCommitTimeMillis)
-      && Objects.equals(timeoutMillis, that.timeoutMillis);
+      && Objects.equals(maxCommitTimeMillis, that.maxCommitTimeMillis);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(readConcernLevel, writeConcern, readPreference, maxCommitTimeMillis, timeoutMillis);
+    return Objects.hash(readConcernLevel, writeConcern, readPreference, maxCommitTimeMillis);
   }
 
 }

@@ -5,7 +5,6 @@ import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Options used to configure the client sessions and its transactions.
@@ -18,7 +17,6 @@ public class ClientSessionOptions {
 
   private Boolean causallyConsistent;
   private Boolean snapshot;
-  private Long defaultTimeoutMillis;
   private TransactionOptions defaultTransactionOptions;
 
   public ClientSessionOptions() {
@@ -30,7 +28,6 @@ public class ClientSessionOptions {
   public ClientSessionOptions(ClientSessionOptions options) {
     causallyConsistent = options.causallyConsistent;
     snapshot = options.snapshot;
-    defaultTimeoutMillis = options.defaultTimeoutMillis;
     defaultTransactionOptions = options.defaultTransactionOptions;
   }
 
@@ -75,30 +72,6 @@ public class ClientSessionOptions {
   }
 
   /**
-   * @return the defaultTimeoutMillis
-   */
-  public Long getDefaultTimeoutMillis() {
-    return defaultTimeoutMillis;
-  }
-
-  /**
-   * @param defaultTimeoutMillis the defaultTimeoutMillis to set
-   */
-  public ClientSessionOptions setDefaultTimeoutMillis(Long defaultTimeoutMillis) {
-    this.defaultTimeoutMillis = defaultTimeoutMillis;
-    return this;
-  }
-
-  /**
-   * @param defaultTimeout the defaultTimeout to set
-   * @param timeUnit the timeUnit of defaultTimeout
-   */
-  public ClientSessionOptions setDefaultTimeout(long defaultTimeout, TimeUnit timeUnit) {
-    this.defaultTimeoutMillis = timeUnit.toMillis(defaultTimeout);
-    return this;
-  }
-
-  /**
    * @return the defaultTransactionOptions
    */
   public TransactionOptions getDefaultTransactionOptions() {
@@ -117,7 +90,6 @@ public class ClientSessionOptions {
     final com.mongodb.ClientSessionOptions.Builder builder = com.mongodb.ClientSessionOptions.builder();
     if (causallyConsistent != null) builder.causallyConsistent(causallyConsistent);
     if (snapshot != null) builder.snapshot(snapshot);
-    if (defaultTimeoutMillis != null) builder.defaultTimeout(defaultTimeoutMillis, TimeUnit.MILLISECONDS);
     if (defaultTransactionOptions != null) builder.defaultTransactionOptions(defaultTransactionOptions.toMongoDriverObject());
     return builder.build();
   }
@@ -127,7 +99,6 @@ public class ClientSessionOptions {
     return "ClientSessionOptions{" +
       "causallyConsistent=" + causallyConsistent +
       ", snapshot=" + snapshot +
-      ", defaultTimeoutMillis=" + defaultTimeoutMillis +
       ", defaultTransactionOptions=" + defaultTransactionOptions +
       '}';
   }
@@ -138,13 +109,12 @@ public class ClientSessionOptions {
     ClientSessionOptions that = (ClientSessionOptions) o;
     return Objects.equals(causallyConsistent, that.causallyConsistent)
       && Objects.equals(snapshot, that.snapshot)
-      && Objects.equals(defaultTimeoutMillis, that.defaultTimeoutMillis)
       && Objects.equals(defaultTransactionOptions, that.defaultTransactionOptions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(causallyConsistent, snapshot, defaultTimeoutMillis, defaultTransactionOptions);
+    return Objects.hash(causallyConsistent, snapshot, defaultTransactionOptions);
   }
 
 }

@@ -31,12 +31,11 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoSession;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public class MongoSessionImpl implements MongoSession, Closeable {
 
-  private static final long DEFAULT_TRANSACTION_TIMEOUT_MS = 120_000;
+  private static final long TRANSACTION_RETRY_TIMEOUT_MS = 120_000;
   private static final String TRANSIENT_TRANSACTION_ERROR = "TransientTransactionError";
   private static final String UNKNOWN_TRANSACTION_COMMIT_RESULT = "UnknownTransactionCommitResult";
 
@@ -45,7 +44,6 @@ public class MongoSessionImpl implements MongoSession, Closeable {
 
   private final MongoClient delegate;
   private final TransactionOptions defaultTransactionOptions;
-  private final Long defaultTimeoutMillis;
   private final boolean snapshot;
   private final ClientSession session;
   private volatile boolean inTransaction;
@@ -62,7 +60,6 @@ public class MongoSessionImpl implements MongoSession, Closeable {
     this.defaultTransactionOptions = ((sessionOptions != null) && (sessionOptions.getDefaultTransactionOptions() != null))
       ? sessionOptions.getDefaultTransactionOptions().toMongoDriverObject()
       : null;
-    this.defaultTimeoutMillis = sessionOptions != null ? sessionOptions.getDefaultTimeoutMillis() : null;
     this.snapshot = sessionOptions != null && Boolean.TRUE.equals(sessionOptions.getSnapshot());
 
     creatingContext.addCloseHook(this);
@@ -97,16 +94,8 @@ public class MongoSessionImpl implements MongoSession, Closeable {
         "A transaction is already active on this session. Use client() with startTransaction()/commit()/abort() for manual control."));
     }
 
-    long deadline = System.currentTimeMillis() + retryTimeoutMillis(options);
+    long deadline = System.currentTimeMillis() + TRANSACTION_RETRY_TIMEOUT_MS;
     return attemptTransaction(operations, options, deadline);
-  }
-
-  private long retryTimeoutMillis(TransactionOptions options) {
-    Long timeout = options != null ? options.getTimeout(TimeUnit.MILLISECONDS) : null;
-    if (timeout == null) {
-      timeout = defaultTimeoutMillis;
-    }
-    return timeout != null && timeout > 0 ? timeout : DEFAULT_TRANSACTION_TIMEOUT_MS;
   }
 
   private <T> Future<@Nullable T> attemptTransaction(Function<MongoClient, Future<@Nullable T>> operations,
