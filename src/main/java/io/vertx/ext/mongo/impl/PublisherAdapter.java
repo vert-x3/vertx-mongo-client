@@ -218,7 +218,7 @@ public class PublisherAdapter<T> implements ReadStream<T> {
       lock.lock();
       inflight--;
       try {
-        write(t);
+        add(t);
         if (inflight == 0 && !paused) {
           inflight += batchSize;
           subscription.request(batchSize);
@@ -232,7 +232,7 @@ public class PublisherAdapter<T> implements ReadStream<T> {
     public void onError(Throwable t) {
       lock.lock();
       try {
-        write(t);
+        add(t);
       } finally {
         lock.unlock();
       }
@@ -242,7 +242,7 @@ public class PublisherAdapter<T> implements ReadStream<T> {
     public void onComplete() {
       lock.lock();
       try {
-        write(END);
+        add(END);
       } finally {
         lock.unlock();
       }
